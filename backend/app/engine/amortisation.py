@@ -9,10 +9,11 @@ Builds incrementally:
 2. Interest-only repayment calculation
 3. Offset account support (reduces balance that interest is charged on)
 4. Full amortisation schedule generation (P&I with offset + extra repayments)
+5. Rate changes mid-loan (recalculates repayment on remaining balance/term)
 """
 
 from dataclasses import dataclass
-from app.models.loan import RepaymentFrequency
+from app.models.loan import RepaymentFrequency, RateChange
 
 
 # ──────────────────────────────────────────────
@@ -28,13 +29,14 @@ class ScheduleRow:
     principal_paid: float
     extra_paid: float
     closing_balance: float
+    annual_rate: float
+    scheduled_repayment: float
 
 
 @dataclass
 class AmortisationSchedule:
     """Full amortisation schedule with summary stats."""
     rows: list[ScheduleRow]
-    scheduled_repayment: float
     total_interest: float
     total_periods: int
 
@@ -70,10 +72,6 @@ def calculate_periodic_repayment(
     """
     Calculate the fixed P&I repayment with daily compounding.
 
-    Note: Offset does not change the scheduled P&I repayment amount.
-    Its effect is seen in the amortisation schedule where less interest
-    accrues, so more of each payment goes to principal (paying off sooner).
-
     Args:
         principal: Loan amount in dollars
         annual_rate: Annual interest rate as decimal (e.g. 0.062 for 6.2%)
@@ -94,6 +92,24 @@ def calculate_periodic_repayment(
     r = effective_periodic_rate(annual_rate, frequency)
 
     return principal * r * (1 + r) ** n / ((1 + r) ** n - 1)
+
+
+def _recalculate_repayment(
+    balance: float,
+    annual_rate: float,
+    remaining_periods: int,
+    frequency: RepaymentFrequency,
+) -> float:
+    """Recalculate repayment for remaining balance and term at a new rate."""
+    if balance <= 0:
+        return 0.0
+
+    if annual_rate <= 0:
+        return balance / remaining_periods
+
+    r = effective_periodic_rate(annual_rate, frequency)
+
+    return balance * r * (1 + r) ** remaining_periods / ((1 + r) ** remaining_periods - 1)
 
 
 def calculate_io_repayment(
@@ -140,14 +156,14 @@ def generate_schedule(
     frequency: RepaymentFrequency = RepaymentFrequency.MONTHLY,
     offset_balance: float = 0.0,
     extra_repayment: float = 0.0,
+    rate_changes: list[RateChange] | None = None,
 ) -> AmortisationSchedule:
     """
     Generate a full P&I amortisation schedule with daily compounding.
 
-    Supports offset accounts and extra repayments. The scheduled repayment
-    is fixed based on the original loan terms (no offset/extra). Offset
-    reduces interest each period so more goes to principal. Extra repayments
-    are applied on top of the scheduled amount.
+    Supports offset accounts, extra repayments, and mid-loan rate changes.
+    When a rate change occurs, the repayment is recalculated based on the
+    remaining balance and remaining periods at the new rate.
 
     The loan terminates early if the balance reaches zero.
 
@@ -158,13 +174,23 @@ def generate_schedule(
         frequency: Repayment frequency
         offset_balance: Funds in offset account (assumed constant for now)
         extra_repayment: Additional repayment per period on top of scheduled
+        rate_changes: List of RateChange objects (from_period, annual_rate)
 
     Returns:
         AmortisationSchedule with per-period rows and summary stats
     """
-    scheduled = calculate_periodic_repayment(principal, annual_rate, loan_term_years, frequency)
-    r = effective_periodic_rate(annual_rate, frequency)
     max_periods = loan_term_years * frequency.periods_per_year
+
+    # Build a lookup: period -> new annual rate
+    rate_change_map: dict[int, float] = {}
+    if rate_changes:
+        for rc in rate_changes:
+            rate_change_map[rc.from_period] = rc.annual_rate
+
+    # Initial values
+    current_rate = annual_rate
+    r = effective_periodic_rate(current_rate, frequency)
+    scheduled = calculate_periodic_repayment(principal, current_rate, loan_term_years, frequency)
 
     rows: list[ScheduleRow] = []
     balance = principal
@@ -173,6 +199,13 @@ def generate_schedule(
     for period in range(1, max_periods + 1):
         if balance <= 0:
             break
+
+        # Check for rate change at this period
+        if period in rate_change_map:
+            current_rate = rate_change_map[period]
+            r = effective_periodic_rate(current_rate, frequency)
+            remaining = max_periods - period + 1
+            scheduled = _recalculate_repayment(balance, current_rate, remaining, frequency)
 
         # Interest on effective balance (after offset)
         effective_balance = max(balance - offset_balance, 0.0)
@@ -203,11 +236,12 @@ def generate_schedule(
             principal_paid=principal_component,
             extra_paid=extra,
             closing_balance=balance,
+            annual_rate=current_rate,
+            scheduled_repayment=scheduled,
         ))
 
     return AmortisationSchedule(
         rows=rows,
-        scheduled_repayment=scheduled,
         total_interest=total_interest,
         total_periods=len(rows),
     )

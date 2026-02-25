@@ -12,7 +12,7 @@ from app.engine.amortisation import (
     calculate_io_repayment,
     generate_schedule,
 )
-from app.models.loan import RepaymentFrequency
+from app.models.loan import RepaymentFrequency, RateChange
 
 
 class TestPeriodicRepayment:
@@ -199,7 +199,13 @@ class TestScheduleBasic:
         assert row_sum == pytest.approx(schedule.total_interest, abs=0.01)
 
     def test_scheduled_repayment(self, schedule):
-        assert schedule.scheduled_repayment == pytest.approx(8607.31, abs=0.01)
+        """All rows have the same scheduled repayment (no rate changes)."""
+        assert schedule.rows[0].scheduled_repayment == pytest.approx(8607.31, abs=0.01)
+        assert all(r.scheduled_repayment == schedule.rows[0].scheduled_repayment for r in schedule.rows)
+
+    def test_rate_constant(self, schedule):
+        """All rows should show the same rate."""
+        assert all(r.annual_rate == 0.06 for r in schedule.rows)
 
 
 class TestScheduleWithOffset:
@@ -221,7 +227,7 @@ class TestScheduleWithOffset:
     def test_same_scheduled_repayment(self, schedule):
         """Offset doesn't change the scheduled repayment."""
         no_offset = generate_schedule(100_000, 0.06, 1)
-        assert schedule.scheduled_repayment == no_offset.scheduled_repayment
+        assert schedule.rows[0].scheduled_repayment == no_offset.rows[0].scheduled_repayment
 
     def test_final_balance_is_zero(self, schedule):
         assert schedule.rows[-1].closing_balance == pytest.approx(0.0, abs=0.01)
@@ -249,3 +255,56 @@ class TestScheduleWithExtra:
     def test_extra_recorded_in_rows(self, schedule):
         """Non-final rows should show the extra repayment amount."""
         assert schedule.rows[0].extra_paid == pytest.approx(200.00, abs=0.01)
+
+
+class TestScheduleWithRateChange:
+    """$500k, 5.5% fixed for 2 years then 6.2% variable, 30 year term, monthly."""
+
+    @pytest.fixture
+    def schedule(self):
+        return generate_schedule(
+            500_000, 0.055, 30,
+            rate_changes=[RateChange(from_period=25, annual_rate=0.062)],
+        )
+
+    def test_total_periods(self, schedule):
+        """Should still pay off in 360 periods."""
+        assert schedule.total_periods == 360
+
+    def test_rate_before_change(self, schedule):
+        """First 24 periods at 5.5%."""
+        assert all(r.annual_rate == 0.055 for r in schedule.rows[:24])
+
+    def test_rate_after_change(self, schedule):
+        """Periods 25+ at 6.2%."""
+        assert all(r.annual_rate == 0.062 for r in schedule.rows[24:])
+
+    def test_repayment_changes(self, schedule):
+        """Repayment should increase when rate goes up."""
+        assert schedule.rows[0].scheduled_repayment == pytest.approx(2842.78, abs=0.01)
+        assert schedule.rows[24].scheduled_repayment == pytest.approx(3057.01, abs=0.01)
+
+    def test_balance_at_rate_change(self, schedule):
+        """Balance at end of period 24 (start of new rate)."""
+        assert schedule.rows[23].closing_balance == pytest.approx(486_179.31, abs=1.00)
+
+    def test_period_25_interest(self, schedule):
+        """First period at new rate — interest on remaining balance at 6.2%."""
+        assert schedule.rows[24].interest == pytest.approx(2518.21, abs=0.01)
+
+    def test_final_balance_is_zero(self, schedule):
+        assert schedule.rows[-1].closing_balance == pytest.approx(0.0, abs=0.01)
+
+    def test_total_interest(self, schedule):
+        assert schedule.total_interest == pytest.approx(595_381.96, abs=1.00)
+
+    def test_more_interest_than_flat_low_rate(self, schedule):
+        """Rate increase should cost more than staying at 5.5%."""
+        flat = generate_schedule(500_000, 0.055, 30)
+        assert schedule.total_interest > flat.total_interest
+
+    def test_no_rate_changes_same_as_flat(self):
+        """Empty rate_changes should match no rate_changes."""
+        with_empty = generate_schedule(500_000, 0.062, 30, rate_changes=[])
+        without = generate_schedule(500_000, 0.062, 30)
+        assert with_empty.total_interest == without.total_interest
