@@ -7,7 +7,11 @@ All expected values calculated using daily compounding:
 """
 
 import pytest
-from app.engine.amortisation import calculate_periodic_repayment, calculate_io_repayment
+from app.engine.amortisation import (
+    calculate_periodic_repayment,
+    calculate_io_repayment,
+    generate_schedule,
+)
 from app.models.loan import RepaymentFrequency
 
 
@@ -158,3 +162,90 @@ class TestIOOffset:
         with_zero = calculate_io_repayment(500_000, 0.062, offset_balance=0)
         without = calculate_io_repayment(500_000, 0.062)
         assert with_zero == without
+
+
+class TestScheduleBasic:
+    """Basic P&I amortisation schedule — $100k at 6% over 1 year, monthly."""
+
+    @pytest.fixture
+    def schedule(self):
+        return generate_schedule(100_000, 0.06, 1)
+
+    def test_row_count(self, schedule):
+        """12 monthly payments for a 1-year loan."""
+        assert schedule.total_periods == 12
+
+    def test_first_row(self, schedule):
+        row = schedule.rows[0]
+        assert row.period == 1
+        assert row.opening_balance == pytest.approx(100_000.00, abs=0.01)
+        assert row.interest == pytest.approx(501.21, abs=0.01)
+        assert row.principal_paid == pytest.approx(8106.10, abs=0.01)
+        assert row.closing_balance == pytest.approx(91_893.90, abs=0.01)
+
+    def test_second_row(self, schedule):
+        row = schedule.rows[1]
+        assert row.opening_balance == pytest.approx(91_893.90, abs=0.01)
+        assert row.interest == pytest.approx(460.58, abs=0.01)
+
+    def test_final_balance_is_zero(self, schedule):
+        assert schedule.rows[-1].closing_balance == pytest.approx(0.0, abs=0.01)
+
+    def test_total_interest(self, schedule):
+        assert schedule.total_interest == pytest.approx(3287.73, abs=0.01)
+
+    def test_total_interest_matches_row_sum(self, schedule):
+        row_sum = sum(row.interest for row in schedule.rows)
+        assert row_sum == pytest.approx(schedule.total_interest, abs=0.01)
+
+    def test_scheduled_repayment(self, schedule):
+        assert schedule.scheduled_repayment == pytest.approx(8607.31, abs=0.01)
+
+
+class TestScheduleWithOffset:
+    """P&I schedule with offset — $100k at 6%, 1 year, $20k offset."""
+
+    @pytest.fixture
+    def schedule(self):
+        return generate_schedule(100_000, 0.06, 1, offset_balance=20_000)
+
+    def test_first_row_reduced_interest(self, schedule):
+        """Interest should be on $80k (100k - 20k offset)."""
+        row = schedule.rows[0]
+        assert row.interest == pytest.approx(400.97, abs=0.01)
+
+    def test_less_total_interest_than_no_offset(self, schedule):
+        no_offset = generate_schedule(100_000, 0.06, 1)
+        assert schedule.total_interest < no_offset.total_interest
+
+    def test_same_scheduled_repayment(self, schedule):
+        """Offset doesn't change the scheduled repayment."""
+        no_offset = generate_schedule(100_000, 0.06, 1)
+        assert schedule.scheduled_repayment == no_offset.scheduled_repayment
+
+    def test_final_balance_is_zero(self, schedule):
+        assert schedule.rows[-1].closing_balance == pytest.approx(0.0, abs=0.01)
+
+
+class TestScheduleWithExtra:
+    """P&I schedule with extra repayments — $100k at 6%, 1 year, $200 extra."""
+
+    @pytest.fixture
+    def schedule(self):
+        return generate_schedule(100_000, 0.06, 1, extra_repayment=200)
+
+    def test_pays_off_early_or_same(self, schedule):
+        """Extra repayments should pay off in <= standard periods."""
+        no_extra = generate_schedule(100_000, 0.06, 1)
+        assert schedule.total_periods <= no_extra.total_periods
+
+    def test_less_total_interest(self, schedule):
+        no_extra = generate_schedule(100_000, 0.06, 1)
+        assert schedule.total_interest < no_extra.total_interest
+
+    def test_final_balance_is_zero(self, schedule):
+        assert schedule.rows[-1].closing_balance == pytest.approx(0.0, abs=0.01)
+
+    def test_extra_recorded_in_rows(self, schedule):
+        """Non-final rows should show the extra repayment amount."""
+        assert schedule.rows[0].extra_paid == pytest.approx(200.00, abs=0.01)
