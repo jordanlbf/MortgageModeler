@@ -123,3 +123,38 @@ class TestIORepayment:
         io = calculate_io_repayment(500_000, 0.062)
         pi = calculate_periodic_repayment(500_000, 0.062, 30)
         assert io < pi
+
+
+class TestIOOffset:
+    """Interest-only repayment with offset account."""
+
+    def test_offset_reduces_interest(self):
+        """$500k loan, $100k offset → interest on $400k."""
+        result = calculate_io_repayment(500_000, 0.062, offset_balance=100_000)
+        assert result == pytest.approx(2071.84, abs=0.01)
+
+    def test_offset_half(self):
+        """$500k loan, $250k offset → interest on $250k."""
+        result = calculate_io_repayment(500_000, 0.062, offset_balance=250_000)
+        assert result == pytest.approx(1294.90, abs=0.01)
+
+    def test_offset_equals_principal(self):
+        """Offset equals loan → zero interest."""
+        result = calculate_io_repayment(500_000, 0.062, offset_balance=500_000)
+        assert result == 0.0
+
+    def test_offset_exceeds_principal(self):
+        """Offset greater than loan → still zero (no negative interest)."""
+        result = calculate_io_repayment(500_000, 0.062, offset_balance=600_000)
+        assert result == 0.0
+
+    def test_offset_with_weekly(self):
+        """$500k loan, $100k offset, weekly."""
+        result = calculate_io_repayment(500_000, 0.062, RepaymentFrequency.WEEKLY, offset_balance=100_000)
+        assert result == pytest.approx(475.86, abs=0.01)
+
+    def test_no_offset_unchanged(self):
+        """Zero offset should match no-offset result."""
+        with_zero = calculate_io_repayment(500_000, 0.062, offset_balance=0)
+        without = calculate_io_repayment(500_000, 0.062)
+        assert with_zero == without

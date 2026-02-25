@@ -7,6 +7,7 @@ with repayments made at the chosen frequency (weekly/fortnightly/monthly).
 Builds incrementally:
 1. Periodic P&I repayment calculation with daily compounding
 2. Interest-only repayment calculation
+3. Offset account support (reduces balance that interest is charged on)
 """
 
 from app.models.loan import RepaymentFrequency
@@ -39,6 +40,10 @@ def calculate_periodic_repayment(
     """
     Calculate the fixed P&I repayment with daily compounding.
 
+    Note: Offset does not change the scheduled P&I repayment amount.
+    Its effect is seen in the amortisation schedule where less interest
+    accrues, so more of each payment goes to principal (paying off sooner).
+
     Args:
         principal: Loan amount in dollars
         annual_rate: Annual interest rate as decimal (e.g. 0.062 for 6.2%)
@@ -65,16 +70,18 @@ def calculate_io_repayment(
     principal: float,
     annual_rate: float,
     frequency: RepaymentFrequency = RepaymentFrequency.MONTHLY,
+    offset_balance: float = 0.0,
 ) -> float:
     """
     Calculate the interest-only repayment per period.
 
-    No principal reduction — just the interest cost each period.
+    Interest is charged on (principal - offset), never less than zero.
 
     Args:
         principal: Loan amount (balance stays the same)
         annual_rate: Annual interest rate as decimal
         frequency: Repayment frequency
+        offset_balance: Funds in offset account reducing interest-bearing balance
 
     Returns:
         Interest-only repayment per period
@@ -82,6 +89,11 @@ def calculate_io_repayment(
     if principal <= 0 or annual_rate <= 0:
         return 0.0
 
+    effective_balance = max(principal - offset_balance, 0.0)
+
+    if effective_balance == 0.0:
+        return 0.0
+
     r = effective_periodic_rate(annual_rate, frequency)
 
-    return principal * r
+    return effective_balance * r
