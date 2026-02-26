@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  ReferenceLine,
 } from "recharts";
 import type { Frequency, ScheduleResponse } from "@/lib/api";
 import { fetchSchedule } from "@/lib/api";
@@ -37,9 +38,9 @@ const FREQ_OPTIONS: { value: Frequency; label: string }[] = [
 ];
 
 const LEGEND = [
-  { color: "#818cf8", label: "Balance", dashed: false },
+  { color: "#818cf8", label: "Balance" },
   { color: "#f472b6", label: "Interest", dashed: true },
-  { color: "#34d399", label: "Equity", dashed: false },
+  { color: "#34d399", label: "Equity" },
 ];
 
 // ── Chart tooltip ────────────────────────────────
@@ -55,15 +56,17 @@ function ChartTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[rgba(10,10,18,0.92)] px-3.5 py-2.5 text-xs backdrop-blur-2xl">
-      <div className="mb-1 text-[9px] font-medium uppercase tracking-[0.1em] text-white/25">
-        Year {label}
+    <div className="rounded-lg border border-white/[0.08] bg-[#0a0a14] px-3 py-2 shadow-xl shadow-black/50">
+      <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">
+        Yr {label}
       </div>
       {payload.map((entry, i) => (
-        <div key={i} style={{ color: entry.color }} className="font-medium tabular-nums leading-relaxed">
-          {entry.name}
-          <span className="mx-1 text-white/15">·</span>
-          {formatCurrency(entry.value)}
+        <div key={i} className="flex items-center justify-between gap-4 text-[12px] tabular-nums leading-snug">
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-[2px] w-2" style={{ background: entry.color }} />
+            <span style={{ color: entry.color, opacity: 0.7 }}>{entry.name}</span>
+          </span>
+          <span className="font-medium text-white/70">{formatCurrency(entry.value)}</span>
         </div>
       ))}
     </div>
@@ -72,7 +75,7 @@ function ChartTooltip({
 
 // ── Measure remaining viewport height ────────────
 
-function useFillHeight(ref: React.RefObject<HTMLDivElement | null>, padding = 90, min = 300) {
+function useFillHeight(ref: React.RefObject<HTMLDivElement | null>, padding = 105, min = 300) {
   const [height, setHeight] = useState(min);
   useEffect(() => {
     const el = ref.current;
@@ -153,22 +156,22 @@ export default function AmortisationView() {
   return (
     <>
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between border-b border-white/[0.03] px-9 py-3.5">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-[22px] w-[22px] items-center justify-center rounded-md bg-gradient-to-br from-indigo-400 to-indigo-600 text-[9px] font-bold text-white">
+      <header className="relative z-10 flex items-center justify-between border-b border-white/[0.06] px-9 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-400 to-indigo-600 text-[13px] font-bold text-white">
             M
           </div>
-          <span className="text-[13px] font-semibold tracking-tight text-white/90">MortgageModeler</span>
+          <span className="text-[17px] font-semibold tracking-tight text-white/85">MortgageModeler</span>
         </div>
-        <div className="flex gap-0.5 rounded-lg bg-white/[0.03] p-0.5">
+        <div className="flex rounded-lg border border-white/[0.07] bg-[#08080e] p-[3px]">
           {FREQ_OPTIONS.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => setFrequency(value)}
-              className={`rounded-md px-3.5 py-1.5 text-[11px] font-medium transition-all ${
+              className={`relative rounded-md px-4 py-1.5 text-[13px] font-semibold tracking-wide transition-all duration-200 ${
                 frequency === value
-                  ? "bg-indigo-500/15 text-indigo-300"
-                  : "text-white/20 hover:text-white/40"
+                  ? "bg-[#14142a] text-indigo-300 border border-indigo-400/20"
+                  : "text-white/20 border border-transparent hover:text-white/40"
               }`}
             >
               {label}
@@ -179,180 +182,210 @@ export default function AmortisationView() {
 
       {/* Content */}
       <div className="relative z-10 px-9 py-6">
-        {/* Hero + Stats */}
-        <div className="mb-5 flex flex-wrap gap-5">
-          <GlassCard className="flex-[1_1_340px] p-6" glow>
-            <div className="mb-2 text-[9px] font-medium uppercase tracking-[0.1em] text-white/18">
-              Your repayment
+        {/* Stat Cards */}
+        <div className="mb-5 grid grid-cols-3 gap-5">
+          {/* Primary KPI — dominant */}
+          <GlassCard className="flex flex-col items-center justify-center py-7 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/20">
+              Repayment
             </div>
-            <div className="text-[42px] font-light leading-none tracking-tight text-white tabular-nums">
+            <div className="mt-2.5 text-[40px] font-light leading-none tracking-tight text-white tabular-nums">
               {data ? formatCurrency(data.payment) : "—"}
             </div>
-            <div className="mt-1.5 text-xs text-white/15">per {FREQ_LABELS[frequency]}</div>
+            <div className="mt-2 text-[12px] font-medium tracking-wide text-white/25">
+              per {FREQ_LABELS[frequency]}
+            </div>
           </GlassCard>
 
-          <GlassCard className="min-w-36 flex-1 px-5 py-4">
-            <div className="mb-1 text-[8px] font-medium uppercase tracking-[0.1em] text-white/15">
+          {/* Secondary KPI */}
+          <GlassCard className="flex flex-col items-center justify-center py-7 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/20">
               Total Interest
             </div>
-            <div className="text-xl font-medium tabular-nums text-pink-400">
+            <div className="mt-2.5 text-[28px] font-normal leading-none tabular-nums text-pink-400/85">
               {data ? formatCurrencyShort(data.total_interest) : "—"}
             </div>
-            <div className="mt-0.5 text-[9px] tabular-nums text-white/[0.12]">
+            <div className="mt-2 text-[12px] font-medium tabular-nums tracking-wide text-white/20">
               {data ? `${interestPct}% of total` : ""}
             </div>
           </GlassCard>
 
-          <GlassCard className="min-w-36 flex-1 px-5 py-4">
-            <div className="mb-1 text-[8px] font-medium uppercase tracking-[0.1em] text-white/15">
+          {/* Secondary KPI */}
+          <GlassCard className="flex flex-col items-center justify-center py-7 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/20">
               Loan Amount
             </div>
-            <div className="text-xl font-medium tabular-nums text-white/50">
+            <div className="mt-2.5 text-[28px] font-normal leading-none tabular-nums text-white/55">
               {data ? formatCurrencyShort(data.summary.loan_amount) : "—"}
             </div>
-            <div className="mt-0.5 text-[9px] tabular-nums text-white/[0.12]">
+            <div className="mt-2 text-[12px] font-medium tabular-nums tracking-wide text-white/20">
               {data ? `${lvrPct}% LVR` : ""}
             </div>
           </GlassCard>
         </div>
 
         {/* Controls */}
-        <GlassCard className="mb-5 px-5 py-4">
-          <div className="flex flex-wrap gap-6">
-            <Slider
-              label="Purchase price"
-              value={purchasePrice}
-              display={formatCurrencyShort(purchasePrice)}
-              min={200_000}
-              max={3_000_000}
-              step={10_000}
-              onChange={setPurchasePrice}
-            />
-            <Slider
-              label="Deposit"
-              value={deposit}
-              display={formatCurrencyShort(deposit)}
-              min={0}
-              max={Math.min(purchasePrice, 1_500_000)}
-              step={5_000}
-              onChange={setDeposit}
-            />
-            <Slider
-              label="Interest rate"
-              value={rate}
-              display={`${rate.toFixed(1)}%`}
-              min={2}
-              max={12}
-              step={0.1}
-              onChange={setRate}
-            />
-            <Slider
-              label="Loan term"
-              value={years}
-              display={`${years} years`}
-              min={5}
-              max={30}
-              step={1}
-              onChange={setYears}
-            />
-            <Slider
-              label="Appreciation"
-              value={appreciation}
-              display={`${appreciation.toFixed(1)}%`}
-              min={0}
-              max={10}
-              step={0.5}
-              onChange={setAppreciation}
-            />
+        <GlassCard className="mb-5">
+          <div className="grid grid-cols-5">
+            <div className="px-5 py-4">
+              <Slider
+                label="Purchase price"
+                value={purchasePrice}
+                display={formatCurrencyShort(purchasePrice)}
+                min={200_000}
+                max={3_000_000}
+                step={10_000}
+                onChange={setPurchasePrice}
+              />
+            </div>
+            <div className="border-l border-white/[0.05] px-5 py-4">
+              <Slider
+                label="Deposit"
+                value={deposit}
+                display={formatCurrencyShort(deposit)}
+                min={0}
+                max={Math.min(purchasePrice, 1_500_000)}
+                step={5_000}
+                onChange={setDeposit}
+              />
+            </div>
+            <div className="border-l border-white/[0.05] px-5 py-4">
+              <Slider
+                label="Interest rate"
+                value={rate}
+                display={`${rate.toFixed(1)}%`}
+                min={2}
+                max={12}
+                step={0.1}
+                onChange={setRate}
+              />
+            </div>
+            <div className="border-l border-white/[0.05] px-5 py-4">
+              <Slider
+                label="Loan term"
+                value={years}
+                display={`${years} yrs`}
+                min={5}
+                max={30}
+                step={1}
+                onChange={setYears}
+              />
+            </div>
+            <div className="border-l border-white/[0.05] px-5 py-4">
+              <Slider
+                label="Appreciation"
+                value={appreciation}
+                display={`${appreciation.toFixed(1)}%`}
+                min={0}
+                max={10}
+                step={0.5}
+                onChange={setAppreciation}
+              />
+            </div>
           </div>
         </GlassCard>
 
         {/* Chart / Table */}
         <GlassCard className="overflow-hidden">
           {/* Toggle header */}
-          <div className="flex items-center justify-between border-b border-white/[0.03] px-5 py-3">
-            <span className="text-[9px] font-medium uppercase tracking-[0.1em] text-white/18">
-              {view === "chart" ? "Balance & Equity Over Time" : "Amortisation Schedule"}
-            </span>
-            <div className="flex items-center gap-3">
-              {view === "table" && data && (
-                <span className="text-[9px] tabular-nums text-white/[0.08]">
+          <div className="relative flex items-center justify-between border-b border-white/[0.05] px-6 py-3.5">
+            {/* Legend (left) */}
+            <div className="flex items-center gap-4">
+              {view === "chart" ? (
+                LEGEND.map(({ color, label, dashed }) => (
+                  <span key={label} className="flex items-center gap-2 text-[12px] font-medium text-white/30">
+                    <span
+                      className="inline-block w-4"
+                      style={{ borderTop: `${dashed ? "1.5px dashed" : "2px solid"} ${color}` }}
+                    />
+                    {label}
+                  </span>
+                ))
+              ) : data ? (
+                <span className="text-[13px] tabular-nums text-white/15">
                   {data.total_periods} periods
                 </span>
-              )}
-              <div className="flex gap-0.5 rounded-lg bg-white/[0.03] p-0.5">
-                {(["chart", "table"] as const).map((v) => (
-                  <button
-                    key={v}
-                    onClick={() => setView(v)}
-                    className={`rounded-md px-4 py-1 text-[10px] font-medium capitalize transition-all ${
-                      view === v ? "bg-indigo-500/15 text-indigo-300" : "text-white/20"
-                    }`}
-                  >
-                    {v}
-                  </button>
-                ))}
-              </div>
+              ) : null}
+            </div>
+
+            {/* Title (centred) */}
+            <span className="absolute left-1/2 -translate-x-1/2 text-[13px] font-medium uppercase tracking-[0.1em] text-white/25">
+              {view === "chart" ? "Balance & Equity Over Time" : "Amortisation Schedule"}
+            </span>
+
+            {/* Toggle (right) */}
+            <div className="flex rounded-lg border border-white/[0.07] bg-[#08080e] p-[3px]">
+              {(["chart", "table"] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`rounded-md px-3.5 py-1 text-[12px] font-semibold capitalize tracking-wide transition-all duration-200 ${
+                    view === v
+                      ? "bg-[#14142a] text-indigo-300 border border-indigo-400/20"
+                      : "text-white/20 border border-transparent hover:text-white/40"
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Chart */}
           {view === "chart" && (
-            <div ref={chartRef} className="px-4 pb-3.5 pt-4">
+            <div ref={chartRef} className="px-4 pb-3 pt-2">
               {chartData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={fillHeight}>
-                    <AreaChart data={chartData} margin={{ top: 5, right: 8, left: 0, bottom: 5 }}>
+                    <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 20 }}>
                       <defs>
                         <linearGradient id="gBal" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#818cf8" stopOpacity={0.18} />
+                          <stop offset="0%" stopColor="#818cf8" stopOpacity={0.05} />
                           <stop offset="100%" stopColor="#818cf8" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="gInt" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#f472b6" stopOpacity={0.08} />
+                          <stop offset="0%" stopColor="#f472b6" stopOpacity={0.02} />
                           <stop offset="100%" stopColor="#f472b6" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="gEq" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#34d399" stopOpacity={0.1} />
+                          <stop offset="0%" stopColor="#34d399" stopOpacity={0.03} />
                           <stop offset="100%" stopColor="#34d399" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.025)" />
+                      <CartesianGrid
+                        stroke="rgba(255,255,255,0.035)"
+                        horizontal={true}
+                        vertical={true}
+                        strokeDasharray="1 0"
+                      />
                       <XAxis
                         dataKey="y"
                         stroke="transparent"
-                        tick={{ fill: "rgba(255,255,255,0.12)", fontSize: 9 }}
+                        tick={{ fill: "rgba(255,255,255,0.18)", fontSize: 11, fontWeight: 500, dy: 12 }}
                         tickLine={false}
-                        axisLine={false}
+                        axisLine={{ stroke: "rgba(255,255,255,0.05)" }}
                       />
                       <YAxis
                         stroke="transparent"
-                        tick={{ fill: "rgba(255,255,255,0.12)", fontSize: 9 }}
+                        tick={{ fill: "rgba(255,255,255,0.18)", fontSize: 11, fontWeight: 500 }}
                         tickLine={false}
                         axisLine={false}
-                        tickFormatter={(v) => `$${formatCompact(v)}`}
-                        width={44}
+                        tickFormatter={(v) => "$" + formatCompact(v)}
+                        width={50}
                       />
-                      <Tooltip content={<ChartTooltip />} />
-                      <Area type="monotone" dataKey="bal" name="Balance" stroke="#818cf8" strokeWidth={1.5} fill="url(#gBal)" />
+                      <Tooltip
+                        content={<ChartTooltip />}
+                        cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1, strokeDasharray: "3 3" }}
+                      />
+                      <ReferenceLine y={0} stroke="rgba(255,255,255,0.06)" />
+                      <Area type="monotone" dataKey="bal" name="Balance" stroke="#818cf8" strokeWidth={2} fill="url(#gBal)" />
                       <Area type="monotone" dataKey="int" name="Interest" stroke="#f472b6" strokeWidth={1} fill="url(#gInt)" strokeDasharray="4 3" />
-                      <Area type="monotone" dataKey="eq" name="Equity" stroke="#34d399" strokeWidth={1} fill="url(#gEq)" />
+                      <Area type="monotone" dataKey="eq" name="Equity" stroke="#34d399" strokeWidth={1.2} fill="url(#gEq)" />
                     </AreaChart>
                   </ResponsiveContainer>
-                  <div className="mt-1.5 flex gap-4.5 pl-1">
-                    {LEGEND.map(({ color, label, dashed }) => (
-                      <span key={label} className="flex items-center gap-1.5 text-[9px] text-white/20">
-                        <span
-                          className="inline-block w-3.5"
-                          style={{ borderTop: `1.5px ${dashed ? "dashed" : "solid"} ${color}` }}
-                        />
-                        {label}
-                      </span>
-                    ))}
-                  </div>
                 </>
               ) : (
-                <div className="flex items-center justify-center text-xs text-white/10" style={{ height: fillHeight }}>
+                <div className="flex items-center justify-center text-sm text-white/15" style={{ height: fillHeight }}>
                   Loading…
                 </div>
               )}
@@ -362,11 +395,11 @@ export default function AmortisationView() {
           {/* Table */}
           {view === "table" && (
             <>
-              <div className="grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] border-b border-white/[0.03] px-5 py-2">
+              <div className="grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] border-b border-white/[0.05] px-6 py-2.5">
                 {["#", "Opening", "Payment", "Interest", "Principal", "Closing"].map((h, i) => (
                   <div
                     key={h}
-                    className={`text-[8px] font-medium uppercase tracking-[0.1em] text-white/[0.12] ${
+                    className={`text-xs font-medium uppercase tracking-[0.1em] text-white/20 ${
                       i === 0 ? "text-left" : "text-right"
                     }`}
                   >
@@ -378,16 +411,16 @@ export default function AmortisationView() {
                 {tableRows.map((row, ri) => (
                   <div
                     key={row.period}
-                    className={`grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] px-5 py-1.5 text-[11px] tabular-nums transition-colors hover:bg-white/[0.015] ${
-                      ri < tableRows.length - 1 ? "border-b border-white/[0.015]" : ""
+                    className={`grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] px-6 py-2.5 text-[15px] tabular-nums transition-colors hover:bg-white/[0.02] ${
+                      ri < tableRows.length - 1 ? "border-b border-white/[0.03]" : ""
                     }`}
                   >
-                    <div className="text-[10px] text-white/[0.12]">{row.period}</div>
-                    <div className="text-right text-white/[0.22]">{formatCurrency(row.opening_balance)}</div>
-                    <div className="text-right text-white/[0.38]">{formatCurrency(row.scheduled_repayment)}</div>
-                    <div className="text-right text-pink-400">{formatCurrency(row.interest)}</div>
-                    <div className="text-right text-indigo-400">{formatCurrency(row.principal_paid)}</div>
-                    <div className="text-right text-white/[0.22]">{formatCurrency(row.closing_balance)}</div>
+                    <div className="text-sm text-white/20">{row.period}</div>
+                    <div className="text-right text-white/30">{formatCurrency(row.opening_balance)}</div>
+                    <div className="text-right text-white/50">{formatCurrency(row.scheduled_repayment)}</div>
+                    <div className="text-right text-pink-400/80">{formatCurrency(row.interest)}</div>
+                    <div className="text-right text-indigo-400/80">{formatCurrency(row.principal_paid)}</div>
+                    <div className="text-right text-white/30">{formatCurrency(row.closing_balance)}</div>
                   </div>
                 ))}
               </div>
@@ -395,7 +428,7 @@ export default function AmortisationView() {
           )}
         </GlassCard>
 
-        <div className="shrink-0 py-4 text-center text-[9px] text-white/[0.06]">
+        <div className="shrink-0 py-4 text-center text-xs text-white/[0.08]">
           MortgageModeler v0.1 · Daily compounding · AUD
         </div>
       </div>
