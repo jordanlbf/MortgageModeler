@@ -23,10 +23,20 @@ export interface ChartPoint {
   year: number;
   balance: number;
   total_interest: number;
+  property_value: number;
   equity: number;
 }
 
+export interface ScheduleSummary {
+  purchase_price: number;
+  deposit: number;
+  loan_amount: number;
+  lvr: number;
+  annual_appreciation: number;
+}
+
 export interface ScheduleResponse {
+  summary: ScheduleSummary;
   payment: number;
   total_interest: number;
   total_periods: number;
@@ -37,12 +47,14 @@ export interface ScheduleResponse {
 // ── Request ──────────────────────────────────
 
 export interface ScheduleRequest {
-  principal: number;
+  purchase_price: number;
+  deposit: number;
   annual_rate: number;
   loan_term_years: number;
   frequency: Frequency;
   offset_balance?: number;
   extra_repayment?: number;
+  annual_appreciation?: number;
 }
 
 // ── Fetch ────────────────────────────────────

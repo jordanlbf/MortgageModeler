@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   AreaChart,
   Area,
@@ -36,12 +36,6 @@ const FREQ_OPTIONS: { value: Frequency; label: string }[] = [
   { value: "monthly", label: "Monthly" },
 ];
 
-const SLIDERS = [
-  { key: "principal", label: "Loan amount", min: 100_000, max: 2_000_000, step: 10_000 },
-  { key: "rate", label: "Interest rate", min: 2, max: 12, step: 0.1 },
-  { key: "years", label: "Loan term", min: 5, max: 30, step: 1 },
-] as const;
-
 const LEGEND = [
   { color: "#818cf8", label: "Balance", dashed: false },
   { color: "#f472b6", label: "Interest", dashed: true },
@@ -76,17 +70,38 @@ function ChartTooltip({
   );
 }
 
+// ── Measure remaining viewport height ────────────
+
+function useFillHeight(ref: React.RefObject<HTMLDivElement | null>, padding = 90, min = 300) {
+  const [height, setHeight] = useState(min);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const top = el.getBoundingClientRect().top;
+      setHeight(Math.max(window.innerHeight - top - padding, min));
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [ref, padding, min]);
+  return height;
+}
+
 // ── Main view ────────────────────────────────────
 
 export default function AmortisationView() {
-  const [principal, setPrincipal] = useState(500_000);
+  const chartRef = useRef<HTMLDivElement>(null);
+  const fillHeight = useFillHeight(chartRef);
+  const [purchasePrice, setPurchasePrice] = useState(600_000);
+  const [deposit, setDeposit] = useState(100_000);
   const [rate, setRate] = useState(6.2);
   const [years, setYears] = useState(30);
+  const [appreciation, setAppreciation] = useState(3.0);
   const [frequency, setFrequency] = useState<Frequency>("monthly");
   const [view, setView] = useState<"chart" | "table">("chart");
 
   const [data, setData] = useState<ScheduleResponse | null>(null);
-  const [loading, setLoading] = useState(true);
 
   // Debounced API fetch
   useEffect(() => {
@@ -94,18 +109,16 @@ export default function AmortisationView() {
     const timer = setTimeout(async () => {
       try {
         const result = await fetchSchedule({
-          principal,
+          purchase_price: purchasePrice,
+          deposit,
           annual_rate: rate / 100,
           loan_term_years: years,
           frequency,
+          annual_appreciation: appreciation / 100,
         });
-        if (!cancelled) {
-          setData(result);
-          setLoading(false);
-        }
+        if (!cancelled) setData(result);
       } catch (err) {
         console.error("Failed to fetch schedule:", err);
-        if (!cancelled) setLoading(false);
       }
     }, 80);
 
@@ -113,7 +126,7 @@ export default function AmortisationView() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [principal, rate, years, frequency]);
+  }, [purchasePrice, deposit, rate, years, frequency, appreciation]);
 
   // Chart data mapped from API response
   const chartData = useMemo(() => {
@@ -133,16 +146,9 @@ export default function AmortisationView() {
     return data.rows.filter((_, i) => i % ppy === 0 || i === data.rows.length - 1);
   }, [data, frequency]);
 
-  const total = data ? principal + data.total_interest : 0;
-  const interestPct = data ? ((data.total_interest / total) * 100).toFixed(1) : "0";
-
-  const setters = { principal: setPrincipal, rate: setRate, years: setYears } as const;
-  const values = { principal, rate, years } as const;
-  const displays = {
-    principal: formatCurrencyShort(principal),
-    rate: `${rate.toFixed(1)}%`,
-    years: `${years} years`,
-  } as const;
+  const total = data ? data.summary.loan_amount + data.total_interest : 0;
+  const interestPct = data && total > 0 ? ((data.total_interest / total) * 100).toFixed(1) : "0";
+  const lvrPct = data ? (data.summary.lvr * 100).toFixed(1) : "0";
 
   return (
     <>
@@ -172,7 +178,7 @@ export default function AmortisationView() {
       </header>
 
       {/* Content */}
-      <div className="relative z-10 mx-auto max-w-[1280px] px-9 py-8">
+      <div className="relative z-10 px-9 py-6">
         {/* Hero + Stats */}
         <div className="mb-5 flex flex-wrap gap-5">
           <GlassCard className="flex-[1_1_340px] p-6" glow>
@@ -199,13 +205,13 @@ export default function AmortisationView() {
 
           <GlassCard className="min-w-36 flex-1 px-5 py-4">
             <div className="mb-1 text-[8px] font-medium uppercase tracking-[0.1em] text-white/15">
-              Total Cost
+              Loan Amount
             </div>
             <div className="text-xl font-medium tabular-nums text-white/50">
-              {data ? formatCurrencyShort(total) : "—"}
+              {data ? formatCurrencyShort(data.summary.loan_amount) : "—"}
             </div>
             <div className="mt-0.5 text-[9px] tabular-nums text-white/[0.12]">
-              {data ? `over ${years} years` : ""}
+              {data ? `${lvrPct}% LVR` : ""}
             </div>
           </GlassCard>
         </div>
@@ -213,18 +219,51 @@ export default function AmortisationView() {
         {/* Controls */}
         <GlassCard className="mb-5 px-5 py-4">
           <div className="flex flex-wrap gap-6">
-            {SLIDERS.map(({ key, label, min, max, step }) => (
-              <Slider
-                key={key}
-                label={label}
-                value={values[key]}
-                display={displays[key]}
-                min={min}
-                max={max}
-                step={step}
-                onChange={setters[key]}
-              />
-            ))}
+            <Slider
+              label="Purchase price"
+              value={purchasePrice}
+              display={formatCurrencyShort(purchasePrice)}
+              min={200_000}
+              max={3_000_000}
+              step={10_000}
+              onChange={setPurchasePrice}
+            />
+            <Slider
+              label="Deposit"
+              value={deposit}
+              display={formatCurrencyShort(deposit)}
+              min={0}
+              max={Math.min(purchasePrice, 1_500_000)}
+              step={5_000}
+              onChange={setDeposit}
+            />
+            <Slider
+              label="Interest rate"
+              value={rate}
+              display={`${rate.toFixed(1)}%`}
+              min={2}
+              max={12}
+              step={0.1}
+              onChange={setRate}
+            />
+            <Slider
+              label="Loan term"
+              value={years}
+              display={`${years} years`}
+              min={5}
+              max={30}
+              step={1}
+              onChange={setYears}
+            />
+            <Slider
+              label="Appreciation"
+              value={appreciation}
+              display={`${appreciation.toFixed(1)}%`}
+              min={0}
+              max={10}
+              step={0.5}
+              onChange={setAppreciation}
+            />
           </div>
         </GlassCard>
 
@@ -259,10 +298,10 @@ export default function AmortisationView() {
 
           {/* Chart */}
           {view === "chart" && (
-            <div className="px-4 pb-3.5 pt-4">
+            <div ref={chartRef} className="px-4 pb-3.5 pt-4">
               {chartData.length > 0 ? (
                 <>
-                  <ResponsiveContainer width="100%" height={380}>
+                  <ResponsiveContainer width="100%" height={fillHeight}>
                     <AreaChart data={chartData} margin={{ top: 5, right: 8, left: 0, bottom: 5 }}>
                       <defs>
                         <linearGradient id="gBal" x1="0" y1="0" x2="0" y2="1">
@@ -313,7 +352,7 @@ export default function AmortisationView() {
                   </div>
                 </>
               ) : (
-                <div className="flex h-[380px] items-center justify-center text-xs text-white/10">
+                <div className="flex items-center justify-center text-xs text-white/10" style={{ height: fillHeight }}>
                   Loading…
                 </div>
               )}
@@ -335,7 +374,7 @@ export default function AmortisationView() {
                   </div>
                 ))}
               </div>
-              <div className="custom-scrollbar max-h-[400px] overflow-y-auto">
+              <div className="custom-scrollbar overflow-y-auto" style={{ maxHeight: fillHeight }}>
                 {tableRows.map((row, ri) => (
                   <div
                     key={row.period}
@@ -356,7 +395,7 @@ export default function AmortisationView() {
           )}
         </GlassCard>
 
-        <div className="py-7 text-center text-[9px] text-white/[0.06]">
+        <div className="shrink-0 py-4 text-center text-[9px] text-white/[0.06]">
           MortgageModeler v0.1 · Daily compounding · AUD
         </div>
       </div>
