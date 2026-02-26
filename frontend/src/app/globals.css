@@ -1,39 +1,9 @@
 @import "tailwindcss";
 
-/*
- * ── Design tokens ──────────────────────────────
- *
- * Palette         Background  #08080e
- *                 Surface     #0c0c16
- *                 Recessed    #08080e  (toggle wells)
- *                 Tooltip     #0a0a14
- *
- * Border          Outer       white/[0.06]   cards, header
- *                 Inner       white/[0.04]   dividers, separators
- *
- * Radius          Card        12px  (rounded-xl)
- *                 Control     8px   (rounded-lg)
- *                 Button      6px   (rounded-md)
- *                 Full        9999  (rounded-full)  tracks, thumbs
- *
- * Text            Primary     white           hero values
- *                 Secondary   white/75        important values, slider values
- *                 Tertiary    white/40        subtitles, descriptions
- *                 Muted       white/25        labels, categories, inactive
- *                 Faint       white/15        structural, disabled
- *
- * Accent          Indigo      indigo-300      active controls
- *                 Pink        pink-400/85     interest values
- *
- * Spacing         Page-x      36px  (px-9)
- *                 Card-x      20px  (px-5)
- *                 Gap         20px  (gap-5)
- */
-
 @theme {
   --font-sans: var(--font-sora), "system-ui", "sans-serif";
-  --color-background: #08080e;
-  --color-foreground: #dddde8;
+  --color-background: #0f172a;
+  --color-foreground: #f1f5f9;
 }
 
 body {
@@ -41,7 +11,6 @@ body {
   color: var(--color-foreground);
 }
 
-/* Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 3px;
 }
@@ -49,7 +18,6 @@ body {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(148, 163, 184, 0.12);
   border-radius: 2px;
 }
-
