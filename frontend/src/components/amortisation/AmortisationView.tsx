@@ -38,9 +38,10 @@ const FREQ_OPTIONS: { value: Frequency; label: string }[] = [
 ];
 
 const LEGEND = [
-  { color: "#818cf8", label: "Balance" },
-  { color: "#f472b6", label: "Interest", dashed: true },
-  { color: "#34d399", label: "Equity" },
+  { key: "bal", color: "#818cf8", label: "Balance" },
+  { key: "int", color: "#f472b6", label: "Interest" },
+  { key: "eq", color: "#34d399", label: "Equity" },
+  { key: "lvr", color: "#fbbf24", label: "LVR" },
 ];
 
 // ── Animated number ─────────────────────────────
@@ -99,7 +100,9 @@ function ChartTooltip({
             <span className="inline-block h-[3px] w-3" style={{ background: entry.color }} />
             <span style={{ color: entry.color, opacity: 0.7 }}>{entry.name}</span>
           </span>
-          <span className="font-medium text-white/75">{formatCurrency(entry.value)}</span>
+          <span className="font-medium text-white/75">
+            {entry.name === "LVR" ? `${entry.value.toFixed(1)}%` : formatCurrency(entry.value)}
+          </span>
         </div>
       ))}
     </div>
@@ -136,6 +139,19 @@ export default function AmortisationView() {
   const [appreciation, setAppreciation] = useState(3.0);
   const [frequency, setFrequency] = useState<Frequency>("monthly");
   const [view, setView] = useState<"chart" | "table">("chart");
+  const [visibleSeries, setVisibleSeries] = useState<Set<string>>(new Set(["bal", "int", "eq", "lvr"]));
+
+  const toggleSeries = (key: string) => {
+    setVisibleSeries((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        if (next.size > 1) next.delete(key); // keep at least one
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
 
   const [data, setData] = useState<ScheduleResponse | null>(null);
 
@@ -162,7 +178,11 @@ export default function AmortisationView() {
   const chartData = useMemo(() => {
     if (!data) return [];
     return data.chart_data.map((p) => ({
-      y: p.year, bal: p.balance, int: p.total_interest, eq: p.equity,
+      y: p.year,
+      bal: p.balance,
+      int: p.total_interest,
+      eq: p.equity,
+      lvr: p.property_value > 0 ? (p.balance / p.property_value) * 100 : 0,
     }));
   }, [data]);
 
@@ -252,8 +272,8 @@ export default function AmortisationView() {
         {/* ── Controls ── */}
         <div className="mb-5 grid grid-cols-[4fr_1fr] gap-5">
           <GlassCard>
-            <div className="border-b border-white/[0.04] px-5 py-2.5">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/15">Loan</span>
+            <div className="border-b border-white/[0.04] px-5 py-2.5 text-center">
+              <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/20">Loan</span>
             </div>
             <div className="grid grid-cols-4">
               <div className="px-5 py-4">
@@ -272,8 +292,8 @@ export default function AmortisationView() {
           </GlassCard>
 
           <GlassCard>
-            <div className="border-b border-white/[0.04] px-5 py-2.5">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/15">Assumptions</span>
+            <div className="border-b border-white/[0.04] px-5 py-2.5 text-center">
+              <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/20">Assumptions</span>
             </div>
             <div className="px-5 py-4">
               <Slider label="Appreciation" value={appreciation} display={`${appreciation.toFixed(1)}%`} min={0} max={10} step={0.5} onChange={setAppreciation} />
@@ -287,15 +307,29 @@ export default function AmortisationView() {
             {/* Legend (left) */}
             <div className="flex items-center gap-4">
               {view === "chart" ? (
-                LEGEND.map(({ color, label, dashed }) => (
-                  <span key={label} className="flex items-center gap-2 text-[12px] font-medium text-white/40">
-                    <span
-                      className="inline-block w-4"
-                      style={{ borderTop: `${dashed ? "1.5px dashed" : "2px solid"} ${color}` }}
-                    />
-                    {label}
-                  </span>
-                ))
+                LEGEND.map(({ key, color, label }) => {
+                  const active = visibleSeries.has(key);
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => toggleSeries(key)}
+                      className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200 ${
+                        active
+                          ? "bg-white/[0.05] border border-white/[0.08] text-white/50"
+                          : "bg-transparent border border-transparent text-white/15 hover:text-white/25"
+                      }`}
+                    >
+                      <span
+                        className="h-2 w-2 rounded-full transition-all duration-200"
+                        style={{
+                          background: active ? color : "rgba(255,255,255,0.1)",
+                          boxShadow: active ? `0 0 6px ${color}40` : "none",
+                        }}
+                      />
+                      {label}
+                    </button>
+                  );
+                })
               ) : data ? (
                 <span className="text-[12px] font-medium tabular-nums text-white/25">
                   {data.total_periods} periods
@@ -304,7 +338,7 @@ export default function AmortisationView() {
             </div>
 
             {/* Title (centred) */}
-            <span className="absolute left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">
+            <span className="absolute left-1/2 -translate-x-1/2 text-[12px] font-semibold uppercase tracking-[0.14em] text-white/20">
               {view === "chart" ? "Balance & Equity Over Time" : "Amortisation Schedule"}
             </span>
 
@@ -334,19 +368,23 @@ export default function AmortisationView() {
                   <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 20 }}>
                     <defs>
                       <linearGradient id="gBal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#818cf8" stopOpacity={0.05} />
-                        <stop offset="100%" stopColor="#818cf8" stopOpacity={0} />
+                        <stop offset="0%" stopColor="#818cf8" stopOpacity={0.15} />
+                        <stop offset="100%" stopColor="#818cf8" stopOpacity={0.02} />
                       </linearGradient>
                       <linearGradient id="gInt" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f472b6" stopOpacity={0.02} />
-                        <stop offset="100%" stopColor="#f472b6" stopOpacity={0} />
+                        <stop offset="0%" stopColor="#f472b6" stopOpacity={0.08} />
+                        <stop offset="100%" stopColor="#f472b6" stopOpacity={0.01} />
                       </linearGradient>
                       <linearGradient id="gEq" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#34d399" stopOpacity={0.03} />
-                        <stop offset="100%" stopColor="#34d399" stopOpacity={0} />
+                        <stop offset="0%" stopColor="#34d399" stopOpacity={0.10} />
+                        <stop offset="100%" stopColor="#34d399" stopOpacity={0.01} />
+                      </linearGradient>
+                      <linearGradient id="gLvr" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.08} />
+                        <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.01} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid stroke="rgba(255,255,255,0.035)" horizontal={true} vertical={true} strokeDasharray="1 0" />
+                    <CartesianGrid stroke="rgba(255,255,255,0.035)" strokeDasharray="1 0" />
                     <XAxis
                       dataKey="y"
                       stroke="transparent"
@@ -355,6 +393,7 @@ export default function AmortisationView() {
                       axisLine={{ stroke: "rgba(255,255,255,0.04)" }}
                     />
                     <YAxis
+                      yAxisId="left"
                       stroke="transparent"
                       tick={{ fill: "rgba(255,255,255,0.25)", fontSize: 11, fontWeight: 500 }}
                       tickLine={false}
@@ -362,14 +401,26 @@ export default function AmortisationView() {
                       tickFormatter={(v) => "$" + formatCompact(v)}
                       width={50}
                     />
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      stroke="transparent"
+                      tick={{ fill: "rgba(255,255,255,0.18)", fontSize: 11, fontWeight: 500 }}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v) => `${v}%`}
+                      domain={[0, 100]}
+                      width={40}
+                    />
                     <Tooltip
                       content={<ChartTooltip />}
                       cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1, strokeDasharray: "3 3" }}
                     />
-                    <ReferenceLine y={0} stroke="rgba(255,255,255,0.04)" />
-                    <Area type="monotone" dataKey="bal" name="Balance" stroke="#818cf8" strokeWidth={2} fill="url(#gBal)" isAnimationActive={true} animationDuration={400} animationEasing="ease-out" />
-                    <Area type="monotone" dataKey="int" name="Interest" stroke="#f472b6" strokeWidth={1} fill="url(#gInt)" strokeDasharray="4 3" isAnimationActive={true} animationDuration={400} animationEasing="ease-out" />
-                    <Area type="monotone" dataKey="eq" name="Equity" stroke="#34d399" strokeWidth={1.2} fill="url(#gEq)" isAnimationActive={true} animationDuration={400} animationEasing="ease-out" />
+                    <ReferenceLine yAxisId="left" y={0} stroke="rgba(255,255,255,0.04)" />
+                    {visibleSeries.has("bal") && <Area yAxisId="left" type="monotone" dataKey="bal" name="Balance" stroke="#818cf8" strokeWidth={2} fill="url(#gBal)" animationDuration={400} animationEasing="ease-out" />}
+                    {visibleSeries.has("int") && <Area yAxisId="left" type="monotone" dataKey="int" name="Interest" stroke="#f472b6" strokeWidth={1} fill="url(#gInt)" animationDuration={400} animationEasing="ease-out" />}
+                    {visibleSeries.has("eq") && <Area yAxisId="left" type="monotone" dataKey="eq" name="Equity" stroke="#34d399" strokeWidth={1.2} fill="url(#gEq)" animationDuration={400} animationEasing="ease-out" />}
+                    {visibleSeries.has("lvr") && <Area yAxisId="right" type="monotone" dataKey="lvr" name="LVR" stroke="#fbbf24" strokeWidth={1.5} fill="url(#gLvr)" animationDuration={400} animationEasing="ease-out" />}
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
@@ -416,7 +467,7 @@ export default function AmortisationView() {
           )}
         </GlassCard>
 
-        <div className="shrink-0 py-4 text-center text-[10px] text-white/15">
+        <div className="py-4 text-center text-[10px] text-white/15">
           MortgageModeler v0.1 · Daily compounding · AUD
         </div>
       </div>

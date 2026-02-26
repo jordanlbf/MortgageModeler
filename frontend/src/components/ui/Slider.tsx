@@ -13,10 +13,10 @@ export default function Slider({ label, value, display, min, max, step, onChange
 
   return (
     <div>
-      <div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/25">
+      <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-white/25 text-center">
         {label}
       </div>
-      <div className="mb-3 text-[18px] font-medium leading-none tabular-nums text-white/75">
+      <div className="mb-4 text-[18px] font-medium leading-none tabular-nums text-white/75 text-center">
         {display}
       </div>
       <div className="relative flex h-4 items-center">
