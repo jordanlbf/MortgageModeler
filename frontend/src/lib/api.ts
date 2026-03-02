@@ -2,11 +2,14 @@
  * API client for the MortgageModeler backend.
  */
 
+import type { Frequency } from "@/lib/types";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-// ── Types (match backend response) ───────────
+// Re-export so existing consumers don't break
+export type { Frequency };
 
-export type Frequency = "weekly" | "fortnightly" | "monthly";
+// ── Types (match backend response) ───────────
 
 export interface ScheduleRow {
   period: number;
