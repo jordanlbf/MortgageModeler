@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
+/* ── Theme tokens synced with src/lib/theme.ts ── */
 @theme {
   --font-sans: var(--font-sora), "system-ui", "sans-serif";
-  --color-background: #0f172a;
-  --color-foreground: #f1f5f9;
+  --color-background: #111215; /* t.bg.pageFrom */
+  --color-foreground: #f0fdfa;
 }
 
 body {
@@ -18,6 +19,6 @@ body {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.12);
+  background: rgba(148, 163, 184, 0.12); /* t.scrollbar */
   border-radius: 2px;
 }
