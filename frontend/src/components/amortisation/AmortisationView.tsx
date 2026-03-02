@@ -13,10 +13,11 @@ import {
 } from "recharts";
 import type { Frequency, ScheduleResponse } from "@/lib/api";
 import { fetchSchedule } from "@/lib/api";
-import { formatCurrency, formatCurrencyShort, formatCurrencyCompact, formatCompact } from "@/lib/formatters";
+import { formatCurrency, formatCurrencyShort, formatCurrencyCompact, formatCompact, loanAmountFromPayment } from "@/lib/formatters";
 import { t, SERIES, SERIES_LIST } from "@/lib/theme";
 import GlassCard from "@/components/ui/GlassCard";
 import Slider from "@/components/ui/Slider";
+import EditableValue from "@/components/ui/EditableValue";
 
 // ── Constants ────────────────────────────────────
 
@@ -37,6 +38,10 @@ const FREQ_OPTIONS: { value: Frequency; label: string }[] = [
   { value: "fortnightly", label: "Fortnightly" },
   { value: "monthly", label: "Monthly" },
 ];
+
+const parseCurrency = (s: string) => Number(s.replace(/[^0-9.]/g, ""));
+const parsePercent = (s: string) => Number(s.replace(/[^0-9.]/g, ""));
+const parseYears = (s: string) => Number(s.replace(/[^0-9]/g, ""));
 
 // ── Animated number ─────────────────────────────
 
@@ -192,13 +197,12 @@ export default function AmortisationView() {
   const chartData = useMemo(() => {
     if (!data) return [];
     const loan = data.summary.loan_amount;
-    const dep = data.summary.deposit;
     return data.chart_data.map((p) => ({
       y: p.year,
       bal: p.balance,
       int: p.total_interest,
       eq: p.equity,
-      paid: dep + p.total_interest + (loan - p.balance),
+      paid: p.total_interest + (loan - p.balance),
       lvr: p.property_value > 0 ? (p.balance / p.property_value) * 100 : 0,
     }));
   }, [data]);
@@ -260,7 +264,19 @@ export default function AmortisationView() {
               Repayment
             </div>
             <div className="mt-3 text-[42px] font-normal leading-none tracking-[-0.02em] text-zinc-50 tabular-nums">
-              {data ? formatCurrency(animPayment) : "—"}
+              {data ? (
+                <EditableValue
+                  display={formatCurrency(animPayment)}
+                  parse={parseCurrency}
+                  onCommit={(newPayment) => {
+                    const ppy = PERIODS_PER_YEAR[frequency];
+                    const loan = loanAmountFromPayment(newPayment, rate / 100, years, ppy);
+                    const newPrice = Math.round(loan + deposit);
+                    setPurchasePrice(Math.min(3_000_000, Math.max(200_000, newPrice)));
+                  }}
+                  className="w-full text-center text-[42px] font-normal leading-none tracking-[-0.02em] tabular-nums"
+                />
+              ) : "—"}
             </div>
             <div className="mt-2.5 text-[14px] font-normal uppercase tracking-[0.12em] text-zinc-100/30">
               per {FREQ_LABELS[frequency]}
@@ -309,16 +325,16 @@ export default function AmortisationView() {
             </div>
             <div className="grid grid-cols-4">
               <div className="px-5 py-3">
-                <Slider label="Purchase price" value={purchasePrice} display={formatCurrencyShort(purchasePrice)} min={200_000} max={3_000_000} step={10_000} onChange={setPurchasePrice} />
+                <Slider label="Purchase price" value={purchasePrice} display={formatCurrencyShort(purchasePrice)} min={200_000} max={3_000_000} step={10_000} onChange={setPurchasePrice} editable parseDisplay={parseCurrency} />
               </div>
               <div className="px-5 py-3" style={{ borderLeft: `1px solid ${t.border.default}` }}>
-                <Slider label="Deposit" value={deposit} display={formatCurrencyShort(deposit)} min={0} max={Math.min(purchasePrice, 1_500_000)} step={5_000} onChange={setDeposit} />
+                <Slider label="Deposit" value={deposit} display={formatCurrencyShort(deposit)} min={0} max={Math.min(purchasePrice, 1_500_000)} step={5_000} onChange={setDeposit} editable parseDisplay={parseCurrency} />
               </div>
               <div className="px-5 py-3" style={{ borderLeft: `1px solid ${t.border.default}` }}>
-                <Slider label="Interest rate" value={rate} display={`${rate.toFixed(1)}%`} min={2} max={12} step={0.1} onChange={setRate} />
+                <Slider label="Interest rate" value={rate} display={`${rate.toFixed(1)}%`} min={2} max={12} step={0.1} onChange={setRate} editable parseDisplay={parsePercent} />
               </div>
               <div className="px-5 py-3" style={{ borderLeft: `1px solid ${t.border.default}` }}>
-                <Slider label="Loan term" value={years} display={`${years} yrs`} min={5} max={30} step={1} onChange={setYears} />
+                <Slider label="Loan term" value={years} display={`${years} yrs`} min={5} max={30} step={1} onChange={setYears} editable parseDisplay={parseYears} />
               </div>
             </div>
           </GlassCard>
@@ -331,7 +347,7 @@ export default function AmortisationView() {
               <span className="text-[22px] font-medium uppercase tracking-[0.14em] text-teal-400/40">Assumptions</span>
             </div>
             <div className="px-5 py-3">
-              <Slider label="Appreciation" value={appreciation} display={`${appreciation.toFixed(1)}%`} min={0} max={10} step={0.5} onChange={setAppreciation} />
+              <Slider label="Appreciation" value={appreciation} display={`${appreciation.toFixed(1)}%`} min={0} max={10} step={0.5} onChange={setAppreciation} editable parseDisplay={parsePercent} />
             </div>
           </GlassCard>
         </div>
