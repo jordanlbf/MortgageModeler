@@ -297,9 +297,12 @@ export default function AmortisationView() {
 
         {/* ── Controls ── */}
         <div className="mb-4 grid grid-cols-[4fr_1fr] gap-4">
-          <GlassCard>
-            <div className="px-5 py-2 text-center" style={{ borderBottom: `1px solid ${t.border.default}` }}>
-              <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-100/25">Loan</span>
+          <GlassCard
+            className="border-teal-400/20"
+            style={{ borderTopWidth: 3, borderTopColor: t.accentBorder }}
+          >
+            <div className="px-5 py-2.5 text-center" style={{ borderBottom: `1px solid ${t.border.default}` }}>
+              <span className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">Loan</span>
             </div>
             <div className="grid grid-cols-4">
               <div className="px-5 py-3">
@@ -317,9 +320,12 @@ export default function AmortisationView() {
             </div>
           </GlassCard>
 
-          <GlassCard>
-            <div className="px-5 py-2 text-center" style={{ borderBottom: `1px solid ${t.border.default}` }}>
-              <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-100/25">Assumptions</span>
+          <GlassCard
+            className="border-teal-400/20"
+            style={{ borderTopWidth: 3, borderTopColor: t.accentBorder }}
+          >
+            <div className="px-5 py-2.5 text-center" style={{ borderBottom: `1px solid ${t.border.default}` }}>
+              <span className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">Assumptions</span>
             </div>
             <div className="px-5 py-3">
               <Slider label="Appreciation" value={appreciation} display={`${appreciation.toFixed(1)}%`} min={0} max={10} step={0.5} onChange={setAppreciation} />
@@ -339,7 +345,7 @@ export default function AmortisationView() {
                     <button
                       key={key}
                       onClick={() => toggleSeries(key)}
-                      className="flex items-center gap-2 rounded-md px-2.5 py-1 text-[12px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
+                      className="flex items-center gap-2 rounded-md px-3 py-1.5 text-[16px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
                       style={{
                         background: active ? `color-mix(in srgb, ${color} 12%, transparent)` : "transparent",
                         border: `1px solid ${active ? `color-mix(in srgb, ${color} 25%, transparent)` : "transparent"}`,
@@ -376,11 +382,6 @@ export default function AmortisationView() {
               ) : null}
             </div>
 
-            {/* Title (centred) */}
-            <span className="absolute left-1/2 -translate-x-1/2 text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-100/20">
-              {view === "chart" ? "Balance & Equity Over Time" : "Amortisation Schedule"}
-            </span>
-
             {/* Toggle (right) */}
             <div className="flex rounded-lg p-[3px]" style={{ border: `1px solid ${t.border.default}`, background: t.bg.control }}>
               {(["chart", "table"] as const).map((v) => (
@@ -413,28 +414,29 @@ export default function AmortisationView() {
                         </linearGradient>
                       ))}
                     </defs>
-                    <CartesianGrid stroke={t.chart.grid} strokeDasharray="1 0" />
+                    <CartesianGrid horizontal={true} vertical={false} stroke={t.chart.gridH} strokeDasharray="1 0" />
+                    <CartesianGrid horizontal={false} vertical={true} stroke={t.chart.gridV} strokeDasharray="1 0" />
                     <XAxis
                       dataKey="y"
                       stroke="transparent"
-                      tick={{ fill: t.chart.axisTick, fontSize: 11, fontWeight: 500, dy: 12 }}
+                      tick={{ fill: t.chart.axisTick, fontSize: 14, fontWeight: 500, dy: 12 }}
                       tickLine={false}
                       axisLine={{ stroke: t.chart.axisLine }}
                     />
                     <YAxis
                       yAxisId="left"
                       stroke="transparent"
-                      tick={{ fill: t.chart.axisTick, fontSize: 11, fontWeight: 500 }}
+                      tick={{ fill: t.chart.axisTick, fontSize: 14, fontWeight: 500 }}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(v) => "$" + formatCompact(v)}
-                      width={50}
+                      width={60}
                     />
                     <YAxis
                       yAxisId="right"
                       orientation="right"
                       stroke="transparent"
-                      tick={{ fill: t.chart.axisTickMuted, fontSize: 11, fontWeight: 500 }}
+                      tick={{ fill: t.chart.axisTickMuted, fontSize: 14, fontWeight: 500 }}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(v) => `${v}%`}
@@ -445,7 +447,7 @@ export default function AmortisationView() {
                       content={<ChartTooltip />}
                       cursor={{ stroke: t.chart.cursor, strokeWidth: 1, strokeDasharray: "3 3" }}
                     />
-                    <ReferenceLine yAxisId="left" y={0} stroke={t.chart.grid} />
+                    <ReferenceLine yAxisId="left" y={0} stroke={t.chart.gridH} />
                     {visibleSeries.has("bal") && <Area yAxisId="left" type="monotone" dataKey="bal" name={SERIES.bal.label} stroke={SERIES.bal.color} strokeWidth={SERIES.bal.stroke} fill="url(#gbal)" animationDuration={400} animationEasing="ease-out" />}
                     {visibleSeries.has("int") && <Area yAxisId="left" type="monotone" dataKey="int" name={SERIES.int.label} stroke={SERIES.int.color} strokeWidth={SERIES.int.stroke} fill="url(#gint)" animationDuration={400} animationEasing="ease-out" />}
                     {visibleSeries.has("eq") && <Area yAxisId="left" type="monotone" dataKey="eq" name={SERIES.eq.label} stroke={SERIES.eq.color} strokeWidth={SERIES.eq.stroke} fill="url(#geq)" animationDuration={400} animationEasing="ease-out" />}

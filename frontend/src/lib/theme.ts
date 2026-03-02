@@ -15,8 +15,7 @@
 export const t = {
   // ── Backgrounds ──────────────────────────────────
   bg: {
-    pageFrom: "#111215",
-    pageTo: "#1a1c20",
+    page: "#111215",
     card: "rgba(42,42,46,0.72)",
     cardElevated: "rgba(44,44,48,0.82)",
     control: "rgba(24,24,27,0.60)",
@@ -34,7 +33,8 @@ export const t = {
 
   // ── Chart chrome ─────────────────────────────────
   chart: {
-    grid: "rgba(148,163,184,0.08)",
+    gridH: "rgba(148,163,184,0.06)",
+    gridV: "rgba(148,163,184,0.035)",
     axisTick: "rgba(148,163,184,0.50)",
     axisTickMuted: "rgba(148,163,184,0.40)",
     axisLine: "rgba(148,163,184,0.08)",

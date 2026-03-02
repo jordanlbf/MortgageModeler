@@ -3,7 +3,7 @@
 /* ── Theme tokens synced with src/lib/theme.ts ── */
 @theme {
   --font-sans: var(--font-sora), "system-ui", "sans-serif";
-  --color-background: #111215; /* t.bg.pageFrom */
+  --color-background: #111215; /* t.bg.page */
   --color-foreground: #f0fdfa;
 }
 
