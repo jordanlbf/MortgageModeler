@@ -228,74 +228,74 @@ export default function AmortisationView() {
       </header>
 
       {/* ── Content ── */}
-      <div className="px-9 py-5">
+      <div className="px-9 py-4">
 
         {/* ── KPI Cards ── */}
-        <div className="mb-5 grid grid-cols-3 gap-5">
-          <GlassCard className="flex flex-col items-center justify-center py-7 text-center">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-100/25">
+        <div className="mb-4 grid grid-cols-3 gap-4">
+          <GlassCard className="relative flex flex-col items-center justify-center py-6 text-center border-sky-400/20 bg-slate-800/80" style={{ borderTopWidth: 2, borderTopColor: 'rgba(56,189,248,0.35)' }}>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-sky-400/50">
               Repayment
             </div>
-            <div className="mt-2.5 text-[40px] font-light leading-none tracking-tight text-slate-100 tabular-nums">
+            <div className="mt-2 text-[42px] font-light leading-none tracking-tight text-slate-50 tabular-nums">
               {data ? formatCurrency(animPayment) : "—"}
             </div>
-            <div className="mt-2 text-[12px] font-medium tracking-wide text-slate-100/25">
+            <div className="mt-1.5 text-[12px] font-medium tracking-wide text-slate-100/30">
               per {FREQ_LABELS[frequency]}
             </div>
           </GlassCard>
 
-          <GlassCard className="flex flex-col items-center justify-center py-7 text-center">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-100/25">
+          <GlassCard className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-100/20">
               Total Interest
             </div>
-            <div className="mt-2.5 text-[28px] font-normal leading-none tabular-nums text-pink-400/85">
+            <div className="mt-2 text-[26px] font-normal leading-none tabular-nums text-pink-400/60">
               {data ? formatCurrencyShort(animInterest) : "—"}
             </div>
-            <div className="mt-2 text-[12px] font-medium tabular-nums tracking-wide text-slate-100/25">
+            <div className="mt-1.5 text-[12px] font-medium tabular-nums tracking-wide text-slate-100/20">
               {data ? `${interestPct}% of total` : ""}
             </div>
           </GlassCard>
 
-          <GlassCard className="flex flex-col items-center justify-center py-7 text-center">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-100/25">
+          <GlassCard className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-100/20">
               Loan Amount
             </div>
-            <div className="mt-2.5 text-[28px] font-normal leading-none tabular-nums text-slate-400">
+            <div className="mt-2 text-[26px] font-normal leading-none tabular-nums text-slate-400/60">
               {data ? formatCurrencyShort(animLoan) : "—"}
             </div>
-            <div className="mt-2 text-[12px] font-medium tabular-nums tracking-wide text-slate-100/25">
+            <div className="mt-1.5 text-[12px] font-medium tabular-nums tracking-wide text-slate-100/20">
               {data ? `${lvrPct}% LVR` : ""}
             </div>
           </GlassCard>
         </div>
 
         {/* ── Controls ── */}
-        <div className="mb-5 grid grid-cols-[4fr_1fr] gap-5">
+        <div className="mb-4 grid grid-cols-[4fr_1fr] gap-4">
           <GlassCard>
-            <div className="border-b border-slate-400/[0.08] px-5 py-2.5 text-center">
+            <div className="border-b border-slate-400/[0.08] px-5 py-2 text-center">
               <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-100/25">Loan</span>
             </div>
             <div className="grid grid-cols-4">
-              <div className="px-5 py-4">
+              <div className="px-5 py-3">
                 <Slider label="Purchase price" value={purchasePrice} display={formatCurrencyShort(purchasePrice)} min={200_000} max={3_000_000} step={10_000} onChange={setPurchasePrice} />
               </div>
-              <div className="border-l border-slate-400/[0.08] px-5 py-4">
+              <div className="border-l border-slate-400/[0.08] px-5 py-3">
                 <Slider label="Deposit" value={deposit} display={formatCurrencyShort(deposit)} min={0} max={Math.min(purchasePrice, 1_500_000)} step={5_000} onChange={setDeposit} />
               </div>
-              <div className="border-l border-slate-400/[0.08] px-5 py-4">
+              <div className="border-l border-slate-400/[0.08] px-5 py-3">
                 <Slider label="Interest rate" value={rate} display={`${rate.toFixed(1)}%`} min={2} max={12} step={0.1} onChange={setRate} />
               </div>
-              <div className="border-l border-slate-400/[0.08] px-5 py-4">
+              <div className="border-l border-slate-400/[0.08] px-5 py-3">
                 <Slider label="Loan term" value={years} display={`${years} yrs`} min={5} max={30} step={1} onChange={setYears} />
               </div>
             </div>
           </GlassCard>
 
           <GlassCard>
-            <div className="border-b border-slate-400/[0.08] px-5 py-2.5 text-center">
+            <div className="border-b border-slate-400/[0.08] px-5 py-2 text-center">
               <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-slate-100/25">Assumptions</span>
             </div>
-            <div className="px-5 py-4">
+            <div className="px-5 py-3">
               <Slider label="Appreciation" value={appreciation} display={`${appreciation.toFixed(1)}%`} min={0} max={10} step={0.5} onChange={setAppreciation} />
             </div>
           </GlassCard>
@@ -303,7 +303,7 @@ export default function AmortisationView() {
 
         {/* ── Chart / Table ── */}
         <GlassCard className="overflow-hidden">
-          <div className="relative flex items-center justify-between border-b border-slate-400/[0.08] px-5 py-3.5">
+          <div className="relative flex items-center justify-between border-b border-slate-400/[0.08] px-5 py-3">
             {/* Legend (left) */}
             <div className="flex items-center gap-4">
               {view === "chart" ? (
@@ -362,7 +362,7 @@ export default function AmortisationView() {
 
           {/* Chart */}
           {view === "chart" && (
-            <div ref={chartRef} className="px-5 pb-3 pt-2">
+            <div ref={chartRef} className="px-5 pb-2 pt-1">
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={fillHeight}>
                   <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 20 }}>
@@ -467,7 +467,7 @@ export default function AmortisationView() {
           )}
         </GlassCard>
 
-        <div className="py-4 text-center text-[10px] text-slate-100/15">
+        <div className="py-3 text-center text-[10px] text-slate-100/15">
           MortgageModeler v0.1 · Daily compounding · AUD
         </div>
       </div>
