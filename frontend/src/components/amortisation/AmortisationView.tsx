@@ -93,7 +93,7 @@ function ChartTooltip({
       }}
     >
       <div className="px-4 py-2" style={{ borderBottom: `1px solid ${t.tooltip.divider}` }}>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400/50">
+        <span className="text-[14px] font-semibold uppercase tracking-[0.16em] text-zinc-400/50">
           Year {label}
         </span>
       </div>
@@ -109,11 +109,11 @@ function ChartTooltip({
                 className="h-[6px] w-[6px] rounded-full shrink-0"
                 style={{ background: entry.color, boxShadow: `0 0 5px ${entry.color}40` }}
               />
-              <span className="text-[12px] font-medium" style={{ color: entry.color, opacity: 0.65 }}>
+              <span className="text-[16px] font-medium" style={{ color: entry.color, opacity: 0.65 }}>
                 {entry.name}
               </span>
             </span>
-            <span className="ml-auto text-[14px] font-medium text-zinc-100/65 text-right">
+            <span className="ml-auto text-[18px] font-medium text-zinc-100/65 text-right">
               {entry.name === "LVR" ? `${entry.value.toFixed(1)}%` : formatCurrency(entry.value)}
             </span>
           </div>
@@ -150,10 +150,10 @@ export default function AmortisationView() {
   const [deposit, setDeposit] = useState(100_000);
   const [rate, setRate] = useState(6.2);
   const [years, setYears] = useState(30);
-  const [appreciation, setAppreciation] = useState(3.0);
-  const [frequency, setFrequency] = useState<Frequency>("monthly");
+  const [appreciation, setAppreciation] = useState(6.5);
+  const [frequency, setFrequency] = useState<Frequency>("weekly");
   const [view, setView] = useState<"chart" | "table">("chart");
-  const [visibleSeries, setVisibleSeries] = useState<Set<string>>(new Set(["bal", "int", "eq", "lvr"]));
+  const [visibleSeries, setVisibleSeries] = useState<Set<string>>(new Set(["bal", "int"]));
 
   const toggleSeries = (key: string) => {
     setVisibleSeries((prev) => {
@@ -191,11 +191,14 @@ export default function AmortisationView() {
 
   const chartData = useMemo(() => {
     if (!data) return [];
+    const loan = data.summary.loan_amount;
+    const dep = data.summary.deposit;
     return data.chart_data.map((p) => ({
       y: p.year,
       bal: p.balance,
       int: p.total_interest,
       eq: p.equity,
+      paid: dep + p.total_interest + (loan - p.balance),
       lvr: p.property_value > 0 ? (p.balance / p.property_value) * 100 : 0,
     }));
   }, [data]);
@@ -253,7 +256,7 @@ export default function AmortisationView() {
             className="relative flex flex-col items-center justify-center pt-5 pb-5 text-center border-teal-400/20"
             style={{ borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
           >
-            <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
+            <div className="text-[22px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
               Repayment
             </div>
             <div className="mt-3 text-[42px] font-normal leading-none tracking-[-0.02em] text-zinc-50 tabular-nums">
@@ -268,7 +271,7 @@ export default function AmortisationView() {
             className="relative flex flex-col items-center justify-center pt-5 pb-5 text-center border-teal-400/20"
             style={{ borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
           >
-            <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
+            <div className="text-[22px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
               Total Interest
             </div>
             <div className="mt-3 text-[42px] font-normal leading-none tracking-[-0.02em] tabular-nums text-zinc-50">
@@ -283,7 +286,7 @@ export default function AmortisationView() {
             className="relative flex flex-col items-center justify-center pt-5 pb-5 text-center border-teal-400/20"
             style={{ borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
           >
-            <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
+            <div className="text-[22px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
               Loan Amount
             </div>
             <div className="mt-3 text-[42px] font-normal leading-none tracking-[-0.02em] tabular-nums text-zinc-50">
@@ -302,7 +305,7 @@ export default function AmortisationView() {
             style={{ borderTopWidth: 3, borderTopColor: t.accentBorder }}
           >
             <div className="px-5 py-2.5 text-center" style={{ borderBottom: `1px solid ${t.border.default}` }}>
-              <span className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">Loan</span>
+              <span className="text-[22px] font-medium uppercase tracking-[0.14em] text-teal-400/40">Loan</span>
             </div>
             <div className="grid grid-cols-4">
               <div className="px-5 py-3">
@@ -325,7 +328,7 @@ export default function AmortisationView() {
             style={{ borderTopWidth: 3, borderTopColor: t.accentBorder }}
           >
             <div className="px-5 py-2.5 text-center" style={{ borderBottom: `1px solid ${t.border.default}` }}>
-              <span className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">Assumptions</span>
+              <span className="text-[22px] font-medium uppercase tracking-[0.14em] text-teal-400/40">Assumptions</span>
             </div>
             <div className="px-5 py-3">
               <Slider label="Appreciation" value={appreciation} display={`${appreciation.toFixed(1)}%`} min={0} max={10} step={0.5} onChange={setAppreciation} />
@@ -388,7 +391,7 @@ export default function AmortisationView() {
                 <button
                   key={v}
                   onClick={() => setView(v)}
-                  className={`rounded-md px-3.5 py-1 text-[12px] font-semibold capitalize tracking-wide transition-all duration-200 ${
+                  className={`rounded-md px-3.5 py-1.5 text-[16px] font-semibold capitalize tracking-wide transition-all duration-200 ${
                     view === v
                       ? "bg-teal-400/[0.12] text-teal-400 border border-teal-400/20"
                       : "text-zinc-100/25 border border-transparent hover:text-zinc-100/40"
@@ -405,7 +408,7 @@ export default function AmortisationView() {
             <div ref={chartRef} className="px-5 pb-2 pt-1">
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={fillHeight}>
-                  <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 20 }}>
+                  <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 40 }}>
                     <defs>
                       {Object.entries(SERIES).map(([key, s]) => (
                         <linearGradient key={key} id={`g${key}`} x1="0" y1="0" x2="0" y2="1">
@@ -422,6 +425,7 @@ export default function AmortisationView() {
                       tick={{ fill: t.chart.axisTick, fontSize: 14, fontWeight: 500, dy: 12 }}
                       tickLine={false}
                       axisLine={{ stroke: t.chart.axisLine }}
+                      label={{ value: "Years", position: "bottom", offset: 12, style: { fill: t.chart.axisTick, fontSize: 14, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em" } }}
                     />
                     <YAxis
                       yAxisId="left"
@@ -451,6 +455,7 @@ export default function AmortisationView() {
                     {visibleSeries.has("bal") && <Area yAxisId="left" type="monotone" dataKey="bal" name={SERIES.bal.label} stroke={SERIES.bal.color} strokeWidth={SERIES.bal.stroke} fill="url(#gbal)" animationDuration={400} animationEasing="ease-out" />}
                     {visibleSeries.has("int") && <Area yAxisId="left" type="monotone" dataKey="int" name={SERIES.int.label} stroke={SERIES.int.color} strokeWidth={SERIES.int.stroke} fill="url(#gint)" animationDuration={400} animationEasing="ease-out" />}
                     {visibleSeries.has("eq") && <Area yAxisId="left" type="monotone" dataKey="eq" name={SERIES.eq.label} stroke={SERIES.eq.color} strokeWidth={SERIES.eq.stroke} fill="url(#geq)" animationDuration={400} animationEasing="ease-out" />}
+                    {visibleSeries.has("paid") && <Area yAxisId="left" type="monotone" dataKey="paid" name={SERIES.paid.label} stroke={SERIES.paid.color} strokeWidth={SERIES.paid.stroke} fill="url(#gpaid)" animationDuration={400} animationEasing="ease-out" />}
                     {visibleSeries.has("lvr") && <Area yAxisId="right" type="monotone" dataKey="lvr" name={SERIES.lvr.label} stroke={SERIES.lvr.color} strokeWidth={SERIES.lvr.stroke} fill="url(#glvr)" animationDuration={400} animationEasing="ease-out" />}
                   </AreaChart>
                 </ResponsiveContainer>

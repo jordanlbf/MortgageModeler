@@ -61,10 +61,11 @@ export const t = {
 // opacities [top, bottom], and stroke width.
 
 export const SERIES = {
-  bal: { color: "#2dd4bf", label: "Balance",  fill: [0.18, 0.02], stroke: 2 },
-  int: { color: "#f87171", label: "Interest", fill: [0.12, 0.01], stroke: 1 },
-  eq:  { color: "#60a5fa", label: "Equity",   fill: [0.14, 0.01], stroke: 1.2 },
-  lvr: { color: "#facc15", label: "LVR",      fill: [0.10, 0.01], stroke: 1.5 },
+  bal:  { color: "#2dd4bf", label: "Balance",    fill: [0.18, 0.02], stroke: 2 },
+  int:  { color: "#f87171", label: "Interest",   fill: [0.12, 0.01], stroke: 1 },
+  eq:   { color: "#60a5fa", label: "Equity",     fill: [0.14, 0.01], stroke: 1.2 },
+  paid: { color: "#a78bfa", label: "Total Paid", fill: [0.10, 0.01], stroke: 1.5 },
+  lvr:  { color: "#facc15", label: "LVR",        fill: [0.10, 0.01], stroke: 1.5 },
 } as const;
 
 // Convenience array for legend / toggle iteration

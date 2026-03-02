@@ -15,7 +15,7 @@ export default function Slider({ label, value, display, min, max, step, onChange
 
   return (
     <div>
-      <div className="mb-2 text-[12px] font-medium uppercase tracking-[0.14em] text-teal-400/50 text-center">
+      <div className="mb-2 text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/50 text-center">
         {label}
       </div>
       <div className="mb-4 text-[18px] font-normal leading-none tabular-nums text-zinc-50 text-center">
