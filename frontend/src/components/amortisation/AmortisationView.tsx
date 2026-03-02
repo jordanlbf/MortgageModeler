@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import type { Frequency, ScheduleResponse } from "@/lib/api";
 import { fetchSchedule } from "@/lib/api";
-import { formatCurrency, formatCurrencyShort, formatCompact } from "@/lib/formatters";
+import { formatCurrency, formatCurrencyShort, formatCurrencyCompact, formatCompact } from "@/lib/formatters";
 import { t, SERIES, SERIES_LIST } from "@/lib/theme";
 import GlassCard from "@/components/ui/GlassCard";
 import Slider from "@/components/ui/Slider";
@@ -245,45 +245,51 @@ export default function AmortisationView() {
       </header>
 
       {/* ── Content ── */}
-      <div className="px-9 py-4">
+      <div className="px-9 py-5">
 
         {/* ── KPI Cards ── */}
-        <div className="mb-4 grid grid-cols-3 gap-4">
+        <div className="mb-5 grid grid-cols-[1.2fr_1fr_1fr] gap-5">
           <GlassCard
-            className="relative flex flex-col items-center justify-center py-6 text-center border-teal-400/20"
-            style={{ borderTopWidth: 2, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
+            className="relative flex flex-col items-center justify-center pt-5 pb-5 text-center border-teal-400/20"
+            style={{ borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
           >
-            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-400/50">
+            <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
               Repayment
             </div>
-            <div className="mt-2 text-[42px] font-light leading-none tracking-tight text-zinc-50 tabular-nums">
+            <div className="mt-3 text-[42px] font-normal leading-none tracking-[-0.02em] text-zinc-50 tabular-nums">
               {data ? formatCurrency(animPayment) : "—"}
             </div>
-            <div className="mt-1.5 text-[12px] font-medium tracking-wide text-zinc-100/30">
+            <div className="mt-2.5 text-[14px] font-normal uppercase tracking-[0.12em] text-zinc-100/30">
               per {FREQ_LABELS[frequency]}
             </div>
           </GlassCard>
 
-          <GlassCard className="flex flex-col items-center justify-center py-6 text-center">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-100/20">
+          <GlassCard
+            className="relative flex flex-col items-center justify-center pt-5 pb-5 text-center border-teal-400/20"
+            style={{ borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
+          >
+            <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
               Total Interest
             </div>
-            <div className="mt-2 text-[26px] font-normal leading-none tabular-nums text-red-400/60">
-              {data ? formatCurrencyShort(animInterest) : "—"}
+            <div className="mt-3 text-[42px] font-normal leading-none tracking-[-0.02em] tabular-nums text-zinc-50">
+              {data ? formatCurrencyCompact(animInterest) : "—"}
             </div>
-            <div className="mt-1.5 text-[12px] font-medium tabular-nums tracking-wide text-zinc-100/20">
+            <div className="mt-2.5 text-[14px] font-normal uppercase tabular-nums tracking-[0.12em] text-zinc-100/30">
               {data ? `${interestPct}% of total` : ""}
             </div>
           </GlassCard>
 
-          <GlassCard className="flex flex-col items-center justify-center py-6 text-center">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-100/20">
+          <GlassCard
+            className="relative flex flex-col items-center justify-center pt-5 pb-5 text-center border-teal-400/20"
+            style={{ borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
+          >
+            <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
               Loan Amount
             </div>
-            <div className="mt-2 text-[26px] font-normal leading-none tabular-nums text-zinc-400/60">
-              {data ? formatCurrencyShort(animLoan) : "—"}
+            <div className="mt-3 text-[42px] font-normal leading-none tracking-[-0.02em] tabular-nums text-zinc-50">
+              {data ? formatCurrencyCompact(animLoan) : "—"}
             </div>
-            <div className="mt-1.5 text-[12px] font-medium tabular-nums tracking-wide text-zinc-100/20">
+            <div className="mt-2.5 text-[14px] font-normal uppercase tabular-nums tracking-[0.12em] text-zinc-100/30">
               {data ? `${lvrPct}% LVR` : ""}
             </div>
           </GlassCard>

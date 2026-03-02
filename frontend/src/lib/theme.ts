@@ -17,9 +17,8 @@ export const t = {
   bg: {
     pageFrom: "#111215",
     pageTo: "#1a1c20",
-    card: "rgba(39,39,42,0.70)",
-    cardElevated: "rgba(39,39,42,0.80)",
-    tooltip: "rgba(8,8,12,0.94)",
+    card: "rgba(42,42,46,0.72)",
+    cardElevated: "rgba(44,44,48,0.82)",
     control: "rgba(24,24,27,0.60)",
     sliderThumb: "#1a1c20",
   },
