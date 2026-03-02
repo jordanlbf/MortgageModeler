@@ -34,7 +34,7 @@ function ChartTooltip({
       }}
     >
       <div className="px-4 py-2" style={{ borderBottom: `1px solid ${t.tooltip.divider}` }}>
-        <span className="text-[14px] font-semibold uppercase tracking-[0.16em] text-zinc-400/50">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400/50">
           Year {label}
         </span>
       </div>
@@ -50,11 +50,11 @@ function ChartTooltip({
                 className="h-[6px] w-[6px] rounded-full shrink-0"
                 style={{ background: entry.color, boxShadow: `0 0 5px ${entry.color}40` }}
               />
-              <span className="text-[16px] font-medium" style={{ color: entry.color, opacity: 0.65 }}>
+              <span className="text-[13px] font-medium" style={{ color: entry.color, opacity: 0.65 }}>
                 {entry.name}
               </span>
             </span>
-            <span className="ml-auto text-[18px] font-medium text-zinc-100/65 text-right">
+            <span className="ml-auto text-[14px] font-medium text-zinc-100/65 text-right">
               {entry.name === "LVR" ? `${entry.value.toFixed(1)}%` : formatCurrency(entry.value)}
             </span>
           </div>
@@ -80,7 +80,7 @@ export function ChartLegend({ visibleSeries, onToggle }: ChartLegendProps) {
           <button
             key={key}
             onClick={() => onToggle(key)}
-            className="flex items-center gap-2 rounded-md px-3 py-1.5 text-[16px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
+            className="flex items-center gap-2 rounded-md px-2.5 py-1 text-[13px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
             style={{
               background: active ? `color-mix(in srgb, ${color} 12%, transparent)` : "transparent",
               border: `1px solid ${active ? `color-mix(in srgb, ${color} 25%, transparent)` : "transparent"}`,
@@ -131,7 +131,7 @@ export default function AmortisationChart({
     <div className="px-5 pb-2 pt-1">
       {data.length > 0 ? (
         <ResponsiveContainer width="100%" height={height}>
-          <AreaChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 40 }}>
+          <AreaChart data={data} margin={{ top: 4, right: 6, left: 0, bottom: 32 }}>
             <defs>
               {Object.entries(SERIES).map(([key, s]) => (
                 <linearGradient key={key} id={`g${key}`} x1="0" y1="0" x2="0" y2="1">
@@ -145,35 +145,35 @@ export default function AmortisationChart({
             <XAxis
               dataKey="y"
               stroke="transparent"
-              tick={{ fill: t.chart.axisTick, fontSize: 14, fontWeight: 500, dy: 12 }}
+              tick={{ fill: t.chart.axisTick, fontSize: 11, fontWeight: 500, dy: 10 }}
               tickLine={false}
               axisLine={{ stroke: t.chart.axisLine }}
               label={{
                 value: "Years",
                 position: "bottom",
-                offset: 12,
-                style: { fill: t.chart.axisTick, fontSize: 14, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em" },
+                offset: 10,
+                style: { fill: t.chart.axisTick, fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em" },
               }}
             />
             <YAxis
               yAxisId="left"
               stroke="transparent"
-              tick={{ fill: t.chart.axisTick, fontSize: 14, fontWeight: 500 }}
+              tick={{ fill: t.chart.axisTick, fontSize: 11, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
               tickFormatter={(v) => "$" + formatCompact(v)}
-              width={60}
+              width={48}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
               stroke="transparent"
-              tick={{ fill: t.chart.axisTickMuted, fontSize: 14, fontWeight: 500 }}
+              tick={{ fill: t.chart.axisTickMuted, fontSize: 11, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
               tickFormatter={(v) => `${v}%`}
               domain={[0, 100]}
-              width={40}
+              width={32}
             />
             <Tooltip
               content={<ChartTooltip />}

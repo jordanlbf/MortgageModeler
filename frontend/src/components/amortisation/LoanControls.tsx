@@ -32,18 +32,10 @@ export default function LoanControls({
   onAppreciationChange,
 }: LoanControlsProps) {
   return (
-    <div className="mb-4 grid grid-cols-[4fr_1fr] gap-4">
+    <div className="mb-3 grid grid-cols-[4fr_1fr] gap-3">
       <GlassCard className="border-teal-400/20" style={CARD_BORDER}>
-        <div
-          className="px-5 py-2.5 text-center"
-          style={{ borderBottom: `1px solid ${t.border.default}` }}
-        >
-          <span className="text-[22px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
-            Loan
-          </span>
-        </div>
         <div className="grid grid-cols-4">
-          <div className="px-5 py-3">
+          <div className="px-4 py-2.5">
             <Slider
               label="Purchase price"
               value={purchasePrice}
@@ -56,7 +48,7 @@ export default function LoanControls({
               parseDisplay={parseCurrency}
             />
           </div>
-          <div className="px-5 py-3" style={{ borderLeft: `1px solid ${t.border.default}` }}>
+          <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
             <Slider
               label="Deposit"
               value={deposit}
@@ -69,7 +61,7 @@ export default function LoanControls({
               parseDisplay={parseCurrency}
             />
           </div>
-          <div className="px-5 py-3" style={{ borderLeft: `1px solid ${t.border.default}` }}>
+          <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
             <Slider
               label="Interest rate"
               value={rate}
@@ -82,7 +74,7 @@ export default function LoanControls({
               parseDisplay={parsePercent}
             />
           </div>
-          <div className="px-5 py-3" style={{ borderLeft: `1px solid ${t.border.default}` }}>
+          <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
             <Slider
               label="Loan term"
               value={years}
@@ -99,15 +91,7 @@ export default function LoanControls({
       </GlassCard>
 
       <GlassCard className="border-teal-400/20" style={CARD_BORDER}>
-        <div
-          className="px-5 py-2.5 text-center"
-          style={{ borderBottom: `1px solid ${t.border.default}` }}
-        >
-          <span className="text-[22px] font-medium uppercase tracking-[0.14em] text-teal-400/40">
-            Assumptions
-          </span>
-        </div>
-        <div className="px-5 py-3">
+        <div className="px-4 py-2.5">
           <Slider
             label="Appreciation"
             value={appreciation}

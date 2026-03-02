@@ -53,12 +53,12 @@ export default function Slider({
 
   return (
     <div>
-      <div className="mb-2 text-[18px] font-medium uppercase tracking-[0.14em] text-teal-400/50 text-center">
+      <div className="mb-1.5 text-[14px] font-medium uppercase tracking-[0.14em] text-teal-400/50 text-center">
         {label}
       </div>
 
       <div
-        className="mb-4 flex items-center justify-center"
+        className="mb-3 flex items-center justify-center"
         onClick={!editing ? handleClick : undefined}
       >
         <input
@@ -72,7 +72,7 @@ export default function Slider({
           onKeyDown={handleKeyDown}
           tabIndex={editable ? 0 : -1}
           onFocus={editable ? handleClick : undefined}
-          className={`w-full bg-transparent text-center text-[18px] font-normal leading-none tabular-nums outline-none caret-teal-400 selection:bg-teal-400/20 selection:text-zinc-50 transition-colors duration-150 ${
+          className={`w-full bg-transparent text-center text-[16px] font-normal leading-none tabular-nums outline-none caret-teal-400 selection:bg-teal-400/20 selection:text-zinc-50 transition-colors duration-150 ${
             editable
               ? editing
                 ? "text-zinc-50 cursor-text"

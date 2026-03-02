@@ -27,7 +27,7 @@ export default function AmortisationView() {
   const [view, setView] = useState<"chart" | "table">("chart");
   const [visibleSeries, setVisibleSeries] = useState<Set<string>>(new Set(["bal", "int"]));
   const chartRef = useRef<HTMLDivElement>(null);
-  const fillHeight = useFillHeight(chartRef);
+  const fillHeight = useFillHeight(chartRef, 80);
 
   const toggleSeries = (key: string) => {
     setVisibleSeries((prev) => {
