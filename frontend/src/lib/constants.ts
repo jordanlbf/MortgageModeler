@@ -30,3 +30,21 @@ export const parsePercent = (s: string) => Number(s.replace(/[^0-9.]/g, ""));
 
 /** Strip a formatted years string to a plain number. */
 export const parseYears = (s: string) => Number(s.replace(/[^0-9]/g, ""));
+
+/** Tool definitions — used by homepage grid and placeholder pages. */
+export interface Tool {
+  id: string;
+  title: string;
+  desc: string;   // shown on placeholder page
+  icon: string;   // emoji fallback for placeholder page; homepage uses SVG
+  active: boolean;
+}
+
+export const TOOLS: Tool[] = [
+  { id: "amortisation", title: "Amortisation", desc: "Repayment schedule & interest breakdown", icon: "📊", active: true },
+  { id: "ppor-vs-rent", title: "PPOR vs Rent", desc: "Buy vs rentvesting comparison", icon: "⚖️", active: false },
+  { id: "offset-impact", title: "Offset Impact", desc: "Offset account interest savings", icon: "🏦", active: false },
+  { id: "rate-changes", title: "Rate Changes", desc: "Model variable rate scenarios", icon: "📈", active: false },
+  { id: "equity-growth", title: "Equity Growth", desc: "Property appreciation over time", icon: "🏠", active: false },
+  { id: "tax-deductions", title: "Tax & Deductions", desc: "Investment property tax modelling", icon: "🧾", active: false },
+];

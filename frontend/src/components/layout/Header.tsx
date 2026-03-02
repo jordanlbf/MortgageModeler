@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Frequency } from "@/lib/types";
 import { FREQ_OPTIONS } from "@/lib/constants";
 import { t } from "@/lib/theme";
@@ -13,7 +14,7 @@ export default function Header({ frequency, onFrequencyChange }: HeaderProps) {
       className="flex items-center justify-between px-7 py-3"
       style={{ borderBottom: `1px solid ${t.border.default}` }}
     >
-      <div className="flex items-center gap-2.5">
+      <Link href="/" className="flex items-center gap-2.5 no-underline">
         <div
           className="flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold text-zinc-900"
           style={{ background: t.accent }}
@@ -23,7 +24,7 @@ export default function Header({ frequency, onFrequencyChange }: HeaderProps) {
         <span className="text-[14px] font-semibold tracking-tight text-zinc-100/75">
           MortgageModeler
         </span>
-      </div>
+      </Link>
 
       <div
         className="flex rounded-md p-[2px]"
