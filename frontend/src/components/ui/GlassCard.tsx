@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { t } from "@/lib/theme";
 
 interface GlassCardProps {
@@ -6,9 +7,10 @@ interface GlassCardProps {
   style?: React.CSSProperties;
 }
 
-export default function GlassCard({ children, className = "", style }: GlassCardProps) {
-  return (
+const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
+  ({ children, className = "", style }, ref) => (
     <div
+      ref={ref}
       className={`glass-card rounded-2xl backdrop-blur-md transition-all duration-300 ease-out hover:-translate-y-[1px] ${className}`}
       style={{
         background: t.bg.card,
@@ -18,5 +20,8 @@ export default function GlassCard({ children, className = "", style }: GlassCard
     >
       {children}
     </div>
-  );
-}
+  ),
+);
+
+GlassCard.displayName = "GlassCard";
+export default GlassCard;

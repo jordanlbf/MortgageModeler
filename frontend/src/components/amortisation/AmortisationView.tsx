@@ -14,6 +14,9 @@ import AmortisationChart, { ChartLegend } from "@/components/amortisation/Amorti
 import AmortisationTable from "@/components/amortisation/AmortisationTable";
 import GlassCard from "@/components/ui/GlassCard";
 
+const TRANSITION_MS = 350;
+const COLLAPSE_STYLE = "grid transition-[grid-template-rows,opacity] ease-in-out";
+
 export default function AmortisationView() {
   // ── Input state ────────────────────────────────
   const [purchasePrice, setPurchasePrice] = useState(600_000);
@@ -27,11 +30,51 @@ export default function AmortisationView() {
 
   // ── View state ─────────────────────────────────
   const [view, setView] = useState<"chart" | "table">("chart");
+  const [focused, setFocused] = useState(false);
   const [visibleSeries, setVisibleSeries] = useState<Set<string>>(new Set(["bal", "int"]));
   const chartRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
   const showOffset = visibleSeries.has("offset");
   const showEquity = visibleSeries.has("eq");
-  const fillHeight = useFillHeight(chartRef, 80, 300, `${showOffset}${showEquity}`);
+
+  // ── Chart height ─────────────────────────────
+  // normalHeight is the live measurement for non-focused mode.
+  // When entering focus we freeze it and add the collapsible section
+  // height so the chart grows upward; bottom stays pinned.
+  const normalHeight = useFillHeight(chartRef, 80, 300, `${showOffset}${showEquity}`);
+  const frozenNormal = useRef(normalHeight);
+  const savedDelta = useRef(0);
+
+  // Keep frozenNormal in sync while not focused
+  if (!focused) frozenNormal.current = normalHeight;
+
+  const chartHeight = focused
+    ? frozenNormal.current + savedDelta.current
+    : normalHeight;
+
+  // ── Focus toggle ─────────────────────────────
+  const handleFocusToggle = useCallback(() => {
+    if (!focused) {
+      frozenNormal.current = normalHeight;
+      savedDelta.current = controlsRef.current?.offsetHeight ?? 0;
+    } else {
+      savedDelta.current = 0;
+    }
+    setFocused((f) => !f);
+  }, [focused, normalHeight]);
+
+  // Escape + click-outside to exit focus
+  useEffect(() => {
+    if (!focused) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") handleFocusToggle(); };
+    const onClick = (e: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) handleFocusToggle();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("mousedown", onClick);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("mousedown", onClick); };
+  }, [focused, handleFocusToggle]);
 
   const toggleSeries = useCallback((key: string) => {
     setVisibleSeries((prev) => {
@@ -99,43 +142,55 @@ export default function AmortisationView() {
       <Header frequency={frequency} onFrequencyChange={setFrequency} />
 
       <div className="px-9 py-5">
-        <KpiCards
-          data={data}
-          frequency={frequency}
-          rate={rate}
-          years={years}
-          deposit={deposit}
-          onPurchasePriceChange={setPurchasePrice}
-        />
+        {/* Collapsible: KPIs + Controls */}
+        <div
+          className={COLLAPSE_STYLE}
+          style={{
+            gridTemplateRows: focused ? "0fr" : "1fr",
+            opacity: focused ? 0 : 1,
+            transitionDuration: `${TRANSITION_MS}ms`,
+          }}
+        >
+          <div ref={controlsRef} className="overflow-hidden min-h-0">
+            <KpiCards
+              data={data}
+              frequency={frequency}
+              rate={rate}
+              years={years}
+              deposit={deposit}
+              onPurchasePriceChange={setPurchasePrice}
+            />
 
-        <LoanControls
-          purchasePrice={purchasePrice}
-          deposit={deposit}
-          rate={rate}
-          years={years}
-          appreciation={appreciation}
-          loanAmount={data?.summary.loan_amount ?? 0}
-          frequency={frequency}
-          showOffset={showOffset}
-          showEquity={showEquity}
-          offsetBalance={offsetBalance}
-          offsetContribution={offsetContribution}
-          onPurchasePriceChange={setPurchasePrice}
-          onDepositChange={setDeposit}
-          onRateChange={setRate}
-          onYearsChange={setYears}
-          onAppreciationChange={setAppreciation}
-          onOffsetBalanceChange={setOffsetBalance}
-          onOffsetContributionChange={setOffsetContribution}
-        />
+            <LoanControls
+              purchasePrice={purchasePrice}
+              deposit={deposit}
+              rate={rate}
+              years={years}
+              appreciation={appreciation}
+              loanAmount={data?.summary.loan_amount ?? 0}
+              frequency={frequency}
+              showOffset={showOffset}
+              showEquity={showEquity}
+              offsetBalance={offsetBalance}
+              offsetContribution={offsetContribution}
+              onPurchasePriceChange={setPurchasePrice}
+              onDepositChange={setDeposit}
+              onRateChange={setRate}
+              onYearsChange={setYears}
+              onAppreciationChange={setAppreciation}
+              onOffsetBalanceChange={setOffsetBalance}
+              onOffsetContributionChange={setOffsetContribution}
+            />
 
-        {error && (
-          <div className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
-            {error}
+            {error && (
+              <div className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
+                {error}
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
-        <GlassCard className="overflow-hidden">
+        <GlassCard ref={cardRef} className="overflow-hidden">
           {/* Toolbar */}
           <div
             className="relative flex items-center justify-between px-5 py-3"
@@ -151,42 +206,96 @@ export default function AmortisationView() {
               ) : null}
             </div>
 
-            <div
-              className="flex rounded-lg p-[3px]"
-              style={{ border: `1px solid ${t.border.default}`, background: t.bg.control }}
-            >
-              {(["chart", "table"] as const).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`rounded-md px-3.5 py-1.5 text-[16px] font-semibold capitalize tracking-wide transition-all duration-200 ${
-                    view === v
-                      ? "bg-teal-400/[0.12] text-teal-400 border border-teal-400/20"
-                      : "text-zinc-100/25 border border-transparent hover:text-zinc-100/40"
-                  }`}
+            <div className="flex items-center gap-2">
+              <div
+                className="flex rounded-lg p-[3px]"
+                style={{ border: `1px solid ${t.border.default}`, background: t.bg.control }}
+              >
+                {(["chart", "table"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`rounded-md px-3.5 py-1.5 text-[16px] font-semibold capitalize tracking-wide transition-all duration-200 ${
+                      view === v
+                        ? "bg-teal-400/[0.12] text-teal-400 border border-teal-400/20"
+                        : "text-zinc-100/25 border border-transparent hover:text-zinc-100/40"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={handleFocusToggle}
+                className="rounded-lg p-2 text-zinc-100/25 transition-all duration-200 hover:text-zinc-100/50 hover:bg-white/[0.04] active:scale-90"
+                style={{ border: "1px solid transparent" }}
+                title={focused ? "Exit focus mode (Esc)" : "Focus mode"}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="transition-transform duration-200"
+                  style={{ transform: focused ? "rotate(180deg)" : undefined }}
                 >
-                  {v}
-                </button>
-              ))}
+                  {focused ? (
+                    <>
+                      <polyline points="3 9 7 9 7 13" />
+                      <line x1="2" y1="14" x2="7" y2="9" />
+                      <polyline points="13 7 9 7 9 3" />
+                      <line x1="14" y1="2" x2="9" y2="7" />
+                    </>
+                  ) : (
+                    <>
+                      <polyline points="10 2 14 2 14 6" />
+                      <line x1="14" y1="2" x2="9" y2="7" />
+                      <polyline points="6 14 2 14 2 10" />
+                      <line x1="2" y1="14" x2="7" y2="9" />
+                    </>
+                  )}
+                </svg>
+              </button>
             </div>
           </div>
 
           {/* Content */}
-          <div ref={chartRef}>
+          <div
+            ref={chartRef}
+            className="overflow-hidden"
+            style={{ height: chartHeight, transition: `height ${TRANSITION_MS}ms ease-in-out` }}
+          >
             {view === "chart" ? (
               <AmortisationChart
                 data={chartData}
                 visibleSeries={visibleSeries}
-                height={fillHeight}
+                height={chartHeight}
               />
             ) : (
-              <AmortisationTable rows={tableRows} height={fillHeight} />
+              <AmortisationTable rows={tableRows} height={chartHeight} />
             )}
           </div>
         </GlassCard>
 
-        <div className="py-3 text-center text-[10px] text-zinc-100/15">
-          MortgageModeler v0.1 · Daily compounding · AUD
+        {/* Collapsible: footer */}
+        <div
+          className={COLLAPSE_STYLE}
+          style={{
+            gridTemplateRows: focused ? "0fr" : "1fr",
+            opacity: focused ? 0 : 1,
+            transitionDuration: `${TRANSITION_MS}ms`,
+          }}
+        >
+          <div className="overflow-hidden min-h-0">
+            <div className="py-3 text-center text-[10px] text-zinc-100/15">
+              MortgageModeler v0.1 · Daily compounding · AUD
+            </div>
+          </div>
         </div>
       </div>
     </>
