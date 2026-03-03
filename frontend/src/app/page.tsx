@@ -66,9 +66,14 @@ function ToolCard({ tool }: { tool: Tool }) {
       </div>
 
       <h2 className="home-card-title">{tool.title}</h2>
+      <p className="home-card-desc">{tool.desc}</p>
 
-      <span className={`home-card-badge ${tool.active ? "home-card-badge--live" : "home-card-badge--soon"}`}>
-        {tool.active ? "Live" : "Soon"}
+      <span className={`home-card-badge ${
+        tool.badge === "Beta" ? "home-card-badge--beta"
+        : tool.active ? "home-card-badge--live"
+        : "home-card-badge--soon"
+      }`}>
+        {tool.badge ?? (tool.active ? "Live" : "Soon")}
       </span>
     </div>
   );
@@ -88,20 +93,27 @@ export default function HomePage() {
       <header className="home-header">
         <div className="home-header-brand">
           <div className="home-header-logo">M</div>
-          <span className="home-header-name">MortgageModeler</span>
+          <span className="home-header-name">Mortgage Modeler</span>
         </div>
-        <span className="home-header-version">v0.1 beta</span>
       </header>
 
       {/* Hero + Cards */}
       <main className="home-hero">
         <div className="home-glow" />
 
-        <h1 className="home-title">DASHBOARD</h1>
-        <p className="home-subtitle">Select a calculator</p>
+        <h1 className="home-title">Mortgage Modeler</h1>
+        <p className="home-subtitle">Visualise your loan, compare strategies, and make smarter property decisions.</p>
+
+        <div className="home-featured">
+          {TOOLS.filter((t) => t.active).map((tool) => (
+            <ToolCard key={tool.id} tool={tool} />
+          ))}
+        </div>
+
+        <div className="home-upcoming-label">Coming soon</div>
 
         <div className="home-cards">
-          {TOOLS.map((tool) => (
+          {TOOLS.filter((t) => !t.active).map((tool) => (
             <ToolCard key={tool.id} tool={tool} />
           ))}
         </div>
@@ -109,7 +121,13 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="home-footer">
-        <span>MortgageModeler · Daily compounding · AUD</span>
+        <div className="home-footer-inner">
+          <span className="home-footer-brand">Mortgage Modeler</span>
+          <span className="home-footer-sep">&middot;</span>
+          <span>Daily compounding</span>
+          <span className="home-footer-sep">&middot;</span>
+          <span>AUD</span>
+        </div>
       </footer>
     </div>
   );

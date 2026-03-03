@@ -38,11 +38,12 @@ export interface Tool {
   desc: string;   // shown on placeholder page
   icon: string;   // emoji fallback for placeholder page; homepage uses SVG
   active: boolean;
+  badge?: string;  // custom badge label (defaults to "Live" / "Soon")
 }
 
 export const TOOLS: Tool[] = [
   { id: "amortisation", title: "Amortisation", desc: "Repayment schedule & interest breakdown", icon: "📊", active: true },
-  { id: "ppor-vs-rent", title: "PPOR vs Rent", desc: "Buy vs rentvesting comparison", icon: "⚖️", active: false },
+  { id: "ppor-vs-rent", title: "PPOR vs Rent", desc: "Buy vs rentvesting comparison", icon: "⚖️", active: true, badge: "Beta" },
   { id: "offset-impact", title: "Offset Impact", desc: "Offset account interest savings", icon: "🏦", active: false },
   { id: "rate-changes", title: "Rate Changes", desc: "Model variable rate scenarios", icon: "📈", active: false },
   { id: "equity-growth", title: "Equity Growth", desc: "Property appreciation over time", icon: "🏠", active: false },
