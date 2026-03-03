@@ -197,6 +197,7 @@ export default function AmortisationChart({
             {visibleSeries.has("eq") && <Area yAxisId="left" type="monotone" dataKey="eq" name={SERIES.eq.label} stroke={SERIES.eq.color} strokeWidth={SERIES.eq.stroke} fill="url(#geq)" animationDuration={animDuration} animationEasing={animEasing} />}
             {visibleSeries.has("paid") && <Area yAxisId="left" type="monotone" dataKey="paid" name={SERIES.paid.label} stroke={SERIES.paid.color} strokeWidth={SERIES.paid.stroke} fill="url(#gpaid)" animationDuration={animDuration} animationEasing={animEasing} />}
             {visibleSeries.has("lvr") && <Area yAxisId="right" type="monotone" dataKey="lvr" name={SERIES.lvr.label} stroke={SERIES.lvr.color} strokeWidth={SERIES.lvr.stroke} fill="url(#glvr)" animationDuration={animDuration} animationEasing={animEasing} />}
+            {visibleSeries.has("offset") && <Area yAxisId="left" type="monotone" dataKey="offset" name={SERIES.offset.label} stroke={SERIES.offset.color} strokeWidth={SERIES.offset.stroke} fill="url(#goffset)" animationDuration={animDuration} animationEasing={animEasing} />}
           </AreaChart>
         </ResponsiveContainer>
       ) : (

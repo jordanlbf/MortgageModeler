@@ -1,12 +1,13 @@
 import type { Frequency } from "@/lib/types";
 import type { ScheduleResponse } from "@/lib/api";
 import { PERIODS_PER_YEAR, FREQ_LABELS, parseCurrency } from "@/lib/constants";
-import { formatCurrency, formatCurrencyCompact, loanAmountFromPayment } from "@/lib/formatters";
+import { formatCurrency, formatCurrencyCompact, formatCurrencyShort, loanAmountFromPayment } from "@/lib/formatters";
 import { useCallback } from "react";
-import { t } from "@/lib/theme";
+import { t, SERIES } from "@/lib/theme";
 import { useAnimatedValue, useAnimatedText } from "@/hooks/useAnimatedValue";
 import GlassCard from "@/components/ui/GlassCard";
 import EditableValue from "@/components/ui/EditableValue";
+import Slider from "@/components/ui/Slider";
 
 interface KpiCardsProps {
   data: ScheduleResponse | null;
@@ -14,7 +15,12 @@ interface KpiCardsProps {
   rate: number;
   years: number;
   deposit: number;
+  offsetBalance: number;
+  offsetContribution: number;
+  showOffset: boolean;
   onPurchasePriceChange: (price: number) => void;
+  onOffsetBalanceChange: (v: number) => void;
+  onOffsetContributionChange: (v: number) => void;
 }
 
 const CARD_STYLE = "relative flex flex-col items-center justify-center pt-3 pb-3 text-center border-teal-400/20";
@@ -25,8 +31,14 @@ export default function KpiCards({
   rate,
   years,
   deposit,
+  offsetBalance,
+  offsetContribution,
+  showOffset,
   onPurchasePriceChange,
+  onOffsetBalanceChange,
+  onOffsetContributionChange,
 }: KpiCardsProps) {
+  const loanAmount = data ? data.summary.loan_amount : 0;
   const animPayment = useAnimatedValue(data?.payment ?? 0);
   const fmtCompact = useCallback(formatCurrencyCompact, []);
   const interestRef = useAnimatedText(data?.total_interest ?? 0, fmtCompact);
@@ -44,7 +56,7 @@ export default function KpiCards({
   };
 
   return (
-    <div className="mb-4 grid grid-cols-[1.2fr_1fr_1fr] gap-4">
+    <div className={`mb-4 grid gap-4 ${showOffset ? "grid-cols-[1.2fr_1fr_1fr_1fr]" : "grid-cols-[1.2fr_1fr_1fr]"}`}>
       {/* Repayment — editable */}
       <GlassCard
         className={CARD_STYLE}
@@ -99,6 +111,42 @@ export default function KpiCards({
           {data ? `${lvrPct}% LVR` : ""}
         </div>
       </GlassCard>
+
+      {/* Offset Balance — conditionally shown */}
+      {showOffset && (
+        <GlassCard
+          className={CARD_STYLE}
+          style={{ borderTopWidth: 3, borderTopColor: SERIES.offset.color + "59", background: t.bg.cardElevated }}
+        >
+          <div className="text-[18px] font-medium uppercase tracking-[0.14em]" style={{ color: SERIES.offset.color + "66" }}>
+            Offset
+          </div>
+          <div className="mt-3 w-full px-4 space-y-2">
+            <Slider
+              label=""
+              value={offsetBalance}
+              display={formatCurrencyShort(offsetBalance)}
+              min={0}
+              max={Math.max(loanAmount, 50_000)}
+              step={5_000}
+              onChange={onOffsetBalanceChange}
+              editable
+              parseDisplay={parseCurrency}
+            />
+            <Slider
+              label={`per ${FREQ_LABELS[frequency]}`}
+              value={offsetContribution}
+              display={formatCurrencyShort(offsetContribution)}
+              min={0}
+              max={5_000}
+              step={50}
+              onChange={onOffsetContributionChange}
+              editable
+              parseDisplay={parseCurrency}
+            />
+          </div>
+        </GlassCard>
+      )}
     </div>
   );
 }

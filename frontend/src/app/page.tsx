@@ -15,10 +15,10 @@ const icons: Record<string, React.ReactNode> = {
   ),
   "ppor-vs-rent": (
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-      <circle cx="24" cy="24" r="16" stroke="rgba(148,163,184,0.2)" strokeWidth="1.5" />
-      <path d="M24 8V40" stroke="rgba(148,163,184,0.15)" strokeWidth="1" />
-      <path d="M16 14L16 34" stroke="rgba(148,163,184,0.25)" strokeWidth="6" strokeLinecap="round" />
-      <path d="M32 18L32 30" stroke="rgba(148,163,184,0.25)" strokeWidth="6" strokeLinecap="round" />
+      <circle cx="24" cy="24" r="16" stroke="rgba(168,139,250,0.2)" strokeWidth="1.5" />
+      <path d="M24 8V40" stroke="rgba(168,139,250,0.12)" strokeWidth="1" />
+      <path d="M16 14L16 34" stroke="rgba(168,139,250,0.55)" strokeWidth="6" strokeLinecap="round" />
+      <path d="M32 18L32 30" stroke="rgba(168,139,250,0.8)" strokeWidth="6" strokeLinecap="round" />
     </svg>
   ),
   "offset-impact": (
@@ -66,6 +66,15 @@ function ToolCard({ tool }: { tool: Tool }) {
       </div>
 
       <h2 className="home-card-title">{tool.title}</h2>
+      <p className="home-card-desc">{tool.desc}</p>
+
+      {tool.active && (
+        <span className="home-card-arrow" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      )}
 
       <span className={`home-card-badge ${
         tool.badge === "Beta" ? "home-card-badge--beta"
@@ -102,6 +111,13 @@ export default function HomePage() {
 
         <h1 className="home-title">Model property decisions with precision.</h1>
 
+        <div className="home-pills">
+          <span className="home-pill">Daily compounding</span>
+          <span className="home-pill">AUD</span>
+          <span className="home-pill">No sign-up</span>
+          <span className="home-pill">Free forever</span>
+        </div>
+
         <div className="home-cards-center">
           <div className="home-featured">
             {TOOLS.filter((t) => t.active).map((tool) => (
@@ -109,7 +125,11 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="home-upcoming-label">Coming soon</div>
+          <div className="home-divider">
+            <span className="home-divider-line" />
+            <span className="home-divider-text">Coming soon</span>
+            <span className="home-divider-line" />
+          </div>
 
           <div className="home-cards">
             {TOOLS.filter((t) => !t.active).map((tool) => (
@@ -124,9 +144,7 @@ export default function HomePage() {
         <div className="home-footer-inner">
           <span className="home-footer-brand">Mortgage Modeler</span>
           <span className="home-footer-sep">&middot;</span>
-          <span>Daily compounding</span>
-          <span className="home-footer-sep">&middot;</span>
-          <span>AUD</span>
+          <span>v0.1</span>
         </div>
       </footer>
     </div>

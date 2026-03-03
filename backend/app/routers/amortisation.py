@@ -33,6 +33,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
         offset_balance=req.offset_balance,
         extra_repayment=req.extra_repayment,
         rate_changes=rate_changes or None,
+        offset_contribution=req.offset_contribution,
     )
 
     # Build row responses
@@ -46,6 +47,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
             closing_balance=round(r.closing_balance, 2),
             annual_rate=r.annual_rate,
             scheduled_repayment=round(r.scheduled_repayment, 2),
+            offset_balance=round(r.offset_balance, 2),
         )
         for r in schedule.rows
     ]
@@ -59,6 +61,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
             total_interest=0.0,
             property_value=req.purchase_price,
             equity=round(req.deposit, 2),
+            offset_balance=round(req.offset_balance, 2),
         )
     ]
 
@@ -69,6 +72,10 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
         property_value = req.purchase_price * (1 + req.annual_appreciation) ** year
         equity = property_value - row.closing_balance
 
+        # Offset keeps growing even after loan is paid off
+        periods_elapsed = year * ppy
+        projected_offset = req.offset_balance + req.offset_contribution * max(periods_elapsed - 1, 0)
+
         chart_data.append(
             ChartPoint(
                 year=year,
@@ -76,6 +83,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
                 total_interest=round(cumulative_interest, 2),
                 property_value=round(property_value, 2),
                 equity=round(equity, 2),
+                offset_balance=round(projected_offset, 2),
             )
         )
 

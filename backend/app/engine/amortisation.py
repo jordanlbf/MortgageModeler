@@ -31,6 +31,7 @@ class ScheduleRow:
     closing_balance: float
     annual_rate: float
     scheduled_repayment: float
+    offset_balance: float
 
 
 @dataclass
@@ -157,6 +158,7 @@ def generate_schedule(
     offset_balance: float = 0.0,
     extra_repayment: float = 0.0,
     rate_changes: list[RateChange] | None = None,
+    offset_contribution: float = 0.0,
 ) -> AmortisationSchedule:
     """
     Generate a full P&I amortisation schedule with daily compounding.
@@ -165,6 +167,10 @@ def generate_schedule(
     When a rate change occurs, the repayment is recalculated based on the
     remaining balance and remaining periods at the new rate.
 
+    The offset account starts at offset_balance and grows by
+    offset_contribution each period. Interest floors at zero when offset
+    exceeds the loan balance, but the offset itself keeps growing.
+
     The loan terminates early if the balance reaches zero.
 
     Args:
@@ -172,9 +178,10 @@ def generate_schedule(
         annual_rate: Annual interest rate as decimal
         loan_term_years: Loan term in years
         frequency: Repayment frequency
-        offset_balance: Funds in offset account (assumed constant for now)
+        offset_balance: Starting funds in offset account
         extra_repayment: Additional repayment per period on top of scheduled
         rate_changes: List of RateChange objects (from_period, annual_rate)
+        offset_contribution: Amount added to offset each period
 
     Returns:
         AmortisationSchedule with per-period rows and summary stats
@@ -195,6 +202,7 @@ def generate_schedule(
     rows: list[ScheduleRow] = []
     balance = principal
     total_interest = 0.0
+    current_offset = offset_balance
 
     for period in range(1, max_periods + 1):
         if balance <= 0:
@@ -207,8 +215,12 @@ def generate_schedule(
             remaining = max_periods - period + 1
             scheduled = _recalculate_repayment(balance, current_rate, remaining, frequency)
 
-        # Interest on effective balance (after offset)
-        effective_balance = max(balance - offset_balance, 0.0)
+        # Grow offset each period (balance keeps growing uncapped)
+        if period > 1:
+            current_offset += offset_contribution
+
+        # Interest on effective balance (offset can't reduce below zero)
+        effective_balance = max(balance - current_offset, 0.0)
         interest = effective_balance * r
 
         # Principal from scheduled repayment
@@ -238,6 +250,7 @@ def generate_schedule(
             closing_balance=balance,
             annual_rate=current_rate,
             scheduled_repayment=scheduled,
+            offset_balance=current_offset,
         ))
 
     return AmortisationSchedule(

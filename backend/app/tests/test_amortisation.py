@@ -308,3 +308,54 @@ class TestScheduleWithRateChange:
         with_empty = generate_schedule(500_000, 0.062, 30, rate_changes=[])
         without = generate_schedule(500_000, 0.062, 30)
         assert with_empty.total_interest == without.total_interest
+
+
+class TestScheduleWithOffsetGrowth:
+    """P&I schedule with growing offset — $100k at 6%, 1 year, $10k start + $1k/period."""
+
+    @pytest.fixture
+    def schedule(self):
+        return generate_schedule(
+            100_000, 0.06, 1,
+            offset_balance=10_000,
+            offset_contribution=1_000,
+        )
+
+    def test_first_period_uses_starting_offset(self, schedule):
+        """First period offset should equal the starting balance."""
+        assert schedule.rows[0].offset_balance == pytest.approx(10_000, abs=0.01)
+
+    def test_second_period_grows_by_contribution(self, schedule):
+        """Second period offset = starting + one contribution."""
+        assert schedule.rows[1].offset_balance == pytest.approx(11_000, abs=0.01)
+
+    def test_offset_exceeds_balance_interest_zero(self):
+        """When offset exceeds balance, interest is zero but offset keeps growing."""
+        schedule = generate_schedule(
+            20_000, 0.06, 1,
+            offset_balance=15_000,
+            offset_contribution=5_000,
+        )
+        # Offset grows beyond the loan balance
+        assert schedule.rows[-1].offset_balance > schedule.rows[-1].closing_balance
+        # Interest never goes negative
+        for row in schedule.rows:
+            assert row.interest >= 0.0
+
+    def test_less_interest_than_static_offset(self, schedule):
+        """Growing offset should charge less interest than a static one."""
+        static = generate_schedule(100_000, 0.06, 1, offset_balance=10_000)
+        assert schedule.total_interest < static.total_interest
+
+    def test_scheduled_repayment_unchanged(self, schedule):
+        """Offset growth should not change the scheduled repayment."""
+        no_offset = generate_schedule(100_000, 0.06, 1)
+        assert schedule.rows[0].scheduled_repayment == no_offset.rows[0].scheduled_repayment
+
+    def test_zero_contribution_matches_static(self):
+        """Zero contribution should produce identical results to static offset."""
+        with_zero = generate_schedule(100_000, 0.06, 1, offset_balance=20_000, offset_contribution=0)
+        static = generate_schedule(100_000, 0.06, 1, offset_balance=20_000)
+        assert with_zero.total_interest == pytest.approx(static.total_interest, abs=0.01)
+        for a, b in zip(with_zero.rows, static.rows):
+            assert a.offset_balance == pytest.approx(b.offset_balance, abs=0.01)

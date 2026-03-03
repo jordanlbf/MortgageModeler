@@ -21,6 +21,8 @@ export default function AmortisationView() {
   const [rate, setRate] = useState(6.2);
   const [years, setYears] = useState(30);
   const [appreciation, setAppreciation] = useState(6.5);
+  const [offsetBalance, setOffsetBalance] = useState(0);
+  const [offsetContribution, setOffsetContribution] = useState(0);
   const [frequency, setFrequency] = useState<Frequency>("weekly");
 
   // ── View state ─────────────────────────────────
@@ -57,6 +59,8 @@ export default function AmortisationView() {
           loan_term_years: years,
           frequency,
           annual_appreciation: appreciation / 100,
+          offset_balance: offsetBalance,
+          offset_contribution: offsetContribution,
         });
         if (!cancelled) setData(result);
       } catch (err) {
@@ -64,7 +68,7 @@ export default function AmortisationView() {
       }
     }, 80);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [purchasePrice, deposit, rate, years, frequency, appreciation]);
+  }, [purchasePrice, deposit, rate, years, frequency, appreciation, offsetBalance, offsetContribution]);
 
   // ── Derived data ───────────────────────────────
   const chartData: ChartDataPoint[] = useMemo(() => {
@@ -77,6 +81,7 @@ export default function AmortisationView() {
       eq: p.equity,
       paid: p.total_interest + (loan - p.balance),
       lvr: p.property_value > 0 ? (p.balance / p.property_value) * 100 : 0,
+      offset: p.offset_balance,
     }));
   }, [data]);
 
@@ -98,7 +103,12 @@ export default function AmortisationView() {
           rate={rate}
           years={years}
           deposit={deposit}
+          offsetBalance={offsetBalance}
+          offsetContribution={offsetContribution}
+          showOffset={visibleSeries.has("offset")}
           onPurchasePriceChange={setPurchasePrice}
+          onOffsetBalanceChange={setOffsetBalance}
+          onOffsetContributionChange={setOffsetContribution}
         />
 
         <LoanControls

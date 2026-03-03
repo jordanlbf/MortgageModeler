@@ -23,6 +23,7 @@ class ScheduleRequest(BaseModel):
     loan_term_years: int = Field(ge=1, le=40, description="Loan term in years")
     frequency: RepaymentFrequency = RepaymentFrequency.MONTHLY
     offset_balance: float = Field(default=0.0, ge=0)
+    offset_contribution: float = Field(default=0.0, ge=0)
     extra_repayment: float = Field(default=0.0, ge=0)
     annual_appreciation: float = Field(default=0.0, ge=0, le=1, description="Annual property growth rate as decimal, e.g. 0.05")
     rate_changes: list[RateChangeRequest] = Field(default_factory=list)
@@ -55,6 +56,7 @@ class ScheduleRowResponse(BaseModel):
     closing_balance: float
     annual_rate: float
     scheduled_repayment: float
+    offset_balance: float
 
 
 class ChartPoint(BaseModel):
@@ -63,6 +65,7 @@ class ChartPoint(BaseModel):
     total_interest: float
     property_value: float
     equity: float
+    offset_balance: float
 
 
 class ScheduleSummary(BaseModel):

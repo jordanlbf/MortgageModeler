@@ -15,4 +15,5 @@ export interface ChartDataPoint {
   eq: number;
   paid: number;
   lvr: number;
+  offset: number;
 }

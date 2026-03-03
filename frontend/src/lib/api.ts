@@ -20,6 +20,7 @@ export interface ScheduleRow {
   closing_balance: number;
   annual_rate: number;
   scheduled_repayment: number;
+  offset_balance: number;
 }
 
 export interface ChartPoint {
@@ -28,6 +29,7 @@ export interface ChartPoint {
   total_interest: number;
   property_value: number;
   equity: number;
+  offset_balance: number;
 }
 
 export interface ScheduleSummary {
@@ -56,6 +58,7 @@ export interface ScheduleRequest {
   loan_term_years: number;
   frequency: Frequency;
   offset_balance?: number;
+  offset_contribution?: number;
   extra_repayment?: number;
   annual_appreciation?: number;
 }

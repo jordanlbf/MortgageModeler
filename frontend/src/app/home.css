@@ -126,6 +126,26 @@
   white-space: nowrap;
 }
 
+/* ── Feature pills ───────────────────────────────── */
+.home-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.home-pill {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(148,163,184,0.4);
+  padding: 4px 12px;
+  border-radius: 100px;
+  border: 1px solid rgba(148,163,184,0.08);
+  background: rgba(148,163,184,0.03);
+}
+
 /* ── Cards centering wrapper ─────────────────────── */
 .home-cards-center {
   flex: 1;
@@ -155,17 +175,29 @@
   grid-column: 2;
 }
 
-/* ── Upcoming label ──────────────────────────────── */
-.home-upcoming-label {
+/* ── Section divider ──────────────────────────────── */
+.home-divider {
   width: 100%;
   max-width: 1300px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.home-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(148,163,184,0.1), transparent);
+}
+
+.home-divider-text {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: rgba(148,163,184,0.2);
-  margin-bottom: 16px;
-  padding-left: 4px;
+  white-space: nowrap;
 }
 
 /* ── Cards grid ──────────────────────────────────── */
@@ -198,7 +230,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 52px 36px;
+  padding: 44px 36px;
   border-radius: 24px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -325,6 +357,49 @@
   border-color: rgba(45,212,191,0.08);
 }
 
+/* Beta-badged active card gets purple icon tint */
+.home-card--active:has(.home-card-badge--beta) .home-card-icon {
+  background: rgba(168,139,250,0.04);
+  border-color: rgba(168,139,250,0.08);
+}
+
+.home-card--active:has(.home-card-badge--beta) .home-card-arrow {
+  background: rgba(168,139,250,0.06);
+  border-color: rgba(168,139,250,0.1);
+  color: rgba(168,139,250,0.4);
+}
+
+.home-card--active:has(.home-card-badge--beta):hover .home-card-arrow:hover {
+  background: rgba(168,139,250,0.12);
+}
+
+.home-card--active:has(.home-card-badge--beta) .home-card-strip {
+  background: linear-gradient(90deg, #a78bfa, rgba(168,139,250,0.3));
+}
+
+.home-card--active:has(.home-card-badge--beta) {
+  border-color: rgba(168,139,250,0.15);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168,139,250,0.05) 0%, transparent 60%),
+    rgba(16,18,20,0.85);
+  box-shadow:
+    0 2px 16px rgba(0,0,0,0.4),
+    0 0 0 0.5px rgba(168,139,250,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.home-card--active:has(.home-card-badge--beta):hover {
+  border-color: rgba(168,139,250,0.28);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168,139,250,0.08) 0%, transparent 60%),
+    rgba(20,22,25,0.92);
+  box-shadow:
+    0 20px 50px -12px rgba(0,0,0,0.6),
+    0 0 0 0.5px rgba(168,139,250,0.12),
+    0 0 30px -8px rgba(168,139,250,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
 /* ── Title ────────────────────────────────────────── */
 .home-card-title {
   font-size: 22px;
@@ -332,6 +407,51 @@
   letter-spacing: -0.01em;
   margin: 0;
   line-height: 1.2;
+}
+
+/* ── Description ──────────────────────────────────── */
+.home-card-desc {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(148,163,184,0.3);
+  margin: 8px 0 0;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+
+.home-card--inactive .home-card-desc {
+  color: rgba(148,163,184,0.2);
+}
+
+/* ── Hover arrow ─────────────────────────────────── */
+.home-card-arrow {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(45,212,191,0.06);
+  border: 1px solid rgba(45,212,191,0.1);
+  color: rgba(45,212,191,0.4);
+  opacity: 0;
+  transition:
+    opacity 0.25s cubic-bezier(0.16,1,0.3,1),
+    transform 0.25s cubic-bezier(0.16,1,0.3,1),
+    background 0.2s ease;
+}
+
+.home-card--active:hover .home-card-arrow {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.home-card--active:hover .home-card-arrow:hover {
+  background: rgba(45,212,191,0.12);
 }
 
 /* ── Badge ────────────────────────────────────────── */
@@ -411,8 +531,7 @@
 
 /* Small tablet — ≤ 680px */
 @media (max-width: 680px) {
-  .home-title { font-size: 1.75rem; }
-
+  .home-title { font-size: 1.75rem; white-space: normal; }
   .home-featured,
   .home-cards {
     grid-template-columns: repeat(2, 1fr);
@@ -425,7 +544,9 @@
   .home-hero { padding: 24px 16px 16px; }
   .home-footer { padding: 12px 16px; }
 
-  .home-title { font-size: 1.35rem; margin-bottom: 24px; }
+  .home-title { font-size: 1.35rem; margin-bottom: 0; white-space: normal; }
+  .home-pills { gap: 6px; }
+  .home-pill { font-size: 10px; padding: 3px 10px; }
 
   .home-featured { margin-bottom: 24px; }
 
@@ -438,6 +559,8 @@
   .home-card {
     padding: 32px 20px;
   }
+
+  .home-card-arrow { display: none; }
 
   .home-card-badge {
     top: 10px;
@@ -463,20 +586,24 @@
   animation: fade-up 0.6s ease-out both;
 }
 
+.home-pills {
+  animation: fade-up 0.4s ease-out 0.2s both;
+}
+
 .home-cards-center {
-  animation: fade-up 0.5s ease-out 0.2s both;
+  animation: fade-up 0.5s ease-out 0.3s both;
 }
 
 .home-featured {
-  animation: fade-up 0.5s ease-out 0.25s both;
+  animation: fade-up 0.5s ease-out 0.35s both;
 }
 
-.home-upcoming-label {
-  animation: fade-up 0.4s ease-out 0.4s both;
+.home-divider {
+  animation: fade-up 0.4s ease-out 0.5s both;
 }
 
 .home-cards {
-  animation: fade-up 0.5s ease-out 0.5s both;
+  animation: fade-up 0.5s ease-out 0.6s both;
 }
 
 /* ── Reduced motion ──────────────────────────────── */
@@ -484,14 +611,16 @@
   .home-card,
   .home-card-strip,
   .home-card-shine,
-  .home-card-icon {
+  .home-card-icon,
+  .home-card-arrow {
     transition: none !important;
   }
 
   .home-title,
+  .home-pills,
   .home-cards-center,
   .home-featured,
-  .home-upcoming-label,
+  .home-divider,
   .home-cards {
     animation: none !important;
   }
