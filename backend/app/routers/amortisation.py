@@ -19,9 +19,6 @@ router = APIRouter(prefix="/amortisation", tags=["amortisation"])
 @router.post("/schedule", response_model=ScheduleResponse)
 def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
     """Generate a full amortisation schedule with chart data."""
-
-    loan_amount = req.loan_amount
-
     # Map API rate changes to domain model
     rate_changes = [
         RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
@@ -29,7 +26,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
     ]
 
     schedule = generate_schedule(
-        principal=loan_amount,
+        principal=req.loan_amount,
         annual_rate=req.annual_rate,
         loan_term_years=req.loan_term_years,
         frequency=req.frequency,
@@ -58,7 +55,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
     chart_data: list[ChartPoint] = [
         ChartPoint(
             year=0,
-            balance=loan_amount,
+            balance=req.loan_amount,
             total_interest=0.0,
             property_value=req.purchase_price,
             equity=round(req.deposit, 2),
@@ -86,7 +83,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
         summary=ScheduleSummary(
             purchase_price=req.purchase_price,
             deposit=req.deposit,
-            loan_amount=round(loan_amount, 2),
+            loan_amount=round(req.loan_amount, 2),
             lvr=round(req.lvr, 4),
             annual_appreciation=req.annual_appreciation,
         ),

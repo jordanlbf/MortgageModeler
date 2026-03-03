@@ -194,6 +194,7 @@
 }
 
 .home-card--active:hover {
+  transform: translateY(-5px) scale(1.02);
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%, rgba(45,212,191,0.1) 0%, transparent 60%),
     rgba(50,50,54,0.9);
@@ -203,6 +204,19 @@
     0 0 0 0.5px rgba(45,212,191,0.15),
     0 0 24px -4px rgba(45,212,191,0.08),
     inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.home-card--active:hover .home-card-strip {
+  transform: scaleX(1);
+}
+
+.home-card--active:hover .home-card-shine {
+  left: 100%;
+  opacity: 0.35;
+}
+
+.home-card--active:hover .home-card-icon {
+  transform: scale(1.1);
 }
 
 .home-card--active .home-card-title {
@@ -232,6 +246,7 @@
   right: 0;
   height: 2px;
   background: linear-gradient(90deg, #2dd4bf, rgba(45,212,191,0.3));
+  transform: scaleX(0);
   transform-origin: left center;
   transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
 }
@@ -240,8 +255,10 @@
 .home-card-shine {
   position: absolute;
   top: 0;
+  left: -100%;
   width: 100%;
   height: 100%;
+  opacity: 0;
   background: linear-gradient(
     105deg,
     transparent 40%,

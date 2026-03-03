@@ -16,6 +16,7 @@ class RateChangeRequest(BaseModel):
 
 
 class ScheduleRequest(BaseModel):
+    """ge = Greater than or equal to, le = Less than or equal to"""
     purchase_price: float = Field(ge=0, description="Property purchase price")
     deposit: float = Field(default=0.0, ge=0, description="Upfront deposit amount")
     annual_rate: float = Field(ge=0, le=1, description="Annual rate as decimal, e.g. 0.062")

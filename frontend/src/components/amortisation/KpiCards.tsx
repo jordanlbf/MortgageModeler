@@ -2,8 +2,9 @@ import type { Frequency } from "@/lib/types";
 import type { ScheduleResponse } from "@/lib/api";
 import { PERIODS_PER_YEAR, FREQ_LABELS, parseCurrency } from "@/lib/constants";
 import { formatCurrency, formatCurrencyCompact, loanAmountFromPayment } from "@/lib/formatters";
+import { useCallback } from "react";
 import { t } from "@/lib/theme";
-import { useAnimatedValue } from "@/hooks/useAnimatedValue";
+import { useAnimatedValue, useAnimatedText } from "@/hooks/useAnimatedValue";
 import GlassCard from "@/components/ui/GlassCard";
 import EditableValue from "@/components/ui/EditableValue";
 
@@ -27,8 +28,9 @@ export default function KpiCards({
   onPurchasePriceChange,
 }: KpiCardsProps) {
   const animPayment = useAnimatedValue(data?.payment ?? 0);
-  const animInterest = useAnimatedValue(data?.total_interest ?? 0);
-  const animLoan = useAnimatedValue(data?.summary.loan_amount ?? 0);
+  const fmtCompact = useCallback(formatCurrencyCompact, []);
+  const interestRef = useAnimatedText(data?.total_interest ?? 0, fmtCompact);
+  const loanRef = useAnimatedText(data?.summary.loan_amount ?? 0, fmtCompact);
 
   const total = data ? data.summary.loan_amount + data.total_interest : 0;
   const interestPct = data && total > 0 ? ((data.total_interest / total) * 100).toFixed(1) : "0";
@@ -75,7 +77,7 @@ export default function KpiCards({
           Total Interest
         </div>
         <div className="mt-1.5 text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums text-zinc-50">
-          {data ? formatCurrencyCompact(animInterest) : "—"}
+          {data ? <span ref={interestRef} /> : "—"}
         </div>
         <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-[0.12em] text-zinc-100/30">
           {data ? `${interestPct}% of total` : ""}
@@ -91,7 +93,7 @@ export default function KpiCards({
           Loan Amount
         </div>
         <div className="mt-1.5 text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums text-zinc-50">
-          {data ? formatCurrencyCompact(animLoan) : "—"}
+          {data ? <span ref={loanRef} /> : "—"}
         </div>
         <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-[0.12em] text-zinc-100/30">
           {data ? `${lvrPct}% LVR` : ""}

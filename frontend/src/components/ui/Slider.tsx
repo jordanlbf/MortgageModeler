@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback } from "react";
+import { useCallback } from "react";
 import { t } from "@/lib/theme";
+import { useEditableInput } from "@/hooks/useEditableInput";
 
 interface SliderProps {
   label: string;
@@ -17,38 +18,22 @@ export default function Slider({
   label, value, display, min, max, step, onChange, editable = false, parseDisplay,
 }: SliderProps) {
   const pct = ((value - min) / (max - min)) * 100;
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+
+  const clampedCommit = useCallback(
+    (parsed: number) => onChange(Math.min(max, Math.max(min, parsed))),
+    [onChange, min, max],
+  );
+
+  const parse = useCallback(
+    (d: string) => (parseDisplay ? parseDisplay(d) : value),
+    [parseDisplay, value],
+  );
+
+  const { editing, draft, inputRef, startEditing, commit, handleKeyDown, handleChange } =
+    useEditableInput({ display, onCommit: clampedCommit, parse });
 
   const handleClick = () => {
-    if (!editable || editing) return;
-    setEditing(true);
-    const seed = parseDisplay ? parseDisplay(display) : value;
-    setDraft(seed.toLocaleString("en-AU", { maximumFractionDigits: 2 }));
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    });
-  };
-
-  const commit = useCallback(() => {
-    if (!editing) return;
-    setEditing(false);
-    const stripped = draft.replace(/[^0-9.\-]/g, "");
-    const parsed = Number(stripped);
-    if (!isNaN(parsed) && stripped.length > 0) {
-      onChange(Math.min(max, Math.max(min, parsed)));
-    }
-  }, [draft, min, max, onChange, editing]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") { e.preventDefault(); inputRef.current?.blur(); }
-    if (e.key === "Escape") { e.preventDefault(); setEditing(false); }
-    const allowed = /^[0-9.,\-]$/.test(e.key) ||
-      ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End"].includes(e.key) ||
-      e.metaKey || e.ctrlKey;
-    if (!allowed) e.preventDefault();
+    if (editable) startEditing();
   };
 
   return (
@@ -67,7 +52,7 @@ export default function Slider({
           inputMode={editing ? "decimal" : "none"}
           value={editing ? draft : display}
           readOnly={!editing}
-          onChange={(e) => setDraft(e.target.value.replace(/[^0-9.,-]/g, ""))}
+          onChange={handleChange}
           onBlur={commit}
           onKeyDown={handleKeyDown}
           tabIndex={editable ? 0 : -1}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import type { Frequency, ChartDataPoint } from "@/lib/types";
 import type { ScheduleResponse } from "@/lib/api";
 import { fetchSchedule } from "@/lib/api";
@@ -29,7 +29,7 @@ export default function AmortisationView() {
   const chartRef = useRef<HTMLDivElement>(null);
   const fillHeight = useFillHeight(chartRef, 80);
 
-  const toggleSeries = (key: string) => {
+  const toggleSeries = useCallback((key: string) => {
     setVisibleSeries((prev) => {
       const next = new Set(prev);
       if (next.has(key)) {
@@ -39,7 +39,7 @@ export default function AmortisationView() {
       }
       return next;
     });
-  };
+  }, []);
 
   // ── API fetch ──────────────────────────────────
   const [data, setData] = useState<ScheduleResponse | null>(null);

@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { TOOLS } from "@/lib/constants";
 import type { Tool } from "@/lib/constants";
@@ -59,27 +56,17 @@ const icons: Record<string, React.ReactNode> = {
 
 /* ── ToolCard ─────────────────────────────────────── */
 function ToolCard({ tool }: { tool: Tool }) {
-  const [hovered, setHovered] = useState(false);
-  const lift = hovered && tool.active;
-
   const inner = (
-    <div
-      className={`home-card ${tool.active ? "home-card--active" : "home-card--inactive"}`}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ transform: lift ? "translateY(-5px) scale(1.02)" : "none" }}
-    >
-      <div className="home-card-strip" style={{ transform: lift ? "scaleX(1)" : "scaleX(0)" }} />
-      <div className="home-card-shine" style={{ left: lift ? "100%" : "-100%", opacity: lift ? 0.35 : 0 }} />
+    <div className={`home-card ${tool.active ? "home-card--active" : "home-card--inactive"}`}>
+      <div className="home-card-strip" />
+      <div className="home-card-shine" />
 
-      <div className="home-card-icon" style={{ transform: lift ? "scale(1.1)" : "none" }}>
+      <div className="home-card-icon">
         {icons[tool.id]}
       </div>
 
-      {/* Title */}
       <h2 className="home-card-title">{tool.title}</h2>
 
-      {/* Badge */}
       <span className={`home-card-badge ${tool.active ? "home-card-badge--live" : "home-card-badge--soon"}`}>
         {tool.active ? "Live" : "Soon"}
       </span>

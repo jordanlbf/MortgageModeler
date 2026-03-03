@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts";
+import { useRef, useEffect } from "react";
 import type { ChartDataPoint } from "@/lib/types";
 import { formatCurrency, formatCompact } from "@/lib/formatters";
 import { t, SERIES, SERIES_LIST } from "@/lib/theme";
@@ -127,6 +128,17 @@ export default function AmortisationChart({
   visibleSeries,
   height,
 }: AmortisationChartProps) {
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (data.length > 0 && !hasAnimated.current) {
+      hasAnimated.current = true;
+    }
+  }, [data]);
+
+  const animDuration = hasAnimated.current ? 0 : 400;
+  const animEasing = "ease-out" as const;
+
   return (
     <div className="px-5 pb-2 pt-1">
       {data.length > 0 ? (
@@ -180,11 +192,11 @@ export default function AmortisationChart({
               cursor={{ stroke: t.chart.cursor, strokeWidth: 1, strokeDasharray: "3 3" }}
             />
             <ReferenceLine yAxisId="left" y={0} stroke={t.chart.gridH} />
-            {visibleSeries.has("bal") && <Area yAxisId="left" type="monotone" dataKey="bal" name={SERIES.bal.label} stroke={SERIES.bal.color} strokeWidth={SERIES.bal.stroke} fill="url(#gbal)" animationDuration={400} animationEasing="ease-out" />}
-            {visibleSeries.has("int") && <Area yAxisId="left" type="monotone" dataKey="int" name={SERIES.int.label} stroke={SERIES.int.color} strokeWidth={SERIES.int.stroke} fill="url(#gint)" animationDuration={400} animationEasing="ease-out" />}
-            {visibleSeries.has("eq") && <Area yAxisId="left" type="monotone" dataKey="eq" name={SERIES.eq.label} stroke={SERIES.eq.color} strokeWidth={SERIES.eq.stroke} fill="url(#geq)" animationDuration={400} animationEasing="ease-out" />}
-            {visibleSeries.has("paid") && <Area yAxisId="left" type="monotone" dataKey="paid" name={SERIES.paid.label} stroke={SERIES.paid.color} strokeWidth={SERIES.paid.stroke} fill="url(#gpaid)" animationDuration={400} animationEasing="ease-out" />}
-            {visibleSeries.has("lvr") && <Area yAxisId="right" type="monotone" dataKey="lvr" name={SERIES.lvr.label} stroke={SERIES.lvr.color} strokeWidth={SERIES.lvr.stroke} fill="url(#glvr)" animationDuration={400} animationEasing="ease-out" />}
+            {visibleSeries.has("bal") && <Area yAxisId="left" type="monotone" dataKey="bal" name={SERIES.bal.label} stroke={SERIES.bal.color} strokeWidth={SERIES.bal.stroke} fill="url(#gbal)" animationDuration={animDuration} animationEasing={animEasing} />}
+            {visibleSeries.has("int") && <Area yAxisId="left" type="monotone" dataKey="int" name={SERIES.int.label} stroke={SERIES.int.color} strokeWidth={SERIES.int.stroke} fill="url(#gint)" animationDuration={animDuration} animationEasing={animEasing} />}
+            {visibleSeries.has("eq") && <Area yAxisId="left" type="monotone" dataKey="eq" name={SERIES.eq.label} stroke={SERIES.eq.color} strokeWidth={SERIES.eq.stroke} fill="url(#geq)" animationDuration={animDuration} animationEasing={animEasing} />}
+            {visibleSeries.has("paid") && <Area yAxisId="left" type="monotone" dataKey="paid" name={SERIES.paid.label} stroke={SERIES.paid.color} strokeWidth={SERIES.paid.stroke} fill="url(#gpaid)" animationDuration={animDuration} animationEasing={animEasing} />}
+            {visibleSeries.has("lvr") && <Area yAxisId="right" type="monotone" dataKey="lvr" name={SERIES.lvr.label} stroke={SERIES.lvr.color} strokeWidth={SERIES.lvr.stroke} fill="url(#glvr)" animationDuration={animDuration} animationEasing={animEasing} />}
           </AreaChart>
         </ResponsiveContainer>
       ) : (
