@@ -66,7 +66,6 @@ function ToolCard({ tool }: { tool: Tool }) {
       </div>
 
       <h2 className="home-card-title">{tool.title}</h2>
-      <p className="home-card-desc">{tool.desc}</p>
 
       <span className={`home-card-badge ${
         tool.badge === "Beta" ? "home-card-badge--beta"
@@ -101,21 +100,22 @@ export default function HomePage() {
       <main className="home-hero">
         <div className="home-glow" />
 
-        <h1 className="home-title">Mortgage Modeler</h1>
-        <p className="home-subtitle">Visualise your loan, compare strategies, and make smarter property decisions.</p>
+        <h1 className="home-title">Model property decisions with precision.</h1>
 
-        <div className="home-featured">
-          {TOOLS.filter((t) => t.active).map((tool) => (
-            <ToolCard key={tool.id} tool={tool} />
-          ))}
-        </div>
+        <div className="home-cards-center">
+          <div className="home-featured">
+            {TOOLS.filter((t) => t.active).map((tool) => (
+              <ToolCard key={tool.id} tool={tool} />
+            ))}
+          </div>
 
-        <div className="home-upcoming-label">Coming soon</div>
+          <div className="home-upcoming-label">Coming soon</div>
 
-        <div className="home-cards">
-          {TOOLS.filter((t) => !t.active).map((tool) => (
-            <ToolCard key={tool.id} tool={tool} />
-          ))}
+          <div className="home-cards">
+            {TOOLS.filter((t) => !t.active).map((tool) => (
+              <ToolCard key={tool.id} tool={tool} />
+            ))}
+          </div>
         </div>
       </main>
 

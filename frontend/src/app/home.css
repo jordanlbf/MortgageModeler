@@ -1,6 +1,5 @@
 /* ════════════════════════════════════════════════════
    MortgageModeler — Homepage
-   Inspired by Schedular's glassmorphic landing page
    ════════════════════════════════════════════════════ */
 
 /* ── Layout ──────────────────────────────────────── */
@@ -8,21 +7,28 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(45,212,191,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 20% 80%, rgba(45,212,191,0.02) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 80% 60%, rgba(96,165,250,0.015) 0%, transparent 50%),
-    linear-gradient(180deg, #0e1012 0%, #111215 30%, #131518 70%, #0f1113 100%);
+  background: #08090a;
   position: relative;
+  overflow: hidden;
 }
 
-/* Dot-grid pattern */
+/* Layered ambient gradients */
 .home-wrap::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(rgba(148,163,184,0.045) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background:
+    /* Primary hero wash — warm neutral with a hint of teal */
+    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(15,23,30,0.95) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 35% at 50% 5%, rgba(20,70,80,0.18) 0%, transparent 65%),
+    /* Subtle side accents */
+    radial-gradient(ellipse 30% 40% at 8% 20%, rgba(15,60,75,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 25% 35% at 92% 25%, rgba(15,60,75,0.06) 0%, transparent 55%),
+    /* Bottom vignette */
+    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 70%),
+    /* Fine grid — deep grey lines */
+    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,0.018) 59px, rgba(255,255,255,0.018) 60px),
+    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,0.018) 59px, rgba(255,255,255,0.018) 60px);
   pointer-events: none;
   z-index: 0;
 }
@@ -32,8 +38,8 @@
   content: '';
   position: fixed;
   inset: 0;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.015;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
   pointer-events: none;
   z-index: 0;
 }
@@ -49,7 +55,7 @@
   align-items: center;
   justify-content: flex-start;
   padding: 16px 40px;
-  border-bottom: 1px solid rgba(113,113,122,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
   z-index: 10;
 }
 
@@ -85,23 +91,22 @@
   flex-direction: column;
   align-items: center;
   flex: 1;
-  padding: 60px 40px 40px;
+  padding: 48px 40px 40px;
   text-align: center;
   position: relative;
 }
 
-/* Ambient glow — layered */
+/* Ambient glow — focused behind title */
 .home-glow {
   position: absolute;
-  top: -15%;
+  top: -10%;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  height: 60%;
+  width: 70%;
+  height: 50%;
   background:
-    radial-gradient(ellipse 50% 40% at 50% 40%, rgba(45,212,191,0.07) 0%, transparent 70%),
-    radial-gradient(ellipse 30% 30% at 40% 50%, rgba(45,212,191,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 25% at 60% 45%, rgba(96,165,250,0.025) 0%, transparent 55%);
+    radial-gradient(ellipse 45% 40% at 50% 40%, rgba(45,212,191,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 50% 20%, rgba(15,50,60,0.2) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
@@ -112,32 +117,34 @@
 }
 
 .home-title {
-  font-size: 48px;
-  font-weight: 700;
+  font-size: 3.75rem;
+  font-weight: 600;
   color: #f0fdfa;
   letter-spacing: -0.035em;
-  margin: 0 0 12px;
+  margin: 0;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
-.home-subtitle {
-  font-size: 17px;
-  font-weight: 400;
-  color: rgba(148,163,184,0.45);
-  margin: 0 0 40px;
-  line-height: 1.5;
-  letter-spacing: 0.01em;
-  max-width: 440px;
+/* ── Cards centering wrapper ─────────────────────── */
+.home-cards-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: -20px;
 }
 
 /* ── Featured card ───────────────────────────────── */
 .home-featured {
   width: 100%;
-  max-width: 1000px;
-  margin-bottom: 32px;
+  max-width: 1300px;
+  margin-bottom: 36px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 24px;
 }
 
 .home-featured .home-card-link {
@@ -151,7 +158,7 @@
 /* ── Upcoming label ──────────────────────────────── */
 .home-upcoming-label {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1300px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -164,10 +171,10 @@
 /* ── Cards grid ──────────────────────────────────── */
 .home-cards {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1300px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 24px;
 }
 
 .home-card-link {
@@ -191,8 +198,8 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 44px 28px;
-  border-radius: 20px;
+  padding: 52px 36px;
+  border-radius: 24px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition:
@@ -206,26 +213,26 @@
 .home-card--active {
   cursor: pointer;
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(45,212,191,0.06) 0%, transparent 60%),
-    rgba(44,44,48,0.82);
-  border: 1px solid rgba(45,212,191,0.2);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(45,212,191,0.05) 0%, transparent 60%),
+    rgba(16,18,20,0.85);
+  border: 1px solid rgba(45,212,191,0.15);
   box-shadow:
-    0 2px 12px rgba(0,0,0,0.3),
-    0 0 0 0.5px rgba(45,212,191,0.08),
-    inset 0 1px 0 rgba(255,255,255,0.04);
+    0 2px 16px rgba(0,0,0,0.4),
+    0 0 0 0.5px rgba(45,212,191,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
 .home-card--active:hover {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-4px) scale(1.015);
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(45,212,191,0.1) 0%, transparent 60%),
-    rgba(50,50,54,0.9);
-  border-color: rgba(45,212,191,0.35);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(45,212,191,0.08) 0%, transparent 60%),
+    rgba(20,22,25,0.92);
+  border-color: rgba(45,212,191,0.28);
   box-shadow:
-    0 16px 48px -8px rgba(0,0,0,0.55),
-    0 0 0 0.5px rgba(45,212,191,0.15),
-    0 0 24px -4px rgba(45,212,191,0.08),
-    inset 0 1px 0 rgba(255,255,255,0.06);
+    0 20px 50px -12px rgba(0,0,0,0.6),
+    0 0 0 0.5px rgba(45,212,191,0.12),
+    0 0 30px -8px rgba(45,212,191,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 .home-card--active:hover .home-card-strip {
@@ -248,12 +255,12 @@
 /* ── Inactive card ────────────────────────────────── */
 .home-card--inactive {
   cursor: default;
-  background: rgba(38,38,42,0.75);
-  border: 1px solid rgba(113,113,122,0.06);
+  background: rgba(14,16,18,0.7);
+  border: 1px solid rgba(255,255,255,0.04);
   box-shadow:
-    0 1px 6px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.015);
-  opacity: 0.55;
+    0 2px 8px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.02);
+  opacity: 0.5;
 }
 
 .home-card--inactive .home-card-title {
@@ -295,41 +302,36 @@
 
 /* ── Icon ─────────────────────────────────────────── */
 .home-card-icon {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
   line-height: 0;
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 20px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.035);
+}
+
+.home-card-icon svg {
+  width: 56px;
+  height: 56px;
 }
 
 .home-card--active .home-card-icon {
-  background: rgba(45,212,191,0.06);
-  border-color: rgba(45,212,191,0.1);
+  background: rgba(45,212,191,0.04);
+  border-color: rgba(45,212,191,0.08);
 }
 
 /* ── Title ────────────────────────────────────────── */
 .home-card-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.01em;
   margin: 0;
   line-height: 1.2;
-}
-
-/* ── Description ──────────────────────────────────── */
-.home-card-desc {
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(148,163,184,0.35);
-  margin: 8px 0 0;
-  line-height: 1.45;
-  letter-spacing: 0.01em;
 }
 
 /* ── Badge ────────────────────────────────────────── */
@@ -364,7 +366,7 @@
 /* ── Footer ──────────────────────────────────────── */
 .home-footer {
   padding: 20px 40px;
-  border-top: 1px solid rgba(113,113,122,0.06);
+  border-top: 1px solid rgba(255,255,255,0.04);
 }
 
 .home-footer-inner {
@@ -394,8 +396,7 @@
   .home-hero { padding: 32px 24px 20px; }
   .home-footer { padding: 16px 24px; }
 
-  .home-title { font-size: 38px; }
-  .home-subtitle { font-size: 15px; }
+  .home-title { font-size: 2.5rem; }
 
   .home-featured,
   .home-cards {
@@ -410,7 +411,7 @@
 
 /* Small tablet — ≤ 680px */
 @media (max-width: 680px) {
-  .home-title { font-size: 32px; }
+  .home-title { font-size: 1.75rem; }
 
   .home-featured,
   .home-cards {
@@ -424,8 +425,7 @@
   .home-hero { padding: 24px 16px 16px; }
   .home-footer { padding: 12px 16px; }
 
-  .home-title { font-size: 28px; margin-bottom: 8px; }
-  .home-subtitle { font-size: 14px; margin-bottom: 28px; }
+  .home-title { font-size: 1.35rem; margin-bottom: 24px; }
 
   .home-featured { margin-bottom: 24px; }
 
@@ -463,8 +463,8 @@
   animation: fade-up 0.6s ease-out both;
 }
 
-.home-subtitle {
-  animation: fade-up 0.6s ease-out 0.1s both;
+.home-cards-center {
+  animation: fade-up 0.5s ease-out 0.2s both;
 }
 
 .home-featured {
@@ -489,7 +489,7 @@
   }
 
   .home-title,
-  .home-subtitle,
+  .home-cards-center,
   .home-featured,
   .home-upcoming-label,
   .home-cards {
