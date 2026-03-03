@@ -9,6 +9,7 @@ export function useFillHeight(
   ref: React.RefObject<HTMLDivElement | null>,
   padding = 105,
   min = 300,
+  layoutKey?: unknown,
 ) {
   const [height, setHeight] = useState(min);
 
@@ -33,7 +34,7 @@ export function useFillHeight(
       window.removeEventListener("resize", update);
       ro.disconnect();
     };
-  }, [ref, padding, min]);
+  }, [ref, padding, min, layoutKey]);
 
   return height;
 }

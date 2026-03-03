@@ -12,10 +12,11 @@ interface SliderProps {
   onChange: (v: number) => void;
   editable?: boolean;
   parseDisplay?: (display: string) => number;
+  accent?: string;
 }
 
 export default function Slider({
-  label, value, display, min, max, step, onChange, editable = false, parseDisplay,
+  label, value, display, min, max, step, onChange, editable = false, parseDisplay, accent = t.accent,
 }: SliderProps) {
   const pct = ((value - min) / (max - min)) * 100;
 
@@ -38,7 +39,10 @@ export default function Slider({
 
   return (
     <div>
-      <div className="mb-1.5 text-[14px] font-medium uppercase tracking-[0.14em] text-teal-400/50 text-center">
+      <div
+        className="mb-1.5 text-[14px] font-medium uppercase tracking-[0.14em] text-center"
+        style={{ color: accent + "80" }}
+      >
         {label}
       </div>
 
@@ -57,11 +61,15 @@ export default function Slider({
           onKeyDown={handleKeyDown}
           tabIndex={editable ? 0 : -1}
           onFocus={editable ? handleClick : undefined}
-          className={`w-full bg-transparent text-center text-[16px] font-normal leading-none tabular-nums outline-none caret-teal-400 selection:bg-teal-400/20 selection:text-zinc-50 transition-colors duration-150 ${
+          style={{
+            caretColor: accent,
+            ["--slider-accent" as string]: accent,
+          }}
+          className={`w-full bg-transparent text-center text-[16px] font-normal leading-none tabular-nums outline-none transition-colors duration-150 ${
             editable
               ? editing
                 ? "text-zinc-50 cursor-text"
-                : "text-zinc-50 cursor-text hover:text-teal-300"
+                : "text-zinc-50 cursor-text hover:brightness-125"
               : "text-zinc-50"
           }`}
         />
@@ -71,7 +79,7 @@ export default function Slider({
         <div className="absolute inset-x-0 h-[2px] rounded-full" style={{ background: t.border.default }} />
         <div
           className="absolute left-0 h-[2px] rounded-full"
-          style={{ width: `${pct}%`, background: `${t.accent}80` }}
+          style={{ width: `${pct}%`, background: accent + "80" }}
         />
         <input
           type="range"
@@ -88,7 +96,7 @@ export default function Slider({
         />
         <div
           className="pointer-events-none absolute h-[10px] w-[10px] -translate-x-1/2 rounded-full border-[2px]"
-          style={{ left: `${pct}%`, borderColor: `${t.accent}cc`, background: t.bg.sliderThumb }}
+          style={{ left: `${pct}%`, borderColor: accent + "cc", background: t.bg.sliderThumb }}
         />
       </div>
     </div>

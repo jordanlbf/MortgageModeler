@@ -1,6 +1,7 @@
-import { parseCurrency, parsePercent, parseYears } from "@/lib/constants";
+import type { Frequency } from "@/lib/types";
+import { parseCurrency, parsePercent, parseYears, FREQ_LABELS } from "@/lib/constants";
 import { formatCurrencyShort } from "@/lib/formatters";
-import { t } from "@/lib/theme";
+import { t, SERIES } from "@/lib/theme";
 import GlassCard from "@/components/ui/GlassCard";
 import Slider from "@/components/ui/Slider";
 
@@ -10,14 +11,25 @@ interface LoanControlsProps {
   rate: number;
   years: number;
   appreciation: number;
+  loanAmount: number;
+  frequency: Frequency;
+  showOffset: boolean;
+  showEquity: boolean;
+  offsetBalance: number;
+  offsetContribution: number;
   onPurchasePriceChange: (v: number) => void;
   onDepositChange: (v: number) => void;
   onRateChange: (v: number) => void;
   onYearsChange: (v: number) => void;
   onAppreciationChange: (v: number) => void;
+  onOffsetBalanceChange: (v: number) => void;
+  onOffsetContributionChange: (v: number) => void;
 }
 
 const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.accentBorder };
+
+const OFFSET_BORDER = { borderTopWidth: 3, borderTopColor: SERIES.offset.color + "59" };
+const EQUITY_BORDER = { borderTopWidth: 3, borderTopColor: SERIES.eq.color + "59" };
 
 export default function LoanControls({
   purchasePrice,
@@ -25,14 +37,27 @@ export default function LoanControls({
   rate,
   years,
   appreciation,
+  loanAmount,
+  frequency,
+  showOffset,
+  showEquity,
+  offsetBalance,
+  offsetContribution,
   onPurchasePriceChange,
   onDepositChange,
   onRateChange,
   onYearsChange,
   onAppreciationChange,
+  onOffsetBalanceChange,
+  onOffsetContributionChange,
 }: LoanControlsProps) {
   return (
-    <div className="mb-3 grid grid-cols-[4fr_1fr] gap-3">
+    <div className={`mb-3 grid gap-3 ${
+      showOffset && showEquity ? "grid-cols-[4fr_2fr_1fr]" :
+      showOffset ? "grid-cols-[4fr_2fr]" :
+      showEquity ? "grid-cols-[4fr_1fr]" :
+      "grid-cols-[4fr]"
+    }`}>
       <GlassCard className="border-teal-400/20" style={CARD_BORDER}>
         <div className="grid grid-cols-4">
           <div className="px-4 py-2.5">
@@ -90,21 +115,59 @@ export default function LoanControls({
         </div>
       </GlassCard>
 
-      <GlassCard className="border-teal-400/20" style={CARD_BORDER}>
-        <div className="px-4 py-2.5">
-          <Slider
-            label="Appreciation"
-            value={appreciation}
-            display={`${appreciation.toFixed(1)}%`}
-            min={0}
-            max={10}
-            step={0.5}
-            onChange={onAppreciationChange}
-            editable
-            parseDisplay={parsePercent}
-          />
-        </div>
-      </GlassCard>
+      {showOffset && (
+        <GlassCard className="border-teal-400/20" style={OFFSET_BORDER}>
+          <div className="grid grid-cols-2">
+            <div className="px-4 py-2.5">
+              <Slider
+                label="Starting balance"
+                value={offsetBalance}
+                display={formatCurrencyShort(offsetBalance)}
+                min={0}
+                max={Math.max(loanAmount, 50_000)}
+                step={5_000}
+                onChange={onOffsetBalanceChange}
+                editable
+                parseDisplay={parseCurrency}
+                accent={SERIES.offset.color}
+              />
+            </div>
+            <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
+              <Slider
+                label={`Contribution per ${FREQ_LABELS[frequency]}`}
+                value={offsetContribution}
+                display={formatCurrencyShort(offsetContribution)}
+                min={0}
+                max={5_000}
+                step={50}
+                onChange={onOffsetContributionChange}
+                editable
+                parseDisplay={parseCurrency}
+                accent={SERIES.offset.color}
+              />
+            </div>
+          </div>
+        </GlassCard>
+      )}
+
+      {showEquity && (
+        <GlassCard className="border-teal-400/20" style={EQUITY_BORDER}>
+          <div className="px-4 py-2.5">
+            <Slider
+              label="Appreciation"
+              value={appreciation}
+              display={`${appreciation.toFixed(1)}%`}
+              min={0}
+              max={10}
+              step={0.5}
+              onChange={onAppreciationChange}
+              editable
+              parseDisplay={parsePercent}
+              accent={SERIES.eq.color}
+            />
+          </div>
+        </GlassCard>
+      )}
     </div>
   );
 }

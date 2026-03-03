@@ -29,7 +29,9 @@ export default function AmortisationView() {
   const [view, setView] = useState<"chart" | "table">("chart");
   const [visibleSeries, setVisibleSeries] = useState<Set<string>>(new Set(["bal", "int"]));
   const chartRef = useRef<HTMLDivElement>(null);
-  const fillHeight = useFillHeight(chartRef, 80);
+  const showOffset = visibleSeries.has("offset");
+  const showEquity = visibleSeries.has("eq");
+  const fillHeight = useFillHeight(chartRef, 80, 300, `${showOffset}${showEquity}`);
 
   const toggleSeries = useCallback((key: string) => {
     setVisibleSeries((prev) => {
@@ -103,12 +105,7 @@ export default function AmortisationView() {
           rate={rate}
           years={years}
           deposit={deposit}
-          offsetBalance={offsetBalance}
-          offsetContribution={offsetContribution}
-          showOffset={visibleSeries.has("offset")}
           onPurchasePriceChange={setPurchasePrice}
-          onOffsetBalanceChange={setOffsetBalance}
-          onOffsetContributionChange={setOffsetContribution}
         />
 
         <LoanControls
@@ -117,11 +114,19 @@ export default function AmortisationView() {
           rate={rate}
           years={years}
           appreciation={appreciation}
+          loanAmount={data?.summary.loan_amount ?? 0}
+          frequency={frequency}
+          showOffset={showOffset}
+          showEquity={showEquity}
+          offsetBalance={offsetBalance}
+          offsetContribution={offsetContribution}
           onPurchasePriceChange={setPurchasePrice}
           onDepositChange={setDeposit}
           onRateChange={setRate}
           onYearsChange={setYears}
           onAppreciationChange={setAppreciation}
+          onOffsetBalanceChange={setOffsetBalance}
+          onOffsetContributionChange={setOffsetContribution}
         />
 
         {error && (
