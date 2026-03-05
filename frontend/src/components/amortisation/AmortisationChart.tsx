@@ -8,10 +8,23 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import type { ChartDataPoint } from "@/lib/types";
 import { formatCurrency, formatCompact } from "@/lib/formatters";
 import { t, SERIES, SERIES_LIST } from "@/lib/theme";
+
+const SERIES_KEYS = Object.keys(SERIES) as (keyof typeof SERIES)[];
+
+const AREA_CONFIG = SERIES_KEYS.map((key) => ({
+  key,
+  yAxisId: key === "lvr" ? "right" : "left",
+}));
+
+// ── Animation timing ──────────────────────────────
+const ENTRANCE_MS = 800;
+const ENTRANCE_STAGGER_MS = 100;
+const TOGGLE_MS = 450;
+const SLIDER_MS = 200;
 
 // ── Tooltip ──────────────────────────────────────
 
@@ -19,12 +32,18 @@ function ChartTooltip({
   active,
   payload,
   label,
+  visibleSeries,
 }: {
   active?: boolean;
-  payload?: Array<{ color: string; name: string; value: number }>;
+  payload?: Array<{ color: string; name: string; value: number; dataKey?: string }>;
   label?: number;
+  visibleSeries?: Set<string>;
 }) {
   if (!active || !payload?.length) return null;
+  const filtered = visibleSeries
+    ? payload.filter((e) => e.dataKey && visibleSeries.has(e.dataKey))
+    : payload;
+  if (!filtered.length) return null;
   return (
     <div
       className="rounded-lg backdrop-blur-xl"
@@ -40,7 +59,7 @@ function ChartTooltip({
         </span>
       </div>
       <div className="px-4 py-2.5">
-        {payload.map((entry, i) => (
+        {filtered.map((entry, i) => (
           <div
             key={i}
             className="flex items-center gap-6 tabular-nums"
@@ -128,21 +147,79 @@ export default function AmortisationChart({
   visibleSeries,
   height,
 }: AmortisationChartProps) {
-  const [animDuration, setAnimDuration] = useState(400);
-
+  // ── Phase: entrance → steady ──
+  const [phase, setPhase] = useState<"entrance" | "steady">("entrance");
+  const hasData = data.length > 0;
   useEffect(() => {
-    if (data.length > 0 && animDuration > 0) {
-      const timer = setTimeout(() => setAnimDuration(0), 450);
+    if (hasData && phase === "entrance") {
+      const total = ENTRANCE_MS + ENTRANCE_STAGGER_MS * (AREA_CONFIG.length - 1) + 200;
+      const timer = setTimeout(() => setPhase("steady"), total);
       return () => clearTimeout(timer);
     }
-  }, [data, animDuration]);
-  const animEasing = "ease-out" as const;
+  }, [hasData, phase]);
+
+  // ── Toggle detection ──
+  // visibleSeries is a stable Set ref — only changes identity on toggle
+  const prevVisibleRef = useRef(visibleSeries);
+  const isToggle = phase === "steady" && prevVisibleRef.current !== visibleSeries;
+  useEffect(() => { prevVisibleRef.current = visibleSeries; }, [visibleSeries]);
+
+  // ── Animation params: entrance 800ms, toggle 450ms ease-in-out, slider 200ms ease-out ──
+  const animDuration = phase === "entrance" ? ENTRANCE_MS : isToggle ? TOGGLE_MS : SLIDER_MS;
+  const animEasing: "ease-out" | "ease-in-out" = isToggle ? "ease-in-out" : "ease-out";
+
+  // ── Display data: zero hidden series for baseline morphing ──
+  const displayData = useMemo(
+    () =>
+      data.map((point) => {
+        const d = { ...point };
+        for (const key of SERIES_KEYS) {
+          if (!visibleSeries.has(key)) d[key] = 0;
+        }
+        return d;
+      }),
+    [data, visibleSeries],
+  );
+
+  // ── Stepped opacity fade ──
+  const [displayOpacity, setDisplayOpacity] = useState<Record<string, number>>(
+    () => Object.fromEntries(SERIES_KEYS.map((k) => [k, visibleSeries.has(k) ? 1 : 0])),
+  );
+  const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>[]>>({});
+
+  useEffect(() => {
+    for (const key of SERIES_KEYS) {
+      const visible = visibleSeries.has(key);
+      timersRef.current[key]?.forEach(clearTimeout);
+      timersRef.current[key] = [];
+      if (visible) {
+        // Toggle ON → show immediately
+        setDisplayOpacity((prev) => (prev[key] === 1 ? prev : { ...prev, [key]: 1 }));
+      } else {
+        // Toggle OFF → hold visible during morph, then stepped fade-out
+        timersRef.current[key] = [
+          setTimeout(
+            () => setDisplayOpacity((prev) => ({ ...prev, [key]: 0.4 })),
+            TOGGLE_MS * 0.65,
+          ),
+          setTimeout(
+            () => setDisplayOpacity((prev) => ({ ...prev, [key]: 0 })),
+            TOGGLE_MS,
+          ),
+        ];
+      }
+    }
+    return () => {
+      for (const timers of Object.values(timersRef.current)) timers.forEach(clearTimeout);
+      timersRef.current = {};
+    };
+  }, [visibleSeries]);
 
   return (
     <div className="px-5 pb-2 pt-1">
-      {data.length > 0 ? (
+      {hasData ? (
         <ResponsiveContainer width="100%" height={height}>
-          <AreaChart data={data} margin={{ top: 4, right: 6, left: 0, bottom: 32 }}>
+          <AreaChart data={displayData} margin={{ top: 4, right: 6, left: 0, bottom: 32 }}>
             <defs>
               {Object.entries(SERIES).map(([key, s]) => (
                 <linearGradient key={key} id={`g${key}`} x1="0" y1="0" x2="0" y2="1">
@@ -187,16 +264,31 @@ export default function AmortisationChart({
               width={32}
             />
             <Tooltip
-              content={<ChartTooltip />}
+              content={<ChartTooltip visibleSeries={visibleSeries} />}
               cursor={{ stroke: t.chart.cursor, strokeWidth: 1, strokeDasharray: "3 3" }}
             />
             <ReferenceLine yAxisId="left" y={0} stroke={t.chart.gridH} />
-            {visibleSeries.has("bal") && <Area yAxisId="left" type="monotone" dataKey="bal" name={SERIES.bal.label} stroke={SERIES.bal.color} strokeWidth={SERIES.bal.stroke} fill="url(#gbal)" animationDuration={animDuration} animationEasing={animEasing} />}
-            {visibleSeries.has("int") && <Area yAxisId="left" type="monotone" dataKey="int" name={SERIES.int.label} stroke={SERIES.int.color} strokeWidth={SERIES.int.stroke} fill="url(#gint)" animationDuration={animDuration} animationEasing={animEasing} />}
-            {visibleSeries.has("eq") && <Area yAxisId="left" type="monotone" dataKey="eq" name={SERIES.eq.label} stroke={SERIES.eq.color} strokeWidth={SERIES.eq.stroke} fill="url(#geq)" animationDuration={animDuration} animationEasing={animEasing} />}
-            {visibleSeries.has("paid") && <Area yAxisId="left" type="monotone" dataKey="paid" name={SERIES.paid.label} stroke={SERIES.paid.color} strokeWidth={SERIES.paid.stroke} fill="url(#gpaid)" animationDuration={animDuration} animationEasing={animEasing} />}
-            {visibleSeries.has("lvr") && <Area yAxisId="right" type="monotone" dataKey="lvr" name={SERIES.lvr.label} stroke={SERIES.lvr.color} strokeWidth={SERIES.lvr.stroke} fill="url(#glvr)" animationDuration={animDuration} animationEasing={animEasing} />}
-            {visibleSeries.has("offset") && <Area yAxisId="left" type="monotone" dataKey="offset" name={SERIES.offset.label} stroke={SERIES.offset.color} strokeWidth={SERIES.offset.stroke} fill="url(#goffset)" animationDuration={animDuration} animationEasing={animEasing} />}
+            {AREA_CONFIG.map(({ key, yAxisId }, i) => {
+              const s = SERIES[key];
+              const opacity = displayOpacity[key] ?? 0;
+              return (
+                <Area
+                  key={key}
+                  yAxisId={yAxisId}
+                  type="monotone"
+                  dataKey={key}
+                  name={s.label}
+                  stroke={s.color}
+                  strokeWidth={s.stroke}
+                  fill={`url(#g${key})`}
+                  strokeOpacity={opacity}
+                  fillOpacity={opacity}
+                  animationDuration={animDuration}
+                  animationEasing={animEasing}
+                  animationBegin={phase === "entrance" ? i * ENTRANCE_STAGGER_MS : 0}
+                />
+              );
+            })}
           </AreaChart>
         </ResponsiveContainer>
       ) : (

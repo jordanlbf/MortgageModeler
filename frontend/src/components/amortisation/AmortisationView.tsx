@@ -37,6 +37,7 @@ export default function AmortisationView() {
   const { focused, chartHeight, handleFocusToggle } = useFocusMode({ cardRef, controlsRef, normalHeight });
 
   const toggleSeries = useCallback((key: string) => {
+    const willEnable = !visibleSeries.has(key);
     setVisibleSeries((prev) => {
       const next = new Set(prev);
       if (next.has(key)) {
@@ -46,7 +47,10 @@ export default function AmortisationView() {
       }
       return next;
     });
-  }, []);
+    if (key === "eq") {
+      setters.setAppreciation(willEnable ? 6.5 : 0);
+    }
+  }, [visibleSeries, setters]);
 
   // ── Render ─────────────────────────────────────
   return (

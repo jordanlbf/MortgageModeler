@@ -43,7 +43,7 @@ export function useAmortisationState(): AmortisationState {
   const [deposit, setDeposit] = useState(100_000);
   const [rate, setRate] = useState(6.2);
   const [years, setYears] = useState(30);
-  const [appreciation, setAppreciation] = useState(6.5);
+  const [appreciation, setAppreciation] = useState(0);
   const [offsetBalance, setOffsetBalance] = useState(0);
   const [offsetContribution, setOffsetContribution] = useState(0);
   const [frequency, setFrequency] = useState<Frequency>("weekly");
