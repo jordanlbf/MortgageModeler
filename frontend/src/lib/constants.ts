@@ -23,7 +23,7 @@ export const FREQ_OPTIONS: { value: Frequency; label: string }[] = [
 ];
 
 /** Strip a formatted string to a plain number (keeps digits and decimal point). */
-export const parseNumeric = (s: string) => Number(s.replace(/[^0-9.]/g, ""));
+const parseNumeric = (s: string) => Number(s.replace(/[^0-9.]/g, ""));
 
 export const parseCurrency = parseNumeric;
 export const parsePercent = parseNumeric;

@@ -23,7 +23,7 @@ export interface ScheduleRow {
   offset_balance: number;
 }
 
-export interface ChartPoint {
+interface ChartPoint {
   year: number;
   balance: number;
   total_interest: number;
