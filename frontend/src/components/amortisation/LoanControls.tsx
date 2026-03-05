@@ -1,7 +1,7 @@
 import type { Frequency } from "@/lib/types";
 import { parseCurrency, parsePercent, parseYears, FREQ_LABELS } from "@/lib/constants";
 import { formatCurrencyShort } from "@/lib/formatters";
-import { t, SERIES } from "@/lib/theme";
+import { t, SERIES, mix } from "@/lib/theme";
 import GlassCard from "@/components/ui/GlassCard";
 import Slider from "@/components/ui/Slider";
 
@@ -28,8 +28,8 @@ interface LoanControlsProps {
 
 const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.accentBorder };
 
-const OFFSET_BORDER = { borderTopWidth: 3, borderTopColor: SERIES.offset.color + "59" };
-const EQUITY_BORDER = { borderTopWidth: 3, borderTopColor: SERIES.eq.color + "59" };
+const OFFSET_BORDER = { borderTopWidth: 3, borderTopColor: mix(SERIES.offset.color, 35) };
+const EQUITY_BORDER = { borderTopWidth: 3, borderTopColor: mix(SERIES.eq.color, 35) };
 
 export default function LoanControls({
   purchasePrice,
@@ -58,7 +58,7 @@ export default function LoanControls({
       showEquity ? "grid-cols-[4fr_1fr]" :
       "grid-cols-[4fr]"
     }`}>
-      <GlassCard className="border-teal-400/20" style={CARD_BORDER}>
+      <GlassCard className="border-accent/20" style={CARD_BORDER}>
         <div className="grid grid-cols-4">
           <div className="px-4 py-2.5">
             <Slider
@@ -116,7 +116,7 @@ export default function LoanControls({
       </GlassCard>
 
       {showOffset && (
-        <GlassCard className="border-teal-400/20" style={OFFSET_BORDER}>
+        <GlassCard className="border-accent/20" style={OFFSET_BORDER}>
           <div className="grid grid-cols-2">
             <div className="px-4 py-2.5">
               <Slider
@@ -151,7 +151,7 @@ export default function LoanControls({
       )}
 
       {showEquity && (
-        <GlassCard className="border-teal-400/20" style={EQUITY_BORDER}>
+        <GlassCard className="border-accent/20" style={EQUITY_BORDER}>
           <div className="px-4 py-2.5">
             <Slider
               label="Appreciation"

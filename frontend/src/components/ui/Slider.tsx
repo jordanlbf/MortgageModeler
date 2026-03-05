@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { t } from "@/lib/theme";
+import { t, mix } from "@/lib/theme";
 import { useEditableInput } from "@/hooks/useEditableInput";
 
 interface SliderProps {
@@ -41,7 +41,7 @@ export default function Slider({
     <div>
       <div
         className="mb-1.5 text-[14px] font-medium uppercase tracking-[0.14em] text-center"
-        style={{ color: accent + "80" }}
+        style={{ color: mix(accent, 50) }}
       >
         {label}
       </div>
@@ -68,9 +68,9 @@ export default function Slider({
           className={`w-full bg-transparent text-center text-[16px] font-normal leading-none tabular-nums outline-none transition-colors duration-150 ${
             editable
               ? editing
-                ? "text-zinc-50 cursor-text"
-                : "text-zinc-50 cursor-text hover:brightness-125"
-              : "text-zinc-50"
+                ? "text-foreground cursor-text"
+                : "text-foreground cursor-text hover:brightness-125"
+              : "text-foreground"
           }`}
         />
       </div>
@@ -79,7 +79,7 @@ export default function Slider({
         <div className="absolute inset-x-0 h-[2px] rounded-full" style={{ background: t.border.default }} />
         <div
           className="absolute left-0 h-[2px] rounded-full"
-          style={{ width: `${pct}%`, background: accent + "80" }}
+          style={{ width: `${pct}%`, background: mix(accent, 50) }}
         />
         <input
           type="range"
@@ -96,7 +96,7 @@ export default function Slider({
         />
         <div
           className="pointer-events-none absolute h-[10px] w-[10px] -translate-x-1/2 rounded-full border-[2px]"
-          style={{ left: `${pct}%`, borderColor: accent + "cc", background: t.bg.sliderThumb }}
+          style={{ left: `${pct}%`, borderColor: mix(accent, 80), background: t.bg.sliderThumb }}
         />
       </div>
     </div>

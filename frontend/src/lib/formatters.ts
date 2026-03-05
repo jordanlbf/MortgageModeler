@@ -31,30 +31,4 @@ export function formatCurrencyCompact(value: number): string {
   return audShort.format(value);
 }
 
-/**
- * Days per period matching the backend exactly.
- * Backend: weekly=7, fortnightly=14, monthly=365/12
- */
-const DAYS_PER_PERIOD: Record<number, number> = {
-  52: 7,
-  26: 14,
-  12: 365 / 12,
-};
-
-/**
- * Reverse-solve: given a desired periodic payment, compute the loan amount
- * using daily compounding (matching the backend exactly).
- */
-export function loanAmountFromPayment(
-  payment: number,
-  annualRate: number,
-  years: number,
-  periodsPerYear: number,
-): number {
-  const dailyRate = annualRate / 365;
-  const daysPerPeriod = DAYS_PER_PERIOD[periodsPerYear] ?? 365 / periodsPerYear;
-  const r = Math.pow(1 + dailyRate, daysPerPeriod) - 1;
-  const n = years * periodsPerYear;
-  if (r === 0) return payment * n;
-  return payment * (Math.pow(1 + r, n) - 1) / (r * Math.pow(1 + r, n));
-}
+export { loanAmountFromPayment } from "@/lib/calculations";

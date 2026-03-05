@@ -19,7 +19,7 @@ export default function AmortisationTable({ rows, height }: AmortisationTablePro
         {COLUMNS.map((h, i) => (
           <div
             key={h}
-            className={`text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-100/25 ${
+            className={`text-[10px] font-semibold uppercase tracking-[0.14em] text-muted/25 ${
               i === 0 ? "text-left" : "text-right"
             }`}
           >
@@ -32,15 +32,15 @@ export default function AmortisationTable({ rows, height }: AmortisationTablePro
         {rows.map((row, ri) => (
           <div
             key={row.period}
-            className="grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] px-5 py-2.5 text-[15px] tabular-nums transition-colors hover:bg-zinc-400/[0.04]"
+            className="grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] px-5 py-2.5 text-[15px] tabular-nums transition-colors hover:bg-subtle/[0.04]"
             style={{ borderBottom: ri < rows.length - 1 ? `1px solid ${t.border.default}` : "none" }}
           >
-            <div className="text-sm text-zinc-100/25">{row.period}</div>
-            <div className="text-right text-zinc-100/35">{formatCurrency(row.opening_balance)}</div>
-            <div className="text-right text-zinc-100/60">{formatCurrency(row.scheduled_repayment)}</div>
+            <div className="text-sm text-muted/25">{row.period}</div>
+            <div className="text-right text-muted/35">{formatCurrency(row.opening_balance)}</div>
+            <div className="text-right text-muted/60">{formatCurrency(row.scheduled_repayment)}</div>
             <div className="text-right text-red-400/85">{formatCurrency(row.interest)}</div>
-            <div className="text-right text-teal-400/85">{formatCurrency(row.principal_paid)}</div>
-            <div className="text-right text-zinc-100/35">{formatCurrency(row.closing_balance)}</div>
+            <div className="text-right text-accent/85">{formatCurrency(row.principal_paid)}</div>
+            <div className="text-right text-muted/35">{formatCurrency(row.closing_balance)}</div>
           </div>
         ))}
       </div>

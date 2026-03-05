@@ -23,7 +23,7 @@ export default function EditableValue({ display, onCommit, parse, className = ""
       onChange={handleChange}
       onBlur={commit}
       onKeyDown={handleKeyDown}
-      className={`bg-transparent outline-none caret-teal-400 selection:bg-teal-400/20 selection:text-zinc-50 cursor-text hover:text-teal-300 transition-colors duration-150 ${className}`}
+      className={`bg-transparent outline-none caret-accent selection:bg-accent/20 selection:text-foreground cursor-text hover:text-accent/75 transition-colors duration-150 ${className}`}
     />
   );
 }

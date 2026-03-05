@@ -65,11 +65,12 @@ export interface ScheduleRequest {
 
 // ── Fetch ────────────────────────────────────
 
-export async function fetchSchedule(params: ScheduleRequest): Promise<ScheduleResponse> {
+export async function fetchSchedule(params: ScheduleRequest, signal?: AbortSignal): Promise<ScheduleResponse> {
   const res = await fetch(`${API_BASE}/api/amortisation/schedule`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(params),
+    signal,
   });
 
   if (!res.ok) {

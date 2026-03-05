@@ -3,8 +3,22 @@
 /* ── Theme tokens synced with src/lib/theme.ts ── */
 @theme {
   --font-sans: var(--font-sora), "system-ui", "sans-serif";
-  --color-background: #111215; /* t.bg.page */
+
+  --color-background: #111215;
   --color-foreground: #f0fdfa;
+  --color-accent: #2dd4bf;
+  --color-accent-contrast: #18181b;
+  --color-muted: #f4f4f5;
+  --color-subtle: #a1a1aa;
+
+  --color-card: rgba(42,42,46,0.72);
+  --color-card-elevated: rgba(44,44,48,0.82);
+  --color-control: rgba(24,24,27,0.60);
+  --color-slider-thumb: #1a1c20;
+
+  --color-border: rgba(113,113,122,0.08);
+  --color-accent-border: rgba(45,212,191,0.35);
+  --color-scrollbar: rgba(148,163,184,0.12);
 }
 
 body {
@@ -19,7 +33,7 @@ body {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.12); /* t.scrollbar */
+  background: var(--color-scrollbar);
   border-radius: 2px;
 }
 

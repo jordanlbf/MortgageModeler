@@ -2,33 +2,34 @@
 // Single source of truth for all colour tokens.
 //
 // Usage:
-//   import { t, SERIES } from "@/lib/theme";
+//   import { t, SERIES, mix } from "@/lib/theme";
 //
-// Inline styles pull from `t.*` directly.
-// Tailwind classes use the same colour families documented below:
-//   Accent:   teal-400  →  t.accent
-//   Neutrals: zinc-*    →  t.bg.*, t.border.*
-//   Negative: red-400   →  SERIES.int.color
-//   Equity:   blue-400  →  SERIES.eq.color
+// Themeable values use CSS custom properties (defined in globals.css).
+// Tailwind classes use the same tokens: text-accent, bg-card, etc.
+// SERIES colors, chart chrome, and tooltip stay as hex (single-file usage).
 // ──────────────────────────────────────────────────────────────
+
+/** `color-mix(in srgb, <color> <pct>%, transparent)` — use for opacity variants */
+export const mix = (color: string, pct: number) =>
+  `color-mix(in srgb, ${color} ${pct}%, transparent)`;
 
 export const t = {
   // ── Backgrounds ──────────────────────────────────
   bg: {
-    page: "#111215",
-    card: "rgba(42,42,46,0.72)",
-    cardElevated: "rgba(44,44,48,0.82)",
-    control: "rgba(24,24,27,0.60)",
-    sliderThumb: "#1a1c20",
+    page: "var(--color-background)",
+    card: "var(--color-card)",
+    cardElevated: "var(--color-card-elevated)",
+    control: "var(--color-control)",
+    sliderThumb: "var(--color-slider-thumb)",
   },
 
   // ── Accent ───────────────────────────────────────
-  accent: "#2dd4bf",
-  accentBorder: "rgba(45,212,191,0.35)",
+  accent: "var(--color-accent)",
+  accentBorder: "var(--color-accent-border)",
 
   // ── Borders ──────────────────────────────────────
   border: {
-    default: "rgba(113,113,122,0.08)",
+    default: "var(--color-border)",
   },
 
   // ── Chart chrome ─────────────────────────────────
@@ -51,9 +52,6 @@ export const t = {
     border: "rgba(113,113,122,0.10)",
     divider: "rgba(113,113,122,0.08)",
   },
-
-  // ── Scrollbar ────────────────────────────────────
-  scrollbar: "rgba(148,163,184,0.12)",
 } as const;
 
 // ── Chart series ───────────────────────────────────

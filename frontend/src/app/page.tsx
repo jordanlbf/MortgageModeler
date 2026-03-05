@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { TOOLS } from "@/lib/constants";
 import type { Tool } from "@/lib/constants";
+import { t, mix } from "@/lib/theme";
 import "./home.css";
 
 /* ── SVG Icons ────────────────────────────────────── */
 const icons: Record<string, React.ReactNode> = {
   amortisation: (
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-      <rect x="6" y="28" width="8" height="14" rx="2" fill="rgba(45,212,191,0.6)" />
-      <rect x="20" y="18" width="8" height="24" rx="2" fill="rgba(45,212,191,0.8)" />
-      <rect x="34" y="8" width="8" height="34" rx="2" fill="#2dd4bf" />
-      <path d="M8 12L22 8L38 4" stroke="rgba(45,212,191,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
+      <rect x="6" y="28" width="8" height="14" rx="2" fill={mix(t.accent, 60)} />
+      <rect x="20" y="18" width="8" height="24" rx="2" fill={mix(t.accent, 80)} />
+      <rect x="34" y="8" width="8" height="34" rx="2" fill={t.accent} />
+      <path d="M8 12L22 8L38 4" stroke={mix(t.accent, 40)} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
     </svg>
   ),
   "ppor-vs-rent": (

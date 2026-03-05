@@ -35,7 +35,7 @@ function ChartTooltip({
       }}
     >
       <div className="px-4 py-2" style={{ borderBottom: `1px solid ${t.tooltip.divider}` }}>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400/50">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-subtle/50">
           Year {label}
         </span>
       </div>
@@ -55,7 +55,7 @@ function ChartTooltip({
                 {entry.name}
               </span>
             </span>
-            <span className="ml-auto text-[14px] font-medium text-zinc-100/65 text-right">
+            <span className="ml-auto text-[14px] font-medium text-muted/65 text-right">
               {entry.name === "LVR" ? `${entry.value.toFixed(1)}%` : formatCurrency(entry.value)}
             </span>
           </div>
@@ -201,7 +201,7 @@ export default function AmortisationChart({
         </ResponsiveContainer>
       ) : (
         <div
-          className="flex items-center justify-center text-sm text-zinc-100/20"
+          className="flex items-center justify-center text-sm text-muted/20"
           style={{ height }}
         >
           Loading…

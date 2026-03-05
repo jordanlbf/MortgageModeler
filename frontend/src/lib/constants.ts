@@ -22,11 +22,11 @@ export const FREQ_OPTIONS: { value: Frequency; label: string }[] = [
   { value: "monthly", label: "Monthly" },
 ];
 
-/** Strip a formatted currency string to a plain number. */
-export const parseCurrency = (s: string) => Number(s.replace(/[^0-9.]/g, ""));
+/** Strip a formatted string to a plain number (keeps digits and decimal point). */
+export const parseNumeric = (s: string) => Number(s.replace(/[^0-9.]/g, ""));
 
-/** Strip a formatted percent string to a plain number. */
-export const parsePercent = (s: string) => Number(s.replace(/[^0-9.]/g, ""));
+export const parseCurrency = parseNumeric;
+export const parsePercent = parseNumeric;
 
 /** Strip a formatted years string to a plain number. */
 export const parseYears = (s: string) => Number(s.replace(/[^0-9]/g, ""));

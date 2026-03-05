@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { t } from "@/lib/theme";
 import { TOOLS } from "@/lib/constants";
+import Header from "@/components/layout/Header";
 
 const PLACEHOLDER_IDS = TOOLS.filter((tool) => !tool.active).map((tool) => tool.id);
 
@@ -19,22 +20,8 @@ export default async function ToolPlaceholder({ params }: Props) {
   const meta = TOOLS.find((t) => t.id === tool)!;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: t.bg.page }}>
-      <header
-        className="flex items-center justify-between px-7 py-3"
-        style={{ borderBottom: `1px solid ${t.border.default}` }}
-      >
-        <Link href="/" className="flex items-center gap-2.5 no-underline">
-          <div
-            className="flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold text-zinc-900"
-            style={{ background: t.accent }}
-          >
-            M
-          </div>
-          <span className="text-[14px] font-semibold text-zinc-100/75 tracking-tight">
-            MortgageModeler
-          </span>
-        </Link>
+    <div className="min-h-screen flex flex-col">
+      <Header>
         <Link
           href="/"
           className="text-[10px] font-semibold uppercase tracking-[0.1em] no-underline transition-colors"
@@ -42,7 +29,7 @@ export default async function ToolPlaceholder({ params }: Props) {
         >
           ← Back
         </Link>
-      </header>
+      </Header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-7">
         <div
@@ -56,7 +43,7 @@ export default async function ToolPlaceholder({ params }: Props) {
           }}
         >
           <div className="text-[36px] mb-4">{meta.icon}</div>
-          <h1 className="text-[18px] font-medium text-zinc-50/80 tracking-tight m-0 mb-2">
+          <h1 className="text-[18px] font-medium text-foreground/80 tracking-tight m-0 mb-2">
             {meta.title}
           </h1>
           <p className="text-[11px] m-0 mb-5" style={{ color: "rgba(148,163,184,0.35)", lineHeight: 1.5 }}>
