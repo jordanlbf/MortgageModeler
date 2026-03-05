@@ -28,7 +28,7 @@ export default function KpiCards({
   onPurchasePriceChange,
 }: KpiCardsProps) {
   const animPayment = useAnimatedValue(data?.payment ?? 0);
-  const fmtCompact = useCallback(formatCurrencyCompact, []);
+  const fmtCompact = useCallback((v: number) => formatCurrencyCompact(v), []);
   const interestRef = useAnimatedText(data?.total_interest ?? 0, fmtCompact);
   const loanRef = useAnimatedText(data?.summary.loan_amount ?? 0, fmtCompact);
 

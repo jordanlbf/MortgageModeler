@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(xargs wc:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm audit:*)",
+      "Bash(npx eslin)",
+      "Bash(npx eslint:*)"
     ]
   }
 }

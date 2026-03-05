@@ -8,7 +8,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts";
-import { useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { ChartDataPoint } from "@/lib/types";
 import { formatCurrency, formatCompact } from "@/lib/formatters";
 import { t, SERIES, SERIES_LIST } from "@/lib/theme";
@@ -128,15 +128,14 @@ export default function AmortisationChart({
   visibleSeries,
   height,
 }: AmortisationChartProps) {
-  const hasAnimated = useRef(false);
+  const [animDuration, setAnimDuration] = useState(400);
 
   useEffect(() => {
-    if (data.length > 0 && !hasAnimated.current) {
-      hasAnimated.current = true;
+    if (data.length > 0 && animDuration > 0) {
+      const timer = setTimeout(() => setAnimDuration(0), 450);
+      return () => clearTimeout(timer);
     }
-  }, [data]);
-
-  const animDuration = hasAnimated.current ? 0 : 400;
+  }, [data, animDuration]);
   const animEasing = "ease-out" as const;
 
   return (

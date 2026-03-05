@@ -43,23 +43,15 @@ export default function AmortisationView() {
   // When entering focus we freeze it and add the collapsible section
   // height so the chart grows upward; bottom stays pinned.
   const normalHeight = useFillHeight(chartRef, 80, 300, `${showOffset}${showEquity}`);
-  const frozenNormal = useRef(normalHeight);
-  const savedDelta = useRef(0);
+  const [focusedChartHeight, setFocusedChartHeight] = useState(0);
 
-  // Keep frozenNormal in sync while not focused
-  if (!focused) frozenNormal.current = normalHeight;
-
-  const chartHeight = focused
-    ? frozenNormal.current + savedDelta.current
-    : normalHeight;
+  const chartHeight = focused ? focusedChartHeight : normalHeight;
 
   // ── Focus toggle ─────────────────────────────
   const handleFocusToggle = useCallback(() => {
     if (!focused) {
-      frozenNormal.current = normalHeight;
-      savedDelta.current = controlsRef.current?.offsetHeight ?? 0;
-    } else {
-      savedDelta.current = 0;
+      const delta = controlsRef.current?.offsetHeight ?? 0;
+      setFocusedChartHeight(normalHeight + delta);
     }
     setFocused((f) => !f);
   }, [focused, normalHeight]);
@@ -94,8 +86,8 @@ export default function AmortisationView() {
 
   useEffect(() => {
     let cancelled = false;
-    setError(null);
     const timer = setTimeout(async () => {
+      setError(null);
       try {
         const result = await fetchSchedule({
           purchase_price: purchasePrice,
