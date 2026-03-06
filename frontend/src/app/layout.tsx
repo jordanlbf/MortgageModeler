@@ -19,7 +19,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{let t=localStorage.getItem("theme");if(t==="coral")document.documentElement.setAttribute("data-theme","coral")}catch(e){}`,
+          }}
+        />
+      </head>
       <body className={`${sora.variable} font-sans antialiased`}>
         {children}
       </body>

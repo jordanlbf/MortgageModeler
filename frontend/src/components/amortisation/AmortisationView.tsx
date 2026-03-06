@@ -12,7 +12,7 @@ import AmortisationChart, { ChartLegend } from "@/components/amortisation/Amorti
 import AmortisationTable from "@/components/amortisation/AmortisationTable";
 import GlassCard from "@/components/ui/GlassCard";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
-import SegmentedToggle from "@/components/ui/SegmentedToggle";
+
 
 const TRANSITION_MS = 350;
 const COLLAPSE_STYLE = "grid transition-[grid-template-rows,opacity] ease-in-out";
@@ -123,12 +123,51 @@ export default function AmortisationView() {
             </div>
 
             <div className="flex items-center gap-2">
-              <SegmentedToggle
-                options={[{ value: "chart" as const, label: "Chart" }, { value: "table" as const, label: "Table" }]}
-                value={view}
-                onChange={setView}
-                size="md"
-              />
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setView("chart")}
+                  className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-bold tracking-wide transition-all duration-200 cursor-pointer"
+                  style={view === "chart" ? {
+                    background: "rgba(45,212,191,0.12)",
+                    color: "var(--color-accent)",
+                    border: "1px solid rgba(45,212,191,0.4)",
+                    boxShadow: "0 0 12px rgba(45,212,191,0.15)",
+                  } : {
+                    background: "rgba(255,255,255,0.04)",
+                    color: "rgba(255,255,255,0.35)",
+                    border: "1px solid rgba(255,255,255,0.07)",
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <rect x="0" y="7" width="3" height="6" rx="1" fill="currentColor" />
+                    <rect x="5" y="4" width="3" height="9" rx="1" fill="currentColor" />
+                    <rect x="10" y="1" width="3" height="12" rx="1" fill="currentColor" />
+                  </svg>
+                  Chart
+                </button>
+                <button
+                  onClick={() => setView("table")}
+                  className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-bold tracking-wide transition-all duration-200 cursor-pointer"
+                  style={view === "table" ? {
+                    background: "rgba(45,212,191,0.12)",
+                    color: "var(--color-accent)",
+                    border: "1px solid rgba(45,212,191,0.4)",
+                    boxShadow: "0 0 12px rgba(45,212,191,0.15)",
+                  } : {
+                    background: "rgba(255,255,255,0.04)",
+                    color: "rgba(255,255,255,0.35)",
+                    border: "1px solid rgba(255,255,255,0.07)",
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor">
+                    <rect x="0" y="0" width="13" height="2" rx="1" />
+                    <rect x="0" y="4" width="13" height="2" rx="1" />
+                    <rect x="0" y="8" width="13" height="2" rx="1" />
+                    <rect x="0" y="11" width="8" height="2" rx="1" />
+                  </svg>
+                  Table
+                </button>
+              </div>
 
               <button
                 onClick={handleFocusToggle}

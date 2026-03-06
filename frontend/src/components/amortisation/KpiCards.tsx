@@ -79,7 +79,7 @@ export default function KpiCards({
                 onClick={() => onFrequencyChange(opt.value)}
                 className="flex-1 rounded-full text-[11px] tracking-[0.5px] transition-all duration-200 cursor-pointer"
                 style={{
-                  padding: "12px 4px",
+                  padding: "14px 4px",
                   background: isActive ? "rgba(45,212,191,0.15)" : "transparent",
                   border: isActive ? "1px solid var(--color-accent)" : "1px solid rgba(255,255,255,0.12)",
                   color: isActive ? "var(--color-accent)" : "rgba(255,255,255,0.4)",

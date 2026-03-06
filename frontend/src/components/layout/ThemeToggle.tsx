@@ -1,26 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./ThemeToggle.css";
 
-export default function ThemeToggle() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+type Theme = "dark" | "coral";
 
-  const toggle = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  return (localStorage.getItem("theme") as Theme) === "coral" ? "coral" : "dark";
+}
+
+function applyTheme(theme: Theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+}
+
+export default function ThemeToggle() {
+  const [theme, setTheme] = useState<Theme>("dark");
+
+  useEffect(() => {
+    setTheme(getStoredTheme());
+  }, []);
+
+  const toggle = () => {
+    const next: Theme = theme === "dark" ? "coral" : "dark";
+    applyTheme(next);
+    setTheme(next);
+  };
 
   return (
     <div className="theme-toggle" role="group" aria-label="Color theme">
-      <span className={`theme-label ${theme === "dark" ? "active" : ""}`}>DARK</span>
+      <span className={`theme-label ${theme === "dark" ? "active" : ""}`}>GRAPHITE</span>
       <button
-        className={`theme-switch ${theme === "light" ? "theme-switch--light" : ""}`}
+        className={`theme-switch ${theme === "coral" ? "theme-switch--coral" : ""}`}
         onClick={toggle}
         role="switch"
-        aria-checked={theme === "light"}
+        aria-checked={theme === "coral"}
         title="Toggle theme"
       >
         <span className="theme-knob" />
       </button>
-      <span className={`theme-label ${theme === "light" ? "active" : ""}`}>LIGHT</span>
+      <span className={`theme-label ${theme === "coral" ? "active" : ""}`}>CORAL</span>
     </div>
   );
 }

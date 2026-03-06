@@ -14,7 +14,7 @@ export default function Header({ children }: HeaderProps) {
     >
       <Link href="/" className="flex items-center gap-2.5 no-underline">
         <div
-          className="flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold text-accent-contrast"
+          className="header-logo flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold text-accent-contrast"
           style={{ background: t.accent }}
         >
           M
