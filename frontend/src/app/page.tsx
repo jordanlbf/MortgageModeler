@@ -2,6 +2,7 @@ import Link from "next/link";
 import { TOOLS } from "@/lib/constants";
 import type { Tool } from "@/lib/constants";
 import { t, mix } from "@/lib/theme";
+import Header from "@/components/layout/Header";
 import "./home.css";
 
 /* ── SVG Icons ────────────────────────────────────── */
@@ -98,13 +99,7 @@ function ToolCard({ tool }: { tool: Tool }) {
 export default function HomePage() {
   return (
     <div className="home-wrap">
-      {/* Header */}
-      <header className="home-header">
-        <div className="home-header-brand">
-          <div className="home-header-logo">M</div>
-          <span className="home-header-name">Mortgage Modeler</span>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero + Cards */}
       <main className="home-hero">

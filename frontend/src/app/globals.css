@@ -21,6 +21,7 @@
   --color-scrollbar: rgba(148,163,184,0.12);
 }
 
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);

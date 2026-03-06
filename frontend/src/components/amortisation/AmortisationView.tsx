@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { FREQ_OPTIONS } from "@/lib/constants";
 import { t } from "@/lib/theme";
 import { useAmortisationState } from "@/hooks/useAmortisationState";
 import { useFillHeight } from "@/hooks/useFillHeight";
@@ -55,9 +54,7 @@ export default function AmortisationView() {
   // ── Render ─────────────────────────────────────
   return (
     <>
-      <Header>
-        <SegmentedToggle options={FREQ_OPTIONS} value={frequency} onChange={setters.setFrequency} size="sm" />
-      </Header>
+      <Header />
 
       <div className="px-9 py-5">
         {/* Collapsible: KPIs + Controls */}
@@ -77,6 +74,7 @@ export default function AmortisationView() {
               years={years}
               deposit={deposit}
               onPurchasePriceChange={setters.setPurchasePrice}
+              onFrequencyChange={setters.setFrequency}
             />
 
             <LoanControls

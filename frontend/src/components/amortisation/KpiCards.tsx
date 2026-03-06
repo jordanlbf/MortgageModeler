@@ -1,11 +1,10 @@
 import type { Frequency } from "@/lib/types";
 import type { ScheduleResponse } from "@/lib/api";
-import { PERIODS_PER_YEAR, FREQ_LABELS, parseCurrency } from "@/lib/constants";
-import { formatCurrency, formatCurrencyCompact } from "@/lib/formatters";
+import { PERIODS_PER_YEAR, FREQ_OPTIONS, FREQ_LABELS, parseCurrency } from "@/lib/constants";
+import { formatCurrency, formatCurrencyShort } from "@/lib/formatters";
 import { loanAmountFromPayment } from "@/lib/calculations";
-import { useCallback } from "react";
 import { t } from "@/lib/theme";
-import { useAnimatedValue, useAnimatedText } from "@/hooks/useAnimatedValue";
+import { useAnimatedValue } from "@/hooks/useAnimatedValue";
 import GlassCard from "@/components/ui/GlassCard";
 import EditableValue from "@/components/ui/EditableValue";
 import Skeleton from "@/components/ui/Skeleton";
@@ -17,9 +16,11 @@ interface KpiCardsProps {
   years: number;
   deposit: number;
   onPurchasePriceChange: (price: number) => void;
+  onFrequencyChange: (f: Frequency) => void;
 }
 
-const CARD_STYLE = "relative flex flex-col items-center justify-center pt-3 pb-3 text-center border-accent/20";
+const CARD_STYLE = "relative flex flex-col items-center py-2.5 text-center border-accent/20";
+const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated };
 
 export default function KpiCards({
   data,
@@ -28,14 +29,11 @@ export default function KpiCards({
   years,
   deposit,
   onPurchasePriceChange,
+  onFrequencyChange,
 }: KpiCardsProps) {
   const animPayment = useAnimatedValue(data?.payment ?? 0);
-  const fmtCompact = useCallback((v: number) => formatCurrencyCompact(v), []);
-  const interestRef = useAnimatedText(data?.total_interest ?? 0, fmtCompact);
-  const loanRef = useAnimatedText(data?.summary.loan_amount ?? 0, fmtCompact);
+  const animLoan = useAnimatedValue(data?.summary.loan_amount ?? 0);
 
-  const total = data ? data.summary.loan_amount + data.total_interest : 0;
-  const interestPct = data && total > 0 ? ((data.total_interest / total) * 100).toFixed(1) : "0";
   const lvrPct = data ? (data.summary.lvr * 100).toFixed(1) : "0";
 
   const handleRepaymentCommit = (newPayment: number) => {
@@ -46,16 +44,13 @@ export default function KpiCards({
   };
 
   return (
-    <div className="mb-4 grid gap-4 grid-cols-[1.2fr_1fr_1fr]">
+    <div className="mb-4 grid gap-4 grid-cols-[1fr_1fr_1fr]">
       {/* Repayment — editable */}
-      <GlassCard
-        className={CARD_STYLE}
-        style={{ borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
-      >
+      <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
         <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-accent/40">
           Repayment
         </div>
-        <div className="mt-1.5 text-[34px] font-normal leading-none tracking-[-0.02em] text-foreground tabular-nums">
+        <div className="mt-1.5 flex items-center h-[38px] text-[34px] font-normal leading-none tracking-[-0.02em] text-foreground tabular-nums">
           {data ? (
             <EditableValue
               display={formatCurrency(animPayment)}
@@ -65,37 +60,47 @@ export default function KpiCards({
             />
           ) : <Skeleton width="160px" height="34px" />}
         </div>
-        <div className="mt-1.5 text-[11px] font-normal uppercase tracking-[0.12em] text-muted/30">
+        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-[0.12em] text-muted/30">
           {data ? `per ${FREQ_LABELS[frequency]}` : <Skeleton width="80px" height="11px" />}
         </div>
       </GlassCard>
 
-      {/* Total Interest */}
-      <GlassCard
-        className={CARD_STYLE}
-        style={{ borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
-      >
+      {/* Frequency */}
+      <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
         <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-accent/40">
-          Total Interest
+          Frequency
         </div>
-        <div className="mt-1.5 text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums text-foreground">
-          {data ? <span ref={interestRef} /> : <Skeleton width="120px" height="34px" />}
-        </div>
-        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-[0.12em] text-muted/30">
-          {data ? `${interestPct}% of total` : <Skeleton width="80px" height="11px" />}
+        <div className="mt-auto mb-auto flex gap-1.5 px-4 w-full">
+          {data ? FREQ_OPTIONS.map((opt) => {
+            const isActive = frequency === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => onFrequencyChange(opt.value)}
+                className="flex-1 rounded-full text-[11px] tracking-[0.5px] transition-all duration-200 cursor-pointer"
+                style={{
+                  padding: "12px 4px",
+                  background: isActive ? "rgba(45,212,191,0.15)" : "transparent",
+                  border: isActive ? "1px solid var(--color-accent)" : "1px solid rgba(255,255,255,0.12)",
+                  color: isActive ? "var(--color-accent)" : "rgba(255,255,255,0.4)",
+                  fontWeight: isActive ? 700 : 400,
+                  boxShadow: isActive ? "0 0 10px rgba(45,212,191,0.2)" : "none",
+                }}
+              >
+                {opt.label}
+              </button>
+            );
+          }) : <Skeleton width="200px" height="32px" />}
         </div>
       </GlassCard>
 
       {/* Loan Amount */}
-      <GlassCard
-        className={CARD_STYLE}
-        style={{ borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated }}
-      >
+      <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
         <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-accent/40">
           Loan Amount
         </div>
-        <div className="mt-1.5 text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums text-foreground">
-          {data ? <span ref={loanRef} /> : <Skeleton width="100px" height="34px" />}
+        <div className="mt-1.5 flex items-center h-[38px] text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums text-foreground">
+          {data ? formatCurrencyShort(animLoan) : <Skeleton width="160px" height="34px" />}
         </div>
         <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-[0.12em] text-muted/30">
           {data ? `${lvrPct}% LVR` : <Skeleton width="60px" height="11px" />}

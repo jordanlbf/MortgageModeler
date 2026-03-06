@@ -46,7 +46,7 @@ export function useAmortisationState(): AmortisationState {
   const [appreciation, setAppreciation] = useState(0);
   const [offsetBalance, setOffsetBalance] = useState(0);
   const [offsetContribution, setOffsetContribution] = useState(0);
-  const [frequency, setFrequency] = useState<Frequency>("weekly");
+  const [frequency, setFrequencyRaw] = useState<Frequency>("weekly");
 
   // ── API fetch ──────────────────────────────────
   const [data, setData] = useState<ScheduleResponse | null>(null);
@@ -113,7 +113,11 @@ export function useAmortisationState(): AmortisationState {
       setAppreciation,
       setOffsetBalance,
       setOffsetContribution,
-      setFrequency,
+      setFrequency: (next: Frequency) => {
+        const ratio = PERIODS_PER_YEAR[next] / PERIODS_PER_YEAR[frequency];
+        setOffsetContribution((prev) => Math.round(prev / ratio));
+        setFrequencyRaw(next);
+      },
     },
     data,
     error,

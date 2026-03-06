@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { t } from "@/lib/theme";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
 interface HeaderProps {
   children?: React.ReactNode;
@@ -22,7 +23,10 @@ export default function Header({ children }: HeaderProps) {
           MortgageModeler
         </span>
       </Link>
-      {children}
+      <div className="flex items-center gap-2">
+        {children}
+        <ThemeToggle />
+      </div>
     </header>
   );
 }
