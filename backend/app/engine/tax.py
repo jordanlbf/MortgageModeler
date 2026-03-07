@@ -11,13 +11,18 @@ def calculate_income_tax(taxable_income: float) -> float:
     Calculate Australian income tax for a given taxable income.
     Uses marginal tax brackets.
     """
-    
-    for (income_cap, tax_rate) in TAX_BRACKETS:
-        if taxable_income > income_cap:
-            continue
-        else:
+    prev_threshold = 0
+    tax_owing = 0
+    for (taxable_cap, tax_rate) in TAX_BRACKETS:
 
-    pass
+        if taxable_income > taxable_cap:
+            tax_owing += (taxable_cap - prev_threshold) * tax_rate
+            prev_threshold = taxable_cap
+        else:
+            tax_owing += (taxable_income - prev_threshold) * tax_rate
+            break
+
+    return tax_owing
 
 
 def calculate_medicare_levy(taxable_income: float) -> float:
