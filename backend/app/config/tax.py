@@ -19,7 +19,6 @@ TAX_BRACKETS = [
     (190_000, 0.37),     # 37% on $135,001 – $190,000
     (float("inf"), 0.45) # 45% on $190,001+
 ]
-MEDICARE_LEVY_RATE = 0.02
 
 # ──────────────────────────────────────────────
 # 2025-26 HECS/HELP Repayment Thresholds
@@ -30,4 +29,24 @@ HECS_THRESHOLDS = [
     (125_000, 0.15),        # 15% of RI above $67,000 up to $125,000
     (179_285, 0.17),        # 17% of RI above $125,000 up to $179,285
     (float("inf"), 0.10),   # 10% of RI above $179,285
+]
+
+# ──────────────────────────────────────────────
+# 2025-26 Medicare Levy (ML) Thresholds
+# Based on Taxable Income (TI)
+# ──────────────────────────────────────────────
+MEDICARE_PHASE_IN_RATE = 0.10       # 10% of TI above lower threshold up to upper threshold
+MEDICARE_LOWER_THRESHOLD = 27_222   # No ML below $27,222 TI
+MEDICARE_HIGH_THRESHOLD = 34_027    # 2% of TI above $34,027
+MEDICARE_LEVY_RATE = 0.02           # 2% of TI for Medicare levy
+
+# ──────────────────────────────────────────────
+# 2025-26 Medicare Levy Surcharge (MLS) Thresholds
+# Based on Medicare Levy Surcharge Income (MLSI)
+# ──────────────────────────────────────────────
+MLS_THRESHOLDS = [
+    (101_000, 0.00),         # No MLS if MLSI below $101,000
+    (118_000, 0.01),         # 1% of MLSI if income between $101,000 and $118,000
+    (158_000, 0.0125),       # 1.25% of MLSI if income between $118,000 and $158,000
+    (float("inf"), 0.015),   # 1.5% of MLSI if income above $158,000
 ]
