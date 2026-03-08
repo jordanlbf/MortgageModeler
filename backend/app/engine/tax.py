@@ -81,32 +81,24 @@ def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> fl
     return min(repayment_owing, hecs_balance)
 
 
-def calculate_marginal_rate(taxable_income: float) -> float:
-    """
-    Get the marginal tax rate for a given taxable income.
-    Used to calculate the tax benefit of deductions (e.g., negative gearing).
-    """
-    pass
-
-
-def calculate_negative_gearing_benefit(
-    annual_salary: float,
-    rental_income: float,
-    deductible_expenses: float,
+def calculate_total_tax(
+        taxable_income: float,
+        repayment_income: float,
+        mls_income: float,
+        hecs_balance: float,
+        has_private_health: bool
 ) -> float:
     """
-    Calculate the tax benefit from negative gearing.
+    Calculate total tax owing.
 
-    When investment property expenses exceed rental income, the loss
-    reduces taxable income, resulting in a tax saving at the marginal rate.
-
-    Args:
-        annual_salary: Gross employment income
-        rental_income: Annual rental income from investment property
-        deductible_expenses: Total deductible expenses (interest, management,
-                           insurance, depreciation, rates, maintenance, etc.)
-
-    Returns:
-        Annual tax saving from negative gearing (0 if positively geared)
+    This is the summation of:
+    - Income tax
+    - Medicare Levy
+    - Medicare Levy Surcharge
+    - HECS Repayment
     """
-    pass
+    return (
+        calculate_income_tax(taxable_income) +
+        calculate_total_medicare_tax(taxable_income, mls_income, has_private_health) +
+        calculate_hecs_repayment(repayment_income, hecs_balance)
+    )
