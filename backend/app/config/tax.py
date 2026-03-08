@@ -28,8 +28,9 @@ HECS_THRESHOLDS = [
     (67_000, 0.00),         # No HECS repayment below $67,000
     (125_000, 0.15),        # 15% of RI above $67,000 up to $125,000
     (179_285, 0.17),        # 17% of RI above $125,000 up to $179,285
-    (float("inf"), 0.10),   # 10% of RI above $179,285
+    (float("inf"), 0.10),   # 10% of RI (not marginal at this threshold)
 ]
+HECS_TOP_THRESHOLD = 179_285
 
 # ──────────────────────────────────────────────
 # 2025-26 Medicare Levy (ML) Thresholds

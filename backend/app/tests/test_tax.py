@@ -5,7 +5,7 @@ Tests for tax engine.
 import pytest
 
 from app.engine.tax import calculate_income_tax, calculate_medicare_levy, calculate_medicare_levy_surcharge, \
-    calculate_total_medicare_tax
+    calculate_total_medicare_tax, calculate_hecs_repayment
 
 
 class TestIncomeTax:
@@ -143,7 +143,7 @@ class TestMedicareLevySurchargeTax:
 
 
 class TestMedicareTax:
-    """Tests for total Medicare tax calculation."""
+    """Tests for total Medicare tax calculations."""
 
     def test_total_medicare_tax_no_private_health(self):
         """Test total Medicare tax without private health insurance."""
@@ -164,3 +164,44 @@ class TestMedicareTax:
     def test_total_medicare_tax_negative_income(self):
         """Test total Medicare tax with negative taxable and MLS income."""
         assert calculate_total_medicare_tax(-10_000, -50_000, False) == 0
+
+
+class TestHecsTax:
+    """Tests for HECS tax calculations."""
+
+    def test_hecs_no_income(self):
+        """Test HECS no income"""
+        assert calculate_hecs_repayment(0, float('inf')) == 0
+
+    def test_hecs_below_threshold(self):
+        """Test HECS income below min threshold"""
+        assert calculate_hecs_repayment(50_000, float('inf')) == 0
+
+    def test_hecs_at_exact_threshold(self):
+        """Test HECS income at exact thresholds"""
+        assert calculate_hecs_repayment(67_000, float('inf')) == pytest.approx(0, abs=0.1)  # 1st Threshold
+        assert calculate_hecs_repayment(125_000, float('inf')) == pytest.approx(8_700, abs=0.1)  # 2nd Threshold
+        assert calculate_hecs_repayment(179_285, float('inf')) == pytest.approx(17_928.45, abs=0.1)  # 3nd Threshold
+
+    def test_hecs_mid_thresholds(self):
+        """Test HECS income inbetween thresholds"""
+        assert calculate_hecs_repayment(80_000, float('inf')) == pytest.approx(1_950, abs=0.1) # 1st <> 2nd Thresholds
+        assert calculate_hecs_repayment(150_000, float('inf')) == pytest.approx(12_950, abs=0.1)  # 2nd <> 3rd Thresholds
+
+    def test_hecs_above_threshold(self):
+        """Test HECS above max threshold"""
+        assert calculate_hecs_repayment(179_286, float('inf')) == pytest.approx(17_928.6, abs=0.1)
+        for i in range(180_000, 1_000_000, 25_000):
+            assert calculate_hecs_repayment(i, float('inf')) == pytest.approx(i/10, abs=0.1) # 10% above max threshold
+
+    def test_hecs_no_hecs_balance(self):
+        """Test HECS when no HECS Balance remaining"""
+        assert calculate_hecs_repayment(80_000, 0) == pytest.approx(0, abs=0.1)  # 1st <> 2nd Thresholds
+        assert calculate_hecs_repayment(150_000, 0) == pytest.approx(0, abs=0.1)  # 2nd <> 3rd Thresholds
+        assert calculate_hecs_repayment(800_000, 0) == pytest.approx(0, abs=0.1) # Above max threshold
+
+    def test_hecs_balance_less_than_owing(self):
+        """Test HECS when owing repayment is greater than balance remaining"""
+        assert calculate_hecs_repayment(80_000, 1_000) == pytest.approx(1_000, abs=0.1)  # 1st <> 2nd Thresholds
+        assert calculate_hecs_repayment(150_000, 6_000) == pytest.approx(6_000, abs=0.1)  # 2nd <> 3rd Thresholds
+        assert calculate_hecs_repayment(800_000, 20_000) == pytest.approx(20_000, abs=0.1)  # Above max threshold

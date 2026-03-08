@@ -5,7 +5,7 @@ All functions are pure — no side effects or external dependencies.
 """
 
 from app.config.tax import TAX_BRACKETS, MEDICARE_LOWER_THRESHOLD, MEDICARE_HIGH_THRESHOLD, MEDICARE_PHASE_IN_RATE, \
-    MEDICARE_LEVY_RATE, MLS_THRESHOLDS
+    MEDICARE_LEVY_RATE, MLS_THRESHOLDS, HECS_THRESHOLDS, HECS_TOP_THRESHOLD
 
 
 def calculate_income_tax(taxable_income: float) -> float:
@@ -63,7 +63,22 @@ def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> fl
     Repayment income = taxable income + any reportable fringe benefits etc.
     Returns the lesser of the calculated repayment or remaining balance.
     """
-    pass
+    repayment_owing = 0.0
+    prev_threshold = 0
+    for (threshold, rate) in HECS_THRESHOLDS:
+        if repayment_income < threshold:
+            repayment_owing += (repayment_income - prev_threshold) * rate
+            break
+        else:
+            repayment_owing += (threshold - prev_threshold) * rate
+        prev_threshold = threshold
+
+    # Above max threshold, it becomes 10% of total RI, not marginal
+    # Need to add 5 cents to bring marginal rates up to exactly 10%
+    if repayment_income > HECS_TOP_THRESHOLD:
+        repayment_owing += 0.05
+
+    return min(repayment_owing, hecs_balance)
 
 
 def calculate_marginal_rate(taxable_income: float) -> float:
