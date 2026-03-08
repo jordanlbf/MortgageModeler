@@ -10,6 +10,14 @@ from pydantic import BaseModel, Field
 
 
 class TaxBreakdownRequest(BaseModel):
+    """
+    Only consider gross income for now.
+
+    Future iterations may include:
+    - Repayment Income
+    - Taxable Income
+    - Medicare Levy Surcharge Income
+    """
     gross_income: float = Field(default=0.0, ge=0, description="Individual's gross income")
     hecs_balance: float = Field(default=0.0, ge=0, description="Individual's HECS Balance")
     has_private_health: bool = Field(default=False, description="Individual's Private Health Status")

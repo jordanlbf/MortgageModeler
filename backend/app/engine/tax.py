@@ -43,18 +43,13 @@ def calculate_medicare_levy(taxable_income: float) -> float:
         return taxable_income * MEDICARE_LEVY_RATE
 
 
-def calculate_medicare_levy_surcharge(mls_income: float) -> float:
+def calculate_medicare_levy_surcharge(mls_income: float, has_private_health: bool) -> float:
     """Calculate Medicare Levy Surcharge based on MLS income and thresholds."""
+    if has_private_health:
+        return 0
     for (threshold, rate) in MLS_THRESHOLDS:
         if mls_income <= threshold:
             return mls_income * rate
-
-
-def calculate_total_medicare_tax(taxable_income: float, mls_income: float,
-                             has_private_health: bool) -> float:
-    """Calculate total Medicare levy including surcharge."""
-    return (calculate_medicare_levy(taxable_income) +
-            (0 if has_private_health else calculate_medicare_levy_surcharge(mls_income)))
 
 
 def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> float:
@@ -99,6 +94,7 @@ def calculate_total_tax(
     """
     return (
         calculate_income_tax(taxable_income) +
-        calculate_total_medicare_tax(taxable_income, mls_income, has_private_health) +
+        calculate_medicare_levy(taxable_income) +
+        calculate_medicare_levy_surcharge(mls_income, has_private_health) +
         calculate_hecs_repayment(repayment_income, hecs_balance)
     )

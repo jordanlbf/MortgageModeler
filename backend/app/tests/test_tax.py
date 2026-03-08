@@ -5,7 +5,7 @@ Tests for tax engine.
 import pytest
 
 from app.engine.tax import calculate_income_tax, calculate_medicare_levy, calculate_medicare_levy_surcharge, \
-    calculate_total_medicare_tax, calculate_hecs_repayment, calculate_total_tax
+    calculate_hecs_repayment, calculate_total_tax
 
 
 class TestIncomeTax:
@@ -92,78 +92,65 @@ class TestMedicareLevySurchargeTax:
 
     def test_medicare_levy_surcharge_below_threshold(self):
         """MLS income below first threshold should yield zero surcharge."""
-        assert calculate_medicare_levy_surcharge(100_000) == 0
+        assert calculate_medicare_levy_surcharge(100_000, False) == 0
 
     def test_medicare_levy_surcharge_first_threshold(self):
         """MLS income between first and second threshold should yield 1% surcharge."""
-        assert calculate_medicare_levy_surcharge(110_000) == pytest.approx(110_000 * 0.01, abs=0.1)
+        assert calculate_medicare_levy_surcharge(110_000, False) == pytest.approx(110_000 * 0.01, abs=0.1)
 
     def test_medicare_levy_surcharge_second_threshold(self):
         """MLS income between second and third threshold should yield 1.25% surcharge."""
-        assert calculate_medicare_levy_surcharge(130_000) == pytest.approx(130_000 * 0.0125, abs=0.1)
+        assert calculate_medicare_levy_surcharge(130_000, False) == pytest.approx(130_000 * 0.0125, abs=0.1)
 
     def test_medicare_levy_surcharge_above_threshold(self):
         """MLS income above third threshold should yield 1.5% surcharge."""
-        assert calculate_medicare_levy_surcharge(160_000) == pytest.approx(160_000 * 0.015, abs=0.1)
-        assert calculate_medicare_levy_surcharge(200_000) == pytest.approx(200_000 * 0.015, abs=0.1)
+        assert calculate_medicare_levy_surcharge(160_000, False) == pytest.approx(160_000 * 0.015, abs=0.1)
+        assert calculate_medicare_levy_surcharge(200_000, False) == pytest.approx(200_000 * 0.015, abs=0.1)
 
     def test_medicare_levy_surcharge_negative_income(self):
         """Negative MLS income should yield zero surcharge."""
-        assert calculate_medicare_levy_surcharge(-50_000) == 0
+        assert calculate_medicare_levy_surcharge(-50_000, False) == 0
 
     def test_medicare_levy_surcharge_exact_thresholds(self):
         """Test MLS income exactly at thresholds."""
-        assert calculate_medicare_levy_surcharge(101_000) == 0
-        assert calculate_medicare_levy_surcharge(118_000) == pytest.approx(118_000 * 0.01, abs=0.1)
-        assert calculate_medicare_levy_surcharge(158_000) == pytest.approx(158_000 * 0.0125, abs=0.1)
+        assert calculate_medicare_levy_surcharge(101_000, False) == 0
+        assert calculate_medicare_levy_surcharge(118_000, False) == pytest.approx(118_000 * 0.01, abs=0.1)
+        assert calculate_medicare_levy_surcharge(158_000, False) == pytest.approx(158_000 * 0.0125, abs=0.1)
 
     def test_medicare_levy_surcharge_zero_income(self):
         """Zero MLS income should yield zero surcharge."""
-        assert calculate_medicare_levy_surcharge(0) == 0
+        assert calculate_medicare_levy_surcharge(0, False) == 0
 
     def test_medicare_levy_surcharge_just_below_threshold(self):
         """MLS income just below thresholds should yield correct surcharge."""
-        assert calculate_medicare_levy_surcharge(100_999) == 0
-        assert calculate_medicare_levy_surcharge(117_999) == pytest.approx(117_999 * 0.01, abs=0.1)
-        assert calculate_medicare_levy_surcharge(157_999) == pytest.approx(157_999 * 0.0125, abs=0.1)
+        assert calculate_medicare_levy_surcharge(100_999, False) == 0
+        assert calculate_medicare_levy_surcharge(117_999, False) == pytest.approx(117_999 * 0.01, abs=0.1)
+        assert calculate_medicare_levy_surcharge(157_999, False) == pytest.approx(157_999 * 0.0125, abs=0.1)
 
     def test_medicare_levy_surcharge_just_above_threshold(self):
         """MLS income just above thresholds should yield correct surcharge."""
-        assert calculate_medicare_levy_surcharge(101_001) == pytest.approx(101_001 * 0.01, abs=0.1)
-        assert calculate_medicare_levy_surcharge(118_001) == pytest.approx(118_001 * 0.0125, abs=0.1)
-        assert calculate_medicare_levy_surcharge(158_001) == pytest.approx(158_001 * 0.015, abs=0.1)
+        assert calculate_medicare_levy_surcharge(101_001, False) == pytest.approx(101_001 * 0.01, abs=0.1)
+        assert calculate_medicare_levy_surcharge(118_001, False) == pytest.approx(118_001 * 0.0125, abs=0.1)
+        assert calculate_medicare_levy_surcharge(158_001, False) == pytest.approx(158_001 * 0.015, abs=0.1)
 
     def test_medicare_levy_surcharge_large_income(self):
         """Test very large MLS income."""
-        assert calculate_medicare_levy_surcharge(1_000_000) == pytest.approx(1_000_000 * 0.015, abs=0.1)
+        assert calculate_medicare_levy_surcharge(1_000_000, False) == pytest.approx(1_000_000 * 0.015, abs=0.1)
 
     def test_medicare_levy_surcharge_fractional_income(self):
         """Test fractional MLS income."""
-        assert calculate_medicare_levy_surcharge(150_000.50) == pytest.approx(150_000.50 * 0.0125, abs=0.1)
+        assert calculate_medicare_levy_surcharge(150_000.50, False) == pytest.approx(150_000.50 * 0.0125, abs=0.1)
 
+    def test_medicare_levy_surcharge_with_private_health(self):
+        """Private health insurance should yield zero surcharge regardless of income."""
+        assert calculate_medicare_levy_surcharge(110_000, True) == 0
+        assert calculate_medicare_levy_surcharge(130_000, True) == 0
+        assert calculate_medicare_levy_surcharge(200_000, True) == 0
 
-class TestMedicareTax:
-    """Tests for total Medicare tax calculations."""
-
-    def test_total_medicare_tax_no_private_health(self):
-        """Test total Medicare tax without private health insurance."""
-        # ML: (30_000 - 27_222) * 0.10 = 277.80
-        # MLS: 110_000 * 0.01 = 1_100
-        assert calculate_total_medicare_tax(30_000, 110_000, False) == pytest.approx(1_377.80, abs=0.1)
-
-    def test_total_medicare_tax_with_private_health(self):
-        """Test total Medicare tax with private health insurance."""
-        # ML: (30_000 - 27_222) * 0.10 = 277.80
-        # MLS: skipped (has private health)
-        assert calculate_total_medicare_tax(30_000, 110_000, True) == pytest.approx(277.80, abs=0.1)
-
-    def test_total_medicare_tax_zero_income(self):
-        """Test total Medicare tax with zero taxable and MLS income."""
-        assert calculate_total_medicare_tax(0, 0, False) == 0
-
-    def test_total_medicare_tax_negative_income(self):
-        """Test total Medicare tax with negative taxable and MLS income."""
-        assert calculate_total_medicare_tax(-10_000, -50_000, False) == 0
+    def test_medicare_levy_surcharge_private_health_toggle(self):
+        """Same income should yield surcharge without PHI and zero with PHI."""
+        assert calculate_medicare_levy_surcharge(130_000, False) == pytest.approx(130_000 * 0.0125, abs=0.1)
+        assert calculate_medicare_levy_surcharge(130_000, True) == 0
 
 
 class TestHecsTax:
@@ -345,7 +332,8 @@ class TestTotalTax:
         ti, ri, mlsi, hecs_bal, phi = 130_000, 140_000, 135_000, 30_000, False
         expected = (
             calculate_income_tax(ti) +
-            calculate_total_medicare_tax(ti, mlsi, phi) +
+            calculate_medicare_levy(ti) +
+            calculate_medicare_levy_surcharge(mlsi, phi) +
             calculate_hecs_repayment(ri, hecs_bal)
         )
         assert calculate_total_tax(ti, ri, mlsi, hecs_bal, phi) == pytest.approx(expected, abs=0.01)
@@ -355,7 +343,8 @@ class TestTotalTax:
         ti, ri, mlsi, hecs_bal, phi = 180_000, 180_000, 180_000, 10_000, True
         expected = (
             calculate_income_tax(ti) +
-            calculate_total_medicare_tax(ti, mlsi, phi) +
+            calculate_medicare_levy(ti) +
+            calculate_medicare_levy_surcharge(mlsi, phi) +
             calculate_hecs_repayment(ri, hecs_bal)
         )
         assert calculate_total_tax(ti, ri, mlsi, hecs_bal, phi) == pytest.approx(expected, abs=0.01)
