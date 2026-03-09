@@ -1,5 +1,5 @@
 """
-Property API routes.
+Property purchase_costs API routes.
 """
 
 from fastapi import APIRouter
