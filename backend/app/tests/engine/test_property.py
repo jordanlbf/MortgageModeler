@@ -1,5 +1,6 @@
 """
-Tests for property calculation engine — stamp duty, LMI, registration fees, and LVR.
+Tests for property calculation engine — stamp duty, LMI, registration fees, LVR,
+and ongoing property cost calculations.
 """
 
 import pytest
@@ -14,6 +15,16 @@ from app.engine.property import (
     calculate_building_pest_inspection_fee,
     calculate_loan_establishment_fee,
     calculate_lvr,
+    calculate_property_value,
+    calculate_rental_income,
+    compound_annual_cost,
+    calculate_council_rates,
+    calculate_water_rates,
+    calculate_building_insurance,
+    calculate_strata_fees,
+    calculate_landlord_insurance,
+    calculate_maintenance_cost,
+    calculate_management_fee,
 )
 from app.config.property import (
     QLD_STAMP_DUTY_BASE_BRACKETS,
@@ -440,3 +451,283 @@ class TestCalculateLvr:
     def test_small_deposit(self):
         """$1 deposit on $1M."""
         assert calculate_lvr(1_000_000, 1) == pytest.approx(0.999999, abs=0.001)
+
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# ----------------------ON-GOING PROPERTY COST CALCULATIONS------------------------
+# ─────────────────────────────────────────────────────────────────────────────────
+
+
+class TestCalculatePropertyValue:
+    """Tests for property value appreciation."""
+
+    def test_year_1_no_growth(self):
+        assert calculate_property_value(1, 500_000, 0.0) == pytest.approx(500_000)
+
+    def test_year_1_with_growth(self):
+        """Year 1 uses (year-1)=0 exponent, so no growth applied yet."""
+        assert calculate_property_value(1, 500_000, 0.05) == pytest.approx(500_000)
+
+    def test_year_2(self):
+        assert calculate_property_value(2, 500_000, 0.05) == pytest.approx(525_000)
+
+    def test_year_5(self):
+        # 500,000 * 1.05^4 = 607,753.12
+        assert calculate_property_value(5, 500_000, 0.05) == pytest.approx(607_753.12, abs=0.01)
+
+    def test_year_10(self):
+        # 500,000 * 1.05^9 = 775,664.11
+        assert calculate_property_value(10, 500_000, 0.05) == pytest.approx(775_664.11, abs=0.01)
+
+    def test_zero_purchase_price(self):
+        assert calculate_property_value(5, 0.0, 0.05) == 0.0
+
+    def test_zero_growth(self):
+        assert calculate_property_value(10, 500_000, 0.0) == pytest.approx(500_000)
+
+    def test_high_growth(self):
+        # 500,000 * 1.10^4 = 732,050.00
+        assert calculate_property_value(5, 500_000, 0.10) == pytest.approx(732_050.00, abs=0.01)
+
+
+class TestCalculateRentalIncome:
+    """Tests for rental income with vacancy and growth."""
+
+    def test_year_1_basic(self):
+        """$500/week, 2 weeks vacant = $500 * 50 = $25,000."""
+        assert calculate_rental_income(1, 500, 2, 0.0) == pytest.approx(25_000)
+
+    def test_year_1_no_vacancy(self):
+        """$500/week, 0 weeks vacant = $500 * 52 = $26,000."""
+        assert calculate_rental_income(1, 500, 0, 0.0) == pytest.approx(26_000)
+
+    def test_year_1_high_vacancy(self):
+        """$500/week, 10 weeks vacant = $500 * 42 = $21,000."""
+        assert calculate_rental_income(1, 500, 10, 0.0) == pytest.approx(21_000)
+
+    def test_year_2_with_growth(self):
+        """$500/week, 2 weeks vacant, 3% growth: $25,000 * 1.03 = $25,750."""
+        assert calculate_rental_income(2, 500, 2, 0.03) == pytest.approx(25_750)
+
+    def test_year_5_with_growth(self):
+        """$500/week, 2 weeks vacant, 3% growth: $25,000 * 1.03^4 = $28,137.72."""
+        assert calculate_rental_income(5, 500, 2, 0.03) == pytest.approx(28_137.72, abs=0.01)
+
+    def test_zero_rent(self):
+        assert calculate_rental_income(5, 0, 2, 0.03) == 0.0
+
+    def test_full_vacancy(self):
+        """52 weeks vacant = no income."""
+        assert calculate_rental_income(1, 500, 52, 0.03) == 0.0
+
+    def test_zero_growth(self):
+        """No growth means same income every year."""
+        assert calculate_rental_income(1, 500, 2, 0.0) == calculate_rental_income(10, 500, 2, 0.0)
+
+    def test_income_increases_with_year(self):
+        """Rental income should grow year-over-year when growth > 0."""
+        for yr in range(1, 10):
+            assert calculate_rental_income(yr + 1, 500, 2, 0.03) > \
+                   calculate_rental_income(yr, 500, 2, 0.03)
+
+
+class TestCompoundAnnualCost:
+    """Tests for the generic compounding function."""
+
+    def test_year_1(self):
+        """Year 1 returns the base rate (exponent = 0)."""
+        assert compound_annual_cost(1, 2_000, 0.025) == pytest.approx(2_000)
+
+    def test_year_2(self):
+        assert compound_annual_cost(2, 2_000, 0.025) == pytest.approx(2_050)
+
+    def test_year_10(self):
+        # 2,000 * 1.025^9 = 2,497.73
+        assert compound_annual_cost(10, 2_000, 0.025) == pytest.approx(2_497.73, abs=0.01)
+
+    def test_zero_base(self):
+        assert compound_annual_cost(5, 0.0, 0.025) == 0.0
+
+    def test_zero_growth(self):
+        assert compound_annual_cost(10, 2_000, 0.0) == pytest.approx(2_000)
+
+    def test_high_growth(self):
+        # 2,000 * 1.10^4 = 2,928.20
+        assert compound_annual_cost(5, 2_000, 0.10) == pytest.approx(2_928.20, abs=0.01)
+
+
+class TestCouncilRates:
+    """Tests for council rates — delegates to compound_annual_cost."""
+
+    def test_year_1(self):
+        assert calculate_council_rates(1, 1_800, 0.025) == pytest.approx(1_800)
+
+    def test_year_5(self):
+        assert calculate_council_rates(5, 1_800, 0.025) == \
+               pytest.approx(compound_annual_cost(5, 1_800, 0.025))
+
+    def test_matches_compound(self):
+        """Should always equal compound_annual_cost for same inputs."""
+        for yr in range(1, 11):
+            assert calculate_council_rates(yr, 2_000, 0.03) == \
+                   pytest.approx(compound_annual_cost(yr, 2_000, 0.03))
+
+
+class TestWaterRates:
+    """Tests for water rates — delegates to compound_annual_cost."""
+
+    def test_year_1(self):
+        assert calculate_water_rates(1, 1_200, 0.025) == pytest.approx(1_200)
+
+    def test_year_5(self):
+        assert calculate_water_rates(5, 1_200, 0.025) == \
+               pytest.approx(compound_annual_cost(5, 1_200, 0.025))
+
+    def test_matches_compound(self):
+        for yr in range(1, 11):
+            assert calculate_water_rates(yr, 1_200, 0.03) == \
+                   pytest.approx(compound_annual_cost(yr, 1_200, 0.03))
+
+
+class TestBuildingInsurance:
+    """Tests for building insurance — delegates to compound_annual_cost."""
+
+    def test_year_1(self):
+        assert calculate_building_insurance(1, 1_500, 0.025) == pytest.approx(1_500)
+
+    def test_year_5(self):
+        assert calculate_building_insurance(5, 1_500, 0.025) == \
+               pytest.approx(compound_annual_cost(5, 1_500, 0.025))
+
+    def test_matches_compound(self):
+        for yr in range(1, 11):
+            assert calculate_building_insurance(yr, 1_500, 0.03) == \
+                   pytest.approx(compound_annual_cost(yr, 1_500, 0.03))
+
+
+class TestStrataFees:
+    """Tests for strata fees — delegates to compound_annual_cost."""
+
+    def test_year_1(self):
+        assert calculate_strata_fees(1, 3_000, 0.025) == pytest.approx(3_000)
+
+    def test_year_5(self):
+        assert calculate_strata_fees(5, 3_000, 0.025) == \
+               pytest.approx(compound_annual_cost(5, 3_000, 0.025))
+
+    def test_zero_strata(self):
+        """No strata = 0 every year."""
+        assert calculate_strata_fees(10, 0.0, 0.025) == 0.0
+
+    def test_matches_compound(self):
+        for yr in range(1, 11):
+            assert calculate_strata_fees(yr, 3_000, 0.03) == \
+                   pytest.approx(compound_annual_cost(yr, 3_000, 0.03))
+
+
+class TestLandlordInsurance:
+    """Tests for landlord insurance — investment only."""
+
+    def test_investment_year_1(self):
+        assert calculate_landlord_insurance(1, 1_000, 0.025, True) == pytest.approx(1_000)
+
+    def test_investment_year_5(self):
+        assert calculate_landlord_insurance(5, 1_000, 0.025, True) == \
+               pytest.approx(compound_annual_cost(5, 1_000, 0.025))
+
+    def test_ppor_returns_zero(self):
+        """PPOR should always return 0 regardless of inputs."""
+        assert calculate_landlord_insurance(1, 1_000, 0.025, False) == 0.0
+        assert calculate_landlord_insurance(5, 1_000, 0.025, False) == 0.0
+        assert calculate_landlord_insurance(10, 5_000, 0.10, False) == 0.0
+
+    def test_investment_grows_over_time(self):
+        for yr in range(1, 10):
+            assert calculate_landlord_insurance(yr + 1, 1_000, 0.025, True) > \
+                   calculate_landlord_insurance(yr, 1_000, 0.025, True)
+
+    def test_zero_base_investment(self):
+        assert calculate_landlord_insurance(5, 0.0, 0.025, True) == 0.0
+
+
+class TestMaintenanceCost:
+    """Tests for maintenance cost — based on appreciated property value."""
+
+    def test_year_1(self):
+        """Year 1: $500k * 1% = $5,000."""
+        assert calculate_maintenance_cost(1, 500_000, 0.01, 0.05) == pytest.approx(5_000)
+
+    def test_year_2(self):
+        """Year 2: $525k * 1% = $5,250."""
+        assert calculate_maintenance_cost(2, 500_000, 0.01, 0.05) == pytest.approx(5_250)
+
+    def test_year_5(self):
+        """Year 5: property_value * 1%."""
+        prop_val = calculate_property_value(5, 500_000, 0.05)
+        assert calculate_maintenance_cost(5, 500_000, 0.01, 0.05) == pytest.approx(prop_val * 0.01)
+
+    def test_zero_maintenance_rate(self):
+        assert calculate_maintenance_cost(5, 500_000, 0.0, 0.05) == 0.0
+
+    def test_zero_purchase_price(self):
+        assert calculate_maintenance_cost(5, 0.0, 0.01, 0.05) == 0.0
+
+    def test_no_property_growth(self):
+        """Without growth, maintenance stays flat."""
+        assert calculate_maintenance_cost(1, 500_000, 0.01, 0.0) == \
+               calculate_maintenance_cost(10, 500_000, 0.01, 0.0)
+
+    def test_increases_with_property_growth(self):
+        """Maintenance should grow as property appreciates."""
+        for yr in range(1, 10):
+            assert calculate_maintenance_cost(yr + 1, 500_000, 0.01, 0.05) > \
+                   calculate_maintenance_cost(yr, 500_000, 0.01, 0.05)
+
+    def test_scales_with_rate(self):
+        """Higher maintenance rate = higher cost."""
+        low = calculate_maintenance_cost(5, 500_000, 0.005, 0.05)
+        high = calculate_maintenance_cost(5, 500_000, 0.02, 0.05)
+        assert high > low
+
+
+class TestManagementFee:
+    """Tests for management fee — investment only, based on rental income."""
+
+    def test_investment_year_1(self):
+        """$500/week, 2 weeks vacant, 8% fee: $25,000 * 0.08 = $2,000."""
+        assert calculate_management_fee(1, 500, 2, 0.08, 0.03, True) == pytest.approx(2_000)
+
+    def test_investment_year_2(self):
+        """Year 2: $25,750 * 0.08 = $2,060."""
+        assert calculate_management_fee(2, 500, 2, 0.08, 0.03, True) == pytest.approx(2_060)
+
+    def test_investment_year_5(self):
+        """Should equal rental_income(year 5) * management_rate."""
+        rental = calculate_rental_income(5, 500, 2, 0.03)
+        assert calculate_management_fee(5, 500, 2, 0.08, 0.03, True) == \
+               pytest.approx(rental * 0.08)
+
+    def test_ppor_returns_zero(self):
+        """PPOR should always return 0."""
+        assert calculate_management_fee(1, 500, 2, 0.08, 0.03, False) == 0.0
+        assert calculate_management_fee(5, 500, 2, 0.08, 0.03, False) == 0.0
+        assert calculate_management_fee(10, 1_000, 0, 0.10, 0.05, False) == 0.0
+
+    def test_zero_rent(self):
+        assert calculate_management_fee(5, 0, 2, 0.08, 0.03, True) == 0.0
+
+    def test_full_vacancy(self):
+        assert calculate_management_fee(5, 500, 52, 0.08, 0.03, True) == 0.0
+
+    def test_zero_management_rate(self):
+        assert calculate_management_fee(5, 500, 2, 0.0, 0.03, True) == 0.0
+
+    def test_investment_grows_over_time(self):
+        for yr in range(1, 10):
+            assert calculate_management_fee(yr + 1, 500, 2, 0.08, 0.03, True) > \
+                   calculate_management_fee(yr, 500, 2, 0.08, 0.03, True)
+
+    def test_scales_with_management_rate(self):
+        low = calculate_management_fee(5, 500, 2, 0.05, 0.03, True)
+        high = calculate_management_fee(5, 500, 2, 0.10, 0.03, True)
+        assert high > low

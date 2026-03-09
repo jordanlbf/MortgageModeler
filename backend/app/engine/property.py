@@ -145,3 +145,67 @@ def calculate_lvr(purchase_price: float, deposit: float) -> float:
     """Calculate loan-to-value ratio (LVR) for a property purchase."""
     loan_amount = purchase_price - deposit
     return loan_amount / purchase_price if purchase_price > 0 else 0.0
+
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# ----------------------ON-GOING PROPERTY COST CALCULATIONS------------------------
+# ─────────────────────────────────────────────────────────────────────────────────
+
+def calculate_property_value(year: int, purchase_price: float, growth_rate: float) -> float:
+    """Calculate property value for a given year."""
+    return purchase_price * ((1 + growth_rate) ** (year - 1))
+
+
+def calculate_rental_income(year: int, weekly_rent: float, vacancy_weeks: int,
+                            growth_rate: float) -> float:
+    """Calculate annual rental income for a given year, accounting for vacancy."""
+    annual_rent = weekly_rent * (52 - vacancy_weeks)
+    return annual_rent * ((1 + growth_rate) ** (year - 1))
+
+
+def compound_annual_cost(year: int, base_rate: float, growth_rate: float) -> float:
+    """Apply annual compounding growth to a base cost."""
+    return base_rate * ((1 + growth_rate) ** (year - 1))
+
+
+def calculate_council_rates(year: int, base_rate: float, growth_rate: float) -> float:
+    """Calculate council rates for a given year."""
+    return compound_annual_cost(year, base_rate, growth_rate)
+
+
+def calculate_water_rates(year: int, base_rate: float, growth_rate: float) -> float:
+    """Calculate water rates for a given year."""
+    return compound_annual_cost(year, base_rate, growth_rate)
+
+
+def calculate_building_insurance(year: int, base_rate: float, growth_rate: float) -> float:
+    """Calculate building insurance cost for a given year."""
+    return compound_annual_cost(year, base_rate, growth_rate)
+
+
+def calculate_strata_fees(year: int, base_rate: float, growth_rate: float) -> float:
+    """Calculate strata fees for a given year."""
+    return compound_annual_cost(year, base_rate, growth_rate)
+
+
+def calculate_landlord_insurance(year: int, base_rate: float,
+                                 growth_rate: float, is_investment: bool) -> float:
+    """Calculate landlord insurance cost for a given year. Returns 0 for PPOR."""
+    return compound_annual_cost(year, base_rate, growth_rate) if is_investment else 0.0
+
+
+def calculate_maintenance_cost(year: int, purchase_price: float, maintenance_rate: float,
+                               growth_rate: float) -> float:
+    """Calculate maintenance cost for a given year based on appreciated property value."""
+    property_value = calculate_property_value(year, purchase_price, growth_rate)
+    return property_value * maintenance_rate
+
+
+def calculate_management_fee(year: int, weekly_rent: float, vacancy_weeks: int,
+                             management_rate: float, growth_rate: float,
+                             is_investment: bool) -> float:
+    """Calculate property management fee for a given year. Returns 0 for PPOR."""
+    if not is_investment:
+        return 0.0
+    rental_income = calculate_rental_income(year, weekly_rent, vacancy_weeks, growth_rate)
+    return rental_income * management_rate
