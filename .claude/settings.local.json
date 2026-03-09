@@ -8,7 +8,11 @@
       "Bash(npx eslin)",
       "Bash(npx eslint:*)",
       "Bash(grep:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(gh issue:*)",
+      "WebFetch(domain:qro.qld.gov.au)",
+      "WebSearch",
+      "Bash(python:*)"
     ]
   }
 }

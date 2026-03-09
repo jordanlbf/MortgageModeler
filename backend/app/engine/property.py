@@ -7,8 +7,12 @@ Handles:
 - Investment property running costs
 - Stamp duty estimation (QLD)
 """
+import math
 
+from app.config.property import QLD_STAMP_DUTY_CONCESSION_BRACKETS, \
+    QLD_STAMP_DUTY_BASE_BRACKETS
 from app.models import Property
+
 
 def calculate_property_value(purchase_price: float, annual_growth_rate: float, year: int) -> float:
     """Calculate property value after N years of compound growth."""
@@ -16,10 +20,10 @@ def calculate_property_value(purchase_price: float, annual_growth_rate: float, y
 
 
 def calculate_annual_rental_income(
-    weekly_rent: float,
-    annual_growth_rate: float,
-    year: int,
-    vacancy_weeks: int = 2,
+        weekly_rent: float,
+        annual_growth_rate: float,
+        year: int,
+        vacancy_weeks: int = 2,
 ) -> float:
     """
     Calculate annual rental income for a given year.
@@ -50,9 +54,9 @@ def calculate_annual_investment_costs(prop: Property, year: int) -> dict:
 
 
 def calculate_total_deductible_expenses(
-    annual_interest: float,
-    prop: Property,
-    year: int,
+        annual_interest: float,
+        prop: Property,
+        year: int,
 ) -> float:
     """
     Calculate total deductible expenses for an investment property.
@@ -71,11 +75,32 @@ def calculate_total_deductible_expenses(
     pass
 
 
+def calculate_qld_stamp_duty_with_bracket(purchase_price: float,
+                                          bracket: list[tuple[float, float, float]]) -> float:
+    """
+    Calculate QLD stamp duty amount from the given bracket.
+
+    Args:
+        purchase_price: Property purchase price
+        bracket: Which stamp duty bracket to use (concession or standard)
+
+    Returns:
+        Estimated stamp duty base amount (before concessions)
+    """
+    # QLD Stamp Duty rates apply to units of $100 or part thereof,
+    # so we round up to the next $100
+    purchase_price = math.ceil(purchase_price / 100) * 100
+
+    prev_threshold = 0
+    for (threshold, rate, base) in bracket:
+        if purchase_price <= threshold:
+            return base + (purchase_price - prev_threshold) * (rate / 100)
+        prev_threshold = threshold
+
+
 def estimate_qld_stamp_duty(purchase_price: float, is_first_home: bool = False) -> float:
     """
     Estimate QLD stamp duty (transfer duty).
-
-    First home buyer concession: full exemption up to $700,000.
 
     Args:
         purchase_price: Property purchase price
@@ -84,4 +109,7 @@ def estimate_qld_stamp_duty(purchase_price: float, is_first_home: bool = False) 
     Returns:
         Estimated stamp duty amount
     """
-    pass
+    if is_first_home:
+        return calculate_qld_stamp_duty_with_bracket(purchase_price, QLD_STAMP_DUTY_CONCESSION_BRACKETS)
+    else:
+        return calculate_qld_stamp_duty_with_bracket(purchase_price, QLD_STAMP_DUTY_BASE_BRACKETS)
