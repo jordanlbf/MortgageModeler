@@ -42,3 +42,18 @@ LMI_ESTIMATE = [
     (0.95, 0.045),  # >90% to ≤95% LVR: ~4.5% of loan amount
     (1.00, 0.06),   # >95% to ≤100% LVR: ~6% of loan amount
 ]
+
+# ─────────────────────────────────────────────────────────────────
+# QLD Title Registration Fees (effective 1 July 2025)
+# ─────────────────────────────────────────────────────────────────
+QLD_REGISTRATION_FEE_BASE = 238.14          # Flat fee if price ≤ $180,000
+QLD_REGISTRATION_FEE_THRESHOLD = 180_000
+QLD_REGISTRATION_FEE_PER_10K = 44.71        # Per $10,000 (or part thereof) above threshold
+QLD_MORTGAGE_REGISTRATION_FEE = 238.14
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# Default Flat Fees (estimates)
+# ─────────────────────────────────────────────────────────────────────────────────
+DEFAULT_CONVEYANCING_FEE = 2_000.00
+DEFAULT_BUILDING_PEST_INSPECTION_FEE = 600.00
+DEFAULT_LOAN_ESTABLISHMENT_FEE = 300.00

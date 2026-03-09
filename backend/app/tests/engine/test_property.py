@@ -1,5 +1,5 @@
 """
-Tests for property calculation engine — stamp duty and LMI.
+Tests for property calculation engine — stamp duty, LMI, registration fees, and total upfront costs.
 """
 
 import pytest
@@ -8,8 +8,24 @@ from app.engine.property import (
     calculate_qld_stamp_duty_with_bracket,
     estimate_qld_stamp_duty,
     estimate_lmi,
+    calculate_registration_fee,
+    calculate_mortgage_registration_fee,
+    calculate_conveyancing_fee,
+    calculate_building_pest_inspection_fee,
+    calculate_loan_establishment_fee,
+    calculate_total_upfront_costs,
+    calculate_lvr,
 )
-from app.config.property import QLD_STAMP_DUTY_BASE_BRACKETS, QLD_STAMP_DUTY_CONCESSION_BRACKETS
+from app.config.property import (
+    QLD_STAMP_DUTY_BASE_BRACKETS,
+    QLD_STAMP_DUTY_CONCESSION_BRACKETS,
+    QLD_REGISTRATION_FEE_BASE,
+    QLD_REGISTRATION_FEE_PER_10K,
+    QLD_MORTGAGE_REGISTRATION_FEE,
+    DEFAULT_CONVEYANCING_FEE,
+    DEFAULT_BUILDING_PEST_INSPECTION_FEE,
+    DEFAULT_LOAN_ESTABLISHMENT_FEE,
+)
 
 
 class TestQldStampDutyBase:
@@ -69,9 +85,9 @@ class TestQldStampDutyBase:
         # $5,000,000: $38,025 + ($5,000,000 - $1,000,000) * 5.75 / 100 = $38,025 + $230,000 = $268,025
         assert estimate_qld_stamp_duty(5_000_000) == pytest.approx(268_025, abs=0.1)
 
-    def test_is_not_first_home_by_default(self):
-        """Default is_first_home=False, so base rate applies."""
-        assert estimate_qld_stamp_duty(500_000) == estimate_qld_stamp_duty(500_000, is_first_home=False)
+    def test_is_investment_by_default(self):
+        """Default is_investment=True, so base rate applies."""
+        assert estimate_qld_stamp_duty(500_000) == estimate_qld_stamp_duty(500_000, is_investment=True)
 
 
 class TestQldStampDutyRounding:
@@ -104,47 +120,47 @@ class TestQldStampDutyConcession:
 
     def test_concession_zero_price(self):
         """Zero purchase price should yield zero duty."""
-        assert estimate_qld_stamp_duty(0, is_first_home=True) == 0
+        assert estimate_qld_stamp_duty(0, is_investment=False) == 0
 
     def test_concession_within_first_bracket(self):
         """Purchase price within concession first bracket (<= $350k)."""
         # $200,000: $0 + $200,000 * 1.0 / 100 = $2,000
-        assert estimate_qld_stamp_duty(200_000, is_first_home=True) == pytest.approx(2_000, abs=0.1)
+        assert estimate_qld_stamp_duty(200_000, is_investment=False) == pytest.approx(2_000, abs=0.1)
 
     def test_concession_at_first_bracket_boundary(self):
         """Purchase price at $350,000 boundary."""
         # $0 + $350,000 * 1.0 / 100 = $3,500
-        assert estimate_qld_stamp_duty(350_000, is_first_home=True) == pytest.approx(3_500, abs=0.1)
+        assert estimate_qld_stamp_duty(350_000, is_investment=False) == pytest.approx(3_500, abs=0.1)
 
     def test_concession_mid_second_bracket(self):
         """Purchase price in second concession bracket ($350k–$540k)."""
         # $500,000: $3,500 + ($500,000 - $350,000) * 3.50 / 100 = $3,500 + $5,250 = $8,750
-        assert estimate_qld_stamp_duty(500_000, is_first_home=True) == pytest.approx(8_750, abs=0.1)
+        assert estimate_qld_stamp_duty(500_000, is_investment=False) == pytest.approx(8_750, abs=0.1)
 
     def test_concession_at_second_bracket_boundary(self):
         """Purchase price at $540,000 boundary."""
         # $3,500 + ($540,000 - $350,000) * 3.50 / 100 = $3,500 + $6,650 = $10,150
-        assert estimate_qld_stamp_duty(540_000, is_first_home=True) == pytest.approx(10_150, abs=0.1)
+        assert estimate_qld_stamp_duty(540_000, is_investment=False) == pytest.approx(10_150, abs=0.1)
 
     def test_concession_mid_third_bracket(self):
         """Purchase price in third concession bracket ($540k–$1M)."""
         # $750,000: $10,150 + ($750,000 - $540,000) * 4.50 / 100 = $10,150 + $9,450 = $19,600
-        assert estimate_qld_stamp_duty(750_000, is_first_home=True) == pytest.approx(19_600, abs=0.1)
+        assert estimate_qld_stamp_duty(750_000, is_investment=False) == pytest.approx(19_600, abs=0.1)
 
     def test_concession_at_third_bracket_boundary(self):
         """Purchase price at $1,000,000 boundary."""
         # $10,150 + ($1,000,000 - $540,000) * 4.50 / 100 = $10,150 + $20,700 = $30,850
-        assert estimate_qld_stamp_duty(1_000_000, is_first_home=True) == pytest.approx(30_850, abs=0.1)
+        assert estimate_qld_stamp_duty(1_000_000, is_investment=False) == pytest.approx(30_850, abs=0.1)
 
     def test_concession_above_top_bracket(self):
         """Purchase price above $1,000,000."""
         # $1,500,000: $30,850 + ($1,500,000 - $1,000,000) * 5.75 / 100 = $30,850 + $28,750 = $59,600
-        assert estimate_qld_stamp_duty(1_500_000, is_first_home=True) == pytest.approx(59_600, abs=0.1)
+        assert estimate_qld_stamp_duty(1_500_000, is_investment=False) == pytest.approx(59_600, abs=0.1)
 
     def test_concession_qro_example(self):
         """Verify against the QRO worked example: $550k PPOR."""
         # $10,150 + ($550,000 - $540,000) * 4.50 / 100 = $10,150 + $450 = $10,600
-        assert estimate_qld_stamp_duty(550_000, is_first_home=True) == pytest.approx(10_600, abs=0.1)
+        assert estimate_qld_stamp_duty(550_000, is_investment=False) == pytest.approx(10_600, abs=0.1)
 
 
 class TestStampDutyConcessionVsBase:
@@ -154,19 +170,19 @@ class TestStampDutyConcessionVsBase:
         """Home concession duty should never exceed base duty."""
         prices = [100_000, 250_000, 350_000, 500_000, 540_000, 750_000, 1_000_000, 1_500_000]
         for price in prices:
-            base = estimate_qld_stamp_duty(price, is_first_home=False)
-            concession = estimate_qld_stamp_duty(price, is_first_home=True)
+            base = estimate_qld_stamp_duty(price, is_investment=True)
+            concession = estimate_qld_stamp_duty(price, is_investment=False)
             assert concession <= base, f"Concession ({concession}) > base ({base}) at ${price:,}"
 
     def test_concession_converges_above_1m(self):
         """Above $1M both brackets use 5.75%, so the gap stays constant."""
         gap_at_1m = (
-            estimate_qld_stamp_duty(1_000_000, is_first_home=False)
-            - estimate_qld_stamp_duty(1_000_000, is_first_home=True)
+            estimate_qld_stamp_duty(1_000_000, is_investment=True)
+            - estimate_qld_stamp_duty(1_000_000, is_investment=False)
         )
         gap_at_2m = (
-            estimate_qld_stamp_duty(2_000_000, is_first_home=False)
-            - estimate_qld_stamp_duty(2_000_000, is_first_home=True)
+            estimate_qld_stamp_duty(2_000_000, is_investment=True)
+            - estimate_qld_stamp_duty(2_000_000, is_investment=False)
         )
         assert gap_at_1m == pytest.approx(gap_at_2m, abs=0.1)
 
@@ -177,12 +193,12 @@ class TestCalculateWithBracketDirect:
     def test_base_bracket_direct(self):
         """Direct call with base brackets matches estimate_qld_stamp_duty."""
         assert calculate_qld_stamp_duty_with_bracket(500_000, QLD_STAMP_DUTY_BASE_BRACKETS) == \
-            estimate_qld_stamp_duty(500_000, is_first_home=False)
+            estimate_qld_stamp_duty(500_000, is_investment=True)
 
     def test_concession_bracket_direct(self):
         """Direct call with concession brackets matches estimate_qld_stamp_duty."""
         assert calculate_qld_stamp_duty_with_bracket(500_000, QLD_STAMP_DUTY_CONCESSION_BRACKETS) == \
-            estimate_qld_stamp_duty(500_000, is_first_home=True)
+            estimate_qld_stamp_duty(500_000, is_investment=False)
 
 
 class TestEstimateLmi:
@@ -333,3 +349,149 @@ class TestEstimateLmi:
         lmi_small = estimate_lmi(250_000, 0.90, False)
         lmi_large = estimate_lmi(500_000, 0.90, False)
         assert lmi_large == pytest.approx(lmi_small * 2, abs=0.1)
+
+
+class TestRegistrationFee:
+    """Tests for QLD title registration fee calculation."""
+
+    def test_at_or_below_threshold(self):
+        """Properties at or below $180k should pay base fee only."""
+        assert calculate_registration_fee(100_000) == QLD_REGISTRATION_FEE_BASE
+        assert calculate_registration_fee(180_000) == QLD_REGISTRATION_FEE_BASE
+
+    def test_zero_price(self):
+        """Zero purchase price should yield base fee."""
+        assert calculate_registration_fee(0) == QLD_REGISTRATION_FEE_BASE
+
+    def test_just_over_threshold(self):
+        """$1 over threshold rounds up to one $10k unit."""
+        expected = QLD_REGISTRATION_FEE_BASE + QLD_REGISTRATION_FEE_PER_10K
+        assert calculate_registration_fee(180_001) == pytest.approx(expected, abs=0.01)
+
+    def test_exact_10k_over_threshold(self):
+        """Exact $10k over threshold = 1 unit."""
+        expected = QLD_REGISTRATION_FEE_BASE + QLD_REGISTRATION_FEE_PER_10K
+        assert calculate_registration_fee(190_000) == pytest.approx(expected, abs=0.01)
+
+    def test_typical_property(self):
+        """$600k property: ($600k - $180k) / $10k = 42 units."""
+        expected = QLD_REGISTRATION_FEE_BASE + 42 * QLD_REGISTRATION_FEE_PER_10K
+        assert calculate_registration_fee(600_000) == pytest.approx(expected, abs=0.01)
+
+    def test_rounds_up_partial_10k(self):
+        """$200,001: excess = $20,001, rounds up to 3 units."""
+        expected = QLD_REGISTRATION_FEE_BASE + 3 * QLD_REGISTRATION_FEE_PER_10K
+        assert calculate_registration_fee(200_001) == pytest.approx(expected, abs=0.01)
+
+    def test_large_property(self):
+        """$1.5M property: ($1.5M - $180k) / $10k = 132 units."""
+        expected = QLD_REGISTRATION_FEE_BASE + 132 * QLD_REGISTRATION_FEE_PER_10K
+        assert calculate_registration_fee(1_500_000) == pytest.approx(expected, abs=0.01)
+
+    def test_increases_with_price(self):
+        """Registration fee should increase with purchase price."""
+        assert calculate_registration_fee(500_000) > calculate_registration_fee(300_000)
+        assert calculate_registration_fee(1_000_000) > calculate_registration_fee(500_000)
+
+
+class TestFlatFees:
+    """Tests for flat fee functions returning config defaults."""
+
+    def test_mortgage_registration_fee(self):
+        assert calculate_mortgage_registration_fee() == QLD_MORTGAGE_REGISTRATION_FEE
+
+    def test_conveyancing_fee(self):
+        assert calculate_conveyancing_fee() == DEFAULT_CONVEYANCING_FEE
+
+    def test_building_pest_inspection_fee(self):
+        assert calculate_building_pest_inspection_fee() == DEFAULT_BUILDING_PEST_INSPECTION_FEE
+
+    def test_loan_establishment_fee(self):
+        assert calculate_loan_establishment_fee() == DEFAULT_LOAN_ESTABLISHMENT_FEE
+
+
+class TestTotalUpfrontCosts:
+    """Tests for calculate_total_upfront_costs."""
+
+    def test_returns_float(self):
+        """Should return a float."""
+        result = calculate_total_upfront_costs(500_000, 100_000, is_investment=False)
+        assert isinstance(result, float)
+
+    def test_equals_sum_of_components(self):
+        """Total should equal the sum of all individual fee functions."""
+        price, deposit = 600_000, 120_000
+        loan = price - deposit
+        lvr = loan / price
+
+        expected = (
+            estimate_qld_stamp_duty(price, is_investment=True) +
+            calculate_registration_fee(price) +
+            calculate_mortgage_registration_fee() +
+            calculate_conveyancing_fee() +
+            calculate_building_pest_inspection_fee() +
+            calculate_loan_establishment_fee() +
+            estimate_lmi(loan, lvr, is_investment=True)
+        )
+        assert calculate_total_upfront_costs(price, deposit, is_investment=True) == pytest.approx(expected, abs=0.01)
+
+    def test_lmi_exempt_reduces_total(self):
+        """lmi_exempt=True should yield a lower total than lmi_exempt=False at high LVR."""
+        with_lmi = calculate_total_upfront_costs(500_000, 25_000, is_investment=False, lmi_exempt=False)
+        without_lmi = calculate_total_upfront_costs(500_000, 25_000, is_investment=False, lmi_exempt=True)
+        assert with_lmi > without_lmi
+
+    def test_investment_higher_than_ppor(self):
+        """Investment property should have higher total (higher stamp duty + LMI multiplier)."""
+        investment = calculate_total_upfront_costs(500_000, 50_000, is_investment=True)
+        ppor = calculate_total_upfront_costs(500_000, 50_000, is_investment=False)
+        assert investment > ppor
+
+    def test_no_lmi_at_80_lvr(self):
+        """80% LVR should not include LMI in total."""
+        total_80 = calculate_total_upfront_costs(500_000, 100_000, is_investment=False)
+        total_80_exempt = calculate_total_upfront_costs(500_000, 100_000, is_investment=False, lmi_exempt=True)
+        assert total_80 == pytest.approx(total_80_exempt, abs=0.01)
+
+    def test_zero_purchase_price(self):
+        """Zero purchase price should not raise an error."""
+        result = calculate_total_upfront_costs(0, 0, is_investment=False)
+        assert isinstance(result, float)
+
+    def test_lmi_exempt_default_false(self):
+        """lmi_exempt should default to False."""
+        with_default = calculate_total_upfront_costs(500_000, 25_000, is_investment=False)
+        explicit_false = calculate_total_upfront_costs(500_000, 25_000, is_investment=False, lmi_exempt=False)
+        assert with_default == pytest.approx(explicit_false, abs=0.01)
+
+
+class TestCalculateLvr:
+    """Tests for LVR calculation."""
+
+    def test_80_percent_lvr(self):
+        """20% deposit on $500k = 80% LVR."""
+        assert calculate_lvr(500_000, 100_000) == pytest.approx(0.80, abs=0.001)
+
+    def test_95_percent_lvr(self):
+        """5% deposit on $500k = 95% LVR."""
+        assert calculate_lvr(500_000, 25_000) == pytest.approx(0.95, abs=0.001)
+
+    def test_100_percent_lvr(self):
+        """Zero deposit = 100% LVR."""
+        assert calculate_lvr(500_000, 0) == pytest.approx(1.0, abs=0.001)
+
+    def test_zero_lvr(self):
+        """Full cash purchase = 0% LVR."""
+        assert calculate_lvr(500_000, 500_000) == pytest.approx(0.0, abs=0.001)
+
+    def test_zero_purchase_price(self):
+        """Zero purchase price should return 0 (not divide by zero)."""
+        assert calculate_lvr(0, 0) == 0.0
+
+    def test_50_percent_lvr(self):
+        """50% deposit = 50% LVR."""
+        assert calculate_lvr(600_000, 300_000) == pytest.approx(0.50, abs=0.001)
+
+    def test_small_deposit(self):
+        """$1 deposit on $1M."""
+        assert calculate_lvr(1_000_000, 1) == pytest.approx(0.999999, abs=0.001)
