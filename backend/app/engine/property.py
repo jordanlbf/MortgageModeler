@@ -140,42 +140,6 @@ def calculate_loan_establishment_fee() -> float:
     return DEFAULT_LOAN_ESTABLISHMENT_FEE  # Flat estimate for simplicity
 
 
-def calculate_total_upfront_costs(purchase_price: float, deposit: float,
-                                  is_investment: bool, lmi_exempt: bool = False) -> float:
-    """
-    Calculate total upfront costs for a property purchase.
-
-    This includes:
-    - Stamp duty
-    - Title registration fee
-    - Mortgage registration fee
-    - Conveyancing fees
-    - Building and pest inspection fees
-    - Loan establishment fees
-    - LMI (if applicable)
-
-    Args:
-        purchase_price: Property purchase price
-        deposit: Dollar amount of the deposit
-        is_investment: Whether the property is an investment
-        lmi_exempt: Whether the buyer is exempt from LMI
-
-    Returns:
-        Total estimated upfront costs
-    """
-    loan_amount = purchase_price - deposit
-    lvr = loan_amount / purchase_price if purchase_price > 0 else 0.0
-
-    lmi = 0.0 if lmi_exempt else estimate_lmi(loan_amount, lvr, is_investment)
-
-    return (estimate_qld_stamp_duty(purchase_price, is_investment) +
-            calculate_registration_fee(purchase_price) +
-            calculate_mortgage_registration_fee() +
-            calculate_conveyancing_fee() +
-            calculate_building_pest_inspection_fee() +
-            calculate_loan_establishment_fee() +
-            lmi)
-
 
 def calculate_lvr(purchase_price: float, deposit: float) -> float:
     """Calculate loan-to-value ratio (LVR) for a property purchase."""

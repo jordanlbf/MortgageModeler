@@ -1,5 +1,5 @@
 """
-Tests for property calculation engine — stamp duty, LMI, registration fees, and total upfront costs.
+Tests for property calculation engine — stamp duty, LMI, registration fees, and LVR.
 """
 
 import pytest
@@ -13,7 +13,6 @@ from app.engine.property import (
     calculate_conveyancing_fee,
     calculate_building_pest_inspection_fee,
     calculate_loan_establishment_fee,
-    calculate_total_upfront_costs,
     calculate_lvr,
 )
 from app.config.property import (
@@ -409,60 +408,6 @@ class TestFlatFees:
     def test_loan_establishment_fee(self):
         assert calculate_loan_establishment_fee() == DEFAULT_LOAN_ESTABLISHMENT_FEE
 
-
-class TestTotalUpfrontCosts:
-    """Tests for calculate_total_upfront_costs."""
-
-    def test_returns_float(self):
-        """Should return a float."""
-        result = calculate_total_upfront_costs(500_000, 100_000, is_investment=False)
-        assert isinstance(result, float)
-
-    def test_equals_sum_of_components(self):
-        """Total should equal the sum of all individual fee functions."""
-        price, deposit = 600_000, 120_000
-        loan = price - deposit
-        lvr = loan / price
-
-        expected = (
-            estimate_qld_stamp_duty(price, is_investment=True) +
-            calculate_registration_fee(price) +
-            calculate_mortgage_registration_fee() +
-            calculate_conveyancing_fee() +
-            calculate_building_pest_inspection_fee() +
-            calculate_loan_establishment_fee() +
-            estimate_lmi(loan, lvr, is_investment=True)
-        )
-        assert calculate_total_upfront_costs(price, deposit, is_investment=True) == pytest.approx(expected, abs=0.01)
-
-    def test_lmi_exempt_reduces_total(self):
-        """lmi_exempt=True should yield a lower total than lmi_exempt=False at high LVR."""
-        with_lmi = calculate_total_upfront_costs(500_000, 25_000, is_investment=False, lmi_exempt=False)
-        without_lmi = calculate_total_upfront_costs(500_000, 25_000, is_investment=False, lmi_exempt=True)
-        assert with_lmi > without_lmi
-
-    def test_investment_higher_than_ppor(self):
-        """Investment property should have higher total (higher stamp duty + LMI multiplier)."""
-        investment = calculate_total_upfront_costs(500_000, 50_000, is_investment=True)
-        ppor = calculate_total_upfront_costs(500_000, 50_000, is_investment=False)
-        assert investment > ppor
-
-    def test_no_lmi_at_80_lvr(self):
-        """80% LVR should not include LMI in total."""
-        total_80 = calculate_total_upfront_costs(500_000, 100_000, is_investment=False)
-        total_80_exempt = calculate_total_upfront_costs(500_000, 100_000, is_investment=False, lmi_exempt=True)
-        assert total_80 == pytest.approx(total_80_exempt, abs=0.01)
-
-    def test_zero_purchase_price(self):
-        """Zero purchase price should not raise an error."""
-        result = calculate_total_upfront_costs(0, 0, is_investment=False)
-        assert isinstance(result, float)
-
-    def test_lmi_exempt_default_false(self):
-        """lmi_exempt should default to False."""
-        with_default = calculate_total_upfront_costs(500_000, 25_000, is_investment=False)
-        explicit_false = calculate_total_upfront_costs(500_000, 25_000, is_investment=False, lmi_exempt=False)
-        assert with_default == pytest.approx(explicit_false, abs=0.01)
 
 
 class TestCalculateLvr:
