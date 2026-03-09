@@ -8,7 +8,22 @@
       "Bash(npx eslin)",
       "Bash(npx eslint:*)",
       "Bash(grep:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(gh issue:*)",
+      "WebFetch(domain:qro.qld.gov.au)",
+      "WebSearch",
+      "Bash(python:*)",
+      "WebFetch(domain:www.homeloanexperts.com.au)",
+      "WebFetch(domain:www.qbe.com)",
+      "WebFetch(domain:www.savings.com.au)",
+      "WebFetch(domain:www.money.com.au)",
+      "WebFetch(domain:www.canstar.com.au)",
+      "WebFetch(domain:tepuysolutions.com)",
+      "WebFetch(domain:www.business.qld.gov.au)",
+      "WebFetch(domain:www.titlesqld.com.au)",
+      "WebFetch(domain:www.krg.com.au)",
+      "WebFetch(domain:eng.quicklaw.com.au)",
+      "WebFetch(domain:www.qlsproctor.com.au)"
     ]
   }
 }

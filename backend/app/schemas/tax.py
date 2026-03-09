@@ -6,8 +6,8 @@ Separate from domain models — these define the API contract.
 
 from pydantic import BaseModel, Field
 
-# REQUESTS
 
+# REQUESTS
 
 class TaxBreakdownRequest(BaseModel):
     """
