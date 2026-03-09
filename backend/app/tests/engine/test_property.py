@@ -1,5 +1,5 @@
 """
-Tests for property calculation engine — stamp duty.
+Tests for property calculation engine — stamp duty and LMI.
 """
 
 import pytest
@@ -7,6 +7,7 @@ import pytest
 from app.engine.property import (
     calculate_qld_stamp_duty_with_bracket,
     estimate_qld_stamp_duty,
+    estimate_lmi,
 )
 from app.config.property import QLD_STAMP_DUTY_BASE_BRACKETS, QLD_STAMP_DUTY_CONCESSION_BRACKETS
 
@@ -182,3 +183,153 @@ class TestCalculateWithBracketDirect:
         """Direct call with concession brackets matches estimate_qld_stamp_duty."""
         assert calculate_qld_stamp_duty_with_bracket(500_000, QLD_STAMP_DUTY_CONCESSION_BRACKETS) == \
             estimate_qld_stamp_duty(500_000, is_first_home=True)
+
+
+class TestEstimateLmi:
+    """Tests for LMI estimation."""
+
+    # ── No LMI (LVR ≤ 80%) ──────────────────────────
+
+    def test_no_lmi_at_80_percent(self):
+        """LVR at exactly 80% should yield zero LMI."""
+        assert estimate_lmi(400_000, 0.80, False) == 0
+
+    def test_no_lmi_below_80_percent(self):
+        """LVR below 80% should yield zero LMI."""
+        assert estimate_lmi(350_000, 0.70, False) == 0
+        assert estimate_lmi(250_000, 0.50, False) == 0
+
+    def test_no_lmi_zero_lvr(self):
+        """Zero LVR should yield zero LMI."""
+        assert estimate_lmi(500_000, 0.0, False) == 0
+
+    # ── 80–85% LVR band (1.1%) ──────────────────────
+
+    def test_lmi_at_81_percent(self):
+        """LVR just above 80% should trigger 1.1% rate."""
+        assert estimate_lmi(400_000, 0.81, False) == pytest.approx(4_400, abs=0.1)
+
+    def test_lmi_at_85_percent(self):
+        """LVR at exactly 85% boundary."""
+        assert estimate_lmi(500_000, 0.85, False) == pytest.approx(5_500, abs=0.1)
+
+    def test_lmi_mid_80_85_band(self):
+        """LVR in the middle of 80–85% band."""
+        # $600,000 * 0.011 = $6,600
+        assert estimate_lmi(600_000, 0.83, False) == pytest.approx(6_600, abs=0.1)
+
+    # ── 85–90% LVR band (2%) ────────────────────────
+
+    def test_lmi_at_86_percent(self):
+        """LVR just above 85% should trigger 2% rate."""
+        # $400,000 * 0.02 = $8,000
+        assert estimate_lmi(400_000, 0.86, False) == pytest.approx(8_000, abs=0.1)
+
+    def test_lmi_at_90_percent(self):
+        """LVR at exactly 90% boundary."""
+        # $500,000 * 0.02 = $10,000
+        assert estimate_lmi(500_000, 0.90, False) == pytest.approx(10_000, abs=0.1)
+
+    def test_lmi_mid_85_90_band(self):
+        """LVR in the middle of 85–90% band."""
+        # $450,000 * 0.02 = $9,000
+        assert estimate_lmi(450_000, 0.88, False) == pytest.approx(9_000, abs=0.1)
+
+    # ── 90–95% LVR band (4.5%) ──────────────────────
+
+    def test_lmi_at_91_percent(self):
+        """LVR just above 90% should trigger 4.5% rate."""
+        # $400,000 * 0.045 = $18,000
+        assert estimate_lmi(400_000, 0.91, False) == pytest.approx(18_000, abs=0.1)
+
+    def test_lmi_at_95_percent(self):
+        """LVR at exactly 95% boundary."""
+        # $500,000 * 0.045 = $22,500
+        assert estimate_lmi(500_000, 0.95, False) == pytest.approx(22_500, abs=0.1)
+
+    def test_lmi_mid_90_95_band(self):
+        """LVR in the middle of 90–95% band."""
+        # $600,000 * 0.045 = $27,000
+        assert estimate_lmi(600_000, 0.93, False) == pytest.approx(27_000, abs=0.1)
+
+    # ── 95–100% LVR band (6%) ───────────────────────
+
+    def test_lmi_at_96_percent(self):
+        """LVR just above 95% should trigger 6% rate."""
+        # $400,000 * 0.06 = $24,000
+        assert estimate_lmi(400_000, 0.96, False) == pytest.approx(24_000, abs=0.1)
+
+    def test_lmi_at_100_percent(self):
+        """LVR at exactly 100% boundary."""
+        # $500,000 * 0.06 = $30,000
+        assert estimate_lmi(500_000, 1.00, False) == pytest.approx(30_000, abs=0.1)
+
+    def test_lmi_mid_95_100_band(self):
+        """LVR in the middle of 95–100% band."""
+        # $750,000 * 0.06 = $45,000
+        assert estimate_lmi(750_000, 0.98, False) == pytest.approx(45_000, abs=0.1)
+
+    # ── Investment property multiplier (1.5x) ────────
+
+    def test_investment_multiplier_80_85(self):
+        """Investment property should apply 1.15x multiplier to 80–85% band."""
+        owner_occ = estimate_lmi(400_000, 0.85, False)
+        investment = estimate_lmi(400_000, 0.85, True)
+        assert investment == pytest.approx(owner_occ * 1.15, abs=0.1)
+
+    def test_investment_multiplier_85_90(self):
+        """Investment property should apply 1.15x multiplier to 85–90% band."""
+        owner_occ = estimate_lmi(500_000, 0.90, False)
+        investment = estimate_lmi(500_000, 0.90, True)
+        assert investment == pytest.approx(owner_occ * 1.15, abs=0.1)
+
+    def test_investment_multiplier_90_95(self):
+        """Investment property should apply 1.15x multiplier to 90–95% band."""
+        owner_occ = estimate_lmi(500_000, 0.95, False)
+        investment = estimate_lmi(500_000, 0.95, True)
+        assert investment == pytest.approx(owner_occ * 1.15, abs=0.1)
+
+    def test_investment_multiplier_95_100(self):
+        """Investment property should apply 1.15x multiplier to 95–100% band."""
+        owner_occ = estimate_lmi(500_000, 1.00, False)
+        investment = estimate_lmi(500_000, 1.00, True)
+        assert investment == pytest.approx(owner_occ * 1.15, abs=0.1)
+
+    def test_investment_no_lmi_below_80(self):
+        """Investment property with LVR ≤ 80% should still have zero LMI."""
+        assert estimate_lmi(400_000, 0.80, True) == 0
+        assert estimate_lmi(400_000, 0.70, True) == 0
+
+    def test_investment_specific_values(self):
+        """Verify specific investment LMI amounts."""
+        # $500,000 loan at 90% LVR: $10,000 * 1.15 = $11,500
+        assert estimate_lmi(500_000, 0.90, True) == pytest.approx(11_500, abs=0.1)
+        # $400,000 loan at 95% LVR: $18,000 * 1.15 = $20,700
+        assert estimate_lmi(400_000, 0.95, True) == pytest.approx(20_700, abs=0.1)
+
+    # ── Edge cases ───────────────────────────────────
+
+    def test_zero_loan_amount(self):
+        """Zero loan amount should yield zero LMI regardless of LVR."""
+        assert estimate_lmi(0, 0.95, False) == 0
+        assert estimate_lmi(0, 0.95, True) == 0
+
+    def test_very_large_loan(self):
+        """Very large loan amount."""
+        # $2,000,000 * 0.045 = $90,000
+        assert estimate_lmi(2_000_000, 0.95, False) == pytest.approx(90_000, abs=0.1)
+
+    def test_lmi_increases_with_lvr(self):
+        """Higher LVR should always result in equal or higher LMI for same loan amount."""
+        loan = 500_000
+        lvrs = [0.70, 0.80, 0.85, 0.90, 0.95, 1.00]
+        lmi_amounts = [estimate_lmi(loan, lvr, False) for lvr in lvrs]
+        for i in range(1, len(lmi_amounts)):
+            assert lmi_amounts[i] >= lmi_amounts[i - 1], \
+                f"LMI at {lvrs[i]} ({lmi_amounts[i]}) < LMI at {lvrs[i-1]} ({lmi_amounts[i-1]})"
+
+    def test_lmi_scales_linearly_with_loan(self):
+        """Doubling the loan amount should double the LMI."""
+        lmi_small = estimate_lmi(250_000, 0.90, False)
+        lmi_large = estimate_lmi(500_000, 0.90, False)
+        assert lmi_large == pytest.approx(lmi_small * 2, abs=0.1)

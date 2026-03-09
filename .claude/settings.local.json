@@ -12,7 +12,13 @@
       "Bash(gh issue:*)",
       "WebFetch(domain:qro.qld.gov.au)",
       "WebSearch",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "WebFetch(domain:www.homeloanexperts.com.au)",
+      "WebFetch(domain:www.qbe.com)",
+      "WebFetch(domain:www.savings.com.au)",
+      "WebFetch(domain:www.money.com.au)",
+      "WebFetch(domain:www.canstar.com.au)",
+      "WebFetch(domain:tepuysolutions.com)"
     ]
   }
 }

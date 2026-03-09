@@ -10,7 +10,7 @@ Handles:
 import math
 
 from app.config.property import QLD_STAMP_DUTY_CONCESSION_BRACKETS, \
-    QLD_STAMP_DUTY_BASE_BRACKETS
+    QLD_STAMP_DUTY_BASE_BRACKETS, LMI_ESTIMATE
 from app.models import Property
 
 
@@ -113,3 +113,29 @@ def estimate_qld_stamp_duty(purchase_price: float, is_first_home: bool = False) 
         return calculate_qld_stamp_duty_with_bracket(purchase_price, QLD_STAMP_DUTY_CONCESSION_BRACKETS)
     else:
         return calculate_qld_stamp_duty_with_bracket(purchase_price, QLD_STAMP_DUTY_BASE_BRACKETS)
+
+
+def estimate_lmi(loan_amount: float, lvr: float, is_investment: bool) -> float:
+    """
+    Estimate Lenders Mortgage Insurance (LMI) for a given loan amount and LVR.
+
+    This is a very rough estimate based on typical LMI rates, which can vary
+    widely based on the lender, loan type, and borrower profile. For simplicity,
+    we use a flat rate that increases with LVR.
+
+    Args:
+        loan_amount: The amount of the loan
+        lvr: Loan-to-value ratio (e.g., 0.95 for 95%)
+        is_investment: Whether the property is an investment (LMI is often higher)
+
+    Returns:
+        Estimated LMI cost
+    """
+    lmi_amount = 0.0
+    for (threshold, rate) in LMI_ESTIMATE:
+        if lvr <= threshold:
+            lmi_amount = loan_amount * rate
+            break
+
+    # Investment properties often have higher LMI premiums, so we apply a multiplier
+    return lmi_amount if not is_investment else lmi_amount * 1.15
