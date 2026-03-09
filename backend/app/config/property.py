@@ -1,5 +1,5 @@
 """
-QLD PROPERTY PURCHASE CONFIGURATION
+QLD PROPERTY CONFIGURATION
 
 This module defines the stamp duty brackets, LMI tiers, and default fees for
 Queensland (QLD) as of the 2025-26 financial year. Used by the property
@@ -57,3 +57,12 @@ QLD_MORTGAGE_REGISTRATION_FEE = 238.14
 DEFAULT_CONVEYANCING_FEE = 2_000.00
 DEFAULT_BUILDING_PEST_INSPECTION_FEE = 600.00
 DEFAULT_LOAN_ESTABLISHMENT_FEE = 300.00
+
+# ─────────────────────────────────────────────────────────────────────────────────
+# Ongoing Property Cost Defaults
+# ─────────────────────────────────────────────────────────────────────────────────
+DEFAULT_VACANCY_WEEKS = 2
+DEFAULT_ANNUAL_COST_GROWTH_RATE = 0.025       # 2.5% annual increase on fixed costs
+DEFAULT_MAINTENANCE_RATE = 0.01               # 1% of property value per year
+DEFAULT_MANAGEMENT_RATE = 0.08                # 8% of rental income
+DEFAULT_PROJECTION_YEARS = 10
