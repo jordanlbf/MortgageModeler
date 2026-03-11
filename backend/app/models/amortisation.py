@@ -25,3 +25,27 @@ class AmortisationSchedule:
     rows: list[ScheduleRow]
     total_interest: float
     total_periods: int
+
+
+@dataclass
+class YearChartPoint:
+    """A single year's chart data point."""
+    year: int
+    balance: float
+    total_interest: float
+    property_value: float
+    equity: float
+    offset_balance: float
+
+
+@dataclass
+class ScheduleResult:
+    """Full result from the amortisation service — schedule, summary, and chart data."""
+    schedule: AmortisationSchedule
+    payment: float
+    purchase_price: float
+    deposit: float
+    loan_amount: float
+    lvr: float
+    annual_appreciation: float
+    chart_data: list[YearChartPoint]
