@@ -4,7 +4,7 @@ API request/response schemas for the ongoing-property costs endpoint.
 Separate from domain models — these define the API contract.
 """
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 from app.config.property import (
     DEFAULT_VACANCY_WEEKS,
