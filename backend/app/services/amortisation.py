@@ -56,11 +56,18 @@ def build_schedule_result(
     ]
 
     for year in range(1, loan_term_years + 1):
-        idx = min(year * ppy - 1, len(schedule.rows) - 1)
-        row = schedule.rows[idx]
-        cumulative_interest = sum(r.interest for r in schedule.rows[: idx + 1])
         property_value = purchase_price * (1 + annual_appreciation) ** year
-        equity = property_value - row.closing_balance
+
+        if schedule.rows:
+            idx = min(year * ppy - 1, len(schedule.rows) - 1)
+            row = schedule.rows[idx]
+            balance = row.closing_balance
+            cumulative_interest = sum(r.interest for r in schedule.rows[: idx + 1])
+        else:
+            balance = 0.0
+            cumulative_interest = 0.0
+
+        equity = property_value - balance
 
         # Offset keeps growing even after loan is paid off
         periods_elapsed = year * ppy
@@ -69,7 +76,7 @@ def build_schedule_result(
         chart_data.append(
             YearChartPoint(
                 year=year,
-                balance=round(row.closing_balance, 2),
+                balance=round(balance, 2),
                 total_interest=round(cumulative_interest, 2),
                 property_value=round(property_value, 2),
                 equity=round(equity, 2),
