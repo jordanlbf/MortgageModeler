@@ -1,0 +1,44 @@
+"""
+Deductions domain models — tax deduction models.
+"""
+
+from dataclasses import dataclass
+from datetime import date
+from enum import Enum
+
+
+class DepreciationMethod(Enum):
+    DIMINISHING_VALUE = "diminishing_value"
+    PRIME_COST = "prime_cost"
+
+
+@dataclass
+class DepreciableBuilding:
+    """A single depreciable building/construction (Division 43)."""
+    name: str
+    construction_cost: float
+    purchase_date: date
+
+
+@dataclass
+class DepreciableAsset:
+    """A single depreciable plant/equipment asset (Division 40)."""
+    name: str
+    cost: float
+    effective_life_years: int
+    purchase_date: date
+    method: DepreciationMethod = DepreciationMethod.DIMINISHING_VALUE
+    written_down_value: float = 0.0  # Caller maintains this for diminishing value
+
+
+@dataclass
+class PropertyTaxDeductionSummary:
+    """A single year's tax deduction summary."""
+    mortgage_interest: float
+    depreciation_building: float
+    depreciation_plant: float
+    deductible_expenses: float
+    total_deductions: float
+    net_rental_income: float
+    is_negatively_geared: bool
+    tax_saving: float
