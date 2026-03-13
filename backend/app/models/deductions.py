@@ -3,6 +3,24 @@ Deductions domain models — tax deduction models.
 """
 
 from dataclasses import dataclass
+from datetime import date
+
+
+@dataclass
+class DepreciableBuilding:
+    """A single depreciable building/construction (Division 43)."""
+    name: str
+    construction_cost: float
+    purchase_date: date
+
+
+@dataclass
+class DepreciableAsset:
+    """A single depreciable plant/equipment asset (Division 40)."""
+    name: str
+    cost: float
+    effective_life_years: int
+    purchase_date: date
 
 
 @dataclass

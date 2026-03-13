@@ -1,10 +1,14 @@
 """
-Tests for property tax deduction engine — Division 43 building depreciation.
+Tests for property tax deduction engine — Division 43 and Division 40 depreciation.
 """
 
 import pytest
 
-from app.engine.deductions import calculate_division_43_deduction
+from app.engine.deductions import (
+    calculate_division_43_deduction,
+    calculate_division_40_prime_cost,
+    calculate_division_40_diminishing_value,
+)
 
 
 class TestDivision43FullYear:
@@ -157,3 +161,231 @@ class TestDivision43Consistency:
         for cost in costs:
             for d in days:
                 assert calculate_division_43_deduction(cost, d, False) > 0
+
+
+# ──────────────────────────────────────────────
+# Division 40 — Prime Cost
+# ──────────────────────────────────────────────
+
+
+class TestDivision40PrimeCostFullYear:
+    """Tests for full-year prime cost deductions."""
+
+    def test_standard_10_year_life(self):
+        """$2,000 asset, 10 year life, full year = $200."""
+        assert calculate_division_40_prime_cost(2_000, 10, 365, False) == pytest.approx(200)
+
+    def test_full_leap_year(self):
+        """$2,000 asset, 10 year life, full leap year = $200."""
+        assert calculate_division_40_prime_cost(2_000, 10, 366, True) == pytest.approx(200)
+
+    def test_5_year_life(self):
+        """$5,000 asset, 5 year life, full year = $1,000."""
+        assert calculate_division_40_prime_cost(5_000, 5, 365, False) == pytest.approx(1_000)
+
+    def test_1_year_life(self):
+        """$1,000 asset, 1 year life, full year = $1,000."""
+        assert calculate_division_40_prime_cost(1_000, 1, 365, False) == pytest.approx(1_000)
+
+    def test_20_year_life(self):
+        """$10,000 asset, 20 year life, full year = $500."""
+        assert calculate_division_40_prime_cost(10_000, 20, 365, False) == pytest.approx(500)
+
+
+class TestDivision40PrimeCostProRata:
+    """Tests for pro-rated prime cost deductions."""
+
+    def test_half_year(self):
+        """$2,000 asset, 10 year life, 182 days."""
+        expected = 200 * (182 / 365)
+        assert calculate_division_40_prime_cost(2_000, 10, 182, False) == pytest.approx(expected, abs=0.01)
+
+    def test_one_day(self):
+        """$2,000 asset, 10 year life, 1 day."""
+        expected = 200 * (1 / 365)
+        assert calculate_division_40_prime_cost(2_000, 10, 1, False) == pytest.approx(expected, abs=0.01)
+
+    def test_90_days(self):
+        """$2,000 asset, 10 year life, 90 days."""
+        expected = 200 * (90 / 365)
+        assert calculate_division_40_prime_cost(2_000, 10, 90, False) == pytest.approx(expected, abs=0.01)
+
+
+class TestDivision40PrimeCostConsistency:
+    """Tests for consistent behaviour of prime cost method."""
+
+    def test_scales_linearly_with_cost(self):
+        """Doubling cost should double the deduction."""
+        single = calculate_division_40_prime_cost(2_000, 10, 365, False)
+        double = calculate_division_40_prime_cost(4_000, 10, 365, False)
+        assert double == pytest.approx(single * 2)
+
+    def test_scales_linearly_with_days(self):
+        """Doubling days should double the deduction."""
+        half = calculate_division_40_prime_cost(2_000, 10, 100, False)
+        full = calculate_division_40_prime_cost(2_000, 10, 200, False)
+        assert full == pytest.approx(half * 2)
+
+    def test_shorter_life_higher_deduction(self):
+        """Shorter effective life = higher annual deduction."""
+        short = calculate_division_40_prime_cost(2_000, 5, 365, False)
+        long = calculate_division_40_prime_cost(2_000, 10, 365, False)
+        assert short > long
+
+    def test_full_year_same_across_years(self):
+        """Prime cost gives the same deduction every full year."""
+        year_1 = calculate_division_40_prime_cost(2_000, 10, 365, False)
+        year_2 = calculate_division_40_prime_cost(2_000, 10, 365, False)
+        assert year_1 == pytest.approx(year_2)
+
+    def test_leap_vs_non_leap_full_year_equal(self):
+        """Full year deduction should be the same regardless of leap year."""
+        non_leap = calculate_division_40_prime_cost(2_000, 10, 365, False)
+        leap = calculate_division_40_prime_cost(2_000, 10, 366, True)
+        assert non_leap == pytest.approx(leap)
+
+
+# ──────────────────────────────────────────────
+# Division 40 — Diminishing Value
+# ──────────────────────────────────────────────
+
+
+class TestDivision40DiminishingValueFullYear:
+    """Tests for full-year diminishing value deductions."""
+
+    def test_year_1(self):
+        """$2,000 asset, 10 year life, full year = $2,000 * (2/10) = $400."""
+        assert calculate_division_40_diminishing_value(2_000, 10, 365, False) == pytest.approx(400)
+
+    def test_year_2(self):
+        """Written down value $1,600, 10 year life = $1,600 * (2/10) = $320."""
+        assert calculate_division_40_diminishing_value(1_600, 10, 365, False) == pytest.approx(320)
+
+    def test_year_3(self):
+        """Written down value $1,280, 10 year life = $1,280 * (2/10) = $256."""
+        assert calculate_division_40_diminishing_value(1_280, 10, 365, False) == pytest.approx(256)
+
+    def test_full_leap_year(self):
+        """$2,000 asset, 10 year life, full leap year = $400."""
+        assert calculate_division_40_diminishing_value(2_000, 10, 366, True) == pytest.approx(400)
+
+    def test_5_year_life(self):
+        """$5,000 asset, 5 year life = $5,000 * (2/5) = $2,000."""
+        assert calculate_division_40_diminishing_value(5_000, 5, 365, False) == pytest.approx(2_000)
+
+    def test_1_year_life(self):
+        """$1,000 asset, 1 year life = $1,000 * (2/1) = $2,000."""
+        assert calculate_division_40_diminishing_value(1_000, 1, 365, False) == pytest.approx(2_000)
+
+
+class TestDivision40DiminishingValueProRata:
+    """Tests for pro-rated diminishing value deductions."""
+
+    def test_half_year(self):
+        """$2,000 asset, 10 year life, 182 days."""
+        expected = 400 * (182 / 365)
+        assert calculate_division_40_diminishing_value(2_000, 10, 182, False) == pytest.approx(expected, abs=0.01)
+
+    def test_one_day(self):
+        """$2,000 asset, 10 year life, 1 day."""
+        expected = 400 * (1 / 365)
+        assert calculate_division_40_diminishing_value(2_000, 10, 1, False) == pytest.approx(expected, abs=0.01)
+
+
+class TestDivision40DiminishingValueConsistency:
+    """Tests for consistent behaviour of diminishing value method."""
+
+    def test_deduction_decreases_over_time(self):
+        """Simulating multiple years — deduction should decrease each year."""
+        wdv = 2_000.0
+        life = 10
+        prev_deduction = float('inf')
+        for _ in range(10):
+            deduction = calculate_division_40_diminishing_value(wdv, life, 365, False)
+            assert deduction < prev_deduction
+            prev_deduction = deduction
+            wdv -= deduction
+
+    def test_never_fully_depreciates(self):
+        """Diminishing value asymptotically approaches zero — never reaches it."""
+        wdv = 2_000.0
+        life = 10
+        for _ in range(50):
+            deduction = calculate_division_40_diminishing_value(wdv, life, 365, False)
+            wdv -= deduction
+        assert wdv > 0
+
+    def test_higher_than_prime_cost_year_1(self):
+        """Diminishing value should give a higher deduction than prime cost in year 1 (for life > 1)."""
+        dv = calculate_division_40_diminishing_value(2_000, 10, 365, False)
+        pc = calculate_division_40_prime_cost(2_000, 10, 365, False)
+        assert dv > pc
+
+    def test_scales_linearly_with_value(self):
+        """Doubling written down value should double the deduction."""
+        single = calculate_division_40_diminishing_value(2_000, 10, 365, False)
+        double = calculate_division_40_diminishing_value(4_000, 10, 365, False)
+        assert double == pytest.approx(single * 2)
+
+    def test_leap_vs_non_leap_full_year_equal(self):
+        """Full year deduction should be the same regardless of leap year."""
+        non_leap = calculate_division_40_diminishing_value(2_000, 10, 365, False)
+        leap = calculate_division_40_diminishing_value(2_000, 10, 366, True)
+        assert non_leap == pytest.approx(leap)
+
+
+# ──────────────────────────────────────────────
+# Division 40 — Shared Validation
+# ──────────────────────────────────────────────
+
+
+class TestDivision40Validation:
+    """Tests for input validation shared across both Div 40 methods."""
+
+    def test_prime_cost_days_exceeding_raises(self):
+        with pytest.raises(ValueError):
+            calculate_division_40_prime_cost(2_000, 10, 400, False)
+
+    def test_diminishing_value_days_exceeding_raises(self):
+        with pytest.raises(ValueError):
+            calculate_division_40_diminishing_value(2_000, 10, 400, False)
+
+    def test_prime_cost_366_non_leap_raises(self):
+        with pytest.raises(ValueError):
+            calculate_division_40_prime_cost(2_000, 10, 366, False)
+
+    def test_diminishing_value_366_non_leap_raises(self):
+        with pytest.raises(ValueError):
+            calculate_division_40_diminishing_value(2_000, 10, 366, False)
+
+    def test_prime_cost_zero_life_raises(self):
+        with pytest.raises(ValueError):
+            calculate_division_40_prime_cost(2_000, 0, 365, False)
+
+    def test_diminishing_value_zero_life_raises(self):
+        with pytest.raises(ValueError):
+            calculate_division_40_diminishing_value(2_000, 0, 365, False)
+
+    def test_prime_cost_negative_life_raises(self):
+        with pytest.raises(ValueError):
+            calculate_division_40_prime_cost(2_000, -1, 365, False)
+
+    def test_diminishing_value_negative_life_raises(self):
+        with pytest.raises(ValueError):
+            calculate_division_40_diminishing_value(2_000, -1, 365, False)
+
+
+class TestDivision40ZeroAndEdgeCases:
+    """Tests for zero values and edge cases."""
+
+    def test_prime_cost_zero_cost(self):
+        assert calculate_division_40_prime_cost(0, 10, 365, False) == 0.0
+
+    def test_diminishing_value_zero_wdv(self):
+        assert calculate_division_40_diminishing_value(0, 10, 365, False) == 0.0
+
+    def test_prime_cost_zero_days(self):
+        assert calculate_division_40_prime_cost(2_000, 10, 0, False) == 0.0
+
+    def test_diminishing_value_zero_days(self):
+        assert calculate_division_40_diminishing_value(2_000, 10, 0, False) == 0.0
