@@ -4,6 +4,12 @@ Deductions domain models — tax deduction models.
 
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
+
+
+class DepreciationMethod(Enum):
+    DIMINISHING_VALUE = "diminishing_value"
+    PRIME_COST = "prime_cost"
 
 
 @dataclass
@@ -21,6 +27,8 @@ class DepreciableAsset:
     cost: float
     effective_life_years: int
     purchase_date: date
+    method: DepreciationMethod = DepreciationMethod.DIMINISHING_VALUE
+    written_down_value: float = 0.0  # Caller maintains this for diminishing value
 
 
 @dataclass

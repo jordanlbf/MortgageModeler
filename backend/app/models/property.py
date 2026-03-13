@@ -1,8 +1,16 @@
 """
-Property domain models — ongoing cost projections and related types.
+Property domain models — property, ongoing cost projections and related types.
 """
 
 from dataclasses import dataclass
+from datetime import date
+
+
+@dataclass
+class Property:
+    """Core property details."""
+    purchase_date: date
+    is_new_property: bool
 
 
 # ──────────────────────────────────────────────

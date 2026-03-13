@@ -9,7 +9,7 @@ calculations. All functions are pure — no side effects or external dependencie
 def calculate_division_43_deduction(
     construction_cost: float,
     days_held: int,
-    days_in_year: int = 365,
+    days_in_financial_year: int = 365,
 ) -> float:
     """
     Calculate the Division 43 building depreciation deduction for a given year.
@@ -26,18 +26,18 @@ def calculate_division_43_deduction(
         ValueError: If days_held exceeds days_in_year
         ValueError: If days_in_year is not 365 or 366
     """
-    if days_in_year not in (365, 366):
-        raise ValueError(f"days_in_year ({days_in_year}) must be 365 or 366")
-    if days_held > days_in_year:
-        raise ValueError(f"days_held ({days_held}) exceeds days in year ({days_in_year})")
-    return (construction_cost * 0.025) * (days_held / days_in_year)
+    if days_in_financial_year not in (365, 366):
+        raise ValueError(f"days_in_year ({days_in_financial_year}) must be 365 or 366")
+    if days_held > days_in_financial_year:
+        raise ValueError(f"days_held ({days_held}) exceeds days in year ({days_in_financial_year})")
+    return (construction_cost * 0.025) * (days_held / days_in_financial_year)
 
 
 def calculate_division_40_prime_cost(
     cost: float,
     effective_life_years: int,
     days_held: int,
-    days_in_year: int = 365,
+    days_in_financial_year: int = 365,
 ) -> float:
     """
     Calculate Division 40 depreciation using the prime cost (straight-line) method.
@@ -59,19 +59,19 @@ def calculate_division_40_prime_cost(
     if effective_life_years < 1:
         raise ValueError(f"effective_life_years ({effective_life_years}) must be at least 1")
 
-    if days_in_year not in (365, 366):
-        raise ValueError(f"days_in_year ({days_in_year}) must be 365 or 366")
-    if days_held > days_in_year:
-        raise ValueError(f"days_held ({days_held}) exceeds days in year ({days_in_year})")
+    if days_in_financial_year not in (365, 366):
+        raise ValueError(f"days_in_year ({days_in_financial_year}) must be 365 or 366")
+    if days_held > days_in_financial_year:
+        raise ValueError(f"days_held ({days_held}) exceeds days in year ({days_in_financial_year})")
 
-    return cost * (1 / effective_life_years) * (days_held / days_in_year)
+    return cost * (1 / effective_life_years) * (days_held / days_in_financial_year)
 
 
 def calculate_division_40_diminishing_value(
     written_down_value: float,
     effective_life_years: int,
     days_held: int,
-    days_in_year: int = 365,
+    days_in_financial_year: int = 365,
 ) -> float:
     """
     Calculate Division 40 depreciation using the diminishing value method.
@@ -93,9 +93,9 @@ def calculate_division_40_diminishing_value(
     if effective_life_years < 1:
         raise ValueError(f"effective_life_years ({effective_life_years}) must be at least 1")
 
-    if days_in_year not in (365, 366):
-        raise ValueError(f"days_in_year ({days_in_year}) must be 365 or 366")
-    if days_held > days_in_year:
-        raise ValueError(f"days_held ({days_held}) exceeds days in year ({days_in_year})")
+    if days_in_financial_year not in (365, 366):
+        raise ValueError(f"days_in_year ({days_in_financial_year}) must be 365 or 366")
+    if days_held > days_in_financial_year:
+        raise ValueError(f"days_held ({days_held}) exceeds days in year ({days_in_financial_year})")
 
-    return written_down_value * (2 / effective_life_years) * (days_held / days_in_year)
+    return written_down_value * (2 / effective_life_years) * (days_held / days_in_financial_year)
