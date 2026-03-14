@@ -154,21 +154,21 @@ def calculate_lvr(purchase_price: float, deposit: float) -> float:
 
 def calculate_property_value(year: int, purchase_price: float, growth_rate: float) -> float:
     """Calculate property value for a given year."""
-    if year < 1:
-        raise ValueError("year must be >= 1")
-    return purchase_price * ((1 + growth_rate) ** (year - 1))
+    if year < 0:
+        raise ValueError("year must be >= 0")
+    return purchase_price * ((1 + growth_rate) ** year)
 
 
 def calculate_rental_income(year: int, weekly_rent: float, vacancy_weeks: int,
                             growth_rate: float) -> float:
     """Calculate annual rental income for a given year, accounting for vacancy."""
     annual_rent = weekly_rent * (52 - vacancy_weeks)
-    return annual_rent * ((1 + growth_rate) ** (year - 1))
+    return annual_rent * ((1 + growth_rate) ** year)
 
 
 def compound_annual_cost(year: int, base_rate: float, growth_rate: float) -> float:
     """Apply annual compounding growth to a base cost."""
-    return base_rate * ((1 + growth_rate) ** (year - 1))
+    return base_rate * ((1 + growth_rate) ** year)
 
 
 def calculate_council_rates(year: int, base_rate: float, growth_rate: float) -> float:

@@ -43,7 +43,7 @@ def build_ongoing_cost_projection(
     """
     annual_costs: list[YearCost] = []
 
-    for year in range(1, projection_years + 1):
+    for year in range(projection_years):
         cr = calculate_council_rates(year, council_rates, annual_cost_growth_rate)
         wr = calculate_water_rates(year, water_rates, annual_cost_growth_rate)
         bi = calculate_building_insurance(year, building_insurance, annual_cost_growth_rate)

@@ -16,7 +16,7 @@ def get_rent_received(req: RentReceivedRequest) -> RentReceivedResponse:
     """Calculate the total rent received over the first year and projections for future years."""
     projections: list[YearByYearRentReceivedResponse] = []
 
-    for year in range(1, req.projection_years + 1):
+    for year in range(req.projection_years):
         gross_annual_rent = calculate_gross_annual_rent(year, req.weekly_rent, req.annual_growth_rate)
         weekly_rent = calculate_weekly_rent_from_annual(gross_annual_rent)
         effective_annual_rent = calculate_effective_annual_rent(year, req.vacancy_rate, req.weekly_rent, req.annual_growth_rate)

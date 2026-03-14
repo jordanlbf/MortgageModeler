@@ -8,7 +8,7 @@ Covers both rent-paid (tenant housing costs) and rent-received
 
 def calculate_gross_annual_rent(year: int, weekly_rent: float, growth_rate: float) -> float:
     """Calculate total annual rent paid/received for a given year."""
-    return weekly_rent * 52 * ((1 + growth_rate) ** (year - 1))
+    return weekly_rent * 52 * ((1 + growth_rate) ** year)
 
 
 def calculate_effective_annual_rent(year: int, vacancy_rate: float, weekly_rent: float, growth_rate: float) -> float:

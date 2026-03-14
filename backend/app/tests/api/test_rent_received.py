@@ -78,14 +78,14 @@ class TestRentReceivedEstimate:
 
     # ── Year numbering ─────────────────────────────────────────────────
 
-    def test_years_start_at_one(self):
+    def test_years_start_at_zero(self):
         data = self._post(projection_years=3).json()
-        assert data["projections"][0]["year"] == 1
+        assert data["projections"][0]["year"] == 0
 
     def test_years_are_sequential(self):
         data = self._post(projection_years=5).json()
         years = [p["year"] for p in data["projections"]]
-        assert years == [1, 2, 3, 4, 5]
+        assert years == [0, 1, 2, 3, 4]
 
     # ── Top-level summary matches year 1 ───────────────────────────────
 

@@ -85,7 +85,7 @@ class TestOngoingCostsEstimate:
     def test_years_are_sequential(self):
         data = self._post(projection_years=10).json()
         years = [entry["year"] for entry in data["annual_costs"]]
-        assert years == list(range(1, 11))
+        assert years == list(range(10))
 
     # ── Top-level summary values ──────────────────
 
@@ -384,12 +384,12 @@ class TestOngoingCostsEstimate:
     def test_projection_1_year(self):
         data = self._post(projection_years=1).json()
         assert len(data["annual_costs"]) == 1
-        assert data["annual_costs"][0]["year"] == 1
+        assert data["annual_costs"][0]["year"] == 0
 
     def test_projection_50_years(self):
         data = self._post(projection_years=50).json()
         assert len(data["annual_costs"]) == 50
-        assert data["annual_costs"][-1]["year"] == 50
+        assert data["annual_costs"][-1]["year"] == 49
 
     # ── Defaults produce valid response ───────────
 
@@ -428,7 +428,7 @@ class TestOngoingCostsEstimate:
         ).json()
 
         yr1 = data["annual_costs"][0]
-        assert yr1["year"] == 1
+        assert yr1["year"] == 0
         assert yr1["council_rates"] == pytest.approx(1_800)
         assert yr1["water_rates"] == pytest.approx(1_200)
         assert yr1["building_insurance"] == pytest.approx(1_500)
@@ -455,7 +455,7 @@ class TestOngoingCostsEstimate:
         ).json()
 
         yr2 = data["annual_costs"][1]
-        assert yr2["year"] == 2
+        assert yr2["year"] == 1
         assert yr2["council_rates"] == pytest.approx(1_800 * 1.025)
         assert yr2["water_rates"] == pytest.approx(1_200 * 1.025)
         assert yr2["building_insurance"] == pytest.approx(1_500 * 1.025)
