@@ -50,6 +50,7 @@ def calculate_medicare_levy_surcharge(mls_income: float, has_private_health: boo
     for (threshold, rate) in MLS_THRESHOLDS:
         if mls_income <= threshold:
             return mls_income * rate
+    raise ValueError("MLS_THRESHOLDS config missing catch-all bracket (e.g. float('inf'))")
 
 
 def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> float:

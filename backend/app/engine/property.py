@@ -36,6 +36,7 @@ def calculate_qld_stamp_duty_with_bracket(purchase_price: float,
         if purchase_price <= threshold:
             return base + (purchase_price - prev_threshold) * (rate / 100)
         prev_threshold = threshold
+    raise ValueError("Stamp duty bracket config missing catch-all bracket (e.g. float('inf'))")
 
 
 def estimate_qld_stamp_duty(purchase_price: float, is_investment: bool = True) -> float:
@@ -153,6 +154,8 @@ def calculate_lvr(purchase_price: float, deposit: float) -> float:
 
 def calculate_property_value(year: int, purchase_price: float, growth_rate: float) -> float:
     """Calculate property value for a given year."""
+    if year < 1:
+        raise ValueError("year must be >= 1")
     return purchase_price * ((1 + growth_rate) ** (year - 1))
 
 
