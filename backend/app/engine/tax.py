@@ -118,33 +118,24 @@ def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> fl
     return min(repayment_owing, hecs_balance)
 
 
-def calculate_total_tax(
-        taxable_income: float,
-        repayment_income: float,
-        mls_income: float,
-        hecs_balance: float,
-        has_private_health: bool
-) -> float:
+def calculate_total_tax(tax_profile: TaxProfile) -> float:
     """
     Calculate total tax owing.
 
-    Sums income tax, Medicare levy, Medicare Levy Surcharge, and HECS repayment.
+    Sums income tax, Medicare levy, Medicare Levy Surcharge, and HECS repayment,
+    using the correct income measure for each component.
 
     Args:
-        taxable_income: Assessable income minus allowable deductions
-        repayment_income: Income used for HECS repayment calculation
-        mls_income: Income used for Medicare Levy Surcharge calculation
-        hecs_balance: Outstanding HECS/HELP debt
-        has_private_health: Whether the taxpayer holds private health insurance
+        tax_profile: Taxpayer configuration with all income measures
 
     Returns:
         Total tax owing (sum of all components)
     """
     return (
-        calculate_income_tax(taxable_income) +
-        calculate_medicare_levy(taxable_income) +
-        calculate_medicare_levy_surcharge(mls_income, has_private_health) +
-        calculate_hecs_repayment(repayment_income, hecs_balance)
+        calculate_income_tax(tax_profile.taxable_income) +
+        calculate_medicare_levy(tax_profile.taxable_income) +
+        calculate_medicare_levy_surcharge(tax_profile.mls_income, tax_profile.has_private_health) +
+        calculate_hecs_repayment(tax_profile.repayment_income, tax_profile.hecs_balance)
     )
 
 
@@ -168,33 +159,20 @@ def calculate_tax_saving(tax_profile: TaxProfile, net_rental_income: float) -> f
         Tax saving amount (positive = saving, negative = extra tax owed)
     """
     # Tax without the investment property
-    tax_without = calculate_total_tax(
-        tax_profile.taxable_income,
-        tax_profile.repayment_income,
-        tax_profile.mls_income,
-        tax_profile.hecs_balance,
-        tax_profile.has_private_health,
-    )
+    tax_without = calculate_total_tax(tax_profile)
 
     # Adjusted incomes with the investment property
     # TI: reduced by rental loss (or increased by rental profit)
-    adjusted_ti = tax_profile.taxable_income + net_rental_income
-
     # RI and MLSI: rental losses are added back, profits are kept
-    # net_investment_loss = max(0, -net_rental_income)
-    # adjusted = TI + net_rental_income + net_investment_loss
-    #          = TI + net_rental_income + max(0, -net_rental_income)
-    #          = TI + max(net_rental_income, 0)
-    adjusted_ri = tax_profile.repayment_income + max(net_rental_income, 0)
-    adjusted_mlsi = tax_profile.mls_income + max(net_rental_income, 0)
+    adjusted_profile = TaxProfile(
+        taxable_income=tax_profile.taxable_income + net_rental_income,
+        repayment_income=tax_profile.repayment_income + max(net_rental_income, 0),
+        mls_income=tax_profile.mls_income + max(net_rental_income, 0),
+        hecs_balance=tax_profile.hecs_balance,
+        has_private_health=tax_profile.has_private_health,
+    )
 
     # Tax with the investment property
-    tax_with = calculate_total_tax(
-        adjusted_ti,
-        adjusted_ri,
-        adjusted_mlsi,
-        tax_profile.hecs_balance,
-        tax_profile.has_private_health,
-    )
+    tax_with = calculate_total_tax(adjusted_profile)
 
     return tax_without - tax_with

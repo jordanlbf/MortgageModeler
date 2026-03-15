@@ -36,11 +36,15 @@ def _make_year_cost(**overrides) -> YearCost:
     return YearCost(**defaults)
 
 
-def _make_property(purchase_date=None, is_new=True) -> Property:
+def _make_property(purchase_date=None, purchase_price=500_000, is_new=True,
+                   buildings=None, assets=None) -> Property:
     """Create a Property with sensible defaults."""
     return Property(
         purchase_date=purchase_date or date(2020, 1, 15),
+        purchase_price=purchase_price,
         is_new_property=is_new,
+        depreciable_buildings=buildings or [],
+        depreciable_assets=assets or [],
     )
 
 
@@ -89,7 +93,7 @@ class TestCalculateDaysHeldInFy:
 
     def test_full_year_held(self):
         """Asset purchased well before the FY — full year."""
-        fy = FinancialYear(2025)  # 1 Jul 2024 – 30 Jun 2025
+        fy = FinancialYear(2025)
         purchase = date(2020, 1, 1)
         expiry = date(2060, 1, 1)
         assert _calculate_days_held_in_fy(purchase, expiry, fy) == fy.days
@@ -99,7 +103,7 @@ class TestCalculateDaysHeldInFy:
         fy = FinancialYear(2025)
         purchase = date(2025, 1, 1)
         expiry = date(2065, 1, 1)
-        expected = (date(2025, 7, 1) - date(2025, 1, 1)).days  # 181
+        expected = (date(2025, 7, 1) - date(2025, 1, 1)).days
         assert _calculate_days_held_in_fy(purchase, expiry, fy) == expected
 
     def test_purchased_on_fy_start(self):
@@ -150,12 +154,10 @@ class TestCalculateDaysHeldInFy:
         """Asset purchased and expires within the same FY (short effective life)."""
         fy = FinancialYear(2025)
         purchase = date(2024, 10, 1)
-        expiry = date(2025, 4, 1)  # 6-month life
-        # purchase to FY end (inclusive) = 273, expiry from FY start = 274
-        # Capped at min(273, 274) = 273
-        purchase_to_fy_end = (fy.end_date + timedelta(days=1) - purchase).days  # 273
-        expiry_from_fy_start = (expiry - fy.start_date).days  # 274
-        expected = min(purchase_to_fy_end, expiry_from_fy_start)  # 273
+        expiry = date(2025, 4, 1)
+        purchase_to_fy_end = (fy.end_date + timedelta(days=1) - purchase).days
+        expiry_from_fy_start = (expiry - fy.start_date).days
+        expected = min(purchase_to_fy_end, expiry_from_fy_start)
         assert _calculate_days_held_in_fy(purchase, expiry, fy) == expected
 
 
@@ -168,15 +170,13 @@ class TestBuildTaxDeductionSummaryBasic:
 
     def test_negatively_geared(self):
         """Deductions exceed rental income — negatively geared."""
-        prop = _make_property()
+        prop = _make_property(buildings=[_make_building()])
         fy = FinancialYear(2025)
         costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=20_000,
-            depreciable_buildings=[_make_building()],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=25_000,
             tax_profile=_make_tax_profile(),
@@ -200,8 +200,6 @@ class TestBuildTaxDeductionSummaryBasic:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=5_000,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -210,7 +208,7 @@ class TestBuildTaxDeductionSummaryBasic:
 
         assert result.is_negatively_geared is False
         assert result.net_rental_income > 0
-        assert result.tax_saving < 0  # Extra tax owed
+        assert result.tax_saving < 0
 
     def test_zero_rental_income(self):
         """No rental income — all deductions create a loss."""
@@ -221,8 +219,6 @@ class TestBuildTaxDeductionSummaryBasic:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=15_000,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=0,
             tax_profile=_make_tax_profile(),
@@ -245,8 +241,6 @@ class TestBuildTaxDeductionSummaryBasic:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=30_000,
             tax_profile=_make_tax_profile(),
@@ -274,8 +268,6 @@ class TestDeductionBreakdown:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -298,8 +290,6 @@ class TestDeductionBreakdown:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=18_500,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -310,15 +300,16 @@ class TestDeductionBreakdown:
 
     def test_total_deductions_is_sum_of_all(self):
         """Total deductions = interest + ongoing + building depreciation + plant depreciation."""
-        prop = _make_property()
+        prop = _make_property(
+            buildings=[_make_building()],
+            assets=[_make_asset()],
+        )
         fy = FinancialYear(2025)
         costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=15_000,
-            depreciable_buildings=[_make_building()],
-            depreciable_assets=[_make_asset()],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -338,8 +329,6 @@ class TestDeductionBreakdown:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=10_000,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=30_000,
             tax_profile=_make_tax_profile(),
@@ -358,9 +347,9 @@ class TestDiv43InService:
 
     def test_single_building_full_year(self):
         """$400k building, purchased well before FY — full year deduction of $10,000."""
-        prop = _make_property(purchase_date=date(2020, 1, 15))
-        fy = FinancialYear(2025)
         building = _make_building(cost=400_000, purchase_date=date(2020, 1, 15))
+        prop = _make_property(purchase_date=date(2020, 1, 15), buildings=[building])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -370,8 +359,6 @@ class TestDiv43InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[building],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -382,10 +369,10 @@ class TestDiv43InService:
 
     def test_multiple_buildings(self):
         """Multiple buildings — deductions should sum."""
-        prop = _make_property()
-        fy = FinancialYear(2025)
         b1 = _make_building(name="Original", cost=400_000, purchase_date=date(2020, 1, 15))
         b2 = _make_building(name="Extension", cost=100_000, purchase_date=date(2022, 6, 1))
+        prop = _make_property(buildings=[b1, b2])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -395,22 +382,19 @@ class TestDiv43InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[b1, b2],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
-        # Both full year: $10,000 + $2,500 = $12,500
         assert result.depreciation_building == pytest.approx(12_500, abs=1)
 
     def test_building_expired(self):
         """Building purchased 41 years ago — expired, zero depreciation."""
-        prop = _make_property(purchase_date=date(1980, 1, 1))
-        fy = FinancialYear(2025)
         building = _make_building(cost=400_000, purchase_date=date(1980, 1, 1))
+        prop = _make_property(purchase_date=date(1980, 1, 1), buildings=[building])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -420,8 +404,6 @@ class TestDiv43InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[building],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -432,9 +414,9 @@ class TestDiv43InService:
 
     def test_building_purchased_mid_fy(self):
         """Building purchased 1 Jan 2025 — pro-rated for partial FY."""
-        prop = _make_property(purchase_date=date(2025, 1, 1))
-        fy = FinancialYear(2025)
         building = _make_building(cost=400_000, purchase_date=date(2025, 1, 1))
+        prop = _make_property(purchase_date=date(2025, 1, 1), buildings=[building])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -444,8 +426,6 @@ class TestDiv43InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[building],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -459,13 +439,10 @@ class TestDiv43InService:
 
     def test_pre_1987_building_excluded(self):
         """Building with construction starting before 16 Sep 1987 — zero depreciation."""
-        prop = _make_property()
+        building = _make_building(cost=400_000, purchase_date=date(2020, 1, 15),
+                                  construction_start_date=date(1985, 3, 1))
+        prop = _make_property(buildings=[building])
         fy = FinancialYear(2025)
-        building = _make_building(
-            cost=400_000,
-            purchase_date=date(2020, 1, 15),
-            construction_start_date=date(1985, 3, 1),
-        )
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -475,8 +452,6 @@ class TestDiv43InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[building],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -487,13 +462,10 @@ class TestDiv43InService:
 
     def test_pre_1987_building_on_cutoff_date_excluded(self):
         """Building with construction starting on 15 Sep 1987 (day before cutoff) — excluded."""
-        prop = _make_property()
+        building = _make_building(cost=400_000, purchase_date=date(2020, 1, 15),
+                                  construction_start_date=date(1987, 9, 15))
+        prop = _make_property(buildings=[building])
         fy = FinancialYear(2025)
-        building = _make_building(
-            cost=400_000,
-            purchase_date=date(2020, 1, 15),
-            construction_start_date=date(1987, 9, 15),
-        )
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -503,8 +475,6 @@ class TestDiv43InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[building],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -515,13 +485,10 @@ class TestDiv43InService:
 
     def test_post_1987_building_on_cutoff_date_included(self):
         """Building with construction starting exactly on 16 Sep 1987 — included."""
-        prop = _make_property()
+        building = _make_building(cost=400_000, purchase_date=date(2020, 1, 15),
+                                  construction_start_date=date(1987, 9, 16))
+        prop = _make_property(buildings=[building])
         fy = FinancialYear(2025)
-        building = _make_building(
-            cost=400_000,
-            purchase_date=date(2020, 1, 15),
-            construction_start_date=date(1987, 9, 16),
-        )
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -531,8 +498,6 @@ class TestDiv43InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[building],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -543,18 +508,14 @@ class TestDiv43InService:
 
     def test_mixed_pre_and_post_1987_buildings(self):
         """Mix of pre- and post-1987 buildings — only post-1987 should be claimed."""
-        prop = _make_property()
+        old_building = _make_building(name="Old wing", cost=200_000,
+                                      purchase_date=date(2020, 1, 15),
+                                      construction_start_date=date(1980, 1, 1))
+        new_building = _make_building(name="New wing", cost=400_000,
+                                      purchase_date=date(2020, 1, 15),
+                                      construction_start_date=date(2019, 6, 1))
+        prop = _make_property(buildings=[old_building, new_building])
         fy = FinancialYear(2025)
-        old_building = _make_building(
-            name="Old wing", cost=200_000,
-            purchase_date=date(2020, 1, 15),
-            construction_start_date=date(1980, 1, 1),
-        )
-        new_building = _make_building(
-            name="New wing", cost=400_000,
-            purchase_date=date(2020, 1, 15),
-            construction_start_date=date(2019, 6, 1),
-        )
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -564,15 +525,12 @@ class TestDiv43InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[old_building, new_building],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
-        # Only the $400k new building: $10,000
         assert result.depreciation_building == pytest.approx(10_000, abs=1)
 
     def test_no_buildings(self):
@@ -588,8 +546,6 @@ class TestDiv43InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -608,9 +564,9 @@ class TestDiv40InService:
 
     def test_new_property_assets_included(self):
         """New property — Div 40 assets should be claimed."""
-        prop = _make_property(is_new=True)
-        fy = FinancialYear(2025)
         asset = _make_asset(cost=2_000, life=10, wdv=2_000)
+        prop = _make_property(is_new=True, assets=[asset])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -620,8 +576,6 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -632,9 +586,9 @@ class TestDiv40InService:
 
     def test_secondhand_asset_post_2017_excluded(self):
         """Second-hand asset on post-2017 property — Div 40 blocked."""
-        prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False)
-        fy = FinancialYear(2025)
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, purchase_date=date(2018, 6, 1))
+        prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False, assets=[asset])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -644,8 +598,6 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -656,9 +608,9 @@ class TestDiv40InService:
 
     def test_secondhand_asset_pre_2017_allowed(self):
         """Second-hand asset on pre-2017 property — Div 40 grandfathered."""
-        prop = _make_property(purchase_date=date(2016, 3, 1), is_new=False)
-        fy = FinancialYear(2025)
         asset = _make_asset(cost=2_000, life=20, wdv=2_000, purchase_date=date(2014, 1, 1))
+        prop = _make_property(purchase_date=date(2016, 3, 1), is_new=False, assets=[asset])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -668,8 +620,6 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -680,9 +630,9 @@ class TestDiv40InService:
 
     def test_owner_installed_asset_post_2017_allowed(self):
         """Owner-installed asset on post-2017 second-hand property — Div 40 allowed."""
-        prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False)
-        fy = FinancialYear(2025)
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, purchase_date=date(2020, 1, 15))
+        prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False, assets=[asset])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -692,8 +642,6 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -704,10 +652,10 @@ class TestDiv40InService:
 
     def test_mixed_secondhand_and_owner_installed_post_2017(self):
         """Mix of second-hand and owner-installed assets on post-2017 property."""
-        prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False)
-        fy = FinancialYear(2025)
         old_asset = _make_asset(name="Old carpet", cost=3_000, life=10, wdv=3_000, purchase_date=date(2015, 1, 1))
         new_asset = _make_asset(name="New aircon", cost=2_000, life=10, wdv=2_000, purchase_date=date(2020, 6, 1))
+        prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False, assets=[old_asset, new_asset])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -717,22 +665,19 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[old_asset, new_asset],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
-        # Only the new aircon: 2000 * 2/10 = $400
         assert result.depreciation_plant == pytest.approx(400, abs=1)
 
     def test_diminishing_value_method(self):
         """Diminishing value: $2,000 asset, 10yr life, full year = $400."""
-        prop = _make_property(is_new=True)
-        fy = FinancialYear(2025)
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, method=DepreciationMethod.DIMINISHING_VALUE)
+        prop = _make_property(is_new=True, assets=[asset])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -742,8 +687,6 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -754,9 +697,9 @@ class TestDiv40InService:
 
     def test_prime_cost_method(self):
         """Prime cost: $2,000 asset, 10yr life, full year = $200."""
-        prop = _make_property(is_new=True)
-        fy = FinancialYear(2025)
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, method=DepreciationMethod.PRIME_COST)
+        prop = _make_property(is_new=True, assets=[asset])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -766,8 +709,6 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -778,10 +719,10 @@ class TestDiv40InService:
 
     def test_multiple_assets(self):
         """Multiple assets — deductions should sum."""
-        prop = _make_property(is_new=True)
-        fy = FinancialYear(2025)
         a1 = _make_asset(name="Aircon", cost=2_000, life=10, wdv=2_000)
         a2 = _make_asset(name="Carpet", cost=3_000, life=8, wdv=3_000)
+        prop = _make_property(is_new=True, assets=[a1, a2])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -791,22 +732,19 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[a1, a2],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
-        # Aircon: 2000 * 2/10 = 400, Carpet: 3000 * 2/8 = 750
         assert result.depreciation_plant == pytest.approx(1_150, abs=1)
 
     def test_asset_expired(self):
         """Asset past effective life — zero depreciation."""
-        prop = _make_property(is_new=True, purchase_date=date(2010, 1, 1))
-        fy = FinancialYear(2025)
         asset = _make_asset(cost=2_000, life=5, purchase_date=date(2010, 1, 1), wdv=100)
+        prop = _make_property(is_new=True, purchase_date=date(2010, 1, 1), assets=[asset])
+        fy = FinancialYear(2025)
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -816,8 +754,6 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -839,8 +775,6 @@ class TestDiv40InService:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
@@ -859,7 +793,7 @@ class TestTaxSaving:
 
     def test_tax_saving_negatively_geared(self):
         """Negatively geared — tax saving should equal two-pass difference."""
-        prop = _make_property()
+        prop = _make_property(buildings=[_make_building()])
         fy = FinancialYear(2025)
         costs = _make_year_cost()
         profile = _make_tax_profile()
@@ -867,26 +801,22 @@ class TestTaxSaving:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=20_000,
-            depreciable_buildings=[_make_building()],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=25_000,
             tax_profile=profile,
             financial_year=fy,
         )
 
-        # Two-pass using full total tax (IT + ML + MLS + HECS)
-        tax_without = calculate_total_tax(
-            profile.taxable_income, profile.repayment_income, profile.mls_income,
-            profile.hecs_balance, profile.has_private_health,
-        )
+        tax_without = calculate_total_tax(profile)
         net = result.net_rental_income
-        tax_with = calculate_total_tax(
-            profile.taxable_income + net,
-            profile.repayment_income + max(net, 0),
-            profile.mls_income + max(net, 0),
-            profile.hecs_balance, profile.has_private_health,
+        adjusted = TaxProfile(
+            taxable_income=profile.taxable_income + net,
+            repayment_income=profile.repayment_income + max(net, 0),
+            mls_income=profile.mls_income + max(net, 0),
+            hecs_balance=profile.hecs_balance,
+            has_private_health=profile.has_private_health,
         )
+        tax_with = calculate_total_tax(adjusted)
         expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)
         assert result.tax_saving > 0
@@ -904,8 +834,6 @@ class TestTaxSaving:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=0,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=30_000,
             tax_profile=_make_tax_profile(),
@@ -927,8 +855,6 @@ class TestTaxSaving:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=30_000,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=30_000,
             tax_profile=_make_tax_profile(),
@@ -948,24 +874,19 @@ class TestTaxSaving:
         )
         profile = _make_tax_profile(taxable_income=50_000)
 
-        # $50k income (30% bracket), $10k loss pushes to $40k (16% bracket)
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=10_000,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=0,
             tax_profile=profile,
             financial_year=fy,
         )
 
-        # Tax saving is NOT simply loss * marginal rate because it spans brackets
         simple_marginal = 10_000 * 0.30
         assert result.tax_saving != pytest.approx(simple_marginal)
-        # But it should be the correct two-pass difference
-        tax_without = calculate_total_tax(50_000, 50_000, 50_000, 0, True)
-        tax_with = calculate_total_tax(40_000, 50_000, 50_000, 0, True)
+        tax_without = calculate_total_tax(TaxProfile(50_000, 50_000, 50_000, 0, True))
+        tax_with = calculate_total_tax(TaxProfile(40_000, 50_000, 50_000, 0, True))
         expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)
 
@@ -983,16 +904,13 @@ class TestTaxSaving:
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=10_000,
-            depreciable_buildings=[],
-            depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=0,
             tax_profile=profile,
             financial_year=fy,
         )
 
-        # $20k income, $10k loss → $10k adjusted income (tax-free threshold)
-        tax_without = calculate_total_tax(20_000, 20_000, 20_000, 0, True)
-        tax_with = calculate_total_tax(10_000, 20_000, 20_000, 0, True)
+        tax_without = calculate_total_tax(TaxProfile(20_000, 20_000, 20_000, 0, True))
+        tax_with = calculate_total_tax(TaxProfile(10_000, 20_000, 20_000, 0, True))
         expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)

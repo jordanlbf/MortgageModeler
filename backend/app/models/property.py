@@ -2,21 +2,105 @@
 Property domain models — property, ongoing cost projections and related types.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
+from app.models.deductions import DepreciableBuilding, DepreciableAsset
+
+
+# ──────────────────────────────────────────────
+# Purchase costs
+# ──────────────────────────────────────────────
+
+@dataclass
+class PurchaseCosts:
+    """
+    Upfront costs incurred when acquiring a property.
+
+    Some costs are added to the CGT cost base (reducing capital gain at sale),
+    while others are borrowing costs deductible against rental income over
+    the lesser of 5 years or the loan term.
+
+    Attributes:
+        stamp_duty: State transfer duty (cost base)
+        legal_fees: Conveyancing and legal fees (cost base)
+        building_pest_inspection: Building and pest inspection fees (cost base)
+        registration_fee: Title registration fee (cost base)
+        mortgage_registration_fee: Mortgage registration fee (borrowing cost, deductible over 5 years)
+        loan_establishment_fee: Loan establishment/application fee (borrowing cost, deductible over 5 years)
+        other_costs: Any other acquisition costs not covered above (cost base)
+    """
+    stamp_duty: float = 0.0
+    legal_fees: float = 0.0
+    building_pest_inspection: float = 0.0
+    registration_fee: float = 0.0
+    mortgage_registration_fee: float = 0.0
+    loan_establishment_fee: float = 0.0
+    other_costs: float = 0.0
+
+    @property
+    def total_cost_base(self) -> float:
+        """
+        Sum of costs added to the CGT cost base.
+
+        Returns:
+            Total non-deductible acquisition costs for CGT purposes
+        """
+        return (
+            self.stamp_duty +
+            self.legal_fees +
+            self.building_pest_inspection +
+            self.registration_fee +
+            self.other_costs
+        )
+
+    @property
+    def total_borrowing_costs(self) -> float:
+        """
+        Sum of borrowing costs deductible over 5 years (or loan term if shorter).
+
+        Returns:
+            Total deductible borrowing costs
+        """
+        return (
+            self.mortgage_registration_fee +
+            self.loan_establishment_fee
+        )
+
+    @property
+    def total(self) -> float:
+        """
+        Sum of all purchase cost components.
+
+        Returns:
+            Total upfront acquisition costs
+        """
+        return self.total_cost_base + self.total_borrowing_costs
+
+
+# ──────────────────────────────────────────────
+# Core property
+# ──────────────────────────────────────────────
 
 @dataclass
 class Property:
     """
-    Core property details.
+    Core property details — aggregate root for all property-related data.
 
     Attributes:
         purchase_date: Date the property was purchased
+        purchase_price: Property purchase price
         is_new_property: Whether the owner is the first occupant/investor
+        purchase_costs: Upfront acquisition costs (defaults to all zeros)
+        depreciable_buildings: Div 43 buildings/constructions to depreciate
+        depreciable_assets: Div 40 plant/equipment to depreciate
     """
     purchase_date: date
+    purchase_price: float
     is_new_property: bool
+    purchase_costs: PurchaseCosts = field(default_factory=PurchaseCosts)
+    depreciable_buildings: list[DepreciableBuilding] = field(default_factory=list)
+    depreciable_assets: list[DepreciableAsset] = field(default_factory=list)
 
 
 # ──────────────────────────────────────────────
