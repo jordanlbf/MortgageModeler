@@ -201,3 +201,137 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
     management_rate: float = Field(default=0.08, ge=0, le=1, description="Management fee as fraction of rental income")
     landlord_insurance: float = Field(default=0.0, ge=0, description="Base annual landlord insurance")
     include_cgt: bool = Field(default=True, description="Whether to calculate CGT at end of projection")
+
+
+# ── Responses ──────────────────────────────────
+
+class CashFlowYearResponse(BaseModel):
+    """
+    A single year's cash flow breakdown — shared by both scenarios.
+
+    Attributes:
+        year: Projection year (0 = purchase year)
+        net_income: Salary minus total tax
+        total_inflows: Sum of all income sources for the year
+        mortgage_repayment: Total mortgage payments for the year
+        mortgage_interest: Interest portion of mortgage payments
+        mortgage_principal: Principal portion of mortgage payments
+        property_costs: Ongoing property costs for the year
+        purchase_costs: Upfront acquisition costs (year 0 only)
+        rent_paid: Annual rent where the investor lives (rentvesting only, 0 for PPOR)
+        rental_income: Annual rental income received (rentvesting only, 0 for PPOR)
+        tax_saving: Tax benefit from deductions (rentvesting only, 0 for PPOR)
+        total_outflows: Sum of all expenses for the year
+        net_position: total_inflows - total_outflows
+        cumulative_position: Running total of net_position across all years
+        property_value: Appreciated property value at end of year
+        loan_balance: Remaining mortgage balance at end of year
+        equity: Property value minus loan balance
+        offset_balance: Offset account balance at end of year
+    """
+    year: int
+    net_income: float
+    total_inflows: float
+    mortgage_repayment: float
+    mortgage_interest: float
+    mortgage_principal: float
+    property_costs: float
+    purchase_costs: float
+    rent_paid: float = 0.0
+    rental_income: float = 0.0
+    tax_saving: float = 0.0
+    total_outflows: float
+    net_position: float
+    cumulative_position: float
+    property_value: float
+    loan_balance: float
+    equity: float
+    offset_balance: float
+
+
+class CashFlowSummaryResponse(BaseModel):
+    """
+    Summary stats across the full projection — shared by both scenarios.
+
+    Attributes:
+        total_income: Sum of net income across all years
+        total_outflows: Sum of all outflows across all years
+        total_interest_paid: Sum of mortgage interest across all years
+        total_rent_paid: Sum of rent paid across all years (0 for PPOR)
+        total_rental_income: Sum of rental income across all years (0 for PPOR)
+        total_tax_saving: Sum of tax saving across all years (0 for PPOR)
+        final_property_value: Property value at end of projection
+        final_loan_balance: Remaining mortgage at end of projection
+        final_equity: Property value minus loan balance at end of projection
+        average_annual_net: Average net position per year
+        net_wealth: Final equity plus cumulative cash position
+    """
+    total_income: float
+    total_outflows: float
+    total_interest_paid: float
+    total_rent_paid: float = 0.0
+    total_rental_income: float = 0.0
+    total_tax_saving: float = 0.0
+    final_property_value: float
+    final_loan_balance: float
+    final_equity: float
+    average_annual_net: float
+    net_wealth: float
+
+
+class CGTResponse(BaseModel):
+    """
+    Capital gains tax result at end of projection — rentvesting only.
+
+    Attributes:
+        cost_base: Adjusted cost base of the property
+        capital_gain: Sale price minus cost base
+        cgt_discount: 50% discount amount (if held > 12 months)
+        discounted_gain: Capital gain after discount
+        cgt_payable: Tax payable on the discounted gain
+        net_proceeds: Sale price minus CGT payable
+    """
+    cost_base: float
+    capital_gain: float
+    cgt_discount: float
+    discounted_gain: float
+    cgt_payable: float
+    net_proceeds: float
+
+
+class CashFlowPPORResponse(BaseModel):
+    """
+    PPOR cash flow projection response.
+
+    Attributes:
+        scenario: Always "ppor"
+        projection_years: Number of years projected
+        upfront_costs: Total upfront acquisition costs
+        years: Year-by-year cash flow breakdown
+        summary: Summary stats across the full projection
+    """
+    scenario: str = "ppor"
+    projection_years: int
+    upfront_costs: float
+    years: list[CashFlowYearResponse]
+    summary: CashFlowSummaryResponse
+
+
+class CashFlowRentvestResponse(BaseModel):
+    """
+    Rentvesting cash flow projection response.
+
+    Attributes:
+        scenario: Always "rentvesting"
+        projection_years: Number of years projected
+        upfront_costs: Total upfront acquisition costs
+        years: Year-by-year cash flow breakdown
+        cgt: Capital gains tax result (None if include_cgt is false)
+        summary: Summary stats across the full projection
+    """
+    scenario: str = "rentvesting"
+    projection_years: int
+    upfront_costs: float
+    years: list[CashFlowYearResponse]
+    cgt: CGTResponse | None = None
+    summary: CashFlowSummaryResponse
