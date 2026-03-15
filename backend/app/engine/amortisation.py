@@ -60,6 +60,9 @@ def calculate_periodic_repayment(
     if principal <= 0:
         return 0.0
 
+    if loan_term_years <= 0:
+        raise ValueError("loan_term_years must be > 0")
+
     n = loan_term_years * frequency.periods_per_year
 
     if annual_rate <= 0:
@@ -79,6 +82,9 @@ def _recalculate_repayment(
     """Recalculate repayment for remaining balance and term at a new rate."""
     if balance <= 0:
         return 0.0
+
+    if remaining_periods <= 0:
+        raise ValueError("remaining_periods must be > 0")
 
     if annual_rate <= 0:
         return balance / remaining_periods

@@ -162,12 +162,18 @@ def calculate_property_value(year: int, purchase_price: float, growth_rate: floa
 def calculate_rental_income(year: int, weekly_rent: float, vacancy_weeks: int,
                             growth_rate: float) -> float:
     """Calculate annual rental income for a given year, accounting for vacancy."""
+    if vacancy_weeks < 0 or vacancy_weeks > 52:
+        raise ValueError("vacancy_weeks must be between 0 and 52")
+    if year < 0:
+        raise ValueError("year must be >= 0")
     annual_rent = weekly_rent * (52 - vacancy_weeks)
     return annual_rent * ((1 + growth_rate) ** year)
 
 
 def compound_annual_cost(year: int, base_rate: float, growth_rate: float) -> float:
     """Apply annual compounding growth to a base cost."""
+    if year < 0:
+        raise ValueError("year must be >= 0")
     return base_rate * ((1 + growth_rate) ** year)
 
 
