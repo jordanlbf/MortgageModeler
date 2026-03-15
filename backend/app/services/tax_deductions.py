@@ -16,10 +16,11 @@ from app.engine.deductions import (
     is_building_depreciable,
     is_asset_depreciable,
 )
-from app.engine.tax import calculate_income_tax
+from app.engine.tax import calculate_tax_saving
 from app.models.deductions import PropertyTaxDeductionSummary, DepreciableBuilding, DepreciableAsset, DepreciationMethod
 from app.models.financial import FinancialYear
 from app.models.property import YearCost, Property
+from app.models.tax import TaxProfile
 
 
 def _calculate_days_held_in_fy(
@@ -64,7 +65,7 @@ def build_tax_deduction_summary(
     depreciable_assets: list[DepreciableAsset],
     ongoing_costs: YearCost,
     rental_income: float,
-    taxable_income: float,
+    tax_profile: TaxProfile,
     financial_year: FinancialYear,
 ) -> PropertyTaxDeductionSummary:
     """
@@ -82,7 +83,9 @@ def build_tax_deduction_summary(
             excluded for properties purchased on/after 9 May 2017)
         ongoing_costs: Single year's ongoing property costs
         rental_income: Annual gross rental income
-        taxable_income: Gross taxable income excluding rental income/deductions
+        tax_profile: Taxpayer's base income profile (without this property's income).
+            Used for two-pass tax saving calculation across all components
+            (income tax, Medicare levy, MLS, HECS)
         financial_year: Financial year to calculate for (e.g. 2025 = FY 2024-25, ending 30 June 2025)
 
     Returns:
@@ -130,7 +133,7 @@ def build_tax_deduction_summary(
 
     # Tax saving: difference in tax with and without rental deductions
     # Positive = tax saved (negatively geared), negative = extra tax owed (positively geared)
-    tax_saving = calculate_income_tax(taxable_income) - calculate_income_tax(taxable_income + net_rental_income)
+    tax_saving = calculate_tax_saving(tax_profile, net_rental_income)
 
     return PropertyTaxDeductionSummary(
         mortgage_interest=mortgage_interest,

@@ -9,7 +9,8 @@ from app.services.tax_deductions import build_tax_deduction_summary, _calculate_
 from app.models.deductions import DepreciableBuilding, DepreciableAsset, DepreciationMethod
 from app.models.financial import FinancialYear
 from app.models.property import YearCost, Property
-from app.engine.tax import calculate_income_tax
+from app.models.tax import TaxProfile
+from app.engine.tax import calculate_total_tax
 
 
 # ──────────────────────────────────────────────
@@ -64,6 +65,19 @@ def _make_asset(name="Aircon", cost=2_000, life=10, purchase_date=None,
         method=method,
         written_down_value=wdv if wdv is not None else cost,
     )
+
+
+def _make_tax_profile(taxable_income=100_000, **overrides) -> TaxProfile:
+    """Create a TaxProfile with uniform income defaults."""
+    defaults = dict(
+        taxable_income=taxable_income,
+        repayment_income=taxable_income,
+        mls_income=taxable_income,
+        hecs_balance=0,
+        has_private_health=True,
+    )
+    defaults.update(overrides)
+    return TaxProfile(**defaults)
 
 
 # ──────────────────────────────────────────────
@@ -165,7 +179,7 @@ class TestBuildTaxDeductionSummaryBasic:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=25_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -190,7 +204,7 @@ class TestBuildTaxDeductionSummaryBasic:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -211,7 +225,7 @@ class TestBuildTaxDeductionSummaryBasic:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=0,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -235,7 +249,7 @@ class TestBuildTaxDeductionSummaryBasic:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=30_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -264,7 +278,7 @@ class TestDeductionBreakdown:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -288,7 +302,7 @@ class TestDeductionBreakdown:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -307,7 +321,7 @@ class TestDeductionBreakdown:
             depreciable_assets=[_make_asset()],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -328,7 +342,7 @@ class TestDeductionBreakdown:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=30_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -360,7 +374,7 @@ class TestDiv43InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -385,7 +399,7 @@ class TestDiv43InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -410,7 +424,7 @@ class TestDiv43InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -434,7 +448,7 @@ class TestDiv43InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -465,7 +479,7 @@ class TestDiv43InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -493,7 +507,7 @@ class TestDiv43InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -521,7 +535,7 @@ class TestDiv43InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -554,7 +568,7 @@ class TestDiv43InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -578,7 +592,7 @@ class TestDiv43InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -610,7 +624,7 @@ class TestDiv40InService:
             depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -620,7 +634,6 @@ class TestDiv40InService:
         """Second-hand asset on post-2017 property — Div 40 blocked."""
         prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False)
         fy = FinancialYear(2025)
-        # Asset predates property purchase → second-hand
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, purchase_date=date(2018, 6, 1))
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
@@ -635,7 +648,7 @@ class TestDiv40InService:
             depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -659,7 +672,7 @@ class TestDiv40InService:
             depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -669,7 +682,6 @@ class TestDiv40InService:
         """Owner-installed asset on post-2017 second-hand property — Div 40 allowed."""
         prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False)
         fy = FinancialYear(2025)
-        # Asset purchased on same date as property → owner-installed
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, purchase_date=date(2020, 1, 15))
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
@@ -684,7 +696,7 @@ class TestDiv40InService:
             depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -709,7 +721,7 @@ class TestDiv40InService:
             depreciable_assets=[old_asset, new_asset],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -734,7 +746,7 @@ class TestDiv40InService:
             depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -758,7 +770,7 @@ class TestDiv40InService:
             depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -783,7 +795,7 @@ class TestDiv40InService:
             depreciable_assets=[a1, a2],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -808,7 +820,7 @@ class TestDiv40InService:
             depreciable_assets=[asset],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -831,7 +843,7 @@ class TestDiv40InService:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=50_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -843,13 +855,14 @@ class TestDiv40InService:
 # ──────────────────────────────────────────────
 
 class TestTaxSaving:
-    """Tests for tax saving via two-pass tax engine."""
+    """Tests for tax saving via two-pass total tax engine."""
 
     def test_tax_saving_negatively_geared(self):
         """Negatively geared — tax saving should equal two-pass difference."""
         prop = _make_property()
         fy = FinancialYear(2025)
         costs = _make_year_cost()
+        profile = _make_tax_profile()
 
         result = build_tax_deduction_summary(
             property=prop,
@@ -858,11 +871,23 @@ class TestTaxSaving:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=25_000,
-            taxable_income=100_000,
+            tax_profile=profile,
             financial_year=fy,
         )
 
-        expected = calculate_income_tax(100_000) - calculate_income_tax(100_000 + result.net_rental_income)
+        # Two-pass using full total tax (IT + ML + MLS + HECS)
+        tax_without = calculate_total_tax(
+            profile.taxable_income, profile.repayment_income, profile.mls_income,
+            profile.hecs_balance, profile.has_private_health,
+        )
+        net = result.net_rental_income
+        tax_with = calculate_total_tax(
+            profile.taxable_income + net,
+            profile.repayment_income + max(net, 0),
+            profile.mls_income + max(net, 0),
+            profile.hecs_balance, profile.has_private_health,
+        )
+        expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)
         assert result.tax_saving > 0
 
@@ -883,7 +908,7 @@ class TestTaxSaving:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=30_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -906,7 +931,7 @@ class TestTaxSaving:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=30_000,
-            taxable_income=100_000,
+            tax_profile=_make_tax_profile(),
             financial_year=fy,
         )
 
@@ -921,8 +946,9 @@ class TestTaxSaving:
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
             management_fee=0,
         )
+        profile = _make_tax_profile(taxable_income=50_000)
 
-        # Taxable income at $50,000 (30% bracket), loss of $10,000 pushes to $40,000 (16% bracket boundary)
+        # $50k income (30% bracket), $10k loss pushes to $40k (16% bracket)
         result = build_tax_deduction_summary(
             property=prop,
             mortgage_interest=10_000,
@@ -930,7 +956,7 @@ class TestTaxSaving:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=0,
-            taxable_income=50_000,
+            tax_profile=profile,
             financial_year=fy,
         )
 
@@ -938,7 +964,9 @@ class TestTaxSaving:
         simple_marginal = 10_000 * 0.30
         assert result.tax_saving != pytest.approx(simple_marginal)
         # But it should be the correct two-pass difference
-        expected = calculate_income_tax(50_000) - calculate_income_tax(40_000)
+        tax_without = calculate_total_tax(50_000, 50_000, 50_000, 0, True)
+        tax_with = calculate_total_tax(40_000, 50_000, 50_000, 0, True)
+        expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)
 
     def test_tax_saving_low_income(self):
@@ -950,6 +978,7 @@ class TestTaxSaving:
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
             management_fee=0,
         )
+        profile = _make_tax_profile(taxable_income=20_000)
 
         result = build_tax_deduction_summary(
             property=prop,
@@ -958,11 +987,12 @@ class TestTaxSaving:
             depreciable_assets=[],
             ongoing_costs=costs,
             rental_income=0,
-            taxable_income=20_000,
+            tax_profile=profile,
             financial_year=fy,
         )
 
-        # $20k income, $10k loss → $10k adjusted income, which is in the tax-free threshold
-        expected = calculate_income_tax(20_000) - calculate_income_tax(10_000)
+        # $20k income, $10k loss → $10k adjusted income (tax-free threshold)
+        tax_without = calculate_total_tax(20_000, 20_000, 20_000, 0, True)
+        tax_with = calculate_total_tax(10_000, 20_000, 20_000, 0, True)
+        expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)
-        assert result.tax_saving == calculate_income_tax(20_000)  # $10k is tax-free

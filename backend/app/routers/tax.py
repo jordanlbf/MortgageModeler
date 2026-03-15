@@ -6,10 +6,9 @@ Medicare levy, Medicare Levy Surcharge, and HECS repayments.
 """
 
 from fastapi import APIRouter
+from app.models.tax import TaxProfile
 from app.schemas.tax import TaxBreakdownRequest, TaxBreakdownResponse
-from app.engine.tax import calculate_income_tax,\
-    calculate_medicare_levy, calculate_hecs_repayment, \
-    calculate_total_tax, calculate_medicare_levy_surcharge
+from app.services.tax_breakdown import build_tax_breakdown
 
 router = APIRouter(prefix="/tax", tags=["tax"])
 
@@ -17,22 +16,20 @@ router = APIRouter(prefix="/tax", tags=["tax"])
 @router.post("/breakdown", response_model=TaxBreakdownResponse)
 def get_tax_breakdown(req: TaxBreakdownRequest) -> TaxBreakdownResponse:
     """
-    Generate a full tax breakdown for a given gross income.
+    Generate a full tax breakdown for the given income details.
 
     Args:
-        req: Gross income, HECS balance, and private health status
+        req: Income measures, HECS balance, and private health status
 
     Returns:
         Itemised tax breakdown with net income
     """
-    total_tax = calculate_total_tax(req.gross_income, req.gross_income,
-                                    req.gross_income, req.hecs_balance, req.has_private_health)
-    return TaxBreakdownResponse(
-        gross_income=req.gross_income,
-        income_tax=calculate_income_tax(req.gross_income),
-        medicare_levy=calculate_medicare_levy(req.gross_income),
-        medicare_levy_surcharge=calculate_medicare_levy_surcharge(req.gross_income, req.has_private_health),
-        hecs_repayment=calculate_hecs_repayment(req.gross_income, req.hecs_balance),
-        net_income=req.gross_income-total_tax,
-        total_tax=total_tax
+    profile = TaxProfile(
+        taxable_income=req.taxable_income,
+        repayment_income=req.repayment_income,
+        mls_income=req.mls_income,
+        hecs_balance=req.hecs_balance,
+        has_private_health=req.has_private_health,
     )
+
+    return build_tax_breakdown(profile)
