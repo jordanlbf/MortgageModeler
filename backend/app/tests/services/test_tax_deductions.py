@@ -807,17 +807,16 @@ class TestTaxSaving:
             financial_year=fy,
         )
 
-        tax_without = calculate_total_tax(
-            profile.taxable_income, profile.repayment_income, profile.mls_income,
-            profile.hecs_balance, profile.has_private_health,
-        )
+        tax_without = calculate_total_tax(profile)
         net = result.net_rental_income
-        tax_with = calculate_total_tax(
-            profile.taxable_income + net,
-            profile.repayment_income + max(net, 0),
-            profile.mls_income + max(net, 0),
-            profile.hecs_balance, profile.has_private_health,
+        adjusted = TaxProfile(
+            taxable_income=profile.taxable_income + net,
+            repayment_income=profile.repayment_income + max(net, 0),
+            mls_income=profile.mls_income + max(net, 0),
+            hecs_balance=profile.hecs_balance,
+            has_private_health=profile.has_private_health,
         )
+        tax_with = calculate_total_tax(adjusted)
         expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)
         assert result.tax_saving > 0
@@ -886,8 +885,8 @@ class TestTaxSaving:
 
         simple_marginal = 10_000 * 0.30
         assert result.tax_saving != pytest.approx(simple_marginal)
-        tax_without = calculate_total_tax(50_000, 50_000, 50_000, 0, True)
-        tax_with = calculate_total_tax(40_000, 50_000, 50_000, 0, True)
+        tax_without = calculate_total_tax(TaxProfile(50_000, 50_000, 50_000, 0, True))
+        tax_with = calculate_total_tax(TaxProfile(40_000, 50_000, 50_000, 0, True))
         expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)
 
@@ -911,7 +910,7 @@ class TestTaxSaving:
             financial_year=fy,
         )
 
-        tax_without = calculate_total_tax(20_000, 20_000, 20_000, 0, True)
-        tax_with = calculate_total_tax(10_000, 20_000, 20_000, 0, True)
+        tax_without = calculate_total_tax(TaxProfile(20_000, 20_000, 20_000, 0, True))
+        tax_with = calculate_total_tax(TaxProfile(10_000, 20_000, 20_000, 0, True))
         expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)
