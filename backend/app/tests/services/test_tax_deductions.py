@@ -43,11 +43,13 @@ def _make_property(purchase_date=None, is_new=True) -> Property:
     )
 
 
-def _make_building(name="Main building", cost=400_000, purchase_date=None) -> DepreciableBuilding:
+def _make_building(name="Main building", cost=400_000, purchase_date=None,
+                   construction_start_date=None) -> DepreciableBuilding:
     return DepreciableBuilding(
         name=name,
         construction_cost=cost,
         purchase_date=purchase_date or date(2020, 1, 15),
+        construction_start_date=construction_start_date or date(2019, 1, 1),
     )
 
 
@@ -440,6 +442,124 @@ class TestDiv43InService:
         expected = 10_000 * (days / fy.days)
         assert result.depreciation_building == pytest.approx(expected, abs=1)
         assert result.depreciation_building < 10_000
+
+    def test_pre_1987_building_excluded(self):
+        """Building with construction starting before 16 Sep 1987 — zero depreciation."""
+        prop = _make_property()
+        fy = FinancialYear(2025)
+        building = _make_building(
+            cost=400_000,
+            purchase_date=date(2020, 1, 15),
+            construction_start_date=date(1985, 3, 1),
+        )
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            depreciable_buildings=[building],
+            depreciable_assets=[],
+            ongoing_costs=costs,
+            rental_income=50_000,
+            taxable_income=100_000,
+            financial_year=fy,
+        )
+
+        assert result.depreciation_building == 0.0
+
+    def test_pre_1987_building_on_cutoff_date_excluded(self):
+        """Building with construction starting on 15 Sep 1987 (day before cutoff) — excluded."""
+        prop = _make_property()
+        fy = FinancialYear(2025)
+        building = _make_building(
+            cost=400_000,
+            purchase_date=date(2020, 1, 15),
+            construction_start_date=date(1987, 9, 15),
+        )
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            depreciable_buildings=[building],
+            depreciable_assets=[],
+            ongoing_costs=costs,
+            rental_income=50_000,
+            taxable_income=100_000,
+            financial_year=fy,
+        )
+
+        assert result.depreciation_building == 0.0
+
+    def test_post_1987_building_on_cutoff_date_included(self):
+        """Building with construction starting exactly on 16 Sep 1987 — included."""
+        prop = _make_property()
+        fy = FinancialYear(2025)
+        building = _make_building(
+            cost=400_000,
+            purchase_date=date(2020, 1, 15),
+            construction_start_date=date(1987, 9, 16),
+        )
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            depreciable_buildings=[building],
+            depreciable_assets=[],
+            ongoing_costs=costs,
+            rental_income=50_000,
+            taxable_income=100_000,
+            financial_year=fy,
+        )
+
+        assert result.depreciation_building == pytest.approx(10_000, abs=1)
+
+    def test_mixed_pre_and_post_1987_buildings(self):
+        """Mix of pre- and post-1987 buildings — only post-1987 should be claimed."""
+        prop = _make_property()
+        fy = FinancialYear(2025)
+        old_building = _make_building(
+            name="Old wing", cost=200_000,
+            purchase_date=date(2020, 1, 15),
+            construction_start_date=date(1980, 1, 1),
+        )
+        new_building = _make_building(
+            name="New wing", cost=400_000,
+            purchase_date=date(2020, 1, 15),
+            construction_start_date=date(2019, 6, 1),
+        )
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            depreciable_buildings=[old_building, new_building],
+            depreciable_assets=[],
+            ongoing_costs=costs,
+            rental_income=50_000,
+            taxable_income=100_000,
+            financial_year=fy,
+        )
+
+        # Only the $400k new building: $10,000
+        assert result.depreciation_building == pytest.approx(10_000, abs=1)
 
     def test_no_buildings(self):
         """Empty buildings list — zero depreciation."""

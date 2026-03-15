@@ -18,6 +18,7 @@ class DepreciableBuilding:
     name: str
     construction_cost: float
     purchase_date: date
+    construction_start_date: date
 
 
 @dataclass

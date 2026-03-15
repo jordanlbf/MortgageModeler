@@ -9,6 +9,7 @@ This is a single-year calculation — multi-year orchestration lives elsewhere.
 
 from datetime import date, timedelta
 
+from app.config.deductions import DIV43_CONSTRUCTION_CUTOFF_DATE
 from app.engine.deductions import calculate_division_43_deduction, calculate_division_40_diminishing_value, calculate_division_40_prime_cost
 from app.engine.tax import calculate_income_tax
 from app.models.deductions import PropertyTaxDeductionSummary, DepreciableBuilding, DepreciableAsset, DepreciationMethod
@@ -88,6 +89,8 @@ def build_tax_deduction_summary(
     # Calculate Div 43 depreciation for each building, accounting for expiry after 40 years
     total_building_depreciation = 0.0
     for building in depreciable_buildings:
+        if building.construction_start_date < DIV43_CONSTRUCTION_CUTOFF_DATE:
+            continue
         expiry = building.purchase_date.replace(year=building.purchase_date.year + 40)
         days_held = _calculate_days_held_in_fy(building.purchase_date, expiry, financial_year)
         if days_held <= 0:
