@@ -145,9 +145,9 @@ class OngoingCostProjection:
 
     Attributes:
         annual_costs: Per-year cost breakdowns
-        total_annual_cost: Sum of all costs across all years
-        total_monthly_cost: Average monthly cost across projection
-        total_deductible_cost: Sum of tax-deductible costs across all years
+        total_annual_cost: Year 0 total ongoing cost
+        total_monthly_cost: Year 0 total ongoing cost divided by 12
+        total_deductible_cost: Year 0 total deductible cost (investment properties only)
     """
     annual_costs: list[YearCost]
     total_annual_cost: float
