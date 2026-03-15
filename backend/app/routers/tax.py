@@ -1,5 +1,8 @@
 """
 Tax API routes.
+
+Exposes the tax breakdown endpoint for calculating Australian income tax,
+Medicare levy, Medicare Levy Surcharge, and HECS repayments.
 """
 
 from fastapi import APIRouter
@@ -13,7 +16,15 @@ router = APIRouter(prefix="/tax", tags=["tax"])
 
 @router.post("/breakdown", response_model=TaxBreakdownResponse)
 def get_tax_breakdown(req: TaxBreakdownRequest) -> TaxBreakdownResponse:
-    """Generate a full TaxBreakdown Response"""
+    """
+    Generate a full tax breakdown for a given gross income.
+
+    Args:
+        req: Gross income, HECS balance, and private health status
+
+    Returns:
+        Itemised tax breakdown with net income
+    """
     total_tax = calculate_total_tax(req.gross_income, req.gross_income,
                                     req.gross_income, req.hecs_balance, req.has_private_health)
     return TaxBreakdownResponse(

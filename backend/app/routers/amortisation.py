@@ -1,5 +1,8 @@
 """
 Amortisation API routes.
+
+Exposes the amortisation schedule endpoint for generating P&I repayment
+schedules with offset, extra repayments, and rate change support.
 """
 
 from fastapi import APIRouter
@@ -18,7 +21,16 @@ router = APIRouter(prefix="/amortisation", tags=["amortisation"])
 
 @router.post("/schedule", response_model=ScheduleResponse)
 def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
-    """Generate a full amortisation schedule with chart data."""
+    """
+    Generate a full amortisation schedule with chart data.
+
+    Args:
+        req: Loan parameters including principal, rate, term, and optional
+            offset/extra repayment/rate change configuration
+
+    Returns:
+        Full schedule with per-period rows, summary stats, and yearly chart data
+    """
     rate_changes = [
         RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
         for rc in req.rate_changes

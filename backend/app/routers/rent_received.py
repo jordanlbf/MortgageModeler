@@ -1,5 +1,8 @@
 """
-Rental rent_received API routes.
+Rental income (rent received) API routes.
+
+Exposes the rent received endpoint for landlords, projecting gross and
+effective (vacancy-adjusted) rental income over multiple years.
 """
 
 from fastapi import APIRouter
@@ -13,7 +16,15 @@ router = APIRouter(prefix="/rental", tags=["rental"])
 
 @router.post("/rent-received", response_model=RentReceivedResponse)
 def get_rent_received(req: RentReceivedRequest) -> RentReceivedResponse:
-    """Calculate the total rent received over the first year and projections for future years."""
+    """
+    Calculate rent received with year-by-year projections.
+
+    Args:
+        req: Weekly rent, vacancy rate, growth rate, and projection period
+
+    Returns:
+        First-year summary and per-year gross/effective rental income projections
+    """
     projections: list[YearByYearRentReceivedResponse] = []
 
     for year in range(req.projection_years):

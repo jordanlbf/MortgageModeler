@@ -1,5 +1,8 @@
 """
-Property purchase_costs API routes.
+Property purchase costs API routes.
+
+Exposes the upfront cost estimation endpoint for QLD property purchases,
+including stamp duty, LMI, registration fees, and other settlement costs.
 """
 
 from fastapi import APIRouter
@@ -15,7 +18,15 @@ router = APIRouter(prefix="/purchase-costs", tags=["purchase-costs"])
 
 @router.post("/estimate", response_model=PropertyCostResponse)
 def get_upfront_costs(req: PropertyCostRequest) -> PropertyCostResponse:
-    """Generate a full PropertyCost Response"""
+    """
+    Estimate upfront costs for a QLD property purchase.
+
+    Args:
+        req: Purchase price, loan details, and investment/PPOR flag
+
+    Returns:
+        Itemised cost breakdown with total upfront cost
+    """
 
     stamp_duty = estimate_qld_stamp_duty(req.purchase_price, req.is_investment)
     lmi = 0.0 if req.lmi_exempt else estimate_lmi(req.loan_amount, req.lvr, req.is_investment)
