@@ -11,7 +11,14 @@ from app.config.tax import TAX_BRACKETS, MEDICARE_LOWER_THRESHOLD, MEDICARE_HIGH
 def calculate_income_tax(taxable_income: float) -> float:
     """
     Calculate Australian income tax for a given taxable income.
-    Uses marginal tax brackets.
+
+    Uses marginal tax brackets defined in TAX_BRACKETS config.
+
+    Args:
+        taxable_income: Assessable income minus allowable deductions
+
+    Returns:
+        Income tax owing (0 if taxable_income <= 0)
     """
 
     # Guard against future bracket changes for negative incomes (e.g., from deductions exceeding income)
@@ -34,7 +41,18 @@ def calculate_income_tax(taxable_income: float) -> float:
 
 
 def calculate_medicare_levy(taxable_income: float) -> float:
-    """Calculate Medicare levy based on taxable income and thresholds."""
+    """
+    Calculate Medicare levy based on taxable income and thresholds.
+
+    Applies a phase-in rate between the lower and upper thresholds,
+    then the full levy rate above the upper threshold.
+
+    Args:
+        taxable_income: Assessable income minus allowable deductions
+
+    Returns:
+        Medicare levy amount (0 if below lower threshold)
+    """
     if taxable_income <= MEDICARE_LOWER_THRESHOLD:
         return 0
     elif taxable_income < MEDICARE_HIGH_THRESHOLD:
@@ -44,7 +62,21 @@ def calculate_medicare_levy(taxable_income: float) -> float:
 
 
 def calculate_medicare_levy_surcharge(mls_income: float, has_private_health: bool) -> float:
-    """Calculate Medicare Levy Surcharge based on MLS income and thresholds."""
+    """
+    Calculate Medicare Levy Surcharge based on MLS income and thresholds.
+
+    Returns 0 immediately if the taxpayer has private health insurance.
+
+    Args:
+        mls_income: Medicare Levy Surcharge income
+        has_private_health: Whether the taxpayer holds private health insurance
+
+    Returns:
+        MLS amount (0 if has_private_health or below first threshold)
+
+    Raises:
+        ValueError: If MLS_THRESHOLDS config is missing a catch-all bracket
+    """
     if has_private_health:
         return 0
     for (threshold, rate) in MLS_THRESHOLDS:
@@ -56,8 +88,16 @@ def calculate_medicare_levy_surcharge(mls_income: float, has_private_health: boo
 def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> float:
     """
     Calculate annual HECS/HELP repayment based on repayment income.
-    Repayment income = taxable income + any reportable fringe benefits etc.
-    Returns the lesser of the calculated repayment or remaining balance.
+
+    Uses marginal thresholds up to HECS_TOP_THRESHOLD, then 10% of total
+    repayment income above that. The result is capped at the remaining balance.
+
+    Args:
+        repayment_income: Taxable income plus reportable fringe benefits etc.
+        hecs_balance: Outstanding HECS/HELP debt
+
+    Returns:
+        Annual HECS repayment (capped at hecs_balance)
     """
     repayment_owing = 0.0
     prev_threshold = 0
@@ -87,11 +127,17 @@ def calculate_total_tax(
     """
     Calculate total tax owing.
 
-    This is the summation of:
-    - Income tax
-    - Medicare Levy
-    - Medicare Levy Surcharge
-    - HECS Repayment
+    Sums income tax, Medicare levy, Medicare Levy Surcharge, and HECS repayment.
+
+    Args:
+        taxable_income: Assessable income minus allowable deductions
+        repayment_income: Income used for HECS repayment calculation
+        mls_income: Income used for Medicare Levy Surcharge calculation
+        hecs_balance: Outstanding HECS/HELP debt
+        has_private_health: Whether the taxpayer holds private health insurance
+
+    Returns:
+        Total tax owing (sum of all components)
     """
     return (
         calculate_income_tax(taxable_income) +

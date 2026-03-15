@@ -56,6 +56,9 @@ def calculate_periodic_repayment(
 
     Returns:
         Repayment amount per period
+
+    Raises:
+        ValueError: If loan_term_years <= 0
     """
     if principal <= 0:
         return 0.0
@@ -79,7 +82,21 @@ def _recalculate_repayment(
     remaining_periods: int,
     frequency: RepaymentFrequency,
 ) -> float:
-    """Recalculate repayment for remaining balance and term at a new rate."""
+    """
+    Recalculate repayment for remaining balance and term at a new rate.
+
+    Args:
+        balance: Remaining loan balance in dollars
+        annual_rate: New annual interest rate as decimal
+        remaining_periods: Number of repayment periods left
+        frequency: Repayment frequency (weekly, fortnightly, monthly)
+
+    Returns:
+        Recalculated repayment amount per period
+
+    Raises:
+        ValueError: If remaining_periods <= 0
+    """
     if balance <= 0:
         return 0.0
 
