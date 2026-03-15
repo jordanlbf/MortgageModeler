@@ -1,13 +1,16 @@
 """
-Tests for Capital Gains Tax engine — calculate_cost_base.
+Tests for Capital Gains Tax engine — calculate_cost_base and calculate_cgt.
 """
 
 import pytest
 from datetime import date
 
-from app.engine.cgt import calculate_cost_base
+from app.engine.cgt import calculate_cost_base, calculate_cgt
+from app.engine.tax import calculate_total_tax
+from app.models.cgt import CGTResult
 from app.models.property import Property, PurchaseCosts
 from app.models.deductions import DepreciableBuilding, DepreciableAsset, DepreciationMethod
+from app.models.tax import TaxProfile
 
 
 # ──────────────────────────────────────────────
@@ -43,6 +46,18 @@ def _make_asset(name="Aircon", cost=2_000, life=10, purchase_date=None) -> Depre
         effective_life_years=life,
         purchase_date=purchase_date or date(2020, 1, 15),
     )
+
+
+def _make_tax_profile(taxable_income=100_000, **overrides) -> TaxProfile:
+    defaults = dict(
+        taxable_income=taxable_income,
+        repayment_income=taxable_income,
+        mls_income=taxable_income,
+        hecs_balance=0,
+        has_private_health=True,
+    )
+    defaults.update(overrides)
+    return TaxProfile(**defaults)
 
 
 # ──────────────────────────────────────────────
@@ -298,3 +313,279 @@ class TestCostBaseCombined:
             4_000                      # old aircon (non-depreciable, post-2017)
         )
         assert calculate_cost_base(prop) == pytest.approx(expected)
+
+
+# ──────────────────────────────────────────────
+# calculate_cgt — PPOR exemption
+# ──────────────────────────────────────────────
+
+class TestCgtPpor:
+    """PPOR properties are CGT-exempt."""
+
+    def test_ppor_zero_cgt_payable(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=True)
+        assert result.cgt_payable == 0
+
+    def test_ppor_net_proceeds_equals_sale_price(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=True)
+        assert result.net_proceeds == 700_000
+
+    def test_ppor_discount_is_zero(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=True)
+        assert result.cgt_discount == 0
+        assert result.discounted_gain == 0
+
+    def test_ppor_still_reports_cost_base(self):
+        """Cost base should be calculated even for PPOR."""
+        costs = PurchaseCosts(stamp_duty=15_000)
+        prop = _make_property(purchase_price=500_000, purchase_costs=costs)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=True)
+        assert result.cost_base == 515_000
+
+    def test_ppor_still_reports_capital_gain(self):
+        """Capital gain should be reported even for PPOR."""
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=True)
+        assert result.capital_gain == 200_000
+
+    def test_ppor_capital_loss(self):
+        """PPOR with a loss — still zero CGT."""
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 400_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=True)
+        assert result.capital_gain == -100_000
+        assert result.cgt_payable == 0
+        assert result.net_proceeds == 400_000
+
+
+# ──────────────────────────────────────────────
+# calculate_cgt — 50% discount
+# ──────────────────────────────────────────────
+
+class TestCgtDiscount:
+    """Tests for the 50% CGT discount based on holding period."""
+
+    def test_discount_applied_over_12_months(self):
+        """Held > 365 days — 50% discount applies."""
+        prop = _make_property(purchase_date=date(2020, 1, 1), purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2022, 1, 1), _make_tax_profile(), is_ppor=False)
+        assert result.capital_gain == 200_000
+        assert result.cgt_discount == 100_000
+        assert result.discounted_gain == 100_000
+
+    def test_no_discount_exactly_365_days(self):
+        """Held exactly 365 days — no discount (must be > 365)."""
+        prop = _make_property(purchase_date=date(2021, 1, 1), purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2022, 1, 1), _make_tax_profile(), is_ppor=False)
+        assert result.cgt_discount == 0
+        assert result.discounted_gain == 200_000
+
+    def test_discount_at_366_days(self):
+        """Held 366 days — discount applies."""
+        prop = _make_property(purchase_date=date(2021, 1, 1), purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2022, 1, 2), _make_tax_profile(), is_ppor=False)
+        assert result.cgt_discount == 100_000
+        assert result.discounted_gain == 100_000
+
+    def test_no_discount_on_loss(self):
+        """Capital loss — no discount regardless of holding period."""
+        prop = _make_property(purchase_date=date(2020, 1, 1), purchase_price=500_000)
+        result = calculate_cgt(prop, 400_000, date(2025, 1, 1), _make_tax_profile(), is_ppor=False)
+        assert result.capital_gain == -100_000
+        assert result.cgt_discount == 0
+        assert result.discounted_gain == 0
+
+    def test_no_discount_short_hold_with_gain(self):
+        """Short hold with gain — full gain is assessable."""
+        prop = _make_property(purchase_date=date(2020, 6, 1), purchase_price=500_000)
+        result = calculate_cgt(prop, 550_000, date(2020, 9, 1), _make_tax_profile(), is_ppor=False)
+        assert result.capital_gain == 50_000
+        assert result.cgt_discount == 0
+        assert result.discounted_gain == 50_000
+
+
+# ──────────────────────────────────────────────
+# calculate_cgt — capital gain and loss
+# ──────────────────────────────────────────────
+
+class TestCgtGainAndLoss:
+    """Tests for capital gain/loss calculation."""
+
+    def test_basic_gain(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.capital_gain == 200_000
+
+    def test_basic_loss(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 450_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.capital_gain == -50_000
+
+    def test_break_even(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 500_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.capital_gain == 0
+        assert result.cgt_discount == 0
+        assert result.discounted_gain == 0
+        assert result.cgt_payable == 0
+
+    def test_gain_accounts_for_purchase_costs(self):
+        """Purchase costs increase cost base, reducing capital gain."""
+        costs = PurchaseCosts(stamp_duty=15_000, legal_fees=2_000)
+        prop = _make_property(purchase_price=500_000, purchase_costs=costs)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.cost_base == 517_000
+        assert result.capital_gain == 183_000
+
+    def test_gain_accounts_for_improvements(self):
+        """Capital improvements increase cost base."""
+        improvement = _make_building(name="Reno", cost=50_000, purchase_date=date(2022, 1, 1))
+        prop = _make_property(purchase_price=500_000, buildings=[improvement])
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.cost_base == 550_000
+        assert result.capital_gain == 150_000
+
+
+# ──────────────────────────────────────────────
+# calculate_cgt — CGT payable (two-pass tax)
+# ──────────────────────────────────────────────
+
+class TestCgtPayable:
+    """Tests for CGT payable via two-pass total tax calculation."""
+
+    def test_cgt_payable_positive_gain(self):
+        """CGT payable should be > 0 for a capital gain."""
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.cgt_payable > 0
+
+    def test_cgt_payable_zero_on_loss(self):
+        """CGT payable should be 0 for a capital loss."""
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 400_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.cgt_payable == 0
+
+    def test_cgt_payable_zero_on_break_even(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 500_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.cgt_payable == 0
+
+    def test_cgt_payable_matches_two_pass(self):
+        """CGT payable should equal the two-pass tax difference."""
+        prop = _make_property(purchase_price=500_000)
+        profile = _make_tax_profile(100_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), profile, is_ppor=False)
+
+        # Manually verify: $200k gain, 50% discount = $100k discounted gain
+        tax_without = calculate_total_tax(profile)
+        adjusted = TaxProfile(
+            taxable_income=100_000 + 100_000,
+            repayment_income=100_000 + 100_000,
+            mls_income=100_000 + 100_000,
+            hecs_balance=0,
+            has_private_health=True,
+        )
+        tax_with = calculate_total_tax(adjusted)
+        expected = tax_with - tax_without
+        assert result.cgt_payable == pytest.approx(expected)
+
+    def test_higher_income_means_higher_cgt(self):
+        """Higher base income should result in higher CGT due to marginal rates."""
+        prop = _make_property(purchase_price=500_000)
+        low_income = calculate_cgt(prop, 700_000, date(2025, 1, 15),
+                                   _make_tax_profile(50_000), is_ppor=False)
+        high_income = calculate_cgt(prop, 700_000, date(2025, 1, 15),
+                                    _make_tax_profile(200_000), is_ppor=False)
+        assert high_income.cgt_payable > low_income.cgt_payable
+
+    def test_discount_reduces_cgt_payable(self):
+        """Discounted gain (long hold) should result in less CGT than undiscounted (short hold)."""
+        prop = _make_property(purchase_date=date(2020, 1, 1), purchase_price=500_000)
+        profile = _make_tax_profile()
+        long_hold = calculate_cgt(prop, 700_000, date(2022, 1, 1), profile, is_ppor=False)
+        short_hold = calculate_cgt(prop, 700_000, date(2020, 6, 1), profile, is_ppor=False)
+        assert long_hold.cgt_payable < short_hold.cgt_payable
+
+    def test_cgt_spans_tax_brackets(self):
+        """CGT gain that pushes income across a bracket boundary."""
+        prop = _make_property(purchase_price=500_000)
+        # $130k base income (30% bracket), $100k discounted gain pushes into 37% and 45%
+        profile = _make_tax_profile(130_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), profile, is_ppor=False)
+        simple = 100_000 * 0.30
+        assert result.cgt_payable != pytest.approx(simple)
+        assert result.cgt_payable > simple
+
+
+# ──────────────────────────────────────────────
+# calculate_cgt — net proceeds
+# ──────────────────────────────────────────────
+
+class TestCgtNetProceeds:
+    """Tests for net proceeds after CGT."""
+
+    def test_net_proceeds_equals_sale_minus_cgt(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.net_proceeds == pytest.approx(700_000 - result.cgt_payable)
+
+    def test_net_proceeds_on_loss(self):
+        """Capital loss — net proceeds equals sale price (no CGT)."""
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 400_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.net_proceeds == 400_000
+
+    def test_net_proceeds_less_than_sale_price_on_gain(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=False)
+        assert result.net_proceeds < 700_000
+
+    def test_net_proceeds_ppor_equals_sale_price(self):
+        prop = _make_property(purchase_price=500_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(), is_ppor=True)
+        assert result.net_proceeds == 700_000
+
+
+# ──────────────────────────────────────────────
+# calculate_cgt — combined realistic scenario
+# ──────────────────────────────────────────────
+
+class TestCgtRealistic:
+    """End-to-end realistic CGT scenarios."""
+
+    def test_investment_property_5_year_hold(self):
+        """$500k property, $700k sale after 5 years, $100k income."""
+        costs = PurchaseCosts(stamp_duty=8_925, legal_fees=2_000)
+        improvement = _make_building(name="Deck", cost=20_000, purchase_date=date(2023, 1, 1))
+        prop = _make_property(
+            purchase_date=date(2020, 1, 15),
+            purchase_price=500_000,
+            purchase_costs=costs,
+            buildings=[improvement],
+        )
+        profile = _make_tax_profile(100_000)
+        result = calculate_cgt(prop, 700_000, date(2025, 1, 15), profile, is_ppor=False)
+
+        # Cost base: 500k + 8925 + 2000 + 20k = 530,925
+        assert result.cost_base == pytest.approx(530_925)
+        # Capital gain: 700k - 530,925 = 169,075
+        assert result.capital_gain == pytest.approx(169_075)
+        # 50% discount (held > 12 months)
+        assert result.cgt_discount == pytest.approx(169_075 * 0.5)
+        assert result.discounted_gain == pytest.approx(169_075 * 0.5)
+        assert result.cgt_payable > 0
+        assert result.net_proceeds < 700_000
+        assert result.net_proceeds == pytest.approx(700_000 - result.cgt_payable)
+
+    def test_investment_property_with_hecs_no_phi(self):
+        """Higher CGT when HECS and MLS are also in play."""
+        prop = _make_property(purchase_price=500_000)
+        profile_simple = _make_tax_profile(100_000)
+        profile_complex = _make_tax_profile(100_000, hecs_balance=25_000, has_private_health=False)
+
+        result_simple = calculate_cgt(prop, 700_000, date(2025, 1, 15), profile_simple, is_ppor=False)
+        result_complex = calculate_cgt(prop, 700_000, date(2025, 1, 15), profile_complex, is_ppor=False)
+
+        assert result_complex.cgt_payable >= result_simple.cgt_payable
