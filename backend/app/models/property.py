@@ -2,21 +2,10 @@
 Property domain models — property, ongoing cost projections and related types.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
-
-@dataclass
-class Property:
-    """
-    Core property details.
-
-    Attributes:
-        purchase_date: Date the property was purchased
-        is_new_property: Whether the owner is the first occupant/investor
-    """
-    purchase_date: date
-    is_new_property: bool
+from app.models.deductions import DepreciableBuilding, DepreciableAsset
 
 
 # ──────────────────────────────────────────────
@@ -87,6 +76,31 @@ class PurchaseCosts:
             Total upfront acquisition costs
         """
         return self.total_cost_base + self.total_borrowing_costs
+
+
+# ──────────────────────────────────────────────
+# Core property
+# ──────────────────────────────────────────────
+
+@dataclass
+class Property:
+    """
+    Core property details — aggregate root for all property-related data.
+
+    Attributes:
+        purchase_date: Date the property was purchased
+        purchase_price: Property purchase price
+        is_new_property: Whether the owner is the first occupant/investor
+        purchase_costs: Upfront acquisition costs (defaults to all zeros)
+        depreciable_buildings: Div 43 buildings/constructions to depreciate
+        depreciable_assets: Div 40 plant/equipment to depreciate
+    """
+    purchase_date: date
+    purchase_price: float
+    is_new_property: bool
+    purchase_costs: PurchaseCosts = field(default_factory=PurchaseCosts)
+    depreciable_buildings: list[DepreciableBuilding] = field(default_factory=list)
+    depreciable_assets: list[DepreciableAsset] = field(default_factory=list)
 
 
 # ──────────────────────────────────────────────

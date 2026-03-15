@@ -10,13 +10,15 @@ All functions are pure — no side effects or external dependencies.
 """
 
 from app.models.cgt import CGTResult
+from app.models.property import PurchaseCosts, Property
 
 
 def calculate_cost_base(
-    purchase_price: float,
-    purchase_costs: float,
+    property: Property,
+    purchase_costs: PurchaseCosts,
     improvements: float,
     non_depreciable_assets: float
 ) -> float:
+    pass
 
 

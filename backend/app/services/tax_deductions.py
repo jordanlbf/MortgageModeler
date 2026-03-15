@@ -17,7 +17,7 @@ from app.engine.deductions import (
     is_asset_depreciable,
 )
 from app.engine.tax import calculate_tax_saving
-from app.models.deductions import PropertyTaxDeductionSummary, DepreciableBuilding, DepreciableAsset, DepreciationMethod
+from app.models.deductions import PropertyTaxDeductionSummary, DepreciationMethod
 from app.models.financial import FinancialYear
 from app.models.property import YearCost, Property
 from app.models.tax import TaxProfile
@@ -61,8 +61,6 @@ def _calculate_days_held_in_fy(
 def build_tax_deduction_summary(
     property: Property,
     mortgage_interest: float,
-    depreciable_buildings: list[DepreciableBuilding],
-    depreciable_assets: list[DepreciableAsset],
     ongoing_costs: YearCost,
     rental_income: float,
     tax_profile: TaxProfile,
@@ -73,14 +71,12 @@ def build_tax_deduction_summary(
 
     Aggregates all deductible items (Div 43, Div 40, mortgage interest,
     ongoing costs), calculates net rental income, and computes tax saving
-    via two-pass call to the tax engine.
+    via two-pass call to the tax engine. Depreciable buildings and assets
+    are read from the property object.
 
     Args:
-        property: Core property details (purchase date, new/second-hand status)
+        property: Property with purchase details, depreciable buildings, and assets
         mortgage_interest: Annual interest portion of repayments
-        depreciable_buildings: Div 43 buildings/constructions to depreciate
-        depreciable_assets: Div 40 plant/equipment to depreciate (second-hand assets
-            excluded for properties purchased on/after 9 May 2017)
         ongoing_costs: Single year's ongoing property costs
         rental_income: Annual gross rental income
         tax_profile: Taxpayer's base income profile (without this property's income).
@@ -103,7 +99,7 @@ def build_tax_deduction_summary(
 
     # Calculate Div 43 depreciation for each building, accounting for expiry after 40 years
     total_building_depreciation = 0.0
-    for building in depreciable_buildings:
+    for building in property.depreciable_buildings:
         if not is_building_depreciable(building.construction_start_date):
             continue
         expiry = building.purchase_date.replace(year=building.purchase_date.year + 40)
@@ -115,7 +111,7 @@ def build_tax_deduction_summary(
     # Calculate Div 40 depreciation for each asset.
     # Second-hand assets are excluded for properties purchased on/after 9 May 2017.
     total_plant_depreciation = 0.0
-    for asset in depreciable_assets:
+    for asset in property.depreciable_assets:
         if not is_asset_depreciable(asset.purchase_date, property.purchase_date):
             continue
         expiry = asset.purchase_date.replace(year=asset.purchase_date.year + asset.effective_life_years)
