@@ -170,3 +170,28 @@ class TestCalculateEffectiveAnnualRent:
             gross = calculate_gross_annual_rent(2, 500.0, 0.05)
             effective = calculate_effective_annual_rent(2, vacancy, 500.0, 0.05)
             assert effective <= gross
+
+
+class TestInputValidation:
+    """Tests for ValueError guards on invalid inputs."""
+
+    def test_gross_rent_negative_year(self):
+        with pytest.raises(ValueError, match="year must be >= 0"):
+            calculate_gross_annual_rent(-1, 500.0, 0.05)
+
+    def test_gross_rent_large_negative_year(self):
+        with pytest.raises(ValueError, match="year must be >= 0"):
+            calculate_gross_annual_rent(-100, 500.0, 0.05)
+
+    def test_effective_rent_negative_vacancy_rate(self):
+        with pytest.raises(ValueError, match="vacancy_rate must be between 0 and 1"):
+            calculate_effective_annual_rent(0, -0.1, 500.0, 0.05)
+
+    def test_effective_rent_excess_vacancy_rate(self):
+        with pytest.raises(ValueError, match="vacancy_rate must be between 0 and 1"):
+            calculate_effective_annual_rent(0, 1.5, 500.0, 0.05)
+
+    def test_effective_rent_negative_year_propagates(self):
+        """Negative year should propagate from calculate_gross_annual_rent."""
+        with pytest.raises(ValueError, match="year must be >= 0"):
+            calculate_effective_annual_rent(-1, 0.05, 500.0, 0.05)

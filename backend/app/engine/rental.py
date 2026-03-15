@@ -17,6 +17,8 @@ def calculate_effective_annual_rent(year: int, vacancy_rate: float, weekly_rent:
     """Calculate effective annual rent received for a given year, accounting for vacancy."""
     if vacancy_rate < 0 or vacancy_rate > 1:
         raise ValueError("vacancy_rate must be between 0 and 1")
+    if year < 0:
+        raise ValueError("year must be >= 0")
     gross_rent = calculate_gross_annual_rent(year, weekly_rent, growth_rate)
     return gross_rent * (1 - vacancy_rate)
 

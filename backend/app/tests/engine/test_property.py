@@ -731,3 +731,48 @@ class TestManagementFee:
         low = calculate_management_fee(4, 500, 2, 0.05, 0.03, True)
         high = calculate_management_fee(4, 500, 2, 0.10, 0.03, True)
         assert high > low
+
+
+class TestInputValidation:
+    """Tests for ValueError guards on invalid inputs."""
+
+    def test_property_value_negative_year(self):
+        with pytest.raises(ValueError, match="year must be >= 0"):
+            calculate_property_value(-1, 500_000, 0.05)
+
+    def test_rental_income_negative_year(self):
+        with pytest.raises(ValueError, match="year must be >= 0"):
+            calculate_rental_income(-1, 500, 2, 0.03)
+
+    def test_rental_income_negative_vacancy_weeks(self):
+        with pytest.raises(ValueError, match="vacancy_weeks must be between 0 and 52"):
+            calculate_rental_income(0, 500, -1, 0.03)
+
+    def test_rental_income_excess_vacancy_weeks(self):
+        with pytest.raises(ValueError, match="vacancy_weeks must be between 0 and 52"):
+            calculate_rental_income(0, 500, 53, 0.03)
+
+    def test_compound_annual_cost_negative_year(self):
+        with pytest.raises(ValueError, match="year must be >= 0"):
+            compound_annual_cost(-1, 2_000, 0.025)
+
+    def test_stamp_duty_missing_catch_all_bracket(self):
+        """Truncated bracket config (no inf) should raise ValueError."""
+        bad_bracket = [(100_000, 1.5, 0)]
+        with pytest.raises(ValueError, match="Stamp duty bracket config missing catch-all"):
+            calculate_qld_stamp_duty_with_bracket(200_000, bad_bracket)
+
+    def test_council_rates_negative_year(self):
+        """Delegates to compound_annual_cost, so the guard should propagate."""
+        with pytest.raises(ValueError, match="year must be >= 0"):
+            calculate_council_rates(-1, 1_800, 0.025)
+
+    def test_management_fee_negative_year(self):
+        """Management fee calls calculate_rental_income, so the guard should propagate."""
+        with pytest.raises(ValueError, match="year must be >= 0"):
+            calculate_management_fee(-1, 500, 2, 0.08, 0.03, True)
+
+    def test_maintenance_cost_negative_year(self):
+        """Maintenance cost calls calculate_property_value, so the guard should propagate."""
+        with pytest.raises(ValueError, match="year must be >= 0"):
+            calculate_maintenance_cost(-1, 500_000, 0.01, 0.05)
