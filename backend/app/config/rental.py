@@ -1,5 +1,8 @@
 """
-RENTAL CONFIGURATION FILE
+RENTAL CONFIGURATION
+
+Default values and constants for rental modelling — covers both
+rent-paid (tenant) and rent-received (landlord) scenarios.
 """
 
 # ─────────────────────────────────────────────────────────────────────────────────

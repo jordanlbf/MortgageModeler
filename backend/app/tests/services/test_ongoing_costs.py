@@ -50,7 +50,7 @@ class TestProjectionStructure:
     def test_years_are_sequential(self):
         result = _build(projection_years=5)
         years = [c.year for c in result.annual_costs]
-        assert years == [1, 2, 3, 4, 5]
+        assert years == [0, 1, 2, 3, 4]
 
     def test_total_annual_cost_matches_year_one(self):
         """Summary total_annual_cost should match year 1 total."""

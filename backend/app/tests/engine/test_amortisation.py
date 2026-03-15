@@ -11,6 +11,7 @@ from app.engine.amortisation import (
     calculate_periodic_repayment,
     calculate_io_repayment,
     generate_schedule,
+    _recalculate_repayment,
 )
 from app.models.loan import RepaymentFrequency, RateChange
 
@@ -359,3 +360,36 @@ class TestScheduleWithOffsetGrowth:
         assert with_zero.total_interest == pytest.approx(static.total_interest, abs=0.01)
         for a, b in zip(with_zero.rows, static.rows):
             assert a.offset_balance == pytest.approx(b.offset_balance, abs=0.01)
+
+
+class TestInputValidation:
+    """Tests for ValueError guards on invalid inputs."""
+
+    def test_periodic_repayment_zero_term(self):
+        with pytest.raises(ValueError, match="loan_term_years must be > 0"):
+            calculate_periodic_repayment(500_000, 0.06, 0)
+
+    def test_periodic_repayment_negative_term(self):
+        with pytest.raises(ValueError, match="loan_term_years must be > 0"):
+            calculate_periodic_repayment(500_000, 0.06, -5)
+
+    def test_periodic_repayment_zero_term_zero_rate(self):
+        """Zero term should raise even when rate is also zero."""
+        with pytest.raises(ValueError, match="loan_term_years must be > 0"):
+            calculate_periodic_repayment(500_000, 0.0, 0)
+
+    def test_periodic_repayment_zero_principal_skips_validation(self):
+        """Zero principal returns 0.0 before reaching the term guard."""
+        assert calculate_periodic_repayment(0, 0.06, 0) == 0.0
+
+    def test_recalculate_zero_remaining_periods(self):
+        with pytest.raises(ValueError, match="remaining_periods must be > 0"):
+            _recalculate_repayment(100_000, 0.06, 0, RepaymentFrequency.MONTHLY)
+
+    def test_recalculate_negative_remaining_periods(self):
+        with pytest.raises(ValueError, match="remaining_periods must be > 0"):
+            _recalculate_repayment(100_000, 0.06, -10, RepaymentFrequency.MONTHLY)
+
+    def test_recalculate_zero_balance_skips_validation(self):
+        """Zero balance returns 0.0 before reaching the periods guard."""
+        assert _recalculate_repayment(0, 0.06, 0, RepaymentFrequency.MONTHLY) == 0.0

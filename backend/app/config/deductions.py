@@ -1,5 +1,11 @@
 """
-TAX DEDUCTIONS CONFIGURATIONS
+TAX DEDUCTIONS CONFIGURATION
+
+Constants for Division 43 (building depreciation) and Division 40
+(plant & equipment) tax deduction calculations.
 """
 
-DIV43_CONSTRUCTION_MINIMUM_START_YEAR = None  # TODO
+from datetime import date
+
+DIV43_CONSTRUCTION_CUTOFF_DATE = date(1987, 9, 16)
+DIV40_SECONDHAND_CUTOFF_DATE = date(2017, 5, 9)

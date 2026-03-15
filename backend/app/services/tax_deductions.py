@@ -9,7 +9,13 @@ This is a single-year calculation — multi-year orchestration lives elsewhere.
 
 from datetime import date, timedelta
 
-from app.engine.deductions import calculate_division_43_deduction, calculate_division_40_diminishing_value, calculate_division_40_prime_cost
+from app.engine.deductions import (
+    calculate_division_43_deduction,
+    calculate_division_40_diminishing_value,
+    calculate_division_40_prime_cost,
+    is_building_depreciable,
+    is_asset_depreciable,
+)
 from app.engine.tax import calculate_income_tax
 from app.models.deductions import PropertyTaxDeductionSummary, DepreciableBuilding, DepreciableAsset, DepreciationMethod
 from app.models.financial import FinancialYear
@@ -25,7 +31,13 @@ def _calculate_days_held_in_fy(
     Calculate the number of claimable days within a financial year,
     accounting for purchase date and depreciation expiry.
 
-    Returns 0 if the asset is not yet purchased or fully expired.
+    Args:
+        purchase_date: Date the asset/building was purchased
+        expiry_date: Date the depreciation claim expires
+        financial_year: Financial year to calculate for
+
+    Returns:
+        Number of claimable days (0 if not yet purchased or fully expired)
     """
     # Use day after end_date as exclusive upper bound (end_date is inclusive)
     fy_exclusive_end = financial_year.end_date + timedelta(days=1)
@@ -66,7 +78,8 @@ def build_tax_deduction_summary(
         property: Core property details (purchase date, new/second-hand status)
         mortgage_interest: Annual interest portion of repayments
         depreciable_buildings: Div 43 buildings/constructions to depreciate
-        depreciable_assets: Div 40 plant/equipment to depreciate (excluded if property is second-hand)
+        depreciable_assets: Div 40 plant/equipment to depreciate (second-hand assets
+            excluded for properties purchased on/after 9 May 2017)
         ongoing_costs: Single year's ongoing property costs
         rental_income: Annual gross rental income
         taxable_income: Gross taxable income excluding rental income/deductions
@@ -88,24 +101,28 @@ def build_tax_deduction_summary(
     # Calculate Div 43 depreciation for each building, accounting for expiry after 40 years
     total_building_depreciation = 0.0
     for building in depreciable_buildings:
+        if not is_building_depreciable(building.construction_start_date):
+            continue
         expiry = building.purchase_date.replace(year=building.purchase_date.year + 40)
         days_held = _calculate_days_held_in_fy(building.purchase_date, expiry, financial_year)
         if days_held <= 0:
             continue
         total_building_depreciation += calculate_division_43_deduction(building.construction_cost, days_held, financial_year.days)
 
-    # Calculate Div 40 depreciation for each asset (only if new property)
+    # Calculate Div 40 depreciation for each asset.
+    # Second-hand assets are excluded for properties purchased on/after 9 May 2017.
     total_plant_depreciation = 0.0
-    if property.is_new_property:
-        for asset in depreciable_assets:
-            expiry = asset.purchase_date.replace(year=asset.purchase_date.year + asset.effective_life_years)
-            days_held = _calculate_days_held_in_fy(asset.purchase_date, expiry, financial_year)
-            if days_held <= 0:
-                continue
-            if asset.method == DepreciationMethod.DIMINISHING_VALUE:
-                total_plant_depreciation += calculate_division_40_diminishing_value(asset.written_down_value, asset.effective_life_years, days_held, financial_year.days)
-            else:
-                total_plant_depreciation += calculate_division_40_prime_cost(asset.cost, asset.effective_life_years, days_held, financial_year.days)
+    for asset in depreciable_assets:
+        if not is_asset_depreciable(asset.purchase_date, property.purchase_date):
+            continue
+        expiry = asset.purchase_date.replace(year=asset.purchase_date.year + asset.effective_life_years)
+        days_held = _calculate_days_held_in_fy(asset.purchase_date, expiry, financial_year)
+        if days_held <= 0:
+            continue
+        if asset.method == DepreciationMethod.DIMINISHING_VALUE:
+            total_plant_depreciation += calculate_division_40_diminishing_value(asset.written_down_value, asset.effective_life_years, days_held, financial_year.days)
+        else:
+            total_plant_depreciation += calculate_division_40_prime_cost(asset.cost, asset.effective_life_years, days_held, financial_year.days)
 
     total_deductions = mortgage_interest + total_ongoing_expenses + total_building_depreciation + total_plant_depreciation
     net_rental_income = rental_income - total_deductions

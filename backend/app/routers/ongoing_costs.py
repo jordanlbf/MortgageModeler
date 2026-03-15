@@ -1,5 +1,8 @@
 """
-Property ongoing_costs API routes.
+Property ongoing costs API routes.
+
+Exposes the ongoing cost estimation endpoint for annual property holding
+costs including rates, insurance, strata, maintenance, and management fees.
 """
 
 from fastapi import APIRouter
@@ -12,7 +15,15 @@ router = APIRouter(prefix="/ongoing-costs", tags=["ongoing-costs"])
 
 @router.post("/estimate", response_model=OngoingCostResponse)
 def get_ongoing_costs(req: OngoingPropertyCostRequest) -> OngoingCostResponse:
-    """Generate a full Ongoing Property Cost Response"""
+    """
+    Estimate ongoing property costs with year-by-year projections.
+
+    Args:
+        req: Base costs, growth rates, rental details, and projection period
+
+    Returns:
+        Annual cost breakdown with summary totals
+    """
     projection = build_ongoing_cost_projection(
         projection_years=req.projection_years,
         council_rates=req.council_rates,
