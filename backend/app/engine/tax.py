@@ -6,6 +6,7 @@ All functions are pure — no side effects or external dependencies.
 
 from app.config.tax import TAX_BRACKETS, MEDICARE_LOWER_THRESHOLD, MEDICARE_HIGH_THRESHOLD, MEDICARE_PHASE_IN_RATE, \
     MEDICARE_LEVY_RATE, MLS_THRESHOLDS, HECS_THRESHOLDS, HECS_TOP_THRESHOLD
+from app.models.tax import TaxProfile
 
 
 def calculate_income_tax(taxable_income: float) -> float:
@@ -145,3 +146,55 @@ def calculate_total_tax(
         calculate_medicare_levy_surcharge(mls_income, has_private_health) +
         calculate_hecs_repayment(repayment_income, hecs_balance)
     )
+
+
+def calculate_tax_saving(tax_profile: TaxProfile, net_rental_income: float) -> float:
+    """
+    Calculate tax saving from an investment property using two-pass approach.
+
+    Compares total tax without the property against total tax with the
+    property's net rental income. Uses the correct income measure for
+    each component: TI for income tax and Medicare levy, RI and MLSI
+    for HECS and MLS (with rental losses added back).
+
+    A positive result means tax saved (negatively geared).
+    A negative result means extra tax owed (positively geared).
+
+    Args:
+        tax_profile: Taxpayer's base income profile (without property income)
+        net_rental_income: Rental income minus total deductions (negative if negatively geared)
+
+    Returns:
+        Tax saving amount (positive = saving, negative = extra tax owed)
+    """
+    # Tax without the investment property
+    tax_without = calculate_total_tax(
+        tax_profile.taxable_income,
+        tax_profile.repayment_income,
+        tax_profile.mls_income,
+        tax_profile.hecs_balance,
+        tax_profile.has_private_health,
+    )
+
+    # Adjusted incomes with the investment property
+    # TI: reduced by rental loss (or increased by rental profit)
+    adjusted_ti = tax_profile.taxable_income + net_rental_income
+
+    # RI and MLSI: rental losses are added back, profits are kept
+    # net_investment_loss = max(0, -net_rental_income)
+    # adjusted = TI + net_rental_income + net_investment_loss
+    #          = TI + net_rental_income + max(0, -net_rental_income)
+    #          = TI + max(net_rental_income, 0)
+    adjusted_ri = tax_profile.repayment_income + max(net_rental_income, 0)
+    adjusted_mlsi = tax_profile.mls_income + max(net_rental_income, 0)
+
+    # Tax with the investment property
+    tax_with = calculate_total_tax(
+        adjusted_ti,
+        adjusted_ri,
+        adjusted_mlsi,
+        tax_profile.hecs_balance,
+        tax_profile.has_private_health,
+    )
+
+    return tax_without - tax_with
