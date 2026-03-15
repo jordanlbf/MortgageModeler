@@ -616,11 +616,12 @@ class TestDiv40InService:
 
         assert result.depreciation_plant > 0
 
-    def test_second_hand_property_assets_excluded(self):
-        """Second-hand property — Div 40 assets should be zero."""
-        prop = _make_property(is_new=False)
+    def test_secondhand_asset_post_2017_excluded(self):
+        """Second-hand asset on post-2017 property — Div 40 blocked."""
+        prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False)
         fy = FinancialYear(2025)
-        asset = _make_asset(cost=2_000, life=10, wdv=2_000)
+        # Asset predates property purchase → second-hand
+        asset = _make_asset(cost=2_000, life=10, wdv=2_000, purchase_date=date(2018, 6, 1))
         costs = _make_year_cost(
             council_rates=0, water_rates=0, building_insurance=0,
             landlord_insurance=0, strata_fees=0, maintenance_cost=0,
@@ -639,6 +640,81 @@ class TestDiv40InService:
         )
 
         assert result.depreciation_plant == 0.0
+
+    def test_secondhand_asset_pre_2017_allowed(self):
+        """Second-hand asset on pre-2017 property — Div 40 grandfathered."""
+        prop = _make_property(purchase_date=date(2016, 3, 1), is_new=False)
+        fy = FinancialYear(2025)
+        asset = _make_asset(cost=2_000, life=20, wdv=2_000, purchase_date=date(2014, 1, 1))
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            depreciable_buildings=[],
+            depreciable_assets=[asset],
+            ongoing_costs=costs,
+            rental_income=50_000,
+            taxable_income=100_000,
+            financial_year=fy,
+        )
+
+        assert result.depreciation_plant > 0
+
+    def test_owner_installed_asset_post_2017_allowed(self):
+        """Owner-installed asset on post-2017 second-hand property — Div 40 allowed."""
+        prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False)
+        fy = FinancialYear(2025)
+        # Asset purchased on same date as property → owner-installed
+        asset = _make_asset(cost=2_000, life=10, wdv=2_000, purchase_date=date(2020, 1, 15))
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            depreciable_buildings=[],
+            depreciable_assets=[asset],
+            ongoing_costs=costs,
+            rental_income=50_000,
+            taxable_income=100_000,
+            financial_year=fy,
+        )
+
+        assert result.depreciation_plant > 0
+
+    def test_mixed_secondhand_and_owner_installed_post_2017(self):
+        """Mix of second-hand and owner-installed assets on post-2017 property."""
+        prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False)
+        fy = FinancialYear(2025)
+        old_asset = _make_asset(name="Old carpet", cost=3_000, life=10, wdv=3_000, purchase_date=date(2015, 1, 1))
+        new_asset = _make_asset(name="New aircon", cost=2_000, life=10, wdv=2_000, purchase_date=date(2020, 6, 1))
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            depreciable_buildings=[],
+            depreciable_assets=[old_asset, new_asset],
+            ongoing_costs=costs,
+            rental_income=50_000,
+            taxable_income=100_000,
+            financial_year=fy,
+        )
+
+        # Only the new aircon: 2000 * 2/10 = $400
+        assert result.depreciation_plant == pytest.approx(400, abs=1)
 
     def test_diminishing_value_method(self):
         """Diminishing value: $2,000 asset, 10yr life, full year = $400."""

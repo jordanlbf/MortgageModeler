@@ -4,10 +4,14 @@ Tests for property tax deduction engine — Division 43 and Division 40 deprecia
 
 import pytest
 
+from datetime import date
+
 from app.engine.deductions import (
     calculate_division_43_deduction,
     calculate_division_40_prime_cost,
     calculate_division_40_diminishing_value,
+    is_building_depreciable,
+    is_asset_depreciable,
 )
 
 
@@ -404,3 +408,70 @@ class TestDivision40ZeroAndEdgeCases:
 
     def test_diminishing_value_zero_days(self):
         assert calculate_division_40_diminishing_value(2_000, 10, 0) == 0.0
+
+
+# ──────────────────────────────────────────────
+# is_building_depreciable (Div 43 cutoff)
+# ──────────────────────────────────────────────
+
+
+class TestIsBuildingDepreciable:
+    """Tests for the Div 43 construction start date eligibility check."""
+
+    def test_post_1987_eligible(self):
+        assert is_building_depreciable(date(2000, 1, 1)) is True
+
+    def test_exactly_on_cutoff_eligible(self):
+        assert is_building_depreciable(date(1987, 9, 16)) is True
+
+    def test_day_before_cutoff_ineligible(self):
+        assert is_building_depreciable(date(1987, 9, 15)) is False
+
+    def test_well_before_cutoff_ineligible(self):
+        assert is_building_depreciable(date(1970, 1, 1)) is False
+
+    def test_recent_construction_eligible(self):
+        assert is_building_depreciable(date(2024, 6, 1)) is True
+
+
+# ──────────────────────────────────────────────
+# is_asset_depreciable (Div 40 second-hand rule)
+# ──────────────────────────────────────────────
+
+
+class TestIsAssetDepreciable:
+    """Tests for the Div 40 second-hand asset eligibility check."""
+
+    # ── Owner-installed assets (always claimable) ─────────
+
+    def test_owner_installed_post_2017_eligible(self):
+        """Asset purchased on same date as property — owner-installed, post-2017."""
+        assert is_asset_depreciable(date(2020, 1, 15), date(2020, 1, 15)) is True
+
+    def test_owner_installed_after_purchase_post_2017_eligible(self):
+        """Asset installed after property purchase — always claimable."""
+        assert is_asset_depreciable(date(2021, 6, 1), date(2020, 1, 15)) is True
+
+    def test_owner_installed_pre_2017_eligible(self):
+        """Asset purchased on same date as property — pre-2017."""
+        assert is_asset_depreciable(date(2015, 3, 1), date(2015, 3, 1)) is True
+
+    # ── Second-hand assets, post-2017 (blocked) ──────────
+
+    def test_secondhand_post_2017_ineligible(self):
+        """Asset predates property purchase, property bought post-2017."""
+        assert is_asset_depreciable(date(2018, 1, 1), date(2020, 1, 15)) is False
+
+    def test_secondhand_exactly_on_cutoff_ineligible(self):
+        """Property purchased exactly on 9 May 2017 — second-hand asset blocked."""
+        assert is_asset_depreciable(date(2015, 1, 1), date(2017, 5, 9)) is False
+
+    # ── Second-hand assets, pre-2017 (grandfathered) ─────
+
+    def test_secondhand_pre_2017_eligible(self):
+        """Asset predates property purchase, property bought pre-2017 — grandfathered."""
+        assert is_asset_depreciable(date(2014, 1, 1), date(2016, 3, 1)) is True
+
+    def test_secondhand_day_before_cutoff_eligible(self):
+        """Property purchased 8 May 2017 — second-hand asset still allowed."""
+        assert is_asset_depreciable(date(2015, 1, 1), date(2017, 5, 8)) is True

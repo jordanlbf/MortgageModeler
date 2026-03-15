@@ -5,6 +5,10 @@ Division 43 (building depreciation) and Division 40 (plant & equipment)
 calculations. All functions are pure — no side effects or external dependencies.
 """
 
+from datetime import date
+
+from app.config.deductions import DIV43_CONSTRUCTION_CUTOFF_DATE, DIV40_SECONDHAND_CUTOFF_DATE
+
 
 def calculate_division_43_deduction(
     construction_cost: float,
@@ -99,3 +103,37 @@ def calculate_division_40_diminishing_value(
         raise ValueError(f"days_held ({days_held}) exceeds days in year ({days_in_financial_year})")
 
     return written_down_value * (2 / effective_life_years) * (days_held / days_in_financial_year)
+
+
+def is_building_depreciable(construction_start_date: date) -> bool:
+    """
+    Check if a building qualifies for Division 43 depreciation.
+
+    Only buildings with construction commencing on or after 16 September 1987
+    are eligible.
+
+    Args:
+        construction_start_date: Date construction commenced
+
+    Returns:
+        True if eligible for Div 43 depreciation
+    """
+    return construction_start_date >= DIV43_CONSTRUCTION_CUTOFF_DATE
+
+
+def is_asset_depreciable(asset_purchase_date: date, property_purchase_date: date) -> bool:
+    """
+    Check if a Div 40 asset is claimable based on purchase dates.
+
+    For properties purchased on or after 9 May 2017, second-hand assets
+    (those already in the property at purchase) cannot be depreciated.
+
+    Args:
+        asset_purchase_date: Date the asset was purchased/installed
+        property_purchase_date: Date the property was purchased
+
+    Returns:
+        True if the asset is eligible for Div 40 depreciation
+    """
+    is_secondhand = asset_purchase_date < property_purchase_date
+    return not (is_secondhand and property_purchase_date >= DIV40_SECONDHAND_CUTOFF_DATE)
