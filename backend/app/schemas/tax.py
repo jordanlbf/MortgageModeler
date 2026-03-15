@@ -13,17 +13,22 @@ class TaxBreakdownRequest(BaseModel):
     """
     Request parameters for generating a tax breakdown.
 
-    Uses gross income for all tax calculations. Future iterations may
-    support separate repayment income, taxable income, and MLS income.
+    Supports separate income measures for accurate multi-component
+    tax calculations. Frontends can send the same value for all
+    income fields when divergence is not applicable.
 
     Attributes:
-        gross_income: Individual's gross income
+        taxable_income: Assessable income minus allowable deductions
+        repayment_income: Income used for HECS repayment calculation
+        mls_income: Income used for Medicare Levy Surcharge calculation
         hecs_balance: Outstanding HECS/HELP debt
         has_private_health: Whether the individual holds private health insurance
     """
-    gross_income: float = Field(default=0.0, ge=0, description="Individual's gross income")
-    hecs_balance: float = Field(default=0.0, ge=0, description="Individual's HECS Balance")
-    has_private_health: bool = Field(default=False, description="Individual's Private Health Status")
+    taxable_income: float = Field(default=0.0, ge=0, description="Assessable income minus allowable deductions")
+    repayment_income: float = Field(default=0.0, ge=0, description="Income for HECS repayment calculation")
+    mls_income: float = Field(default=0.0, ge=0, description="Income for Medicare Levy Surcharge calculation")
+    hecs_balance: float = Field(default=0.0, ge=0, description="Outstanding HECS/HELP debt")
+    has_private_health: bool = Field(default=False, description="Whether the individual holds private health insurance")
 
 
 # ── Response ──────────────────────────────────
@@ -33,18 +38,18 @@ class TaxBreakdownResponse(BaseModel):
     Itemised tax breakdown with net income.
 
     Attributes:
-        gross_income: Gross income before tax
+        taxable_income: Assessable income used for income tax and Medicare levy
         income_tax: Australian income tax
         medicare_levy: Medicare levy amount
         medicare_levy_surcharge: Medicare Levy Surcharge (0 if has private health)
         hecs_repayment: Annual HECS/HELP repayment
-        net_income: Gross income minus total tax
         total_tax: Sum of all tax components
+        net_income: Taxable income minus total tax
     """
-    gross_income: float
+    taxable_income: float
     income_tax: float
     medicare_levy: float
     medicare_levy_surcharge: float
     hecs_repayment: float
-    net_income: float
     total_tax: float
+    net_income: float
