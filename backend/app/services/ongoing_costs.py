@@ -40,6 +40,26 @@ def build_ongoing_cost_projection(
 
     Calls individual engine functions per year and assembles
     the result into domain models.
+
+    Args:
+        projection_years: Number of years to project
+        council_rates: Base annual council rates
+        water_rates: Base annual water rates
+        building_insurance: Base annual building insurance premium
+        landlord_insurance: Base annual landlord insurance premium
+        strata_fees: Base annual strata/body corporate fees
+        purchase_price: Original property purchase price
+        maintenance_rate: Annual maintenance as fraction of property value
+        annual_growth_rate: Annual property value growth rate as decimal
+        weekly_rent: Weekly rental amount
+        vacancy_weeks: Expected vacant weeks per year (0–52)
+        management_rate: Management fee as fraction of rental income
+        annual_rent_growth_rate: Annual rental growth rate as decimal
+        annual_cost_growth_rate: Annual cost growth rate as decimal
+        is_investment: Whether the property is an investment
+
+    Returns:
+        OngoingCostProjection with per-year breakdowns and summary stats
     """
     annual_costs: list[YearCost] = []
 

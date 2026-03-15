@@ -31,7 +31,13 @@ def _calculate_days_held_in_fy(
     Calculate the number of claimable days within a financial year,
     accounting for purchase date and depreciation expiry.
 
-    Returns 0 if the asset is not yet purchased or fully expired.
+    Args:
+        purchase_date: Date the asset/building was purchased
+        expiry_date: Date the depreciation claim expires
+        financial_year: Financial year to calculate for
+
+    Returns:
+        Number of claimable days (0 if not yet purchased or fully expired)
     """
     # Use day after end_date as exclusive upper bound (end_date is inclusive)
     fy_exclusive_end = financial_year.end_date + timedelta(days=1)

@@ -30,6 +30,23 @@ def build_schedule_result(
     Calls the engine to produce the raw schedule, then builds
     yearly chart points with cumulative interest, appreciation,
     and offset projections.
+
+    Args:
+        purchase_price: Property purchase price
+        deposit: Upfront deposit amount
+        loan_amount: Principal borrowed (purchase_price - deposit)
+        lvr: Loan-to-value ratio as decimal
+        annual_rate: Annual interest rate as decimal
+        loan_term_years: Loan term in years
+        frequency: Repayment frequency (weekly, fortnightly, monthly)
+        offset_balance: Starting offset account balance
+        offset_contribution: Amount added to offset each period
+        extra_repayment: Additional repayment per period
+        annual_appreciation: Annual property growth rate as decimal
+        rate_changes: Scheduled interest rate changes during the loan term
+
+    Returns:
+        ScheduleResult with per-period schedule, summary stats, and yearly chart data
     """
     schedule = generate_schedule(
         principal=loan_amount,
