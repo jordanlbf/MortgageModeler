@@ -133,7 +133,10 @@ class LoanRequest(BaseModel):
 
 class OngoingCostsRequest(BaseModel):
     """
-    Ongoing property cost configuration — maps to build_ongoing_cost_projection params.
+    Ongoing property cost configuration — maps to OngoingCostsConfig domain model.
+
+    Investment-only fields (landlord_insurance, management_rate) default to 0
+    and are ignored for PPOR scenarios.
 
     Attributes:
         council_rates: Base annual council rates
@@ -141,6 +144,8 @@ class OngoingCostsRequest(BaseModel):
         building_insurance: Base annual building insurance
         strata_fees: Base annual strata fees
         maintenance_rate: Annual maintenance as fraction of property value
+        landlord_insurance: Base annual landlord insurance (0 for PPOR)
+        management_rate: Management fee as fraction of rental income (0 for PPOR)
         annual_cost_growth_rate: Annual growth rate for ongoing costs as decimal
     """
     council_rates: float = Field(default=0.0, ge=0, description="Base annual council rates")
@@ -148,6 +153,8 @@ class OngoingCostsRequest(BaseModel):
     building_insurance: float = Field(default=0.0, ge=0, description="Base annual building insurance")
     strata_fees: float = Field(default=0.0, ge=0, description="Base annual strata fees")
     maintenance_rate: float = Field(default=0.01, ge=0, le=1, description="Annual maintenance as fraction of property value")
+    landlord_insurance: float = Field(default=0.0, ge=0, description="Base annual landlord insurance (0 for PPOR)")
+    management_rate: float = Field(default=0.0, ge=0, le=1, description="Management fee as fraction of rental income (0 for PPOR)")
     annual_cost_growth_rate: float = Field(default=0.03, ge=0, le=1, description="Annual growth rate for ongoing costs as decimal")
 
 
@@ -177,7 +184,9 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
     """
     Request parameters for a rentvesting cash flow projection.
 
-    Inherits all PPOR fields and adds depreciation, rental, management, and CGT configuration.
+    Inherits all PPOR fields and adds depreciation and tenant rental configuration.
+    Investment-specific ongoing costs (landlord_insurance, management_rate) are
+    set via the inherited ongoing_costs sub-model.
 
     Attributes:
         depreciable_buildings: Div 43 buildings/constructions for the investment property
@@ -187,8 +196,6 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
         weekly_rent_received: Weekly rent from investment property
         annual_rent_received_growth: Annual rental income growth rate as decimal
         vacancy_weeks: Expected vacant weeks per year (0–52)
-        management_rate: Management fee as fraction of rental income
-        landlord_insurance: Base annual landlord insurance
     """
     depreciable_buildings: list[DepreciableBuildingRequest] = Field(default_factory=list, description="Div 43 buildings/constructions")
     depreciable_assets: list[DepreciableAssetRequest] = Field(default_factory=list, description="Div 40 plant/equipment")
@@ -197,8 +204,6 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
     weekly_rent_received: float = Field(ge=0, description="Weekly rent from investment property")
     annual_rent_received_growth: float = Field(default=0.03, ge=0, le=1, description="Annual rental income growth rate as decimal")
     vacancy_weeks: int = Field(default=2, ge=0, le=52, description="Expected vacant weeks per year")
-    management_rate: float = Field(default=0.08, ge=0, le=1, description="Management fee as fraction of rental income")
-    landlord_insurance: float = Field(default=0.0, ge=0, description="Base annual landlord insurance")
 
 
 # ── Responses ──────────────────────────────────

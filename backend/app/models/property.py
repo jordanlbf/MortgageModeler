@@ -104,16 +104,44 @@ class Property:
 
 
 # ──────────────────────────────────────────────
+# Rentvesting config
+# ──────────────────────────────────────────────
+
+@dataclass
+class RentvestConfig:
+    """
+    Rental configuration for rentvesting cash flow projections.
+
+    Covers rent paid (where the investor lives) and rent received
+    (from the investment property) including vacancy.
+
+    Attributes:
+        weekly_rent_paid: Weekly rent where the investor lives
+        annual_rent_paid_growth: Annual rent paid growth rate as decimal
+        weekly_rent_received: Weekly rent from investment property
+        annual_rent_received_growth: Annual rental income growth rate as decimal
+        vacancy_weeks: Expected vacant weeks per year (0–52)
+    """
+    weekly_rent_paid: float
+    annual_rent_paid_growth: float
+    weekly_rent_received: float
+    annual_rent_received_growth: float
+    vacancy_weeks: int
+
+
+# ──────────────────────────────────────────────
 # Ongoing costs
 # ──────────────────────────────────────────────
 
 @dataclass
 class OngoingCostsConfig:
     """
-    Base ongoing cost configuration for cash flow projections.
+    Ongoing property cost configuration for cash flow projections.
 
     Holds the initial annual rates and growth rate. The service uses
     these to call engine functions that compound costs year by year.
+    Investment-only fields (landlord_insurance, management_rate) default
+    to 0 and are ignored for PPOR scenarios.
 
     Attributes:
         council_rates: Base annual council rates
@@ -121,6 +149,8 @@ class OngoingCostsConfig:
         building_insurance: Base annual building insurance premium
         strata_fees: Base annual strata/body corporate fees
         maintenance_rate: Annual maintenance as fraction of property value (e.g. 0.01 for 1%)
+        landlord_insurance: Base annual landlord insurance premium (0 for PPOR)
+        management_rate: Management fee as fraction of rental income (e.g. 0.08 for 8%, 0 for PPOR)
         annual_cost_growth_rate: Annual growth rate for ongoing costs as decimal
     """
     council_rates: float = 0.0
@@ -128,6 +158,8 @@ class OngoingCostsConfig:
     building_insurance: float = 0.0
     strata_fees: float = 0.0
     maintenance_rate: float = 0.01
+    landlord_insurance: float = 0.0
+    management_rate: float = 0.0
     annual_cost_growth_rate: float = 0.03
 
 

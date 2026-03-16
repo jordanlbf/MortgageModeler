@@ -10,7 +10,7 @@ from fastapi import APIRouter
 
 from app.models.deductions import DepreciableBuilding, DepreciableAsset
 from app.models.loan import RateChange, LoanConfig
-from app.models.property import Property, PurchaseCosts, OngoingCostsConfig
+from app.models.property import Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig
 from app.models.tax import TaxProfile
 from app.schemas.cashflow import (
     CashFlowPPORRequest,
@@ -108,6 +108,8 @@ def _build_ongoing_costs(req: CashFlowPPORRequest) -> OngoingCostsConfig:
         building_insurance=req.ongoing_costs.building_insurance,
         strata_fees=req.ongoing_costs.strata_fees,
         maintenance_rate=req.ongoing_costs.maintenance_rate,
+        landlord_insurance=req.ongoing_costs.landlord_insurance,
+        management_rate=req.ongoing_costs.management_rate,
         annual_cost_growth_rate=req.ongoing_costs.annual_cost_growth_rate,
     )
 
@@ -202,15 +204,15 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
         tax_profile=_build_tax_profile(req),
         loan=_build_loan(req),
         ongoing_costs=_build_ongoing_costs(req),
+        rentvest=RentvestConfig(
+            weekly_rent_paid=req.weekly_rent_paid,
+            annual_rent_paid_growth=req.annual_rent_paid_growth,
+            weekly_rent_received=req.weekly_rent_received,
+            annual_rent_received_growth=req.annual_rent_received_growth,
+            vacancy_weeks=req.vacancy_weeks,
+        ),
         annual_appreciation=req.annual_appreciation,
         projection_years=req.projection_years,
-        weekly_rent_paid=req.weekly_rent_paid,
-        annual_rent_paid_growth=req.annual_rent_paid_growth,
-        weekly_rent_received=req.weekly_rent_received,
-        annual_rent_received_growth=req.annual_rent_received_growth,
-        vacancy_weeks=req.vacancy_weeks,
-        management_rate=req.management_rate,
-        landlord_insurance=req.landlord_insurance,
     )
 
     return CashFlowRentvestResponse(
