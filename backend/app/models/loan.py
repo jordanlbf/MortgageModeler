@@ -2,7 +2,7 @@
 Loan domain models — mortgage configuration and rate changes.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 
@@ -51,3 +51,28 @@ class RateChange:
     """
     from_period: int
     annual_rate: float
+
+
+@dataclass
+class LoanConfig:
+    """
+    Mortgage loan configuration for cash flow projections.
+
+    Attributes:
+        deposit: Initial deposit amount
+        annual_rate: Annual interest rate as decimal (e.g. 0.062 for 6.2%)
+        loan_term_years: Loan term in years
+        frequency: Repayment frequency (weekly, fortnightly, monthly)
+        offset_balance: Initial offset account balance
+        offset_contribution: Amount added to offset each period
+        extra_repayment: Additional repayment per period on top of scheduled
+        rate_changes: Scheduled interest rate changes during the loan term
+    """
+    deposit: float
+    annual_rate: float
+    loan_term_years: int
+    frequency: RepaymentFrequency = RepaymentFrequency.MONTHLY
+    offset_balance: float = 0.0
+    offset_contribution: float = 0.0
+    extra_repayment: float = 0.0
+    rate_changes: list[RateChange] = field(default_factory=list)

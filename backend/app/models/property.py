@@ -108,6 +108,30 @@ class Property:
 # ──────────────────────────────────────────────
 
 @dataclass
+class OngoingCostsConfig:
+    """
+    Base ongoing cost configuration for cash flow projections.
+
+    Holds the initial annual rates and growth rate. The service uses
+    these to call engine functions that compound costs year by year.
+
+    Attributes:
+        council_rates: Base annual council rates
+        water_rates: Base annual water rates
+        building_insurance: Base annual building insurance premium
+        strata_fees: Base annual strata/body corporate fees
+        maintenance_rate: Annual maintenance as fraction of property value (e.g. 0.01 for 1%)
+        annual_cost_growth_rate: Annual growth rate for ongoing costs as decimal
+    """
+    council_rates: float = 0.0
+    water_rates: float = 0.0
+    building_insurance: float = 0.0
+    strata_fees: float = 0.0
+    maintenance_rate: float = 0.01
+    annual_cost_growth_rate: float = 0.03
+
+
+@dataclass
 class YearCost:
     """
     A single year's breakdown of ongoing property costs.
