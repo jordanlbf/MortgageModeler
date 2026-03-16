@@ -189,7 +189,6 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
         vacancy_weeks: Expected vacant weeks per year (0–52)
         management_rate: Management fee as fraction of rental income
         landlord_insurance: Base annual landlord insurance
-        include_cgt: Whether to calculate CGT at end of projection
     """
     depreciable_buildings: list[DepreciableBuildingRequest] = Field(default_factory=list, description="Div 43 buildings/constructions")
     depreciable_assets: list[DepreciableAssetRequest] = Field(default_factory=list, description="Div 40 plant/equipment")
@@ -200,7 +199,6 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
     vacancy_weeks: int = Field(default=2, ge=0, le=52, description="Expected vacant weeks per year")
     management_rate: float = Field(default=0.08, ge=0, le=1, description="Management fee as fraction of rental income")
     landlord_insurance: float = Field(default=0.0, ge=0, description="Base annual landlord insurance")
-    include_cgt: bool = Field(default=True, description="Whether to calculate CGT at end of projection")
 
 
 # ── Responses ──────────────────────────────────
@@ -326,12 +324,12 @@ class CashFlowRentvestResponse(BaseModel):
         projection_years: Number of years projected
         upfront_costs: Total upfront acquisition costs
         years: Year-by-year cash flow breakdown
-        cgt: Capital gains tax result (None if include_cgt is false)
+        cgt: Capital gains tax result
         summary: Summary stats across the full projection
     """
     scenario: str = "rentvesting"
     projection_years: int
     upfront_costs: float
     years: list[CashFlowYearResponse]
-    cgt: CGTResponse | None = None
+    cgt: CGTResponse
     summary: CashFlowSummaryResponse
