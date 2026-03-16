@@ -13,6 +13,49 @@ from app.models.property import Property, OngoingCostsConfig, RentvestConfig
 from app.models.tax import TaxProfile
 
 
+def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
+    """
+    Calculate summary stats across the full projection from yearly entries.
+
+    Derives all summary fields from the CashFlowYear list — final property
+    value, loan balance, and cumulative position come from the last year.
+
+    Args:
+        years: Year-by-year cash flow breakdown
+
+    Returns:
+        CashFlowSummary with totals, final position, and net wealth
+    """
+    total_income = sum(year.net_income for year in years)
+    total_outflows = sum(year.total_outflows for year in years)
+    total_interest_paid = sum(year.mortgage_interest for year in years)
+    total_rent_paid = sum(year.rent_paid for year in years)
+    total_rental_income = sum(year.rental_income for year in years)
+    total_tax_saving = sum(year.tax_saving for year in years)
+
+    last_year = years[-1] if years else None
+    final_property_value = last_year.property_value if last_year else 0.0
+    final_loan_balance = last_year.loan_balance if last_year else 0.0
+    final_equity = final_property_value - final_loan_balance
+    cumulative_position = last_year.cumulative_position if last_year else 0.0
+    average_annual_net = sum(year.net_position for year in years) / len(years) if years else 0.0
+    net_wealth = final_equity + cumulative_position
+
+    return CashFlowSummary(
+        total_income=total_income,
+        total_outflows=total_outflows,
+        total_interest_paid=total_interest_paid,
+        total_rent_paid=total_rent_paid,
+        total_rental_income=total_rental_income,
+        total_tax_saving=total_tax_saving,
+        final_property_value=final_property_value,
+        final_loan_balance=final_loan_balance,
+        final_equity=final_equity,
+        average_annual_net=average_annual_net,
+        net_wealth=net_wealth,
+    )
+
+
 def build_ppor_cashflow(
     property: Property,
     tax_profile: TaxProfile,
