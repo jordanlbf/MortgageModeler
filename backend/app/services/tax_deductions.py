@@ -87,7 +87,7 @@ def build_tax_deduction_summary(
     Returns:
         PropertyTaxDeductionSummary with deduction breakdown and tax saving
     """
-    # Sum ongoing deductible expenses manually — ongoing_costs.total includes
+    # Sum ongoing deductible expenses manually — ongoing_costs.total_costs includes
     # property_value and rental_income which are not deductible expenses
     total_ongoing_expenses = (ongoing_costs.council_rates +
                               ongoing_costs.water_rates +

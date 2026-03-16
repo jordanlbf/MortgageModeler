@@ -126,7 +126,6 @@ def _map_year_response(year) -> CashFlowYearResponse:
         mortgage_interest=year.mortgage_interest,
         mortgage_principal=year.mortgage_principal,
         property_costs=year.property_costs,
-        purchase_costs=year.purchase_costs,
         rent_paid=year.rent_paid,
         rental_income=year.rental_income,
         tax_saving=year.tax_saving,
@@ -176,6 +175,7 @@ def get_ppor_cashflow(req: CashFlowPPORRequest) -> CashFlowPPORResponse:
         loan=_build_loan(req),
         ongoing_costs=_build_ongoing_costs(req),
         annual_appreciation=req.annual_appreciation,
+        income_growth_rate=req.income_growth_rate,
         projection_years=req.projection_years,
     )
 
@@ -205,6 +205,7 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
         loan=_build_loan(req),
         ongoing_costs=_build_ongoing_costs(req),
         rentvest=RentvestConfig(
+
             weekly_rent_paid=req.weekly_rent_paid,
             annual_rent_paid_growth=req.annual_rent_paid_growth,
             weekly_rent_received=req.weekly_rent_received,
@@ -212,6 +213,7 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
             vacancy_weeks=req.vacancy_weeks,
         ),
         annual_appreciation=req.annual_appreciation,
+        income_growth_rate=req.income_growth_rate,
         projection_years=req.projection_years,
     )
 

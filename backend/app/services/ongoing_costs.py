@@ -88,7 +88,7 @@ def build_ongoing_cost_projection(
                 management_fee=mf,
                 property_value=pv,
                 rental_income=ri,
-                total=total,
+                total_costs=total,
             )
         )
 
@@ -96,7 +96,7 @@ def build_ongoing_cost_projection(
 
     return OngoingCostProjection(
         annual_costs=annual_costs,
-        total_annual_cost=year_one.total,
-        total_monthly_cost=year_one.total / 12,
-        total_deductible_cost=year_one.total if is_investment else 0.0,
+        total_annual_cost=year_one.total_costs,
+        total_monthly_cost=year_one.total_costs / 12,
+        total_deductible_cost=year_one.total_costs if is_investment else 0.0,
     )

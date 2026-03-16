@@ -55,7 +55,7 @@ class TestProjectionStructure:
     def test_total_annual_cost_matches_year_one(self):
         """Summary total_annual_cost should match year 1 total."""
         result = _build()
-        assert result.total_annual_cost == pytest.approx(result.annual_costs[0].total)
+        assert result.total_annual_cost == pytest.approx(result.annual_costs[0].total_costs)
 
     def test_total_monthly_cost(self):
         """Monthly cost should be year 1 annual / 12."""
@@ -155,7 +155,7 @@ class TestYearOneCosts:
         expected = (y1.council_rates + y1.water_rates + y1.building_insurance +
                     y1.landlord_insurance + y1.strata_fees + y1.maintenance_cost +
                     y1.management_fee)
-        assert y1.total == pytest.approx(expected)
+        assert y1.total_costs == pytest.approx(expected)
 
 
 # ──────────────────────────────────────────────
@@ -200,7 +200,7 @@ class TestGrowthOverTime:
         """With positive growth, total costs should increase each year."""
         result = _build(annual_cost_growth_rate=0.03, annual_growth_rate=0.03, projection_years=5)
         for i in range(1, len(result.annual_costs)):
-            assert result.annual_costs[i].total > result.annual_costs[i - 1].total
+            assert result.annual_costs[i].total_costs > result.annual_costs[i - 1].total_costs
 
 
 # ──────────────────────────────────────────────
@@ -263,4 +263,4 @@ class TestEdgeCases:
             weekly_rent=0, management_rate=0,
         )
         for yc in result.annual_costs:
-            assert yc.total == pytest.approx(0)
+            assert yc.total_costs == pytest.approx(0)

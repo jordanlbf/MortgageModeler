@@ -170,6 +170,7 @@ class CashFlowPPORRequest(BaseModel):
         loan: Mortgage loan configuration
         ongoing_costs: Ongoing property cost configuration
         annual_appreciation: Property growth rate as decimal
+        income_growth_rate: Annual salary/wage growth rate as decimal
         projection_years: Number of years to project
     """
     tax_profile: TaxProfileRequest = Field(default_factory=TaxProfileRequest)
@@ -177,6 +178,7 @@ class CashFlowPPORRequest(BaseModel):
     loan: LoanRequest
     ongoing_costs: OngoingCostsRequest = Field(default_factory=OngoingCostsRequest)
     annual_appreciation: float = Field(default=0.0, ge=0, le=1, description="Annual property appreciation rate as decimal")
+    income_growth_rate: float = Field(default=0.03, ge=0, le=1, description="Annual salary/wage growth rate as decimal")
     projection_years: int = Field(default=30, ge=1, le=50, description="Number of years to project")
 
 
@@ -220,13 +222,12 @@ class CashFlowYearResponse(BaseModel):
         mortgage_interest: Interest portion of mortgage payments
         mortgage_principal: Principal portion of mortgage payments
         property_costs: Ongoing property costs for the year
-        purchase_costs: Upfront acquisition costs (year 0 only)
         rent_paid: Annual rent where the investor lives (rentvesting only, 0 for PPOR)
         rental_income: Annual rental income received (rentvesting only, 0 for PPOR)
         tax_saving: Tax benefit from deductions (rentvesting only, 0 for PPOR)
         total_outflows: Sum of all expenses for the year
         net_position: total_inflows - total_outflows
-        cumulative_position: Running total of net_position across all years
+        cumulative_position: Running total of net_position (year 0 offset by upfront costs)
         property_value: Appreciated property value at end of year
         loan_balance: Remaining mortgage balance at end of year
         equity: Property value minus loan balance
@@ -239,7 +240,6 @@ class CashFlowYearResponse(BaseModel):
     mortgage_interest: float
     mortgage_principal: float
     property_costs: float
-    purchase_costs: float
     rent_paid: float = 0.0
     rental_income: float = 0.0
     tax_saving: float = 0.0

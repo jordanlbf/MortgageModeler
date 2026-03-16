@@ -179,7 +179,7 @@ class YearCost:
         management_fee: Annual property management fee (0 for PPOR)
         property_value: Appreciated property value at this year
         rental_income: Annual rental income at this year
-        total: Total of all cost fields
+        total_costs: Total of all cost fields
     """
     year: int
     council_rates: float
@@ -191,7 +191,7 @@ class YearCost:
     management_fee: float
     property_value: float
     rental_income: float
-    total: float
+    total_costs: float
 
 
 @dataclass

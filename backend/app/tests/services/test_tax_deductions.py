@@ -30,7 +30,7 @@ def _make_year_cost(**overrides) -> YearCost:
         management_fee=2_000,
         property_value=500_000,
         rental_income=25_000,
-        total=15_700,
+        total_costs=15_700,
     )
     defaults.update(overrides)
     return YearCost(**defaults)

@@ -58,7 +58,7 @@ def get_ongoing_costs(req: OngoingPropertyCostRequest) -> OngoingCostResponse:
                 management_fee=yc.management_fee,
                 property_value=yc.property_value,
                 rental_income=yc.rental_income,
-                total=yc.total,
+                total=yc.total_costs,
             )
             for yc in projection.annual_costs
         ],

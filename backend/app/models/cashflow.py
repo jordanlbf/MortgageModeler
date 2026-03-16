@@ -20,13 +20,12 @@ class CashFlowYear:
         mortgage_interest: Interest portion of mortgage payments
         mortgage_principal: Principal portion of mortgage payments
         property_costs: Ongoing property costs for the year
-        purchase_costs: Upfront acquisition costs (year 0 only, 0 otherwise)
         rent_paid: Annual rent where the investor lives (0 for PPOR)
         rental_income: Annual rental income received (0 for PPOR)
         tax_saving: Tax benefit from deductions (0 for PPOR, negative if positively geared)
         total_outflows: Sum of all expenses for the year
         net_position: total_inflows minus total_outflows
-        cumulative_position: Running total of net_position across all years
+        cumulative_position: Running total of net_position (year 0 offset by upfront costs)
         property_value: Appreciated property value at end of year
         loan_balance: Remaining mortgage balance at end of year
         equity: Property value minus loan balance
@@ -39,7 +38,6 @@ class CashFlowYear:
     mortgage_interest: float
     mortgage_principal: float
     property_costs: float
-    purchase_costs: float
     rent_paid: float
     rental_income: float
     tax_saving: float
