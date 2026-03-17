@@ -79,6 +79,29 @@ class PurchaseCosts:
 
 
 # ──────────────────────────────────────────────
+# Rental config (sub-model of Property)
+# ──────────────────────────────────────────────
+
+@dataclass
+class RentalConfig:
+    """
+    Investment property rental characteristics.
+
+    Describes the rental income profile of a property — how much rent
+    it earns, how fast rent grows, and expected vacancy. Defaults to
+    zeros for PPOR (no tenants).
+
+    Attributes:
+        weekly_rent: Weekly rental amount
+        annual_growth_rate: Annual rental income growth rate as decimal
+        vacancy_weeks: Expected vacant weeks per year (0–52)
+    """
+    weekly_rent: float = 0.0
+    annual_growth_rate: float = 0.03
+    vacancy_weeks: int = 2
+
+
+# ──────────────────────────────────────────────
 # Core property
 # ──────────────────────────────────────────────
 
@@ -91,42 +114,40 @@ class Property:
         purchase_date: Date the property was purchased
         purchase_price: Property purchase price
         is_new_property: Whether the owner is the first occupant/investor
+        annual_appreciation: Annual property value growth rate as decimal
         purchase_costs: Upfront acquisition costs (defaults to all zeros)
         depreciable_buildings: Div 43 buildings/constructions to depreciate
         depreciable_assets: Div 40 plant/equipment to depreciate
+        rental: Rental income configuration (defaults to zeros for PPOR)
     """
     purchase_date: date
     purchase_price: float
     is_new_property: bool
+    annual_appreciation: float = 0.0
     purchase_costs: PurchaseCosts = field(default_factory=PurchaseCosts)
     depreciable_buildings: list[DepreciableBuilding] = field(default_factory=list)
     depreciable_assets: list[DepreciableAsset] = field(default_factory=list)
+    rental: RentalConfig = field(default_factory=RentalConfig)
 
 
 # ──────────────────────────────────────────────
-# Rentvesting config
+# Rentvesting config (investor as tenant)
 # ──────────────────────────────────────────────
 
 @dataclass
 class RentvestConfig:
     """
-    Rental configuration for rentvesting cash flow projections.
+    Tenant rental configuration for the investor's personal housing.
 
-    Covers rent paid (where the investor lives) and rent received
-    (from the investment property) including vacancy.
+    Only used in rentvesting scenarios — describes what the investor
+    pays to live somewhere (not the investment property).
 
     Attributes:
         weekly_rent_paid: Weekly rent where the investor lives
         annual_rent_paid_growth: Annual rent paid growth rate as decimal
-        weekly_rent_received: Weekly rent from investment property
-        annual_rent_received_growth: Annual rental income growth rate as decimal
-        vacancy_weeks: Expected vacant weeks per year (0–52)
     """
     weekly_rent_paid: float
     annual_rent_paid_growth: float
-    weekly_rent_received: float
-    annual_rent_received_growth: float
-    vacancy_weeks: int
 
 
 # ──────────────────────────────────────────────

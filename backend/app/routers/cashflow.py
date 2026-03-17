@@ -10,7 +10,7 @@ from fastapi import APIRouter
 
 from app.models.deductions import DepreciableBuilding, DepreciableAsset
 from app.models.loan import RateChange, LoanConfig
-from app.models.property import Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig
+from app.models.property import Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig, RentalConfig
 from app.models.tax import TaxProfile
 from app.schemas.cashflow import (
     CashFlowPPORRequest,
@@ -36,6 +36,7 @@ def _build_tax_profile(req: CashFlowPPORRequest) -> TaxProfile:
         mls_income=req.tax_profile.mls_income,
         hecs_balance=req.tax_profile.hecs_balance,
         has_private_health=req.tax_profile.has_private_health,
+        income_growth_rate=req.tax_profile.income_growth_rate,
     )
 
 
@@ -45,6 +46,7 @@ def _build_property(req: CashFlowPPORRequest) -> Property:
         purchase_date=req.property.purchase_date,
         purchase_price=req.property.purchase_price,
         is_new_property=req.property.is_new_property,
+        annual_appreciation=req.property.annual_appreciation,
         purchase_costs=PurchaseCosts(
             stamp_duty=req.property.purchase_costs.stamp_duty,
             legal_fees=req.property.purchase_costs.legal_fees,
@@ -53,6 +55,11 @@ def _build_property(req: CashFlowPPORRequest) -> Property:
             mortgage_registration_fee=req.property.purchase_costs.mortgage_registration_fee,
             loan_establishment_fee=req.property.purchase_costs.loan_establishment_fee,
             other_costs=req.property.purchase_costs.other_costs,
+        ),
+        rental=RentalConfig(
+            weekly_rent=req.property.rental.weekly_rent,
+            annual_growth_rate=req.property.rental.annual_growth_rate,
+            vacancy_weeks=req.property.rental.vacancy_weeks,
         ),
     )
 
@@ -174,8 +181,6 @@ def get_ppor_cashflow(req: CashFlowPPORRequest) -> CashFlowPPORResponse:
         tax_profile=_build_tax_profile(req),
         loan=_build_loan(req),
         ongoing_costs=_build_ongoing_costs(req),
-        annual_appreciation=req.annual_appreciation,
-        income_growth_rate=req.income_growth_rate,
         projection_years=req.projection_years,
     )
 
@@ -194,7 +199,7 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
 
     Args:
         req: Rentvesting request with tax profile, property, loan, ongoing costs,
-            rental details, depreciation items, and CGT configuration
+            rental details, and depreciation items
 
     Returns:
         Rentvesting cash flow projection with year breakdown, CGT, and summary
@@ -205,15 +210,9 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
         loan=_build_loan(req),
         ongoing_costs=_build_ongoing_costs(req),
         rentvest=RentvestConfig(
-
             weekly_rent_paid=req.weekly_rent_paid,
             annual_rent_paid_growth=req.annual_rent_paid_growth,
-            weekly_rent_received=req.weekly_rent_received,
-            annual_rent_received_growth=req.annual_rent_received_growth,
-            vacancy_weeks=req.vacancy_weeks,
         ),
-        annual_appreciation=req.annual_appreciation,
-        income_growth_rate=req.income_growth_rate,
         projection_years=req.projection_years,
     )
 

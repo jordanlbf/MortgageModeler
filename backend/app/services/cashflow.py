@@ -61,7 +61,6 @@ def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
 def _calculate_cashflow_year(
     year: int,
     tax_profile: TaxProfile,
-    income_growth_rate: float,
     schedule: AmortisationSchedule,
     periods_per_year: int,
     ongoing_costs: YearCost,
@@ -73,14 +72,13 @@ def _calculate_cashflow_year(
     """
     Calculate a single year's cash flow breakdown.
 
-    Grows income by the growth rate, calculates tax on the grown income,
-    sums mortgage payments from schedule rows for this year, and assembles
-    all components into a CashFlowYear.
+    Grows income by tax_profile.income_growth_rate, calculates tax on the
+    grown income, sums mortgage payments from schedule rows for this year,
+    and assembles all components into a CashFlowYear.
 
     Args:
         year: Projection year (0 = purchase year)
-        tax_profile: Taxpayer base income configuration (year 0 values)
-        income_growth_rate: Annual salary/wage growth rate as decimal
+        tax_profile: Taxpayer base income configuration with income_growth_rate
         schedule: Full amortisation schedule (period-based)
         periods_per_year: Number of repayment periods per year
         ongoing_costs: YearCost breakdown for this year
@@ -93,7 +91,7 @@ def _calculate_cashflow_year(
         CashFlowYear with detailed breakdown for this year
     """
     # Grow income and recalculate tax
-    growth_factor = (1 + income_growth_rate) ** year
+    growth_factor = (1 + tax_profile.income_growth_rate) ** year
     grown_profile = TaxProfile(
         taxable_income=tax_profile.taxable_income * growth_factor,
         repayment_income=tax_profile.repayment_income * growth_factor,
@@ -156,8 +154,6 @@ def build_ppor_cashflow(
     tax_profile: TaxProfile,
     loan: LoanConfig,
     ongoing_costs: OngoingCostsConfig,
-    annual_appreciation: float,
-    income_growth_rate: float,
     projection_years: int,
 ) -> CashFlowPPORResult:
     """
@@ -165,25 +161,21 @@ def build_ppor_cashflow(
 
     Owner lives in the property. No rental income, no tax deductions, no CGT.
 
-    Generates the amortisation schedule upfront, then loops year by year
-    computing net income (with wage growth), mortgage payments, ongoing costs,
-    and property appreciation. Assembles into CashFlowYear entries and a summary.
+    Growth rates are sourced from domain models:
+    - Income growth from tax_profile.income_growth_rate
+    - Property appreciation from property.annual_appreciation
+    - Cost inflation from ongoing_costs.annual_cost_growth_rate
 
     Args:
-        property: Property details with purchase price and costs
-        tax_profile: Taxpayer base income configuration (year 0)
+        property: Property details with purchase price, costs, and appreciation rate
+        tax_profile: Taxpayer base income configuration (year 0) with income growth rate
         loan: Mortgage loan configuration (deposit, rate, term, offset, etc.)
         ongoing_costs: Base ongoing cost rates and growth rate
-        annual_appreciation: Annual property growth rate as decimal
-        income_growth_rate: Annual salary/wage growth rate as decimal
         projection_years: Number of years to project
 
     Returns:
         CashFlowPPORResult with year-by-year breakdown and summary
     """
-
-    # SHOULD BE THE LAYER THAT CALLS OTHER SERVICES - PASSES DOMAIN MODELS
-
     pass
 
 
@@ -193,8 +185,6 @@ def build_rentvest_cashflow(
     loan: LoanConfig,
     ongoing_costs: OngoingCostsConfig,
     rentvest: RentvestConfig,
-    annual_appreciation: float,
-    income_growth_rate: float,
     projection_years: int,
 ) -> CashFlowRentvestResult:
     """
@@ -203,21 +193,20 @@ def build_rentvest_cashflow(
     Owner rents where they live and owns an investment property elsewhere.
     Includes rental income, tax deductions, tax saving, and CGT at sale.
 
-    Generates the amortisation schedule upfront, then loops year by year
-    computing net income (with wage growth), rent paid, mortgage payments,
-    ongoing costs, rental income, tax deductions, and property appreciation.
-    Calculates CGT at the end of the projection. Assembles into CashFlowYear
-    entries and a summary.
+    Growth rates are sourced from domain models:
+    - Income growth from tax_profile.income_growth_rate
+    - Property appreciation from property.annual_appreciation
+    - Rental income growth from property.rental.annual_growth_rate
+    - Rent paid growth from rentvest.annual_rent_paid_growth
+    - Cost inflation from ongoing_costs.annual_cost_growth_rate
 
     Args:
-        property: Investment property details with purchase price, costs,
-            depreciable buildings, and depreciable assets
-        tax_profile: Taxpayer base income configuration (year 0, without property income)
+        property: Investment property with purchase details, appreciation rate,
+            rental config, depreciable buildings, and depreciable assets
+        tax_profile: Taxpayer base income configuration (year 0) with income growth rate
         loan: Mortgage loan configuration (deposit, rate, term, offset, etc.)
         ongoing_costs: Base ongoing cost rates and growth rate
-        rentvest: Rental configuration (rent paid/received, vacancy)
-        annual_appreciation: Annual property growth rate as decimal
-        income_growth_rate: Annual salary/wage growth rate as decimal
+        rentvest: Tenant rental configuration (rent paid and growth rate)
         projection_years: Number of years to project
 
     Returns:

@@ -20,9 +20,11 @@ class TaxProfile:
         mls_income: Income used for Medicare Levy Surcharge calculation
         hecs_balance: Outstanding HECS/HELP debt
         has_private_health: Whether the taxpayer holds private health insurance
+        income_growth_rate: Annual salary/wage growth rate as decimal
     """
     taxable_income: float
     repayment_income: float
     mls_income: float
     hecs_balance: float
     has_private_health: bool
+    income_growth_rate: float = 0.03

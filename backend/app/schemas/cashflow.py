@@ -25,12 +25,14 @@ class TaxProfileRequest(BaseModel):
         mls_income: Income used for Medicare Levy Surcharge calculation
         hecs_balance: Outstanding HECS/HELP debt
         has_private_health: Whether the taxpayer holds private health insurance
+        income_growth_rate: Annual salary/wage growth rate as decimal
     """
     taxable_income: float = Field(default=0.0, ge=0, description="Annual taxable income")
     repayment_income: float = Field(default=0.0, ge=0, description="Annual income used for HECS repayment calculations")
     mls_income: float = Field(default=0.0, ge=0, description="Annual income used for MLS calculations")
     hecs_balance: float = Field(default=0.0, ge=0, description="Current HECS debt balance")
     has_private_health: bool = Field(default=False, description="Whether the individual has private health insurance")
+    income_growth_rate: float = Field(default=0.03, ge=0, le=1, description="Annual salary/wage growth rate as decimal")
 
 
 class PurchaseCostsRequest(BaseModel):
@@ -53,6 +55,22 @@ class PurchaseCostsRequest(BaseModel):
     mortgage_registration_fee: float = Field(default=0.0, ge=0, description="Mortgage registration fee")
     loan_establishment_fee: float = Field(default=0.0, ge=0, description="Loan establishment fee")
     other_costs: float = Field(default=0.0, ge=0, description="Any other acquisition costs")
+
+
+class RentalConfigRequest(BaseModel):
+    """
+    Investment property rental configuration — maps to RentalConfig domain model.
+
+    Defaults to zeros for PPOR (no tenants).
+
+    Attributes:
+        weekly_rent: Weekly rental amount from investment property
+        annual_growth_rate: Annual rental income growth rate as decimal
+        vacancy_weeks: Expected vacant weeks per year (0–52)
+    """
+    weekly_rent: float = Field(default=0.0, ge=0, description="Weekly rental amount")
+    annual_growth_rate: float = Field(default=0.03, ge=0, le=1, description="Annual rental income growth rate as decimal")
+    vacancy_weeks: int = Field(default=2, ge=0, le=52, description="Expected vacant weeks per year")
 
 
 class DepreciableBuildingRequest(BaseModel):
@@ -99,17 +117,21 @@ class PropertyRequest(BaseModel):
         purchase_price: Property purchase price
         purchase_date: Date of property purchase
         is_new_property: Whether the owner is the first occupant/investor
+        annual_appreciation: Annual property value growth rate as decimal
         purchase_costs: Upfront acquisition costs
+        rental: Rental income configuration (defaults to zeros for PPOR)
     """
     purchase_price: float = Field(ge=0, description="Property purchase price")
     purchase_date: date = Field(description="Date of property purchase")
     is_new_property: bool = Field(default=False, description="Whether the owner is the first occupant")
+    annual_appreciation: float = Field(default=0.0, ge=0, le=1, description="Annual property value growth rate as decimal")
     purchase_costs: PurchaseCostsRequest = Field(default_factory=PurchaseCostsRequest)
+    rental: RentalConfigRequest = Field(default_factory=RentalConfigRequest)
 
 
 class LoanRequest(BaseModel):
     """
-    Mortgage loan configuration — maps to generate_schedule engine params.
+    Mortgage loan configuration — maps to LoanConfig domain model.
 
     Attributes:
         deposit: Initial deposit amount
@@ -164,21 +186,19 @@ class CashFlowPPORRequest(BaseModel):
     """
     Request parameters for a PPOR cash flow projection.
 
+    All growth rates and rental config live on their respective sub-models.
+
     Attributes:
-        tax_profile: Taxpayer income configuration
-        property: Property details including purchase costs
+        tax_profile: Taxpayer income configuration (with income_growth_rate)
+        property: Property details (with annual_appreciation and rental config)
         loan: Mortgage loan configuration
         ongoing_costs: Ongoing property cost configuration
-        annual_appreciation: Property growth rate as decimal
-        income_growth_rate: Annual salary/wage growth rate as decimal
         projection_years: Number of years to project
     """
     tax_profile: TaxProfileRequest = Field(default_factory=TaxProfileRequest)
     property: PropertyRequest
     loan: LoanRequest
     ongoing_costs: OngoingCostsRequest = Field(default_factory=OngoingCostsRequest)
-    annual_appreciation: float = Field(default=0.0, ge=0, le=1, description="Annual property appreciation rate as decimal")
-    income_growth_rate: float = Field(default=0.03, ge=0, le=1, description="Annual salary/wage growth rate as decimal")
     projection_years: int = Field(default=30, ge=1, le=50, description="Number of years to project")
 
 
@@ -186,7 +206,8 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
     """
     Request parameters for a rentvesting cash flow projection.
 
-    Inherits all PPOR fields and adds depreciation and tenant rental configuration.
+    Inherits all PPOR fields and adds depreciation items and tenant rental config.
+    Investment property rental income is configured via property.rental.
     Investment-specific ongoing costs (landlord_insurance, management_rate) are
     set via the inherited ongoing_costs sub-model.
 
@@ -195,17 +216,11 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
         depreciable_assets: Div 40 plant/equipment for the investment property
         weekly_rent_paid: Weekly rent where the investor lives
         annual_rent_paid_growth: Annual rent paid growth rate as decimal
-        weekly_rent_received: Weekly rent from investment property
-        annual_rent_received_growth: Annual rental income growth rate as decimal
-        vacancy_weeks: Expected vacant weeks per year (0–52)
     """
     depreciable_buildings: list[DepreciableBuildingRequest] = Field(default_factory=list, description="Div 43 buildings/constructions")
     depreciable_assets: list[DepreciableAssetRequest] = Field(default_factory=list, description="Div 40 plant/equipment")
     weekly_rent_paid: float = Field(ge=0, description="Weekly rent where the investor lives")
     annual_rent_paid_growth: float = Field(default=0.03, ge=0, le=1, description="Annual rent paid growth rate as decimal")
-    weekly_rent_received: float = Field(ge=0, description="Weekly rent from investment property")
-    annual_rent_received_growth: float = Field(default=0.03, ge=0, le=1, description="Annual rental income growth rate as decimal")
-    vacancy_weeks: int = Field(default=2, ge=0, le=52, description="Expected vacant weeks per year")
 
 
 # ── Responses ──────────────────────────────────
