@@ -15,6 +15,7 @@ from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.loan import LoanConfig
 from app.models.property import Property, OngoingCostsConfig, RentvestConfig, YearCost
 from app.models.tax import TaxProfile
+from app.services.amortisation import build_schedule_result
 
 
 def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
@@ -187,20 +188,25 @@ def build_ppor_cashflow(
     Returns:
         CashFlowPPORResult with year-by-year breakdown and summary
     """
+
+    # Build Amortisation Schedule
+    schedule = build_schedule_result(property=property, loan=loan)
+
+    # Build list of CashFlowYear models for each year in projection
     cashflow_years = []
-
-    for year in projection_years:
-
+    for year in range(projection_years):
         cashflow_year = _calculate_cashflow_year(
             year=year,
             tax_profile=tax_profile,
-            schedule=None,
-            loan=loan,
-            ongoing_costs=ongoing_costs.get_year_cost(year),
-            rentvest=None,
-            tax_deduction_detail=None,
+            schedule=schedule,
+            ongoing_costs=ongoing_costs,
+            rentvest=None,  # No rent paid for PPOR
+            tax_deduction_detail=None,  # No tax deductions for PPOR
         )
         cashflow_years.append(cashflow_year)
+
+    # Build Upfront Costs model
+    upfront_costs = UpfrontCosts(
 
     return CashFlowPPORResult(
         projection_years = projection_years,

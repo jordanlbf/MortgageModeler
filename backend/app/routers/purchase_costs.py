@@ -8,10 +8,7 @@ including stamp duty, LMI, registration fees, and other settlement costs.
 from fastapi import APIRouter
 
 from app.schemas.purchase_costs import PropertyCostRequest, PropertyCostResponse
-
-from app.engine.property import (estimate_qld_stamp_duty, estimate_lmi, calculate_registration_fee,
-                                 calculate_mortgage_registration_fee, calculate_conveyancing_fee,
-                                 calculate_building_pest_inspection_fee, calculate_loan_establishment_fee)
+from app.services.purchase_costs import build_purchase_cost_estimate
 
 router = APIRouter(prefix="/purchase-costs", tags=["purchase-costs"])
 
@@ -27,24 +24,21 @@ def get_upfront_costs(req: PropertyCostRequest) -> PropertyCostResponse:
     Returns:
         Itemised cost breakdown with total upfront cost
     """
-
-    stamp_duty = estimate_qld_stamp_duty(req.purchase_price, req.is_investment)
-    lmi = 0.0 if req.lmi_exempt else estimate_lmi(req.loan_amount, req.lvr, req.is_investment)
-    registration_fee = calculate_registration_fee(req.purchase_price)
-    mortgage_registration_fee = calculate_mortgage_registration_fee()
-    conveyancing_fee = calculate_conveyancing_fee()
-    building_pest_inspection_fee = calculate_building_pest_inspection_fee()
-    loan_establishment_fee = calculate_loan_establishment_fee()
+    result = build_purchase_cost_estimate(
+        purchase_price=req.purchase_price,
+        deposit=req.deposit,
+        is_investment=req.is_investment,
+        lmi_exempt=req.lmi_exempt,
+    )
 
     return PropertyCostResponse(
-        stamp_duty=stamp_duty,
-        lmi=lmi,
-        registration_fee=registration_fee,
-        mortgage_registration_fee=mortgage_registration_fee,
-        conveyancing_fee=conveyancing_fee,
-        building_pest_inspection_fee=building_pest_inspection_fee,
-        loan_establishment_fee=loan_establishment_fee,
-        total_upfront_cost=(stamp_duty + lmi + registration_fee + mortgage_registration_fee +
-                            conveyancing_fee + building_pest_inspection_fee + loan_establishment_fee),
-        lvr=req.lvr,
+        stamp_duty=result.stamp_duty,
+        lmi=result.lmi,
+        registration_fee=result.registration_fee,
+        mortgage_registration_fee=result.mortgage_registration_fee,
+        conveyancing_fee=result.conveyancing_fee,
+        building_pest_inspection_fee=result.building_pest_inspection_fee,
+        loan_establishment_fee=result.loan_establishment_fee,
+        total_upfront_cost=result.total_upfront_cost,
+        lvr=result.lvr,
     )
