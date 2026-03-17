@@ -113,7 +113,8 @@ class Property:
     Attributes:
         purchase_date: Date the property was purchased
         purchase_price: Property purchase price
-        is_new_property: Whether the owner is the first occupant/investor
+        is_new_property: Whether the owner is the first occupant/investor (affects grants, Div 40)
+        is_ppor: Whether the property is a primary place of residence (affects tax, CGT, ongoing costs)
         annual_appreciation: Annual property value growth rate as decimal
         purchase_costs: Upfront acquisition costs (defaults to all zeros)
         depreciable_buildings: Div 43 buildings/constructions to depreciate
@@ -123,6 +124,7 @@ class Property:
     purchase_date: date
     purchase_price: float
     is_new_property: bool
+    is_ppor: bool = False
     annual_appreciation: float = 0.0
     purchase_costs: PurchaseCosts = field(default_factory=PurchaseCosts)
     depreciable_buildings: list[DepreciableBuilding] = field(default_factory=list)

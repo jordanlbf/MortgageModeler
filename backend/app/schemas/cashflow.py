@@ -128,6 +128,7 @@ class PropertyRequest(BaseModel):
     purchase_price: float = Field(ge=0, description="Property purchase price")
     purchase_date: date = Field(description="Date of property purchase")
     is_new_property: bool = Field(default=False, description="Whether the owner is the first occupant")
+    is_ppor: bool = Field(default=False, description="Whether the property is a primary place of residence")
     annual_appreciation: float = Field(default=0.0, ge=0, le=1, description="Annual property value growth rate as decimal")
     purchase_costs: PurchaseCostsRequest = Field(default_factory=PurchaseCostsRequest)
     rental: RentalConfigRequest = Field(default_factory=RentalConfigRequest)

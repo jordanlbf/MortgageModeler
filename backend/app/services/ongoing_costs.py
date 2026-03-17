@@ -15,64 +15,45 @@ from app.engine.property import (
     calculate_property_value,
     calculate_rental_income,
 )
-from app.models.property import YearCost, OngoingCostProjection
+from app.models.property import Property, OngoingCostsConfig, YearCost, OngoingCostProjection
 
 
 def build_ongoing_cost_projection(
+    property: Property,
+    ongoing_costs: OngoingCostsConfig,
     projection_years: int,
-    council_rates: float,
-    water_rates: float,
-    building_insurance: float,
-    landlord_insurance: float,
-    strata_fees: float,
-    purchase_price: float,
-    maintenance_rate: float,
-    annual_growth_rate: float,
-    weekly_rent: float,
-    vacancy_weeks: int,
-    management_rate: float,
-    annual_rent_growth_rate: float,
-    annual_cost_growth_rate: float,
-    is_investment: bool,
 ) -> OngoingCostProjection:
     """
     Build a full ongoing cost projection over N years.
 
     Calls individual engine functions per year and assembles
-    the result into domain models.
+    the result into domain models. Investment-specific costs
+    (landlord insurance, management fee) are controlled by
+    property.is_ppor.
 
     Args:
+        property: Property details with purchase price, appreciation, and rental config
+        ongoing_costs: Base ongoing cost rates and growth rate
         projection_years: Number of years to project
-        council_rates: Base annual council rates
-        water_rates: Base annual water rates
-        building_insurance: Base annual building insurance premium
-        landlord_insurance: Base annual landlord insurance premium
-        strata_fees: Base annual strata/body corporate fees
-        purchase_price: Original property purchase price
-        maintenance_rate: Annual maintenance as fraction of property value
-        annual_growth_rate: Annual property value growth rate as decimal
-        weekly_rent: Weekly rental amount
-        vacancy_weeks: Expected vacant weeks per year (0–52)
-        management_rate: Management fee as fraction of rental income
-        annual_rent_growth_rate: Annual rental growth rate as decimal
-        annual_cost_growth_rate: Annual cost growth rate as decimal
-        is_investment: Whether the property is an investment
 
     Returns:
         OngoingCostProjection with per-year breakdowns and summary stats
     """
+    is_investment = not property.is_ppor
     annual_costs: list[YearCost] = []
 
     for year in range(projection_years):
-        cr = calculate_council_rates(year, council_rates, annual_cost_growth_rate)
-        wr = calculate_water_rates(year, water_rates, annual_cost_growth_rate)
-        bi = calculate_building_insurance(year, building_insurance, annual_cost_growth_rate)
-        li = calculate_landlord_insurance(year, landlord_insurance, annual_cost_growth_rate, is_investment)
-        sf = calculate_strata_fees(year, strata_fees, annual_cost_growth_rate)
-        mc = calculate_maintenance_cost(year, purchase_price, maintenance_rate, annual_growth_rate)
-        mf = calculate_management_fee(year, weekly_rent, vacancy_weeks, management_rate, annual_rent_growth_rate, is_investment)
-        pv = calculate_property_value(year, purchase_price, annual_growth_rate)
-        ri = calculate_rental_income(year, weekly_rent, vacancy_weeks, annual_rent_growth_rate)
+        cr = calculate_council_rates(year, ongoing_costs.council_rates, ongoing_costs.annual_cost_growth_rate)
+        wr = calculate_water_rates(year, ongoing_costs.water_rates, ongoing_costs.annual_cost_growth_rate)
+        bi = calculate_building_insurance(year, ongoing_costs.building_insurance, ongoing_costs.annual_cost_growth_rate)
+        li = calculate_landlord_insurance(year, ongoing_costs.landlord_insurance, ongoing_costs.annual_cost_growth_rate, is_investment)
+        sf = calculate_strata_fees(year, ongoing_costs.strata_fees, ongoing_costs.annual_cost_growth_rate)
+        mc = calculate_maintenance_cost(year, property.purchase_price, ongoing_costs.maintenance_rate, property.annual_appreciation)
+        mf = calculate_management_fee(year, property.rental.weekly_rent, property.rental.vacancy_weeks,
+                                      ongoing_costs.management_rate, property.rental.annual_growth_rate, is_investment)
+        pv = calculate_property_value(year, property.purchase_price, property.annual_appreciation)
+        ri = calculate_rental_income(year, property.rental.weekly_rent, property.rental.vacancy_weeks,
+                                     property.rental.annual_growth_rate)
 
         total = cr + wr + bi + li + sf + mc + mf
 

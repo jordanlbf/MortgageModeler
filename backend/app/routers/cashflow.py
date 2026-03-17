@@ -46,6 +46,7 @@ def _build_property(req: CashFlowPPORRequest) -> Property:
         purchase_date=req.property.purchase_date,
         purchase_price=req.property.purchase_price,
         is_new_property=req.property.is_new_property,
+        is_ppor=req.property.is_ppor,
         annual_appreciation=req.property.annual_appreciation,
         purchase_costs=PurchaseCosts(
             stamp_duty=req.property.purchase_costs.stamp_duty,
