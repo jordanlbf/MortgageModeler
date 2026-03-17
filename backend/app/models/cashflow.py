@@ -2,15 +2,22 @@
 Cash flow domain models — year-by-year projection results for PPOR and rentvesting scenarios.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional
 
+from app.models.amortisation import ScheduleRow
 from app.models.cgt import CGTResult
+from app.models.deductions import PropertyTaxDeductionSummary
+from app.models.property import YearCost
 
 
 @dataclass
 class CashFlowYear:
     """
-    A single year's cash flow breakdown — shared by both scenarios.
+    A single year's cash flow breakdown.
+
+    Summary fields provide the main view. Detail fields link to
+    verbose breakdowns for drill-down analysis and CSV export.
 
     Attributes:
         year: Projection year (0 = purchase year)
@@ -30,6 +37,9 @@ class CashFlowYear:
         loan_balance: Remaining mortgage balance at end of year
         equity: Property value minus loan balance
         offset_balance: Offset account balance at end of year
+        ongoing_costs_detail: Full ongoing cost breakdown for this year
+        schedule_rows_detail: Per-period mortgage rows for this year
+        tax_deduction_detail: Tax deduction breakdown for this year (None for PPOR)
     """
     year: int
     net_income: float
@@ -48,6 +58,9 @@ class CashFlowYear:
     loan_balance: float
     equity: float
     offset_balance: float
+    ongoing_costs_detail: Optional[YearCost] = None
+    schedule_rows_detail: list[ScheduleRow] = field(default_factory=list)
+    tax_deduction_detail: Optional[PropertyTaxDeductionSummary] = None
 
 
 @dataclass
