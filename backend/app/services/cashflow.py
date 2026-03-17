@@ -7,12 +7,14 @@ the amortisation schedule upfront, loops year by year to build
 CashFlowYear entries, then computes the projection summary.
 """
 
+from typing import Optional
+
+from app.models.amortisation import AmortisationSchedule
 from app.models.cashflow import CashFlowYear, CashFlowSummary, CashFlowPPORResult, CashFlowRentvestResult
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.loan import LoanConfig
 from app.models.property import Property, OngoingCostsConfig, RentvestConfig, YearCost
 from app.models.tax import TaxProfile
-from app.models.amortisation import AmortisationSchedule
 
 
 def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
@@ -62,35 +64,35 @@ def _calculate_cashflow_year(
     year: int,
     tax_profile: TaxProfile,
     schedule: AmortisationSchedule,
-    periods_per_year: int,
     ongoing_costs: YearCost,
-    rent_paid: float,
-    rental_income: float,
-    tax_saving: float,
     previous_cumulative: float,
+    rentvest: Optional[RentvestConfig] = None,
+    tax_deduction_detail: Optional[PropertyTaxDeductionSummary] = None,
 ) -> CashFlowYear:
     """
     Calculate a single year's cash flow breakdown.
 
-    Grows income by tax_profile.income_growth_rate, calculates tax on the
-    grown income, sums mortgage payments from schedule rows for this year,
-    and assembles all components into a CashFlowYear.
+    Derives all values from domain models:
+    - Net income from tax_profile (with income growth and tax calculation)
+    - Mortgage payments from schedule rows for this year (using schedule.periods_per_year)
+    - Property costs and rental income from ongoing_costs (YearCost)
+    - Rent paid from rentvest config (None/0 for PPOR)
+    - Tax saving from tax_deduction_detail (None/0 for PPOR)
 
     Args:
         year: Projection year (0 = purchase year)
         tax_profile: Taxpayer base income configuration with income_growth_rate
-        schedule: Full amortisation schedule (period-based)
-        periods_per_year: Number of repayment periods per year
-        ongoing_costs: YearCost breakdown for this year
-        rent_paid: Rent paid for this year (0 for PPOR)
-        rental_income: Rental income for this year (0 for PPOR)
-        tax_saving: Tax saving for this year (0 for PPOR, negative if positively geared)
+        schedule: Full amortisation schedule (period-based, knows its own periods_per_year)
+        ongoing_costs: YearCost breakdown for this year (includes rental_income)
         previous_cumulative: Cumulative position from the previous year
+        rentvest: Tenant rental config (None for PPOR)
+        tax_deduction_detail: Tax deduction breakdown for this year (None for PPOR)
 
     Returns:
-        CashFlowYear with detailed breakdown for this year
+        CashFlowYear with summary and detail breakdowns for this year
     """
     # Grow income and recalculate tax
+    from app.engine.tax import calculate_total_tax
     growth_factor = (1 + tax_profile.income_growth_rate) ** year
     grown_profile = TaxProfile(
         taxable_income=tax_profile.taxable_income * growth_factor,
@@ -98,11 +100,12 @@ def _calculate_cashflow_year(
         mls_income=tax_profile.mls_income * growth_factor,
         hecs_balance=tax_profile.hecs_balance,
         has_private_health=tax_profile.has_private_health,
+        income_growth_rate=tax_profile.income_growth_rate,
     )
-    from app.engine.tax import calculate_total_tax
     net_income = grown_profile.taxable_income - calculate_total_tax(grown_profile)
 
     # Sum mortgage payments from schedule rows for this year
+    periods_per_year = schedule.periods_per_year
     start_period = year * periods_per_year
     end_period = min((year + 1) * periods_per_year, len(schedule.rows))
     year_rows = schedule.rows[start_period:end_period]
@@ -119,9 +122,14 @@ def _calculate_cashflow_year(
         loan_balance = 0.0
         offset_balance = schedule.rows[-1].offset_balance if schedule.rows else 0.0
 
-    # Assemble totals
+    # Derive from domain models
     property_costs = ongoing_costs.total_costs
     property_value = ongoing_costs.property_value
+    rental_income = ongoing_costs.rental_income
+    rent_paid = rentvest.weekly_rent_paid * 52 * (1 + rentvest.annual_rent_paid_growth) ** year if rentvest else 0.0
+    tax_saving = tax_deduction_detail.tax_saving if tax_deduction_detail else 0.0
+
+    # Assemble totals
     total_inflows = net_income + rental_income + tax_saving
     total_outflows = mortgage_repayment + property_costs + rent_paid
     net_position = total_inflows - total_outflows
@@ -146,6 +154,9 @@ def _calculate_cashflow_year(
         loan_balance=loan_balance,
         equity=equity,
         offset_balance=offset_balance,
+        ongoing_costs_detail=ongoing_costs,
+        schedule_rows_detail=year_rows,
+        tax_deduction_detail=tax_deduction_detail,
     )
 
 
@@ -176,8 +187,27 @@ def build_ppor_cashflow(
     Returns:
         CashFlowPPORResult with year-by-year breakdown and summary
     """
-    pass
+    cashflow_years = []
 
+    for year in projection_years:
+
+        cashflow_year = _calculate_cashflow_year(
+            year=year,
+            tax_profile=tax_profile,
+            schedule=None,
+            loan=loan,
+            ongoing_costs=ongoing_costs.get_year_cost(year),
+            rentvest=None,
+            tax_deduction_detail=None,
+        )
+        cashflow_years.append(cashflow_year)
+
+    return CashFlowPPORResult(
+        projection_years = projection_years,
+        upfront_costs = None,  # TODO
+        years = cashflow_years,
+        summary = None
+    )
 
 def build_rentvest_cashflow(
     property: Property,
