@@ -113,6 +113,8 @@ class PropertyRequest(BaseModel):
     """
     Property details — maps to Property domain model.
 
+    Depreciation items default to empty lists for PPOR.
+
     Attributes:
         purchase_price: Property purchase price
         purchase_date: Date of property purchase
@@ -120,6 +122,8 @@ class PropertyRequest(BaseModel):
         annual_appreciation: Annual property value growth rate as decimal
         purchase_costs: Upfront acquisition costs
         rental: Rental income configuration (defaults to zeros for PPOR)
+        depreciable_buildings: Div 43 buildings/constructions (empty for PPOR)
+        depreciable_assets: Div 40 plant/equipment (empty for PPOR)
     """
     purchase_price: float = Field(ge=0, description="Property purchase price")
     purchase_date: date = Field(description="Date of property purchase")
@@ -127,6 +131,8 @@ class PropertyRequest(BaseModel):
     annual_appreciation: float = Field(default=0.0, ge=0, le=1, description="Annual property value growth rate as decimal")
     purchase_costs: PurchaseCostsRequest = Field(default_factory=PurchaseCostsRequest)
     rental: RentalConfigRequest = Field(default_factory=RentalConfigRequest)
+    depreciable_buildings: list[DepreciableBuildingRequest] = Field(default_factory=list, description="Div 43 buildings/constructions")
+    depreciable_assets: list[DepreciableAssetRequest] = Field(default_factory=list, description="Div 40 plant/equipment")
 
 
 class LoanRequest(BaseModel):
@@ -206,19 +212,16 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
     """
     Request parameters for a rentvesting cash flow projection.
 
-    Inherits all PPOR fields and adds depreciation items and tenant rental config.
+    Inherits all PPOR fields and adds tenant rental config.
+    Depreciation items are configured via property sub-model.
     Investment property rental income is configured via property.rental.
     Investment-specific ongoing costs (landlord_insurance, management_rate) are
     set via the inherited ongoing_costs sub-model.
 
     Attributes:
-        depreciable_buildings: Div 43 buildings/constructions for the investment property
-        depreciable_assets: Div 40 plant/equipment for the investment property
         weekly_rent_paid: Weekly rent where the investor lives
         annual_rent_paid_growth: Annual rent paid growth rate as decimal
     """
-    depreciable_buildings: list[DepreciableBuildingRequest] = Field(default_factory=list, description="Div 43 buildings/constructions")
-    depreciable_assets: list[DepreciableAssetRequest] = Field(default_factory=list, description="Div 40 plant/equipment")
     weekly_rent_paid: float = Field(ge=0, description="Weekly rent where the investor lives")
     annual_rent_paid_growth: float = Field(default=0.03, ge=0, le=1, description="Annual rent paid growth rate as decimal")
 

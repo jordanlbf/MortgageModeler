@@ -41,7 +41,7 @@ def _build_tax_profile(req: CashFlowPPORRequest) -> TaxProfile:
 
 
 def _build_property(req: CashFlowPPORRequest) -> Property:
-    """Map PropertyRequest to Property domain model (no depreciation items)."""
+    """Map PropertyRequest to Property domain model with all sub-models."""
     return Property(
         purchase_date=req.property.purchase_date,
         purchase_price=req.property.purchase_price,
@@ -61,33 +61,27 @@ def _build_property(req: CashFlowPPORRequest) -> Property:
             annual_growth_rate=req.property.rental.annual_growth_rate,
             vacancy_weeks=req.property.rental.vacancy_weeks,
         ),
+        depreciable_buildings=[
+            DepreciableBuilding(
+                name=b.name,
+                construction_cost=b.construction_cost,
+                purchase_date=b.purchase_date,
+                construction_start_date=b.construction_start_date,
+            )
+            for b in req.property.depreciable_buildings
+        ],
+        depreciable_assets=[
+            DepreciableAsset(
+                name=a.name,
+                cost=a.cost,
+                effective_life_years=a.effective_life_years,
+                purchase_date=a.purchase_date,
+                method=a.method,
+                written_down_value=a.written_down_value,
+            )
+            for a in req.property.depreciable_assets
+        ],
     )
-
-
-def _build_rentvest_property(req: CashFlowRentvestRequest) -> Property:
-    """Map PropertyRequest + depreciation items to Property domain model."""
-    prop = _build_property(req)
-    prop.depreciable_buildings = [
-        DepreciableBuilding(
-            name=b.name,
-            construction_cost=b.construction_cost,
-            purchase_date=b.purchase_date,
-            construction_start_date=b.construction_start_date,
-        )
-        for b in req.depreciable_buildings
-    ]
-    prop.depreciable_assets = [
-        DepreciableAsset(
-            name=a.name,
-            cost=a.cost,
-            effective_life_years=a.effective_life_years,
-            purchase_date=a.purchase_date,
-            method=a.method,
-            written_down_value=a.written_down_value,
-        )
-        for a in req.depreciable_assets
-    ]
-    return prop
 
 
 def _build_loan(req: CashFlowPPORRequest) -> LoanConfig:
@@ -205,7 +199,7 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
         Rentvesting cash flow projection with year breakdown, CGT, and summary
     """
     result = build_rentvest_cashflow(
-        property=_build_rentvest_property(req),
+        property=_build_property(req),
         tax_profile=_build_tax_profile(req),
         loan=_build_loan(req),
         ongoing_costs=_build_ongoing_costs(req),
