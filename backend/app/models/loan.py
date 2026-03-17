@@ -54,6 +54,34 @@ class RateChange:
 
 
 @dataclass
+class BorrowingCosts:
+    """
+    Loan-related upfront costs — deductible over 5 years (or loan term if shorter).
+
+    These are costs of obtaining the loan, not the property. They may be
+    capitalised onto the loan principal or paid as cash at settlement.
+
+    Attributes:
+        lmi: Lenders Mortgage Insurance
+        mortgage_registration_fee: Mortgage registration fee
+        loan_establishment_fee: Loan establishment/application fee
+    """
+    lmi: float = 0.0
+    mortgage_registration_fee: float = 0.0
+    loan_establishment_fee: float = 0.0
+
+    @property
+    def total(self) -> float:
+        """
+        Sum of all borrowing cost components.
+
+        Returns:
+            Total borrowing costs
+        """
+        return self.lmi + self.mortgage_registration_fee + self.loan_establishment_fee
+
+
+@dataclass
 class LoanConfig:
     """
     Mortgage loan configuration for cash flow projections.
@@ -67,6 +95,7 @@ class LoanConfig:
         offset_contribution: Amount added to offset each period
         extra_repayment: Additional repayment per period on top of scheduled
         rate_changes: Scheduled interest rate changes during the loan term
+        borrowing_costs: Upfront loan-related costs (LMI, registration, establishment)
     """
     deposit: float
     annual_rate: float
@@ -76,3 +105,4 @@ class LoanConfig:
     offset_contribution: float = 0.0
     extra_repayment: float = 0.0
     rate_changes: list[RateChange] = field(default_factory=list)
+    borrowing_costs: BorrowingCosts = field(default_factory=BorrowingCosts)

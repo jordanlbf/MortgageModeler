@@ -37,24 +37,40 @@ class TaxProfileRequest(BaseModel):
 
 class PurchaseCostsRequest(BaseModel):
     """
-    Upfront acquisition costs — maps to PurchaseCosts domain model.
+    Property acquisition costs — maps to PurchaseCosts domain model.
+
+    All items are added to the CGT cost base. Borrowing costs (LMI,
+    mortgage registration, loan establishment) live on LoanRequest instead.
 
     Attributes:
-        stamp_duty: State transfer duty (cost base)
-        legal_fees: Conveyancing and legal fees (cost base)
-        building_pest_inspection: Building and pest inspection fees (cost base)
-        registration_fee: Title registration fee (cost base)
-        mortgage_registration_fee: Mortgage registration fee (borrowing cost)
-        loan_establishment_fee: Loan establishment fee (borrowing cost)
-        other_costs: Any other acquisition costs (cost base)
+        stamp_duty: State transfer duty
+        legal_fees: Conveyancing and legal fees
+        building_pest_inspection: Building and pest inspection fees
+        registration_fee: Title registration fee
+        other_costs: Any other acquisition costs
     """
     stamp_duty: float = Field(default=0.0, ge=0, description="State transfer duty")
     legal_fees: float = Field(default=0.0, ge=0, description="Conveyancing and legal fees")
     building_pest_inspection: float = Field(default=0.0, ge=0, description="Building and pest inspection fees")
     registration_fee: float = Field(default=0.0, ge=0, description="Title registration fee")
+    other_costs: float = Field(default=0.0, ge=0, description="Any other acquisition costs")
+
+
+class BorrowingCostsRequest(BaseModel):
+    """
+    Loan-related upfront costs — maps to BorrowingCosts domain model.
+
+    Deductible over 5 years (or loan term if shorter). May be capitalised
+    onto the loan principal.
+
+    Attributes:
+        lmi: Lenders Mortgage Insurance
+        mortgage_registration_fee: Mortgage registration fee
+        loan_establishment_fee: Loan establishment fee
+    """
+    lmi: float = Field(default=0.0, ge=0, description="Lenders Mortgage Insurance")
     mortgage_registration_fee: float = Field(default=0.0, ge=0, description="Mortgage registration fee")
     loan_establishment_fee: float = Field(default=0.0, ge=0, description="Loan establishment fee")
-    other_costs: float = Field(default=0.0, ge=0, description="Any other acquisition costs")
 
 
 class RentalConfigRequest(BaseModel):
@@ -149,6 +165,7 @@ class LoanRequest(BaseModel):
         offset_contribution: Per-period offset addition
         extra_repayment: Per-period additional repayment
         rate_changes: Scheduled interest rate changes
+        borrowing_costs: Upfront loan-related costs (LMI, registration, establishment)
     """
     deposit: float = Field(default=0.0, ge=0, description="Initial deposit amount")
     annual_rate: float = Field(ge=0, le=1, description="Annual interest rate as decimal (e.g. 0.05 for 5%)")
@@ -158,6 +175,7 @@ class LoanRequest(BaseModel):
     offset_contribution: float = Field(default=0.0, ge=0, description="Per-period offset contribution")
     extra_repayment: float = Field(default=0.0, ge=0, description="Per-period additional repayment")
     rate_changes: list[RateChangeRequest] = Field(default_factory=list)
+    borrowing_costs: BorrowingCostsRequest = Field(default_factory=BorrowingCostsRequest)
 
 
 class OngoingCostsRequest(BaseModel):
@@ -321,6 +339,56 @@ class CGTResponse(BaseModel):
     net_proceeds: float
 
 
+class PurchaseCostsResponse(BaseModel):
+    """
+    Itemised property acquisition costs in the response.
+
+    Attributes:
+        stamp_duty: State transfer duty
+        legal_fees: Conveyancing and legal fees
+        building_pest_inspection: Building and pest inspection fees
+        registration_fee: Title registration fee
+        other_costs: Any other acquisition costs
+        total: Sum of all property acquisition costs
+    """
+    stamp_duty: float
+    legal_fees: float
+    building_pest_inspection: float
+    registration_fee: float
+    other_costs: float
+    total: float
+
+
+class BorrowingCostsResponse(BaseModel):
+    """
+    Itemised loan-related costs in the response.
+
+    Attributes:
+        lmi: Lenders Mortgage Insurance
+        mortgage_registration_fee: Mortgage registration fee
+        loan_establishment_fee: Loan establishment fee
+        total: Sum of all borrowing costs
+    """
+    lmi: float
+    mortgage_registration_fee: float
+    loan_establishment_fee: float
+    total: float
+
+
+class UpfrontCostsResponse(BaseModel):
+    """
+    All upfront costs — purchase costs and borrowing costs combined.
+
+    Attributes:
+        purchase_costs: Itemised property acquisition costs (CGT cost base)
+        borrowing_costs: Itemised loan-related costs (deductible over 5 years)
+        total: Total cash out at settlement
+    """
+    purchase_costs: PurchaseCostsResponse
+    borrowing_costs: BorrowingCostsResponse
+    total: float
+
+
 class CashFlowPPORResponse(BaseModel):
     """
     PPOR cash flow projection response.
@@ -328,13 +396,13 @@ class CashFlowPPORResponse(BaseModel):
     Attributes:
         scenario: Always "ppor"
         projection_years: Number of years projected
-        upfront_costs: Total upfront acquisition costs
+        upfront_costs: Itemised purchase and borrowing costs
         years: Year-by-year cash flow breakdown
         summary: Summary stats across the full projection
     """
     scenario: str = "ppor"
     projection_years: int
-    upfront_costs: float
+    upfront_costs: UpfrontCostsResponse
     years: list[CashFlowYearResponse]
     summary: CashFlowSummaryResponse
 
@@ -346,14 +414,14 @@ class CashFlowRentvestResponse(BaseModel):
     Attributes:
         scenario: Always "rentvesting"
         projection_years: Number of years projected
-        upfront_costs: Total upfront acquisition costs
+        upfront_costs: Itemised purchase and borrowing costs
         years: Year-by-year cash flow breakdown
         cgt: Capital gains tax result
         summary: Summary stats across the full projection
     """
     scenario: str = "rentvesting"
     projection_years: int
-    upfront_costs: float
+    upfront_costs: UpfrontCostsResponse
     years: list[CashFlowYearResponse]
     cgt: CGTResponse
     summary: CashFlowSummaryResponse

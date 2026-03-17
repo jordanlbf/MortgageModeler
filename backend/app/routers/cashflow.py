@@ -9,7 +9,7 @@ request sub-models and maps service results to response schemas.
 from fastapi import APIRouter
 
 from app.models.deductions import DepreciableBuilding, DepreciableAsset
-from app.models.loan import RateChange, LoanConfig
+from app.models.loan import RateChange, LoanConfig, BorrowingCosts
 from app.models.property import Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig, RentalConfig
 from app.models.tax import TaxProfile
 from app.schemas.cashflow import (
@@ -20,6 +20,9 @@ from app.schemas.cashflow import (
     CashFlowYearResponse,
     CashFlowSummaryResponse,
     CGTResponse,
+    UpfrontCostsResponse,
+    PurchaseCostsResponse,
+    BorrowingCostsResponse,
 )
 from app.services.cashflow import build_ppor_cashflow, build_rentvest_cashflow
 
@@ -99,6 +102,11 @@ def _build_loan(req: CashFlowPPORRequest) -> LoanConfig:
             RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
             for rc in req.loan.rate_changes
         ],
+        borrowing_costs=BorrowingCosts(
+            lmi=req.loan.borrowing_costs.lmi,
+            mortgage_registration_fee=req.loan.borrowing_costs.mortgage_registration_fee,
+            loan_establishment_fee=req.loan.borrowing_costs.loan_establishment_fee,
+        ),
     )
 
 
@@ -158,6 +166,27 @@ def _map_summary_response(summary) -> CashFlowSummaryResponse:
     )
 
 
+def _map_upfront_costs_response(upfront) -> UpfrontCostsResponse:
+    """Map UpfrontCosts domain model to response schema."""
+    return UpfrontCostsResponse(
+        purchase_costs=PurchaseCostsResponse(
+            stamp_duty=upfront.purchase_costs.stamp_duty,
+            legal_fees=upfront.purchase_costs.legal_fees,
+            building_pest_inspection=upfront.purchase_costs.building_pest_inspection,
+            registration_fee=upfront.purchase_costs.registration_fee,
+            other_costs=upfront.purchase_costs.other_costs,
+            total=upfront.purchase_costs.total,
+        ),
+        borrowing_costs=BorrowingCostsResponse(
+            lmi=upfront.borrowing_costs.lmi,
+            mortgage_registration_fee=upfront.borrowing_costs.mortgage_registration_fee,
+            loan_establishment_fee=upfront.borrowing_costs.loan_establishment_fee,
+            total=upfront.borrowing_costs.total,
+        ),
+        total=upfront.total,
+    )
+
+
 # ── Endpoints ─────────────────────────────────
 
 @router.post("/ppor", response_model=CashFlowPPORResponse)
@@ -181,7 +210,7 @@ def get_ppor_cashflow(req: CashFlowPPORRequest) -> CashFlowPPORResponse:
 
     return CashFlowPPORResponse(
         projection_years=result.projection_years,
-        upfront_costs=result.upfront_costs,
+        upfront_costs=_map_upfront_costs_response(result.upfront_costs),
         years=[_map_year_response(y) for y in result.years],
         summary=_map_summary_response(result.summary),
     )
@@ -213,7 +242,7 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
 
     return CashFlowRentvestResponse(
         projection_years=result.projection_years,
-        upfront_costs=result.upfront_costs,
+        upfront_costs=_map_upfront_costs_response(result.upfront_costs),
         years=[_map_year_response(y) for y in result.years],
         cgt=CGTResponse(
             cost_base=result.cgt.cost_base,

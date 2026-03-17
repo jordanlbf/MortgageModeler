@@ -13,7 +13,7 @@ from app.models.amortisation import AmortisationSchedule
 from app.models.cashflow import CashFlowYear, CashFlowSummary, CashFlowPPORResult, CashFlowRentvestResult
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.loan import LoanConfig
-from app.models.property import Property, OngoingCostsConfig, RentvestConfig, YearCost
+from app.models.property import Property, OngoingCostsConfig, RentvestConfig, YearCost, UpfrontCosts
 from app.models.tax import TaxProfile
 from app.services.amortisation import build_schedule_result
 
@@ -189,31 +189,38 @@ def build_ppor_cashflow(
         CashFlowPPORResult with year-by-year breakdown and summary
     """
 
+    # Upfront costs from user-provided domain models
+    upfront_costs = UpfrontCosts(
+        purchase_costs=property.purchase_costs,
+        borrowing_costs=loan.borrowing_costs,
+    )
+
     # Build Amortisation Schedule
     schedule = build_schedule_result(property=property, loan=loan)
 
     # Build list of CashFlowYear models for each year in projection
+    cumulative = -upfront_costs.total
     cashflow_years = []
     for year in range(projection_years):
         cashflow_year = _calculate_cashflow_year(
             year=year,
             tax_profile=tax_profile,
-            schedule=schedule,
+            schedule=schedule.schedule,
             ongoing_costs=ongoing_costs,
-            rentvest=None,  # No rent paid for PPOR
-            tax_deduction_detail=None,  # No tax deductions for PPOR
+            previous_cumulative=cumulative,
+            rentvest=None,
+            tax_deduction_detail=None,
         )
+        cumulative = cashflow_year.cumulative_position
         cashflow_years.append(cashflow_year)
 
-    # Build Upfront Costs model
-    upfront_costs = UpfrontCosts(
-
     return CashFlowPPORResult(
-        projection_years = projection_years,
-        upfront_costs = None,  # TODO
-        years = cashflow_years,
-        summary = None
+        projection_years=projection_years,
+        upfront_costs=upfront_costs,
+        years=cashflow_years,
+        summary=_calculate_cashflow_summary(cashflow_years),
     )
+
 
 def build_rentvest_cashflow(
     property: Property,

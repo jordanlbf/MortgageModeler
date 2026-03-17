@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from datetime import date
 
 from app.models.deductions import DepreciableBuilding, DepreciableAsset
+from app.models.loan import BorrowingCosts
 
 
 # ──────────────────────────────────────────────
@@ -15,36 +16,31 @@ from app.models.deductions import DepreciableBuilding, DepreciableAsset
 @dataclass
 class PurchaseCosts:
     """
-    Upfront costs incurred when acquiring a property.
+    Property acquisition costs — all items are added to the CGT cost base.
 
-    Some costs are added to the CGT cost base (reducing capital gain at sale),
-    while others are borrowing costs deductible against rental income over
-    the lesser of 5 years or the loan term.
+    Borrowing costs (LMI, mortgage registration, loan establishment) live
+    on LoanConfig.borrowing_costs instead, as they are loan-related.
 
     Attributes:
-        stamp_duty: State transfer duty (cost base)
-        legal_fees: Conveyancing and legal fees (cost base)
-        building_pest_inspection: Building and pest inspection fees (cost base)
-        registration_fee: Title registration fee (cost base)
-        mortgage_registration_fee: Mortgage registration fee (borrowing cost, deductible over 5 years)
-        loan_establishment_fee: Loan establishment/application fee (borrowing cost, deductible over 5 years)
-        other_costs: Any other acquisition costs not covered above (cost base)
+        stamp_duty: State transfer duty
+        legal_fees: Conveyancing and legal fees
+        building_pest_inspection: Building and pest inspection fees
+        registration_fee: Title registration fee
+        other_costs: Any other acquisition costs not covered above
     """
     stamp_duty: float = 0.0
     legal_fees: float = 0.0
     building_pest_inspection: float = 0.0
     registration_fee: float = 0.0
-    mortgage_registration_fee: float = 0.0
-    loan_establishment_fee: float = 0.0
     other_costs: float = 0.0
 
     @property
-    def total_cost_base(self) -> float:
+    def total(self) -> float:
         """
-        Sum of costs added to the CGT cost base.
+        Sum of all property acquisition costs (CGT cost base).
 
         Returns:
-            Total non-deductible acquisition costs for CGT purposes
+            Total property acquisition costs
         """
         return (
             self.stamp_duty +
@@ -54,28 +50,31 @@ class PurchaseCosts:
             self.other_costs
         )
 
-    @property
-    def total_borrowing_costs(self) -> float:
-        """
-        Sum of borrowing costs deductible over 5 years (or loan term if shorter).
 
-        Returns:
-            Total deductible borrowing costs
-        """
-        return (
-            self.mortgage_registration_fee +
-            self.loan_establishment_fee
-        )
+@dataclass
+class UpfrontCosts:
+    """
+    All upfront costs incurred when acquiring a property with a loan.
+
+    Composes property acquisition costs (CGT cost base) and loan borrowing
+    costs (deductible over 5 years). Total represents cash out at settlement.
+
+    Attributes:
+        purchase_costs: Property acquisition costs (stamp duty, legal, etc.)
+        borrowing_costs: Loan-related costs (LMI, mortgage registration, etc.)
+    """
+    purchase_costs: PurchaseCosts = field(default_factory=PurchaseCosts)
+    borrowing_costs: BorrowingCosts = field(default_factory=BorrowingCosts)
 
     @property
     def total(self) -> float:
         """
-        Sum of all purchase cost components.
+        Total cash out at settlement.
 
         Returns:
-            Total upfront acquisition costs
+            Sum of purchase costs and borrowing costs
         """
-        return self.total_cost_base + self.total_borrowing_costs
+        return self.purchase_costs.total + self.borrowing_costs.total
 
 
 # ──────────────────────────────────────────────

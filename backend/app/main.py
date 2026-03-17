@@ -6,7 +6,7 @@ Run with: uvicorn app.main:app --reload
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import amortisation, tax, purchase_costs, ongoing_costs
+from app.routers import amortisation, tax, upfront_costs, ongoing_costs
 
 app = FastAPI(
     title="MortgageModeler",
@@ -22,7 +22,7 @@ app.add_middleware(
 
 app.include_router(amortisation.router, prefix="/api")
 app.include_router(tax.router, prefix="/api")
-app.include_router(purchase_costs.router, prefix="/api")
+app.include_router(upfront_costs.router, prefix="/api")
 app.include_router(ongoing_costs.router, prefix="/api")
 
 

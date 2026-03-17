@@ -7,6 +7,7 @@ from typing import Optional
 
 from app.models.amortisation import ScheduleRow
 from app.models.cgt import CGTResult
+from app.models.property import UpfrontCosts
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.property import YearCost
 
@@ -101,12 +102,12 @@ class CashFlowPPORResult:
 
     Attributes:
         projection_years: Number of years projected
-        upfront_costs: Total upfront acquisition costs
+        upfront_costs: Itemised purchase and borrowing costs
         years: Year-by-year cash flow breakdown
         summary: Summary stats across the full projection
     """
     projection_years: int
-    upfront_costs: float
+    upfront_costs: UpfrontCosts
     years: list[CashFlowYear]
     summary: CashFlowSummary
 
@@ -118,13 +119,13 @@ class CashFlowRentvestResult:
 
     Attributes:
         projection_years: Number of years projected
-        upfront_costs: Total upfront acquisition costs
+        upfront_costs: Itemised purchase and borrowing costs
         years: Year-by-year cash flow breakdown
         cgt: Capital gains tax result at end of projection
         summary: Summary stats across the full projection
     """
     projection_years: int
-    upfront_costs: float
+    upfront_costs: UpfrontCosts
     years: list[CashFlowYear]
     cgt: CGTResult
     summary: CashFlowSummary
