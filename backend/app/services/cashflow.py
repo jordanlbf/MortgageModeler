@@ -9,13 +9,22 @@ CashFlowYear entries, then computes the projection summary.
 
 from typing import Optional
 
-from app.models.amortisation import AmortisationSchedule
+from dataclasses import replace
+from datetime import timedelta
+
+from app.engine.cgt import calculate_cgt
+from app.engine.property import calculate_property_value
+from app.models.amortisation import AmortisationSchedule, ScheduleRow
 from app.models.cashflow import CashFlowYear, CashFlowSummary, CashFlowPPORResult, CashFlowRentvestResult
+from app.models.cgt import CGTResult
 from app.models.deductions import PropertyTaxDeductionSummary
+from app.models.financial import FinancialYear
 from app.models.loan import LoanConfig
-from app.models.property import Property, OngoingCostsConfig, RentvestConfig, YearCost
+from app.models.property import Property, OngoingCostsConfig, OngoingCostProjection, RentvestConfig, YearCost, UpfrontCosts
 from app.models.tax import TaxProfile
 from app.services.amortisation import build_schedule_result
+from app.services.ongoing_costs import build_ongoing_cost_projection
+from app.services.tax_deductions import build_tax_deduction_summary
 from app.services.upfront_costs import build_upfront_cost_estimate
 
 
@@ -62,10 +71,73 @@ def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
     )
 
 
+def _build_projection_inputs(
+    property: Property,
+    loan: LoanConfig,
+    ongoing_costs: OngoingCostsConfig,
+    projection_years: int,
+) -> tuple[UpfrontCosts, AmortisationSchedule, OngoingCostProjection]:
+    """
+    Build shared inputs for both PPOR and rentvesting projections.
+
+    Args:
+        property: Property details
+        loan: Loan configuration
+        ongoing_costs: Ongoing cost rates
+        projection_years: Number of years to project
+
+    Returns:
+        Tuple of (resolved upfront costs, amortisation schedule, ongoing cost projection)
+    """
+    upfront_costs = build_upfront_cost_estimate(property=property, loan=loan)
+    schedule = build_schedule_result(property=property, loan=loan).schedule
+    cost_projection = build_ongoing_cost_projection(property=property, ongoing_costs=ongoing_costs, projection_years=projection_years)
+    return upfront_costs, schedule, cost_projection
+
+
+def _get_year_rows(schedule: AmortisationSchedule, year: int) -> list[ScheduleRow]:
+    """
+    Slice amortisation schedule rows for a specific year.
+
+    Args:
+        schedule: Full amortisation schedule
+        year: Projection year (0-indexed)
+
+    Returns:
+        List of ScheduleRow for this year
+    """
+    ppy = schedule.periods_per_year
+    start = year * ppy
+    end = min((year + 1) * ppy, len(schedule.rows))
+    return schedule.rows[start:end]
+
+
+def _grow_tax_profile(tax_profile: TaxProfile, year: int) -> TaxProfile:
+    """
+    Grow a tax profile's income measures by the income growth rate for a given year.
+
+    Args:
+        tax_profile: Base year tax profile
+        year: Number of years of growth to apply
+
+    Returns:
+        New TaxProfile with grown income measures
+    """
+    growth_factor = (1 + tax_profile.income_growth_rate) ** year
+    return TaxProfile(
+        taxable_income=tax_profile.taxable_income * growth_factor,
+        repayment_income=tax_profile.repayment_income * growth_factor,
+        mls_income=tax_profile.mls_income * growth_factor,
+        hecs_balance=tax_profile.hecs_balance,
+        has_private_health=tax_profile.has_private_health,
+        income_growth_rate=tax_profile.income_growth_rate,
+    )
+
+
 def _calculate_cashflow_year(
     year: int,
     tax_profile: TaxProfile,
-    schedule: AmortisationSchedule,
+    schedule_rows: list,
     ongoing_costs: YearCost,
     previous_cumulative: float,
     rentvest: Optional[RentvestConfig] = None,
@@ -74,17 +146,13 @@ def _calculate_cashflow_year(
     """
     Calculate a single year's cash flow breakdown.
 
-    Derives all values from domain models:
-    - Net income from tax_profile (with income growth and tax calculation)
-    - Mortgage payments from schedule rows for this year (using schedule.periods_per_year)
-    - Property costs and rental income from ongoing_costs (YearCost)
-    - Rent paid from rentvest config (None/0 for PPOR)
-    - Tax saving from tax_deduction_detail (None/0 for PPOR)
+    Expects a pre-grown tax_profile for this year. Calculates net income
+    by subtracting total tax from the profile's taxable income.
 
     Args:
         year: Projection year (0 = purchase year)
-        tax_profile: Taxpayer base income configuration with income_growth_rate
-        schedule: Full amortisation schedule (period-based, knows its own periods_per_year)
+        tax_profile: Pre-grown tax profile for this year (income already adjusted)
+        schedule_rows: Pre-sliced amortisation schedule rows for this year
         ongoing_costs: YearCost breakdown for this year (includes rental_income)
         previous_cumulative: Cumulative position from the previous year
         rentvest: Tenant rental config (None for PPOR)
@@ -93,36 +161,22 @@ def _calculate_cashflow_year(
     Returns:
         CashFlowYear with summary and detail breakdowns for this year
     """
-    # Grow income and recalculate tax
+    # Calculate net income from pre-grown tax profile
     from app.engine.tax import calculate_total_tax
-    growth_factor = (1 + tax_profile.income_growth_rate) ** year
-    grown_profile = TaxProfile(
-        taxable_income=tax_profile.taxable_income * growth_factor,
-        repayment_income=tax_profile.repayment_income * growth_factor,
-        mls_income=tax_profile.mls_income * growth_factor,
-        hecs_balance=tax_profile.hecs_balance,
-        has_private_health=tax_profile.has_private_health,
-        income_growth_rate=tax_profile.income_growth_rate,
-    )
-    net_income = grown_profile.taxable_income - calculate_total_tax(grown_profile)
+    net_income = tax_profile.taxable_income - calculate_total_tax(tax_profile)
 
-    # Sum mortgage payments from schedule rows for this year
-    periods_per_year = schedule.periods_per_year
-    start_period = year * periods_per_year
-    end_period = min((year + 1) * periods_per_year, len(schedule.rows))
-    year_rows = schedule.rows[start_period:end_period]
-
-    mortgage_interest = sum(r.interest for r in year_rows)
-    mortgage_principal = sum(r.principal_paid + r.extra_paid for r in year_rows)
+    # Sum mortgage payments from this year's rows
+    mortgage_interest = sum(r.interest for r in schedule_rows)
+    mortgage_principal = sum(r.principal_paid + r.extra_paid for r in schedule_rows)
     mortgage_repayment = mortgage_interest + mortgage_principal
 
     # Loan balance and offset from last row of this year (or 0 if paid off)
-    if year_rows:
-        loan_balance = year_rows[-1].closing_balance
-        offset_balance = year_rows[-1].offset_balance
+    if schedule_rows:
+        loan_balance = schedule_rows[-1].closing_balance
+        offset_balance = schedule_rows[-1].offset_balance
     else:
         loan_balance = 0.0
-        offset_balance = schedule.rows[-1].offset_balance if schedule.rows else 0.0
+        offset_balance = 0.0
 
     # Derive from domain models
     property_costs = ongoing_costs.total_costs
@@ -157,7 +211,7 @@ def _calculate_cashflow_year(
         equity=equity,
         offset_balance=offset_balance,
         ongoing_costs_detail=ongoing_costs,
-        schedule_rows_detail=year_rows,
+        schedule_rows_detail=schedule_rows,
         tax_deduction_detail=tax_deduction_detail,
     )
 
@@ -190,26 +244,25 @@ def build_ppor_cashflow(
         CashFlowPPORResult with year-by-year breakdown and summary
     """
 
-    # Resolve upfront costs — auto-estimates None values from engine
-    upfront_costs = build_upfront_cost_estimate(property=property, loan=loan)
+    # Build shared projection inputs
+    upfront_costs, schedule, cost_projection = _build_projection_inputs(
+        property, loan, ongoing_costs, projection_years
+    )
 
-    # Build Amortisation Schedule
-    schedule = build_schedule_result(property=property, loan=loan)
-
-    # Build list of CashFlowYear models for each year in projection
-    cumulative = -upfront_costs.total
+    # Build list of CashFlowYear models for each year
+    cumulative_cash_position = -upfront_costs.total
     cashflow_years = []
     for year in range(projection_years):
+        grown_profile = _grow_tax_profile(tax_profile, year)
+
         cashflow_year = _calculate_cashflow_year(
             year=year,
-            tax_profile=tax_profile,
-            schedule=schedule.schedule,
-            ongoing_costs=ongoing_costs,
-            previous_cumulative=cumulative,
-            rentvest=None,
-            tax_deduction_detail=None,
+            tax_profile=grown_profile,
+            schedule_rows=_get_year_rows(schedule, year),
+            ongoing_costs=cost_projection.annual_costs[year],
+            previous_cumulative=cumulative_cash_position,
         )
-        cumulative = cashflow_year.cumulative_position
+        cumulative_cash_position = cashflow_year.cumulative_position
         cashflow_years.append(cashflow_year)
 
     return CashFlowPPORResult(
@@ -253,4 +306,66 @@ def build_rentvest_cashflow(
     Returns:
         CashFlowRentvestResult with year-by-year breakdown, CGT, and summary
     """
-    pass
+    # Build shared projection inputs
+    upfront_costs, schedule, cost_projection = _build_projection_inputs(
+        property, loan, ongoing_costs, projection_years
+    )
+
+    # Build list of CashFlowYear models for each year
+    cumulative_cash_position = -upfront_costs.total
+    cashflow_years = []
+    for year in range(projection_years):
+        year_rows = _get_year_rows(schedule, year)
+        year_costs = cost_projection.annual_costs[year]
+
+        # Derive financial year from purchase date + year offset
+        fy_year = property.purchase_date.year + year + 1
+        financial_year = FinancialYear(fy_year)
+
+        # Grow tax profile for this year
+        grown_profile = _grow_tax_profile(tax_profile, year)
+
+        # Calculate tax deductions for this year
+        mortgage_interest = sum(r.interest for r in year_rows)
+        tax_deduction = build_tax_deduction_summary(
+            property=property,
+            mortgage_interest=mortgage_interest,
+            ongoing_costs=year_costs,
+            rental_income=year_costs.rental_income,
+            tax_profile=grown_profile,
+            financial_year=financial_year,
+        )
+
+        cashflow_year = _calculate_cashflow_year(
+            year=year,
+            tax_profile=grown_profile,
+            schedule_rows=year_rows,
+            ongoing_costs=year_costs,
+            previous_cumulative=cumulative_cash_position,
+            rentvest=rentvest,
+            tax_deduction_detail=tax_deduction,
+        )
+        cumulative_cash_position = cashflow_year.cumulative_position
+        cashflow_years.append(cashflow_year)
+
+    # Calculate CGT at end of projection
+    sale_price = calculate_property_value(
+        projection_years, property.purchase_price, property.annual_appreciation
+    )
+    sale_date = property.purchase_date + timedelta(days=365 * projection_years)
+    grown_profile = _grow_tax_profile(tax_profile, projection_years)
+    cgt = calculate_cgt(
+        property=property,
+        sale_price=sale_price,
+        sale_date=sale_date,
+        tax_profile=grown_profile,
+        is_ppor=False,
+    )
+
+    return CashFlowRentvestResult(
+        projection_years=projection_years,
+        upfront_costs=upfront_costs,
+        years=cashflow_years,
+        cgt=cgt,
+        summary=_calculate_cashflow_summary(cashflow_years),
+    )
