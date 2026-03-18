@@ -3,34 +3,47 @@ Tests for amortisation service — build_schedule_result.
 """
 
 import pytest
+from datetime import date
 
 from app.services.amortisation import build_schedule_result
-from app.models.loan import RepaymentFrequency, RateChange
+from app.models.loan import RepaymentFrequency, RateChange, LoanConfig
+from app.models.property import Property
 
 
 # ──────────────────────────────────────────────
 # Fixtures / Helpers
 # ──────────────────────────────────────────────
 
-DEFAULT_ARGS = dict(
-    purchase_price=500_000,
-    deposit=100_000,
-    loan_amount=400_000,
-    lvr=0.8,
-    annual_rate=0.06,
-    loan_term_years=30,
-    frequency=RepaymentFrequency.MONTHLY,
-    offset_balance=0.0,
-    offset_contribution=0.0,
-    extra_repayment=0.0,
-    annual_appreciation=0.03,
-    rate_changes=None,
-)
+def _make_property(purchase_price=500_000, annual_appreciation=0.03) -> Property:
+    return Property(
+        purchase_date=date(2020, 1, 15),
+        purchase_price=purchase_price,
+        is_new_property=False,
+        annual_appreciation=annual_appreciation,
+    )
 
 
-def _build(**overrides):
-    args = {**DEFAULT_ARGS, **overrides}
-    return build_schedule_result(**args)
+def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30,
+               frequency=RepaymentFrequency.MONTHLY, offset_balance=0.0,
+               offset_contribution=0.0, extra_repayment=0.0,
+               rate_changes=None) -> LoanConfig:
+    return LoanConfig(
+        deposit=deposit,
+        annual_rate=annual_rate,
+        loan_term_years=loan_term_years,
+        frequency=frequency,
+        offset_balance=offset_balance,
+        offset_contribution=offset_contribution,
+        extra_repayment=extra_repayment,
+        rate_changes=rate_changes or [],
+    )
+
+
+def _build(property=None, loan=None):
+    return build_schedule_result(
+        property=property or _make_property(),
+        loan=loan or _make_loan(),
+    )
 
 
 # ──────────────────────────────────────────────
@@ -70,7 +83,7 @@ class TestChartData:
 
     def test_chart_data_length(self):
         """Chart data should have loan_term_years + 1 entries (year 0 through N)."""
-        result = _build(loan_term_years=30)
+        result = _build(loan=_make_loan(loan_term_years=30))
         assert len(result.chart_data) == 31
 
     def test_year_zero_chart_point(self):
@@ -86,11 +99,11 @@ class TestChartData:
 
     def test_year_zero_with_offset(self):
         """Year 0 offset_balance should match the starting offset."""
-        result = _build(offset_balance=50_000)
+        result = _build(loan=_make_loan(offset_balance=50_000))
         assert result.chart_data[0].offset_balance == 50_000
 
     def test_years_are_sequential(self):
-        result = _build(loan_term_years=10)
+        result = _build(loan=_make_loan(loan_term_years=10))
         years = [p.year for p in result.chart_data]
         assert years == list(range(11))
 
@@ -113,13 +126,16 @@ class TestChartData:
 
     def test_property_value_appreciates(self):
         """Property value should grow with appreciation."""
-        result = _build(annual_appreciation=0.05)
+        result = _build(property=_make_property(annual_appreciation=0.05))
         for i in range(1, len(result.chart_data)):
             assert result.chart_data[i].property_value > result.chart_data[i - 1].property_value
 
     def test_property_value_year_n(self):
         """Property value at year N should match compound growth formula."""
-        result = _build(annual_appreciation=0.04, loan_term_years=10)
+        result = _build(
+            property=_make_property(annual_appreciation=0.04),
+            loan=_make_loan(loan_term_years=10),
+        )
         y10 = result.chart_data[10]
         expected = 500_000 * (1.04 ** 10)
         assert y10.property_value == pytest.approx(expected, rel=1e-4)
@@ -132,7 +148,10 @@ class TestChartData:
 
     def test_zero_appreciation(self):
         """With 0% appreciation, property value stays at purchase price."""
-        result = _build(annual_appreciation=0.0, loan_term_years=5)
+        result = _build(
+            property=_make_property(annual_appreciation=0.0),
+            loan=_make_loan(loan_term_years=5),
+        )
         for pt in result.chart_data:
             assert pt.property_value == pytest.approx(500_000, abs=1)
 
@@ -146,20 +165,19 @@ class TestOffsetAccount:
 
     def test_offset_grows_over_time(self):
         """Offset balance should grow by contribution each period."""
-        result = _build(offset_balance=10_000, offset_contribution=500)
-        # Year 1 offset = 10_000 + 500 * (12 - 1) = 15_500 (monthly, first period no contribution)
+        result = _build(loan=_make_loan(offset_balance=10_000, offset_contribution=500))
         y1 = result.chart_data[1]
         assert y1.offset_balance > 10_000
 
     def test_offset_reduces_interest(self):
         """A large offset should reduce total interest paid."""
-        result_no_offset = _build(offset_balance=0)
-        result_with_offset = _build(offset_balance=100_000)
+        result_no_offset = _build(loan=_make_loan(offset_balance=0))
+        result_with_offset = _build(loan=_make_loan(offset_balance=100_000))
         assert result_with_offset.schedule.total_interest < result_no_offset.schedule.total_interest
 
     def test_zero_offset_contribution(self):
         """With zero contribution, offset stays at initial balance in chart."""
-        result = _build(offset_balance=20_000, offset_contribution=0)
+        result = _build(loan=_make_loan(offset_balance=20_000, offset_contribution=0))
         for pt in result.chart_data:
             assert pt.offset_balance == pytest.approx(20_000, abs=1)
 
@@ -173,14 +191,14 @@ class TestExtraRepayments:
 
     def test_extra_repayments_reduce_interest(self):
         """Extra repayments should reduce total interest."""
-        result_normal = _build(extra_repayment=0)
-        result_extra = _build(extra_repayment=200)
+        result_normal = _build(loan=_make_loan(extra_repayment=0))
+        result_extra = _build(loan=_make_loan(extra_repayment=200))
         assert result_extra.schedule.total_interest < result_normal.schedule.total_interest
 
     def test_extra_repayments_shorten_loan(self):
         """Extra repayments should reduce the number of periods."""
-        result_normal = _build(extra_repayment=0)
-        result_extra = _build(extra_repayment=500)
+        result_normal = _build(loan=_make_loan(extra_repayment=0))
+        result_extra = _build(loan=_make_loan(extra_repayment=500))
         assert result_extra.schedule.total_periods < result_normal.schedule.total_periods
 
 
@@ -192,20 +210,20 @@ class TestFrequencies:
     """Tests for different repayment frequencies."""
 
     def test_weekly_has_more_periods(self):
-        result_monthly = _build(frequency=RepaymentFrequency.MONTHLY)
-        result_weekly = _build(frequency=RepaymentFrequency.WEEKLY)
+        result_monthly = _build(loan=_make_loan(frequency=RepaymentFrequency.MONTHLY))
+        result_weekly = _build(loan=_make_loan(frequency=RepaymentFrequency.WEEKLY))
         assert result_weekly.schedule.total_periods > result_monthly.schedule.total_periods
 
     def test_fortnightly_between_weekly_and_monthly(self):
-        result_monthly = _build(frequency=RepaymentFrequency.MONTHLY)
-        result_fortnightly = _build(frequency=RepaymentFrequency.FORTNIGHTLY)
-        result_weekly = _build(frequency=RepaymentFrequency.WEEKLY)
+        result_monthly = _build(loan=_make_loan(frequency=RepaymentFrequency.MONTHLY))
+        result_fortnightly = _build(loan=_make_loan(frequency=RepaymentFrequency.FORTNIGHTLY))
+        result_weekly = _build(loan=_make_loan(frequency=RepaymentFrequency.WEEKLY))
         assert result_monthly.schedule.total_periods < result_fortnightly.schedule.total_periods < result_weekly.schedule.total_periods
 
     def test_chart_data_length_same_across_frequencies(self):
         """Chart data is always loan_term_years + 1 regardless of frequency."""
         for freq in RepaymentFrequency:
-            result = _build(frequency=freq, loan_term_years=10)
+            result = _build(loan=_make_loan(frequency=freq, loan_term_years=10))
             assert len(result.chart_data) == 11
 
 
@@ -218,20 +236,20 @@ class TestRateChanges:
 
     def test_rate_increase_raises_interest(self):
         """A rate increase partway through should increase total interest."""
-        result_flat = _build(annual_rate=0.05, rate_changes=None)
-        result_increase = _build(
+        result_flat = _build(loan=_make_loan(annual_rate=0.05))
+        result_increase = _build(loan=_make_loan(
             annual_rate=0.05,
             rate_changes=[RateChange(from_period=60, annual_rate=0.08)],
-        )
+        ))
         assert result_increase.schedule.total_interest > result_flat.schedule.total_interest
 
     def test_rate_decrease_reduces_interest(self):
         """A rate decrease partway through should reduce total interest."""
-        result_flat = _build(annual_rate=0.06, rate_changes=None)
-        result_decrease = _build(
+        result_flat = _build(loan=_make_loan(annual_rate=0.06))
+        result_decrease = _build(loan=_make_loan(
             annual_rate=0.06,
             rate_changes=[RateChange(from_period=60, annual_rate=0.03)],
-        )
+        ))
         assert result_decrease.schedule.total_interest < result_flat.schedule.total_interest
 
 
@@ -244,19 +262,22 @@ class TestEdgeCases:
 
     def test_zero_loan_amount(self):
         """Zero loan should produce zero payment and empty schedule."""
-        result = _build(loan_amount=0)
+        result = _build(
+            property=_make_property(purchase_price=500_000),
+            loan=_make_loan(deposit=500_000),
+        )
         assert result.payment == 0.0
         assert len(result.schedule.rows) == 0
 
     def test_zero_interest_rate(self):
         """Zero rate should produce equal principal payments (no interest)."""
-        result = _build(annual_rate=0.0, loan_term_years=10)
+        result = _build(loan=_make_loan(annual_rate=0.0, loan_term_years=10))
         assert result.schedule.total_interest == pytest.approx(0, abs=1)
         assert result.payment > 0
 
     def test_short_term(self):
         """1 year loan should work and produce chart with 2 points."""
-        result = _build(loan_term_years=1)
+        result = _build(loan=_make_loan(loan_term_years=1))
         assert len(result.chart_data) == 2
         assert result.chart_data[-1].balance == pytest.approx(0, abs=1)
 

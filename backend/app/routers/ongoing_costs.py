@@ -5,8 +5,11 @@ Exposes the ongoing cost estimation endpoint for annual property holding
 costs including rates, insurance, strata, maintenance, and management fees.
 """
 
+from datetime import date
+
 from fastapi import APIRouter
 
+from app.models.property import Property, OngoingCostsConfig, RentalConfig
 from app.schemas.ongoing_costs import OngoingCostResponse, OngoingPropertyCostRequest, YearByYearCostResponse
 from app.services.ongoing_costs import build_ongoing_cost_projection
 
@@ -24,22 +27,34 @@ def get_ongoing_costs(req: OngoingPropertyCostRequest) -> OngoingCostResponse:
     Returns:
         Annual cost breakdown with summary totals
     """
-    projection = build_ongoing_cost_projection(
-        projection_years=req.projection_years,
+    property = Property(
+        purchase_date=date.today(),
+        purchase_price=req.purchase_price,
+        is_new_property=False,
+        is_ppor=not req.is_investment,
+        annual_appreciation=req.annual_growth_rate,
+        rental=RentalConfig(
+            weekly_rent=req.weekly_rent,
+            annual_growth_rate=req.annual_rent_growth_rate,
+            vacancy_weeks=req.vacancy_weeks,
+        ),
+    )
+
+    ongoing_costs = OngoingCostsConfig(
         council_rates=req.council_rates,
         water_rates=req.water_rates,
         building_insurance=req.building_insurance,
-        landlord_insurance=req.landlord_insurance,
         strata_fees=req.strata_fees,
-        purchase_price=req.purchase_price,
         maintenance_rate=req.maintenance_rate,
-        annual_growth_rate=req.annual_growth_rate,
-        weekly_rent=req.weekly_rent,
-        vacancy_weeks=req.vacancy_weeks,
+        landlord_insurance=req.landlord_insurance,
         management_rate=req.management_rate,
-        annual_rent_growth_rate=req.annual_rent_growth_rate,
         annual_cost_growth_rate=req.annual_cost_growth_rate,
-        is_investment=req.is_investment,
+    )
+
+    projection = build_ongoing_cost_projection(
+        property=property,
+        ongoing_costs=ongoing_costs,
+        projection_years=req.projection_years,
     )
 
     return OngoingCostResponse(
@@ -58,7 +73,7 @@ def get_ongoing_costs(req: OngoingPropertyCostRequest) -> OngoingCostResponse:
                 management_fee=yc.management_fee,
                 property_value=yc.property_value,
                 rental_income=yc.rental_income,
-                total=yc.total,
+                total=yc.total_costs,
             )
             for yc in projection.annual_costs
         ],

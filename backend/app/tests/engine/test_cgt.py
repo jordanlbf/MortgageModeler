@@ -105,39 +105,24 @@ class TestCostBaseWithPurchaseCosts:
         prop = _make_property(purchase_price=500_000, purchase_costs=costs)
         assert calculate_cost_base(prop) == pytest.approx(518_400)
 
-    def test_borrowing_costs_excluded_from_cost_base(self):
-        """Mortgage registration and loan establishment are borrowing costs, not cost base."""
-        costs = PurchaseCosts(
-            stamp_duty=15_000,
-            mortgage_registration_fee=300,
-            loan_establishment_fee=500,
-        )
+    def test_borrowing_costs_not_on_purchase_costs(self):
+        """PurchaseCosts only contains cost base items — no borrowing costs."""
+        costs = PurchaseCosts(stamp_duty=15_000)
         prop = _make_property(purchase_price=500_000, purchase_costs=costs)
-        # Only stamp duty ($15k) should be in cost base, not the $800 borrowing costs
+        # Only stamp duty in cost base — borrowing costs live on LoanConfig
         assert calculate_cost_base(prop) == 515_000
 
-    def test_only_borrowing_costs_no_impact(self):
-        """If only borrowing costs are set, cost base equals purchase price."""
-        costs = PurchaseCosts(
-            mortgage_registration_fee=300,
-            loan_establishment_fee=500,
-        )
-        prop = _make_property(purchase_price=500_000, purchase_costs=costs)
-        assert calculate_cost_base(prop) == 500_000
-
-    def test_full_purchase_costs(self):
-        """All cost fields populated — only cost base items counted."""
+    def test_all_purchase_cost_fields(self):
+        """All PurchaseCosts fields are cost base items."""
         costs = PurchaseCosts(
             stamp_duty=17_000,
             legal_fees=2_000,
             building_pest_inspection=600,
             registration_fee=250,
-            mortgage_registration_fee=238,
-            loan_establishment_fee=300,
             other_costs=1_000,
         )
         prop = _make_property(purchase_price=600_000, purchase_costs=costs)
-        expected = 600_000 + 17_000 + 2_000 + 600 + 250 + 1_000  # excludes 238 + 300
+        expected = 600_000 + 17_000 + 2_000 + 600 + 250 + 1_000
         assert calculate_cost_base(prop) == pytest.approx(expected)
 
 
@@ -289,8 +274,6 @@ class TestCostBaseCombined:
             legal_fees=2_000,
             building_pest_inspection=600,
             registration_fee=250,
-            mortgage_registration_fee=238,
-            loan_establishment_fee=300,
         )
         original = _make_building(name="House", cost=250_000, purchase_date=date(2020, 7, 1))
         reno = _make_building(name="Kitchen reno", cost=35_000, purchase_date=date(2023, 3, 15))

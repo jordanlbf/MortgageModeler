@@ -44,10 +44,12 @@ class AmortisationSchedule:
         rows: Per-period schedule rows
         total_interest: Total interest paid over the life of the loan
         total_periods: Number of periods until loan is paid off
+        periods_per_year: Number of repayment periods per year
     """
     rows: list[ScheduleRow]
     total_interest: float
     total_periods: int
+    periods_per_year: int
 
 
 @dataclass

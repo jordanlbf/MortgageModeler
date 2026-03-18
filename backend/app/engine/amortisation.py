@@ -255,4 +255,5 @@ def generate_schedule(
         rows=rows,
         total_interest=total_interest,
         total_periods=len(rows),
+        periods_per_year=frequency.periods_per_year,
     )

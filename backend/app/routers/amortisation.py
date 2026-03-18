@@ -5,8 +5,11 @@ Exposes the amortisation schedule endpoint for generating P&I repayment
 schedules with offset, extra repayments, and rate change support.
 """
 
+from datetime import date
+
 from fastapi import APIRouter
-from app.models.loan import RateChange
+from app.models.loan import RateChange, LoanConfig
+from app.models.property import Property
 from app.schemas.amortisation import (
     ScheduleRequest,
     ScheduleResponse,
@@ -31,25 +34,28 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
     Returns:
         Full schedule with per-period rows, summary stats, and yearly chart data
     """
-    rate_changes = [
-        RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
-        for rc in req.rate_changes
-    ]
-
-    result = build_schedule_result(
+    property = Property(
+        purchase_date=date.today(),
         purchase_price=req.purchase_price,
+        is_new_property=False,
+        annual_appreciation=req.annual_appreciation,
+    )
+
+    loan = LoanConfig(
         deposit=req.deposit,
-        loan_amount=req.loan_amount,
-        lvr=req.lvr,
         annual_rate=req.annual_rate,
         loan_term_years=req.loan_term_years,
         frequency=req.frequency,
         offset_balance=req.offset_balance,
         offset_contribution=req.offset_contribution,
         extra_repayment=req.extra_repayment,
-        annual_appreciation=req.annual_appreciation,
-        rate_changes=rate_changes or None,
+        rate_changes=[
+            RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
+            for rc in req.rate_changes
+        ],
     )
+
+    result = build_schedule_result(property=property, loan=loan)
 
     return ScheduleResponse(
         summary=ScheduleSummary(

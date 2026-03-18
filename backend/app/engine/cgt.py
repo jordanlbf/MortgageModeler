@@ -30,7 +30,7 @@ def calculate_cost_base(
     Returns:
         Total CGT cost base (purchase price + purchase costs + improvements + non-depreciable assets)
     """
-    total_cost_base = property.purchase_price + property.purchase_costs.total_cost_base
+    total_cost_base = property.purchase_price + property.purchase_costs.total
 
     # Add non-deductible asset costs to cost base
     for asset in property.depreciable_assets:
