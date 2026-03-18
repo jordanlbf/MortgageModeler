@@ -56,8 +56,6 @@ def _build_property(req: CashFlowPPORRequest) -> Property:
             legal_fees=req.property.purchase_costs.legal_fees,
             building_pest_inspection=req.property.purchase_costs.building_pest_inspection,
             registration_fee=req.property.purchase_costs.registration_fee,
-            mortgage_registration_fee=req.property.purchase_costs.mortgage_registration_fee,
-            loan_establishment_fee=req.property.purchase_costs.loan_establishment_fee,
             other_costs=req.property.purchase_costs.other_costs,
         ),
         rental=RentalConfig(
