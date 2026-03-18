@@ -1,11 +1,11 @@
 """
-Tests for ongoing costs service — build_ongoing_cost_projection.
+Tests for ongoing costs service — calculate_year_cost and build_ongoing_cost_projection.
 """
 
 import pytest
 from datetime import date
 
-from app.services.ongoing_costs import build_ongoing_cost_projection
+from app.services.ongoing_costs import calculate_year_cost, build_ongoing_cost_projection
 from app.models.property import Property, OngoingCostsConfig, RentalConfig
 
 
@@ -313,3 +313,95 @@ class TestEdgeCases:
         )
         for yc in result.annual_costs:
             assert yc.total_costs == pytest.approx(0)
+
+
+# ──────────────────────────────────────────────
+# calculate_year_cost (single year)
+# ──────────────────────────────────────────────
+
+class TestCalculateYearCost:
+    """Tests for calculate_year_cost single-year helper."""
+
+    def test_year_zero_no_growth(self):
+        """Year 0 returns base rates unchanged."""
+        result = calculate_year_cost(0, _make_property(), _make_ongoing_costs())
+        assert result.year == 0
+        assert result.council_rates == pytest.approx(2_000)
+        assert result.water_rates == pytest.approx(1_200)
+        assert result.building_insurance == pytest.approx(1_500)
+        assert result.strata_fees == pytest.approx(3_000)
+
+    def test_year_zero_property_value(self):
+        result = calculate_year_cost(0, _make_property(purchase_price=500_000), _make_ongoing_costs())
+        assert result.property_value == pytest.approx(500_000)
+
+    def test_year_zero_rental_income(self):
+        result = calculate_year_cost(0, _make_property(weekly_rent=500, vacancy_weeks=2), _make_ongoing_costs())
+        assert result.rental_income == pytest.approx(500 * 50)
+
+    def test_year_zero_maintenance(self):
+        result = calculate_year_cost(
+            0,
+            _make_property(purchase_price=500_000),
+            _make_ongoing_costs(maintenance_rate=0.01),
+        )
+        assert result.maintenance_cost == pytest.approx(5_000)
+
+    def test_year_one_costs_grow(self):
+        """Year 1 should reflect cost growth rate."""
+        y0 = calculate_year_cost(0, _make_property(), _make_ongoing_costs(annual_cost_growth_rate=0.05))
+        y1 = calculate_year_cost(1, _make_property(), _make_ongoing_costs(annual_cost_growth_rate=0.05))
+        assert y1.council_rates == pytest.approx(y0.council_rates * 1.05)
+        assert y1.water_rates == pytest.approx(y0.water_rates * 1.05)
+
+    def test_year_two_property_appreciates(self):
+        prop = _make_property(purchase_price=500_000, annual_appreciation=0.04)
+        result = calculate_year_cost(2, prop, _make_ongoing_costs())
+        assert result.property_value == pytest.approx(500_000 * 1.04 ** 2)
+
+    def test_year_two_rental_income_grows(self):
+        prop = _make_property(weekly_rent=500, vacancy_weeks=2, rent_growth=0.03)
+        result = calculate_year_cost(2, prop, _make_ongoing_costs())
+        assert result.rental_income == pytest.approx(500 * 50 * 1.03 ** 2)
+
+    def test_total_is_sum_of_costs(self):
+        result = calculate_year_cost(0, _make_property(), _make_ongoing_costs())
+        expected = (
+            result.council_rates + result.water_rates + result.building_insurance +
+            result.landlord_insurance + result.strata_fees +
+            result.maintenance_cost + result.management_fee
+        )
+        assert result.total_costs == pytest.approx(expected)
+
+    def test_ppor_no_landlord_insurance(self):
+        result = calculate_year_cost(0, _make_property(is_ppor=True), _make_ongoing_costs())
+        assert result.landlord_insurance == 0.0
+
+    def test_ppor_no_management_fee(self):
+        result = calculate_year_cost(0, _make_property(is_ppor=True), _make_ongoing_costs())
+        assert result.management_fee == 0.0
+
+    def test_investment_has_landlord_insurance(self):
+        result = calculate_year_cost(0, _make_property(is_ppor=False), _make_ongoing_costs())
+        assert result.landlord_insurance > 0
+
+    def test_investment_has_management_fee(self):
+        result = calculate_year_cost(0, _make_property(is_ppor=False), _make_ongoing_costs())
+        assert result.management_fee > 0
+
+    def test_maintenance_grows_with_property_value(self):
+        prop = _make_property(purchase_price=500_000, annual_appreciation=0.05)
+        result = calculate_year_cost(2, prop, _make_ongoing_costs(maintenance_rate=0.01))
+        expected_pv = 500_000 * 1.05 ** 2
+        assert result.maintenance_cost == pytest.approx(expected_pv * 0.01)
+
+    def test_matches_projection_output(self):
+        """Single year should match the corresponding year from a full projection."""
+        prop = _make_property()
+        oc = _make_ongoing_costs()
+        single = calculate_year_cost(3, prop, oc)
+        projection = build_ongoing_cost_projection(prop, oc, projection_years=5)
+        from_projection = projection.annual_costs[3]
+        assert single.total_costs == pytest.approx(from_projection.total_costs)
+        assert single.property_value == pytest.approx(from_projection.property_value)
+        assert single.rental_income == pytest.approx(from_projection.rental_income)
