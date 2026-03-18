@@ -5,6 +5,7 @@ Defines contracts for both PPOR and rentvesting scenarios.
 Separate from domain models — these define the API contract.
 """
 from datetime import date
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -39,38 +40,38 @@ class PurchaseCostsRequest(BaseModel):
     """
     Property acquisition costs — maps to PurchaseCosts domain model.
 
-    All items are added to the CGT cost base. Borrowing costs (LMI,
-    mortgage registration, loan establishment) live on LoanRequest instead.
+    Fields default to None (auto-estimated by upfront costs service).
+    Set to 0.0 to explicitly waive. Set to a value to override.
 
     Attributes:
-        stamp_duty: State transfer duty
-        legal_fees: Conveyancing and legal fees
-        building_pest_inspection: Building and pest inspection fees
-        registration_fee: Title registration fee
-        other_costs: Any other acquisition costs
+        stamp_duty: Override stamp duty (None = auto-estimate)
+        legal_fees: Override legal fees (None = auto-estimate)
+        building_pest_inspection: Override inspection fees (None = auto-estimate)
+        registration_fee: Override registration fee (None = auto-estimate)
+        other_costs: Other acquisition costs (no auto-estimate)
     """
-    stamp_duty: float = Field(default=0.0, ge=0, description="State transfer duty")
-    legal_fees: float = Field(default=0.0, ge=0, description="Conveyancing and legal fees")
-    building_pest_inspection: float = Field(default=0.0, ge=0, description="Building and pest inspection fees")
-    registration_fee: float = Field(default=0.0, ge=0, description="Title registration fee")
-    other_costs: float = Field(default=0.0, ge=0, description="Any other acquisition costs")
+    stamp_duty: Optional[float] = Field(default=None, ge=0, description="Override stamp duty (None = auto-estimate)")
+    legal_fees: Optional[float] = Field(default=None, ge=0, description="Override legal fees (None = auto-estimate)")
+    building_pest_inspection: Optional[float] = Field(default=None, ge=0, description="Override inspection fees (None = auto-estimate)")
+    registration_fee: Optional[float] = Field(default=None, ge=0, description="Override registration fee (None = auto-estimate)")
+    other_costs: float = Field(default=0.0, ge=0, description="Other acquisition costs")
 
 
 class BorrowingCostsRequest(BaseModel):
     """
     Loan-related upfront costs — maps to BorrowingCosts domain model.
 
-    Deductible over 5 years (or loan term if shorter). May be capitalised
-    onto the loan principal.
+    Fields default to None (auto-estimated by upfront costs service).
+    Set to 0.0 to explicitly waive (e.g. LMI exempt). Set to a value to override.
 
     Attributes:
-        lmi: Lenders Mortgage Insurance
-        mortgage_registration_fee: Mortgage registration fee
-        loan_establishment_fee: Loan establishment fee
+        lmi: Override LMI (None = auto-estimate)
+        mortgage_registration_fee: Override mortgage registration (None = auto-estimate)
+        loan_establishment_fee: Override loan establishment (None = auto-estimate)
     """
-    lmi: float = Field(default=0.0, ge=0, description="Lenders Mortgage Insurance")
-    mortgage_registration_fee: float = Field(default=0.0, ge=0, description="Mortgage registration fee")
-    loan_establishment_fee: float = Field(default=0.0, ge=0, description="Loan establishment fee")
+    lmi: Optional[float] = Field(default=None, ge=0, description="Override LMI (None = auto-estimate)")
+    mortgage_registration_fee: Optional[float] = Field(default=None, ge=0, description="Override mortgage registration (None = auto-estimate)")
+    loan_establishment_fee: Optional[float] = Field(default=None, ge=0, description="Override loan establishment (None = auto-estimate)")
 
 
 class RentalConfigRequest(BaseModel):

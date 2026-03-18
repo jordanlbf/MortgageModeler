@@ -4,6 +4,7 @@ Property domain models — property, ongoing cost projections and related types.
 
 from dataclasses import dataclass, field
 from datetime import date
+from typing import Optional
 
 from app.models.deductions import DepreciableBuilding, DepreciableAsset
 from app.models.loan import BorrowingCosts
@@ -18,20 +19,20 @@ class PurchaseCosts:
     """
     Property acquisition costs — all items are added to the CGT cost base.
 
-    Borrowing costs (LMI, mortgage registration, loan establishment) live
-    on LoanConfig.borrowing_costs instead, as they are loan-related.
+    Fields default to None (auto-estimated by upfront costs service).
+    Set to 0.0 to explicitly waive. Set to a value to override the estimate.
 
     Attributes:
-        stamp_duty: State transfer duty
-        legal_fees: Conveyancing and legal fees
-        building_pest_inspection: Building and pest inspection fees
-        registration_fee: Title registration fee
-        other_costs: Any other acquisition costs not covered above
+        stamp_duty: State transfer duty (None = auto-estimate)
+        legal_fees: Conveyancing and legal fees (None = auto-estimate)
+        building_pest_inspection: Building and pest inspection fees (None = auto-estimate)
+        registration_fee: Title registration fee (None = auto-estimate)
+        other_costs: Any other acquisition costs (no auto-estimate)
     """
-    stamp_duty: float = 0.0
-    legal_fees: float = 0.0
-    building_pest_inspection: float = 0.0
-    registration_fee: float = 0.0
+    stamp_duty: Optional[float] = None
+    legal_fees: Optional[float] = None
+    building_pest_inspection: Optional[float] = None
+    registration_fee: Optional[float] = None
     other_costs: float = 0.0
 
     @property
@@ -39,14 +40,16 @@ class PurchaseCosts:
         """
         Sum of all property acquisition costs (CGT cost base).
 
+        None values are treated as 0. Call after resolution for accurate totals.
+
         Returns:
             Total property acquisition costs
         """
         return (
-            self.stamp_duty +
-            self.legal_fees +
-            self.building_pest_inspection +
-            self.registration_fee +
+            (self.stamp_duty or 0.0) +
+            (self.legal_fees or 0.0) +
+            (self.building_pest_inspection or 0.0) +
+            (self.registration_fee or 0.0) +
             self.other_costs
         )
 

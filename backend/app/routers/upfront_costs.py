@@ -1,12 +1,16 @@
 """
 Upfront costs API routes.
 
-Exposes the upfront cost estimation endpoint for QLD property purchases,
-including property acquisition costs and loan borrowing costs.
+Exposes the upfront cost estimation endpoint for QLD property purchases.
+Auto-estimates costs when not provided, respects explicit overrides.
 """
+
+from datetime import date
 
 from fastapi import APIRouter
 
+from app.models.loan import LoanConfig, BorrowingCosts
+from app.models.property import Property, PurchaseCosts
 from app.schemas.upfront_costs import UpfrontCostRequest, UpfrontCostResponse
 from app.services.upfront_costs import build_upfront_cost_estimate
 
@@ -19,17 +23,37 @@ def get_upfront_costs(req: UpfrontCostRequest) -> UpfrontCostResponse:
     Estimate upfront costs for a QLD property purchase.
 
     Args:
-        req: Purchase price, loan details, and investment/PPOR flag
+        req: Purchase price, deposit, investment flag, and optional cost overrides
 
     Returns:
-        Itemised cost breakdown with purchase costs, borrowing costs, and totals
+        Fully resolved cost breakdown with purchase costs, borrowing costs, and totals
     """
-    result = build_upfront_cost_estimate(
+    property = Property(
+        purchase_date=date.today(),
         purchase_price=req.purchase_price,
-        deposit=req.deposit,
-        is_investment=req.is_investment,
-        lmi_exempt=req.lmi_exempt,
+        is_new_property=False,
+        is_ppor=not req.is_investment,
+        purchase_costs=PurchaseCosts(
+            stamp_duty=req.stamp_duty,
+            legal_fees=req.legal_fees,
+            building_pest_inspection=req.building_pest_inspection,
+            registration_fee=req.registration_fee,
+            other_costs=req.other_costs,
+        ),
     )
+
+    loan = LoanConfig(
+        deposit=req.deposit,
+        annual_rate=0.0,
+        loan_term_years=30,
+        borrowing_costs=BorrowingCosts(
+            lmi=req.lmi,
+            mortgage_registration_fee=req.mortgage_registration_fee,
+            loan_establishment_fee=req.loan_establishment_fee,
+        ),
+    )
+
+    result = build_upfront_cost_estimate(property=property, loan=loan)
 
     return UpfrontCostResponse(
         purchase_costs=UpfrontCostResponse.PurchaseCostsDetail(

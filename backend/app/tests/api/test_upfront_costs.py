@@ -66,13 +66,14 @@ class TestUpfrontCostsEstimate:
         data = self._post(purchase_price=500_000, deposit=50_000).json()
         assert data["borrowing_costs"]["lmi"] > 0
 
-    def test_lmi_exempt(self):
-        data = self._post(purchase_price=500_000, deposit=25_000, lmi_exempt=True).json()
+    def test_lmi_waived_with_explicit_zero(self):
+        """Setting lmi=0 explicitly waives LMI regardless of LVR."""
+        data = self._post(purchase_price=500_000, deposit=25_000, lmi=0.0).json()
         assert data["borrowing_costs"]["lmi"] == 0.0
 
-    def test_lmi_exempt_reduces_total(self):
-        with_lmi = self._post(purchase_price=500_000, deposit=25_000, lmi_exempt=False).json()
-        without_lmi = self._post(purchase_price=500_000, deposit=25_000, lmi_exempt=True).json()
+    def test_lmi_waived_reduces_total(self):
+        with_lmi = self._post(purchase_price=500_000, deposit=25_000).json()
+        without_lmi = self._post(purchase_price=500_000, deposit=25_000, lmi=0.0).json()
         assert with_lmi["total"] > without_lmi["total"]
 
     # ── Investment vs PPOR ────────────────────

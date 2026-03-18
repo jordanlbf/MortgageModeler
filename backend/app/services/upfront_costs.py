@@ -1,9 +1,9 @@
 """
 Upfront costs estimation service.
 
-Orchestrates engine calculations to estimate all upfront costs for a
-QLD property purchase, split into property acquisition costs (CGT cost
-base) and loan borrowing costs (deductible over 5 years).
+Resolves upfront costs for a property purchase. Fields set to None on
+PurchaseCosts or BorrowingCosts are auto-estimated using engine functions.
+Explicit values (including 0.0) are preserved as-is.
 """
 
 from app.engine.property import (
@@ -15,45 +15,49 @@ from app.engine.property import (
     calculate_building_pest_inspection_fee,
     calculate_loan_establishment_fee,
 )
-from app.models.loan import BorrowingCosts
-from app.models.property import PurchaseCosts, UpfrontCosts
+from app.models.loan import LoanConfig, BorrowingCosts
+from app.models.property import Property, PurchaseCosts, UpfrontCosts
 
 
 def build_upfront_cost_estimate(
-    purchase_price: float,
-    deposit: float,
-    is_investment: bool,
-    lmi_exempt: bool,
+    property: Property,
+    loan: LoanConfig,
 ) -> UpfrontCosts:
     """
-    Estimate all upfront costs for a QLD property purchase.
+    Resolve and estimate all upfront costs for a property purchase.
 
-    Calls individual engine functions to calculate each cost component
-    and assembles them into purchase costs and borrowing costs.
+    For each cost field:
+    - None → auto-estimated from engine functions
+    - 0.0 → explicitly zero (e.g. LMI waived)
+    - Any value → user override, preserved as-is
 
     Args:
-        purchase_price: Property purchase price
-        deposit: Upfront deposit amount
-        is_investment: Whether the property is an investment (standard stamp duty rates)
-        lmi_exempt: Whether the loan is exempt from LMI
+        property: Property details (purchase price, is_ppor for stamp duty rates)
+        loan: Loan configuration (deposit for LVR, borrowing costs with optional overrides)
 
     Returns:
-        UpfrontCosts with itemised purchase costs and borrowing costs
+        Fully resolved UpfrontCosts with no None values
     """
-    loan_amount = purchase_price - deposit
-    lvr = loan_amount / purchase_price if purchase_price > 0 else 0.0
+    loan_amount = max(property.purchase_price - loan.deposit, 0.0)
+    lvr = loan_amount / property.purchase_price if property.purchase_price > 0 else 0.0
+    is_investment = not property.is_ppor
 
+    # Resolve purchase costs — None means auto-estimate
+    src_pc = property.purchase_costs
     purchase_costs = PurchaseCosts(
-        stamp_duty=estimate_qld_stamp_duty(purchase_price, is_investment),
-        legal_fees=calculate_conveyancing_fee(),
-        building_pest_inspection=calculate_building_pest_inspection_fee(),
-        registration_fee=calculate_registration_fee(purchase_price),
+        stamp_duty=src_pc.stamp_duty if src_pc.stamp_duty is not None else estimate_qld_stamp_duty(property.purchase_price, is_investment),
+        legal_fees=src_pc.legal_fees if src_pc.legal_fees is not None else calculate_conveyancing_fee(),
+        building_pest_inspection=src_pc.building_pest_inspection if src_pc.building_pest_inspection is not None else calculate_building_pest_inspection_fee(),
+        registration_fee=src_pc.registration_fee if src_pc.registration_fee is not None else calculate_registration_fee(property.purchase_price),
+        other_costs=src_pc.other_costs,
     )
 
+    # Resolve borrowing costs — None means auto-estimate
+    src_bc = loan.borrowing_costs
     borrowing_costs = BorrowingCosts(
-        lmi=0.0 if lmi_exempt else estimate_lmi(loan_amount, lvr, is_investment),
-        mortgage_registration_fee=calculate_mortgage_registration_fee(),
-        loan_establishment_fee=calculate_loan_establishment_fee(),
+        lmi=src_bc.lmi if src_bc.lmi is not None else estimate_lmi(loan_amount, lvr, is_investment),
+        mortgage_registration_fee=src_bc.mortgage_registration_fee if src_bc.mortgage_registration_fee is not None else calculate_mortgage_registration_fee(),
+        loan_establishment_fee=src_bc.loan_establishment_fee if src_bc.loan_establishment_fee is not None else calculate_loan_establishment_fee(),
     )
 
     return UpfrontCosts(

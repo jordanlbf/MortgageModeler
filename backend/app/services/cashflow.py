@@ -13,9 +13,10 @@ from app.models.amortisation import AmortisationSchedule
 from app.models.cashflow import CashFlowYear, CashFlowSummary, CashFlowPPORResult, CashFlowRentvestResult
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.loan import LoanConfig
-from app.models.property import Property, OngoingCostsConfig, RentvestConfig, YearCost, UpfrontCosts
+from app.models.property import Property, OngoingCostsConfig, RentvestConfig, YearCost
 from app.models.tax import TaxProfile
 from app.services.amortisation import build_schedule_result
+from app.services.upfront_costs import build_upfront_cost_estimate
 
 
 def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
@@ -189,11 +190,8 @@ def build_ppor_cashflow(
         CashFlowPPORResult with year-by-year breakdown and summary
     """
 
-    # Upfront costs from user-provided domain models
-    upfront_costs = UpfrontCosts(
-        purchase_costs=property.purchase_costs,
-        borrowing_costs=loan.borrowing_costs,
-    )
+    # Resolve upfront costs — auto-estimates None values from engine
+    upfront_costs = build_upfront_cost_estimate(property=property, loan=loan)
 
     # Build Amortisation Schedule
     schedule = build_schedule_result(property=property, loan=loan)

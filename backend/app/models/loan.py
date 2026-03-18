@@ -3,6 +3,7 @@ Loan domain models — mortgage configuration and rate changes.
 """
 
 from dataclasses import dataclass, field
+from typing import Optional
 from enum import Enum
 
 
@@ -58,27 +59,29 @@ class BorrowingCosts:
     """
     Loan-related upfront costs — deductible over 5 years (or loan term if shorter).
 
-    These are costs of obtaining the loan, not the property. They may be
-    capitalised onto the loan principal or paid as cash at settlement.
+    Fields default to None (auto-estimated by upfront costs service).
+    Set to 0.0 to explicitly waive (e.g. LMI exempt). Set to a value to override.
 
     Attributes:
-        lmi: Lenders Mortgage Insurance
-        mortgage_registration_fee: Mortgage registration fee
-        loan_establishment_fee: Loan establishment/application fee
+        lmi: Lenders Mortgage Insurance (None = auto-estimate)
+        mortgage_registration_fee: Mortgage registration fee (None = auto-estimate)
+        loan_establishment_fee: Loan establishment/application fee (None = auto-estimate)
     """
-    lmi: float = 0.0
-    mortgage_registration_fee: float = 0.0
-    loan_establishment_fee: float = 0.0
+    lmi: Optional[float] = None
+    mortgage_registration_fee: Optional[float] = None
+    loan_establishment_fee: Optional[float] = None
 
     @property
     def total(self) -> float:
         """
         Sum of all borrowing cost components.
 
+        None values are treated as 0. Call after resolution for accurate totals.
+
         Returns:
             Total borrowing costs
         """
-        return self.lmi + self.mortgage_registration_fee + self.loan_establishment_fee
+        return (self.lmi or 0.0) + (self.mortgage_registration_fee or 0.0) + (self.loan_establishment_fee or 0.0)
 
 
 @dataclass
