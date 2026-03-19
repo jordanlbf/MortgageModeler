@@ -72,6 +72,9 @@ class BorrowingCostsRequest(BaseModel):
     lmi: Optional[float] = Field(default=None, ge=0, description="Override LMI (None = auto-estimate)")
     mortgage_registration_fee: Optional[float] = Field(default=None, ge=0, description="Override mortgage registration (None = auto-estimate)")
     loan_establishment_fee: Optional[float] = Field(default=None, ge=0, description="Override loan establishment (None = auto-estimate)")
+    capitalise_lmi: bool = Field(default=True, description="Add LMI to loan principal")
+    capitalise_mortgage_registration_fee: bool = Field(default=True, description="Add mortgage registration to loan principal")
+    capitalise_loan_establishment_fee: bool = Field(default=True, description="Add loan establishment to loan principal")
 
 
 class RentalConfigRequest(BaseModel):

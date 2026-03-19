@@ -61,15 +61,51 @@ class BorrowingCosts:
 
     Fields default to None (auto-estimated by upfront costs service).
     Set to 0.0 to explicitly waive (e.g. LMI exempt). Set to a value to override.
+    Each cost has a capitalise flag — True adds it to the loan principal,
+    False pays it as cash at settlement.
 
     Attributes:
         lmi: Lenders Mortgage Insurance (None = auto-estimate)
         mortgage_registration_fee: Mortgage registration fee (None = auto-estimate)
         loan_establishment_fee: Loan establishment/application fee (None = auto-estimate)
+        capitalise_lmi: Whether to add LMI to loan principal (default True)
+        capitalise_mortgage_registration_fee: Whether to add mortgage registration to principal (default True)
+        capitalise_loan_establishment_fee: Whether to add loan establishment to principal (default True)
     """
     lmi: Optional[float] = None
     mortgage_registration_fee: Optional[float] = None
     loan_establishment_fee: Optional[float] = None
+    capitalise_lmi: bool = True
+    capitalise_mortgage_registration_fee: bool = True
+    capitalise_loan_establishment_fee: bool = True
+
+    @property
+    def total_capitalised(self) -> float:
+        """
+        Amount added to loan principal.
+
+        Returns:
+            Sum of borrowing costs where capitalise flag is True
+        """
+        return (
+            ((self.lmi or 0.0) if self.capitalise_lmi else 0.0) +
+            ((self.mortgage_registration_fee or 0.0) if self.capitalise_mortgage_registration_fee else 0.0) +
+            ((self.loan_establishment_fee or 0.0) if self.capitalise_loan_establishment_fee else 0.0)
+        )
+
+    @property
+    def total_upfront(self) -> float:
+        """
+        Amount paid as cash at settlement.
+
+        Returns:
+            Sum of borrowing costs where capitalise flag is False
+        """
+        return (
+            ((self.lmi or 0.0) if not self.capitalise_lmi else 0.0) +
+            ((self.mortgage_registration_fee or 0.0) if not self.capitalise_mortgage_registration_fee else 0.0) +
+            ((self.loan_establishment_fee or 0.0) if not self.capitalise_loan_establishment_fee else 0.0)
+        )
 
     @property
     def total(self) -> float:

@@ -248,7 +248,7 @@ def build_ppor_cashflow(
     )
 
     # Build list of CashFlowYear models for each year
-    cumulative_cash_position = -upfront_costs.total
+    cumulative_cash_position = -upfront_costs.total_cash_at_settlement
     cashflow_years = []
     for year in range(projection_years):
         grown_profile = _grow_tax_profile(tax_profile, year)
@@ -310,7 +310,7 @@ def build_rentvest_cashflow(
     )
 
     # Build list of CashFlowYear models for each year
-    cumulative_cash_position = -upfront_costs.total
+    cumulative_cash_position = -upfront_costs.total_cash_at_settlement
     cashflow_years = []
     for year in range(projection_years):
         year_rows = _get_year_rows(schedule, year)
