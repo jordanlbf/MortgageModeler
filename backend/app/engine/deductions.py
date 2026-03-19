@@ -137,3 +137,40 @@ def is_asset_depreciable(asset_purchase_date: date, property_purchase_date: date
     """
     is_secondhand = asset_purchase_date < property_purchase_date
     return not (is_secondhand and property_purchase_date >= DIV40_SECONDHAND_CUTOFF_DATE)
+
+
+def calculate_borrowing_cost_deduction(
+    total_borrowing_costs: float,
+    loan_term_years: int,
+    year: int,
+) -> float:
+    """
+    Calculate the annual borrowing cost deduction for a given year.
+
+    ATO rules:
+    - Total borrowing costs <= $100: fully deductible in year 0
+    - Total borrowing costs > $100: spread evenly over the lesser of
+      5 years or the loan term
+    - Years beyond the spread period: no deduction
+
+    Applies to all borrowing costs (LMI, mortgage registration, loan
+    establishment) regardless of whether they were capitalised or paid upfront.
+
+    Args:
+        total_borrowing_costs: Sum of all borrowing cost components
+        loan_term_years: Loan term in years
+        year: Projection year (0 = first year of the loan)
+
+    Returns:
+        Deduction amount for the given year (0 if beyond spread period)
+    """
+    # Case 1: <= $100 total borrowing costs — fully deductible in year 0
+    if total_borrowing_costs <= 100:
+        return total_borrowing_costs if year == 0 else 0.0
+
+    # Case 2: > $100 total borrowing costs — spread evenly over lesser of 5 years or loan term
+    spread_years = min(5, loan_term_years)
+    if year < spread_years:
+        return total_borrowing_costs / spread_years
+
+    return 0.0

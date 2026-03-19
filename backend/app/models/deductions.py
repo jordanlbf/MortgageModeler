@@ -73,6 +73,7 @@ class PropertyTaxDeductionSummary:
         net_rental_income: Rental income minus total deductions
         is_negatively_geared: Whether net rental income is negative
         tax_saving: Tax benefit from deductions (positive = saving, negative = extra tax)
+        borrowing_costs_deduction: Annual borrowing cost deduction (ATO 5-year amortisation)
     """
     mortgage_interest: float
     depreciation_building: float
@@ -82,3 +83,4 @@ class PropertyTaxDeductionSummary:
     net_rental_income: float
     is_negatively_geared: bool
     tax_saving: float
+    borrowing_costs_deduction: float = 0.0

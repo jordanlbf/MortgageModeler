@@ -12,6 +12,7 @@ from app.engine.deductions import (
     calculate_division_40_diminishing_value,
     is_building_depreciable,
     is_asset_depreciable,
+    calculate_borrowing_cost_deduction,
 )
 
 
@@ -475,3 +476,143 @@ class TestIsAssetDepreciable:
     def test_secondhand_day_before_cutoff_eligible(self):
         """Property purchased 8 May 2017 — second-hand asset still allowed."""
         assert is_asset_depreciable(date(2015, 1, 1), date(2017, 5, 8)) is True
+
+
+# ──────────────────────────────────────────────
+# Borrowing cost deduction — small costs (<= $100)
+# ──────────────────────────────────────────────
+
+
+class TestBorrowingCostDeductionSmall:
+    """Tests for borrowing costs <= $100 — fully deductible in year 0."""
+
+    def test_small_cost_year_zero(self):
+        """$50 borrowing costs — full deduction in year 0."""
+        assert calculate_borrowing_cost_deduction(50, 30, 0) == pytest.approx(50)
+
+    def test_small_cost_year_one(self):
+        """$50 borrowing costs — zero deduction in year 1."""
+        assert calculate_borrowing_cost_deduction(50, 30, 1) == 0.0
+
+    def test_small_cost_year_five(self):
+        assert calculate_borrowing_cost_deduction(80, 30, 5) == 0.0
+
+    def test_exactly_100_year_zero(self):
+        """$100 is the boundary — should be fully deductible in year 0."""
+        assert calculate_borrowing_cost_deduction(100, 30, 0) == pytest.approx(100)
+
+    def test_exactly_100_year_one(self):
+        assert calculate_borrowing_cost_deduction(100, 30, 1) == 0.0
+
+    def test_zero_costs(self):
+        assert calculate_borrowing_cost_deduction(0, 30, 0) == 0.0
+
+    def test_one_dollar(self):
+        assert calculate_borrowing_cost_deduction(1, 30, 0) == pytest.approx(1)
+        assert calculate_borrowing_cost_deduction(1, 30, 1) == 0.0
+
+
+# ──────────────────────────────────────────────
+# Borrowing cost deduction — standard 5-year spread
+# ──────────────────────────────────────────────
+
+
+class TestBorrowingCostDeduction5Year:
+    """Tests for borrowing costs > $100 with loan term >= 5 years."""
+
+    def test_10k_over_5_years(self):
+        """$10,000 over 5 years = $2,000 per year."""
+        for year in range(5):
+            assert calculate_borrowing_cost_deduction(10_000, 30, year) == pytest.approx(2_000)
+
+    def test_10k_year_five_zero(self):
+        """Year 5 (6th year) — no more deduction."""
+        assert calculate_borrowing_cost_deduction(10_000, 30, 5) == 0.0
+
+    def test_10k_year_ten_zero(self):
+        assert calculate_borrowing_cost_deduction(10_000, 30, 10) == 0.0
+
+    def test_total_equals_original(self):
+        """Sum of all deductions should equal total borrowing costs."""
+        total = sum(calculate_borrowing_cost_deduction(10_538, 30, y) for y in range(30))
+        assert total == pytest.approx(10_538)
+
+    def test_just_over_100(self):
+        """$101 — spreads over 5 years."""
+        assert calculate_borrowing_cost_deduction(101, 30, 0) == pytest.approx(101 / 5)
+        assert calculate_borrowing_cost_deduction(101, 30, 4) == pytest.approx(101 / 5)
+        assert calculate_borrowing_cost_deduction(101, 30, 5) == 0.0
+
+    def test_large_borrowing_costs(self):
+        """$25,000 LMI + fees — $5,000 per year."""
+        assert calculate_borrowing_cost_deduction(25_000, 30, 0) == pytest.approx(5_000)
+
+    def test_each_year_is_equal(self):
+        """All years within the spread period should have the same deduction."""
+        deductions = [calculate_borrowing_cost_deduction(10_000, 30, y) for y in range(5)]
+        assert all(d == pytest.approx(deductions[0]) for d in deductions)
+
+
+# ──────────────────────────────────────────────
+# Borrowing cost deduction — short loan term (< 5 years)
+# ──────────────────────────────────────────────
+
+
+class TestBorrowingCostDeductionShortLoan:
+    """Tests for loan terms shorter than 5 years — spread over loan term instead."""
+
+    def test_3_year_loan(self):
+        """$9,000 over 3 years = $3,000 per year."""
+        assert calculate_borrowing_cost_deduction(9_000, 3, 0) == pytest.approx(3_000)
+        assert calculate_borrowing_cost_deduction(9_000, 3, 1) == pytest.approx(3_000)
+        assert calculate_borrowing_cost_deduction(9_000, 3, 2) == pytest.approx(3_000)
+        assert calculate_borrowing_cost_deduction(9_000, 3, 3) == 0.0
+
+    def test_1_year_loan(self):
+        """$5,000 over 1 year = full deduction in year 0 only."""
+        assert calculate_borrowing_cost_deduction(5_000, 1, 0) == pytest.approx(5_000)
+        assert calculate_borrowing_cost_deduction(5_000, 1, 1) == 0.0
+
+    def test_2_year_loan(self):
+        assert calculate_borrowing_cost_deduction(10_000, 2, 0) == pytest.approx(5_000)
+        assert calculate_borrowing_cost_deduction(10_000, 2, 1) == pytest.approx(5_000)
+        assert calculate_borrowing_cost_deduction(10_000, 2, 2) == 0.0
+
+    def test_4_year_loan(self):
+        assert calculate_borrowing_cost_deduction(10_000, 4, 3) == pytest.approx(2_500)
+        assert calculate_borrowing_cost_deduction(10_000, 4, 4) == 0.0
+
+    def test_5_year_loan_same_as_standard(self):
+        """5-year loan — min(5, 5) = 5, same as standard spread."""
+        for year in range(5):
+            assert calculate_borrowing_cost_deduction(10_000, 5, year) == pytest.approx(2_000)
+        assert calculate_borrowing_cost_deduction(10_000, 5, 5) == 0.0
+
+    def test_short_loan_total_equals_original(self):
+        """Sum of deductions should equal total even for short loans."""
+        total = sum(calculate_borrowing_cost_deduction(9_000, 3, y) for y in range(10))
+        assert total == pytest.approx(9_000)
+
+
+# ──────────────────────────────────────────────
+# Borrowing cost deduction — edge cases
+# ──────────────────────────────────────────────
+
+
+class TestBorrowingCostDeductionEdgeCases:
+    """Tests for edge cases."""
+
+    def test_negative_costs_treated_as_zero(self):
+        """Negative borrowing costs shouldn't produce positive deductions."""
+        assert calculate_borrowing_cost_deduction(-100, 30, 0) <= 0
+
+    def test_year_far_beyond_spread(self):
+        assert calculate_borrowing_cost_deduction(10_000, 30, 50) == 0.0
+
+    def test_realistic_scenario(self):
+        """$21,375 LMI + $238 mortgage reg + $300 loan est = $21,913."""
+        total = 21_375 + 238 + 300
+        annual = total / 5
+        assert calculate_borrowing_cost_deduction(total, 30, 0) == pytest.approx(annual)
+        assert calculate_borrowing_cost_deduction(total, 30, 4) == pytest.approx(annual)
+        assert calculate_borrowing_cost_deduction(total, 30, 5) == 0.0
