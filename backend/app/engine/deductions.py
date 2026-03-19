@@ -164,6 +164,9 @@ def calculate_borrowing_cost_deduction(
     Returns:
         Deduction amount for the given year (0 if beyond spread period)
     """
+    if year < 0:
+        return 0.0
+
     # Case 1: <= $100 total borrowing costs — fully deductible in year 0
     if total_borrowing_costs <= 100:
         return total_borrowing_costs if year == 0 else 0.0

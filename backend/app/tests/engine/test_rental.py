@@ -8,6 +8,7 @@ import pytest
 from app.engine.rental import (
     calculate_gross_annual_rent,
     calculate_effective_annual_rent,
+    calculate_weekly_rent_from_annual,
 )
 
 
@@ -195,3 +196,28 @@ class TestInputValidation:
         """Negative year should propagate from calculate_gross_annual_rent."""
         with pytest.raises(ValueError, match="year must be >= 0"):
             calculate_effective_annual_rent(-1, 0.05, 500.0, 0.05)
+
+
+class TestCalculateWeeklyRentFromAnnual:
+    """Tests for calculate_weekly_rent_from_annual — currently NO tests."""
+
+    def test_basic_conversion(self):
+        from app.engine.rental import calculate_weekly_rent_from_annual
+        assert calculate_weekly_rent_from_annual(26_000) == pytest.approx(500)
+
+    def test_zero(self):
+        from app.engine.rental import calculate_weekly_rent_from_annual
+        assert calculate_weekly_rent_from_annual(0) == 0.0
+
+    def test_small_amount(self):
+        from app.engine.rental import calculate_weekly_rent_from_annual
+        assert calculate_weekly_rent_from_annual(52) == pytest.approx(1.0)
+
+    def test_fractional_result(self):
+        from app.engine.rental import calculate_weekly_rent_from_annual
+        result = calculate_weekly_rent_from_annual(10_000)
+        assert result == pytest.approx(10_000 / 52)
+
+    def test_large_amount(self):
+        from app.engine.rental import calculate_weekly_rent_from_annual
+        assert calculate_weekly_rent_from_annual(260_000) == pytest.approx(5_000)

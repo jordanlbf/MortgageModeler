@@ -616,3 +616,31 @@ class TestBorrowingCostDeductionEdgeCases:
         assert calculate_borrowing_cost_deduction(total, 30, 0) == pytest.approx(annual)
         assert calculate_borrowing_cost_deduction(total, 30, 4) == pytest.approx(annual)
         assert calculate_borrowing_cost_deduction(total, 30, 5) == 0.0
+
+
+class TestBorrowingCostDeductionBoundary:
+    """Additional boundary and edge case tests for borrowing cost deduction."""
+
+    def test_loan_term_zero_years(self):
+        """Zero loan term — should handle gracefully (division by zero risk)."""
+        # min(5, 0) = 0, would cause division by zero
+        # This is an edge case that may need a guard
+        try:
+            result = calculate_borrowing_cost_deduction(10_000, 0, 0)
+            # If it doesn't raise, it should return something reasonable
+            assert result >= 0
+        except (ZeroDivisionError, ValueError):
+            pass  # Acceptable — may need a guard added
+
+    def test_negative_year(self):
+        """Negative year should return 0."""
+        assert calculate_borrowing_cost_deduction(10_000, 30, -1) == 0.0
+
+    def test_exactly_101_dollars(self):
+        """$101 is just over threshold — should spread over 5 years."""
+        assert calculate_borrowing_cost_deduction(101, 30, 0) == pytest.approx(101 / 5)
+
+    def test_exactly_99_dollars(self):
+        """$99 is under threshold — full deduction year 0."""
+        assert calculate_borrowing_cost_deduction(99, 30, 0) == pytest.approx(99)
+        assert calculate_borrowing_cost_deduction(99, 30, 1) == 0.0

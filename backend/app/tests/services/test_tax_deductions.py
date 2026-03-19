@@ -1344,3 +1344,23 @@ class TestBorrowingCostDeductionInSummary:
 
         assert result_y0.borrowing_costs_deduction == pytest.approx(50)
         assert result_y1.borrowing_costs_deduction == 0.0
+
+
+class TestTaxDeductionLeapYear:
+    """Tests for leap year handling in days_held calculation."""
+
+    def test_leap_year_fy(self):
+        """FY 2024 (ending June 2024, 2024 is leap year) should have 366 days."""
+        fy = FinancialYear(2024)
+        assert fy.days == 366
+        purchase = date(2020, 1, 1)
+        expiry = date(2060, 1, 1)
+        assert _calculate_days_held_in_fy(purchase, expiry, fy) == 366
+
+    def test_non_leap_year_fy(self):
+        """FY 2025 should have 365 days."""
+        fy = FinancialYear(2025)
+        assert fy.days == 365
+        purchase = date(2020, 1, 1)
+        expiry = date(2060, 1, 1)
+        assert _calculate_days_held_in_fy(purchase, expiry, fy) == 365

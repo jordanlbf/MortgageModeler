@@ -5,8 +5,10 @@ Tests for tax engine.
 import pytest
 
 from app.engine.tax import calculate_income_tax, calculate_medicare_levy, calculate_medicare_levy_surcharge, \
-    calculate_hecs_repayment, calculate_total_tax
+    calculate_hecs_repayment, calculate_total_tax, calculate_tax_saving
+from app.engine.amortisation import effective_periodic_rate
 from app.models.tax import TaxProfile
+from app.models.loan import RepaymentFrequency
 
 
 def _tp(ti, ri=None, mlsi=None, hecs_bal=0, phi=False) -> TaxProfile:
@@ -395,3 +397,142 @@ class TestInputValidation:
     def test_mls_private_health_bypasses_brackets(self):
         """With private health, the bracket loop is never entered."""
         assert calculate_medicare_levy_surcharge(10_000_000, True) == 0
+
+
+class TestEffectivePeriodicRate:
+    """Tests for effective_periodic_rate() — daily-compounded periodic rate conversion."""
+
+    def test_monthly_rate(self):
+        """Monthly rate matches manual daily-compounding calculation."""
+        annual_rate = 0.06
+        daily_rate = annual_rate / 365
+        days = 365 / 12
+        expected = (1 + daily_rate) ** days - 1
+        assert effective_periodic_rate(annual_rate, RepaymentFrequency.MONTHLY) == pytest.approx(expected, rel=1e-10)
+
+    def test_weekly_rate(self):
+        """Weekly rate matches manual daily-compounding calculation."""
+        annual_rate = 0.055
+        daily_rate = annual_rate / 365
+        days = 7
+        expected = (1 + daily_rate) ** days - 1
+        assert effective_periodic_rate(annual_rate, RepaymentFrequency.WEEKLY) == pytest.approx(expected, rel=1e-10)
+
+    def test_fortnightly_rate(self):
+        """Fortnightly rate matches manual daily-compounding calculation."""
+        annual_rate = 0.062
+        daily_rate = annual_rate / 365
+        days = 14
+        expected = (1 + daily_rate) ** days - 1
+        assert effective_periodic_rate(annual_rate, RepaymentFrequency.FORTNIGHTLY) == pytest.approx(expected, rel=1e-10)
+
+    def test_zero_annual_rate(self):
+        """Zero annual rate should return zero for any frequency."""
+        assert effective_periodic_rate(0.0, RepaymentFrequency.MONTHLY) == 0
+        assert effective_periodic_rate(0.0, RepaymentFrequency.WEEKLY) == 0
+        assert effective_periodic_rate(0.0, RepaymentFrequency.FORTNIGHTLY) == 0
+
+    def test_rate_increases_with_longer_period(self):
+        """A longer period should produce a higher effective rate (same annual rate)."""
+        annual_rate = 0.06
+        weekly = effective_periodic_rate(annual_rate, RepaymentFrequency.WEEKLY)
+        fortnightly = effective_periodic_rate(annual_rate, RepaymentFrequency.FORTNIGHTLY)
+        monthly = effective_periodic_rate(annual_rate, RepaymentFrequency.MONTHLY)
+        assert weekly < fortnightly < monthly
+
+
+class TestCalculateTaxSaving:
+    """Tests for calculate_tax_saving() — two-pass tax saving from investment property."""
+
+    def test_negative_rental_income_gives_positive_saving(self):
+        """A rental loss (negative NRI) should produce a positive tax saving."""
+        tp = _tp(100_000, phi=True)
+        saving = calculate_tax_saving(tp, -20_000)
+        assert saving > 0
+
+    def test_positive_rental_income_gives_negative_saving(self):
+        """A rental profit (positive NRI) should produce a negative saving (extra tax owed)."""
+        tp = _tp(100_000, phi=True)
+        saving = calculate_tax_saving(tp, 10_000)
+        assert saving < 0
+
+    def test_zero_rental_income_gives_zero_saving(self):
+        """Zero net rental income should produce zero tax saving."""
+        tp = _tp(100_000, phi=True)
+        saving = calculate_tax_saving(tp, 0)
+        assert saving == 0
+
+    def test_loss_reduces_ti_but_not_ri_or_mlsi(self):
+        """A rental loss should reduce TI but RI and MLSI stay unchanged."""
+        base_ti = 120_000
+        loss = -30_000
+        tp = _tp(base_ti, phi=True)
+
+        # Manually compute tax_without and tax_with to verify income measure handling
+        tax_without = calculate_total_tax(tp)
+
+        # With loss: TI drops, but RI and MLSI stay the same (loss added back = max(-30000,0) = 0)
+        adjusted = TaxProfile(
+            taxable_income=base_ti + loss,
+            repayment_income=base_ti + max(loss, 0),  # stays at base_ti
+            mls_income=base_ti + max(loss, 0),         # stays at base_ti
+            hecs_balance=0,
+            has_private_health=True,
+        )
+        tax_with = calculate_total_tax(adjusted)
+
+        expected_saving = tax_without - tax_with
+        actual_saving = calculate_tax_saving(tp, loss)
+        assert actual_saving == pytest.approx(expected_saving, abs=0.01)
+
+        # RI and MLSI should be identical in both passes (loss not subtracted)
+        assert adjusted.repayment_income == base_ti
+        assert adjusted.mls_income == base_ti
+
+    def test_large_loss_pushes_into_lower_bracket(self):
+        """A large rental loss can push TI into a lower tax bracket, yielding a bigger saving."""
+        # Base TI of $50k sits in the 30% bracket; a $10k loss pulls part into 16% bracket
+        tp = _tp(50_000, phi=True)
+        small_loss_saving = calculate_tax_saving(tp, -5_000)
+        large_loss_saving = calculate_tax_saving(tp, -10_000)
+        assert large_loss_saving > small_loss_saving
+
+        # Verify the large loss crosses the bracket boundary (45k)
+        # $50k - $10k = $40k (fully in 16% bracket), so marginal rate on last $5k drops from 30% to 16%
+        # small: 5000 * 0.30 = $1500 saving (all in 30% bracket)
+        # large: 5000 * 0.30 + 5000 * 0.16 = $2300 saving (crosses into 16% bracket)
+        # Also account for Medicare levy reduction
+        assert large_loss_saving == pytest.approx(
+            5_000 * 0.30 + 5_000 * 0.16 + 10_000 * 0.02, abs=1
+        )
+
+    def test_hecs_interaction_with_rental_income(self):
+        """HECS repayment should not change when there is a rental loss (loss added back to RI)."""
+        tp = _tp(100_000, hecs_bal=30_000, phi=True)
+
+        # With a loss, RI stays the same so HECS component is unchanged
+        # Only TI decreases, affecting income tax and Medicare levy
+        saving = calculate_tax_saving(tp, -15_000)
+
+        # Saving should equal the IT + ML reduction on the $15k loss
+        # $100k and $85k are both in the 30% bracket (above $45k)
+        # IT saving: 15,000 * 0.30 = $4,500
+        # ML saving: 15,000 * 0.02 = $300
+        assert saving == pytest.approx(4_800, abs=1)
+
+    def test_mls_interaction_with_rental_income(self):
+        """MLS should not change with a rental loss (loss added back to MLSI), but should increase with profit."""
+        # Use income above MLS thresholds, no private health
+        tp = _tp(120_000, phi=False)
+
+        # Loss: MLSI stays at $120k, so MLS unchanged
+        loss_saving = calculate_tax_saving(tp, -10_000)
+        # Only IT + ML reduction: 10,000 * 0.30 + 10,000 * 0.02 = $3,200
+        assert loss_saving == pytest.approx(3_200, abs=1)
+
+        # Profit: MLSI increases from $120k to $130k (both in 1.25% tier)
+        # MLS at $120k: 120,000 * 0.0125 = $1,500; MLS at $130k: 130,000 * 0.0125 = $1,625 => extra MLS = $125
+        # IT increase: 10,000 * 0.30 = $3,000; ML increase: 10,000 * 0.02 = $200
+        # Total extra tax = $3,000 + $200 + $125 = $3,325 => saving = -$3,325
+        profit_saving = calculate_tax_saving(tp, 10_000)
+        assert profit_saving == pytest.approx(-3_325, abs=1)

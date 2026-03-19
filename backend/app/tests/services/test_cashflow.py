@@ -1032,3 +1032,85 @@ class TestBuildRentvestCashflow:
         rentvest = self._build(property=prop_inv, projection_years=3)
         assert all(y.rent_paid == 0 for y in ppor.years)
         assert all(y.rent_paid > 0 for y in rentvest.years)
+
+
+class TestCashflowEdgeCases:
+    """Edge cases for cashflow projections."""
+
+    def test_ppor_negative_income_growth(self):
+        """Negative income growth should reduce income over time."""
+        result = build_ppor_cashflow(
+            property=_make_property(is_ppor=True),
+            tax_profile=_make_tax_profile(income_growth_rate=-0.02),
+            loan=_make_loan(),
+            ongoing_costs=_make_ongoing_costs(),
+            projection_years=3,
+        )
+        assert result.years[2].net_income < result.years[0].net_income
+
+    def test_ppor_zero_appreciation(self):
+        """Zero appreciation should keep property value flat."""
+        result = build_ppor_cashflow(
+            property=_make_property(is_ppor=True, annual_appreciation=0.0),
+            tax_profile=_make_tax_profile(),
+            loan=_make_loan(),
+            ongoing_costs=_make_ongoing_costs(),
+            projection_years=3,
+        )
+        assert result.years[0].property_value == pytest.approx(result.years[2].property_value, abs=1)
+
+    def test_rentvest_negative_appreciation(self):
+        """Negative appreciation (property depreciation) should reduce value."""
+        result = build_rentvest_cashflow(
+            property=_make_property(
+                is_ppor=False, annual_appreciation=-0.02,
+                weekly_rent=450, rent_growth=0.03, vacancy_weeks=2,
+                buildings=[
+                    DepreciableBuilding(
+                        name="Main", construction_cost=250_000,
+                        purchase_date=date(2020, 1, 15),
+                        construction_start_date=date(2019, 1, 1),
+                    )
+                ],
+            ),
+            tax_profile=_make_tax_profile(),
+            loan=_make_loan(),
+            ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
+            rentvest=_make_rentvest(),
+            projection_years=3,
+        )
+        assert result.years[2].property_value < result.years[0].property_value
+
+    def test_ppor_single_year(self):
+        """Single year projection should work."""
+        result = build_ppor_cashflow(
+            property=_make_property(is_ppor=True),
+            tax_profile=_make_tax_profile(),
+            loan=_make_loan(),
+            ongoing_costs=_make_ongoing_costs(),
+            projection_years=1,
+        )
+        assert len(result.years) == 1
+        assert result.summary is not None
+
+    def test_rentvest_single_year(self):
+        """Single year rentvest should work and have CGT."""
+        result = build_rentvest_cashflow(
+            property=_make_property(
+                is_ppor=False, weekly_rent=450, rent_growth=0.03, vacancy_weeks=2,
+                buildings=[
+                    DepreciableBuilding(
+                        name="Main", construction_cost=250_000,
+                        purchase_date=date(2020, 1, 15),
+                        construction_start_date=date(2019, 1, 1),
+                    )
+                ],
+            ),
+            tax_profile=_make_tax_profile(),
+            loan=_make_loan(),
+            ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
+            rentvest=_make_rentvest(),
+            projection_years=1,
+        )
+        assert len(result.years) == 1
+        assert result.cgt is not None

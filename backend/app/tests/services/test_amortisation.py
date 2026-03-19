@@ -5,8 +5,9 @@ Tests for amortisation service — build_schedule_result.
 import pytest
 from datetime import date
 
-from app.services.amortisation import build_schedule_result
-from app.models.loan import RepaymentFrequency, RateChange, LoanConfig
+from app.services.amortisation import build_schedule_result, build_amortisation_schedule, build_year_chart_point
+from app.models.amortisation import AmortisationSchedule
+from app.models.loan import RepaymentFrequency, RateChange, LoanConfig, BorrowingCosts
 from app.models.property import Property
 
 
@@ -26,7 +27,7 @@ def _make_property(purchase_price=500_000, annual_appreciation=0.03) -> Property
 def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30,
                frequency=RepaymentFrequency.MONTHLY, offset_balance=0.0,
                offset_contribution=0.0, extra_repayment=0.0,
-               rate_changes=None) -> LoanConfig:
+               rate_changes=None, borrowing_costs=None) -> LoanConfig:
     return LoanConfig(
         deposit=deposit,
         annual_rate=annual_rate,
@@ -36,6 +37,7 @@ def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30,
         offset_contribution=offset_contribution,
         extra_repayment=extra_repayment,
         rate_changes=rate_changes or [],
+        borrowing_costs=borrowing_costs or BorrowingCosts(),
     )
 
 
@@ -290,3 +292,51 @@ class TestEdgeCases:
             assert pt.total_interest == round(pt.total_interest, 2)
             assert pt.property_value == round(pt.property_value, 2)
             assert pt.equity == round(pt.equity, 2)
+
+
+class TestBuildAmortisationScheduleDirect:
+    """Direct tests for build_amortisation_schedule (currently only tested indirectly)."""
+
+    def test_returns_amortisation_schedule(self):
+        schedule = build_amortisation_schedule(_make_property(), _make_loan())
+        assert isinstance(schedule, AmortisationSchedule)
+
+    def test_has_rows(self):
+        schedule = build_amortisation_schedule(_make_property(), _make_loan())
+        assert len(schedule.rows) > 0
+
+    def test_periods_per_year_monthly(self):
+        schedule = build_amortisation_schedule(_make_property(), _make_loan())
+        assert schedule.periods_per_year == 12
+
+    def test_periods_per_year_weekly(self):
+        from app.models.loan import RepaymentFrequency
+        schedule = build_amortisation_schedule(
+            _make_property(),
+            _make_loan(frequency=RepaymentFrequency.WEEKLY),
+        )
+        assert schedule.periods_per_year == 52
+
+    def test_zero_loan_empty_schedule(self):
+        schedule = build_amortisation_schedule(
+            _make_property(purchase_price=500_000),
+            _make_loan(deposit=500_000),
+        )
+        assert len(schedule.rows) == 0
+
+    def test_total_interest_positive(self):
+        schedule = build_amortisation_schedule(_make_property(), _make_loan())
+        assert schedule.total_interest > 0
+
+    def test_capitalised_borrowing_costs_increase_principal(self):
+        """Capitalised borrowing costs should increase the loan principal."""
+        from app.models.loan import BorrowingCosts
+        schedule_no_bc = build_amortisation_schedule(
+            _make_property(), _make_loan()
+        )
+        schedule_with_bc = build_amortisation_schedule(
+            _make_property(),
+            _make_loan(borrowing_costs=BorrowingCosts(lmi=20_000)),
+        )
+        # Higher principal means more total interest
+        assert schedule_with_bc.total_interest > schedule_no_bc.total_interest
