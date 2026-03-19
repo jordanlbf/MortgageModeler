@@ -20,7 +20,7 @@ from app.models.financial import FinancialYear
 from app.models.loan import LoanConfig
 from app.models.property import Property, OngoingCostsConfig, OngoingCostProjection, RentvestConfig, YearCost, UpfrontCosts
 from app.models.tax import TaxProfile
-from app.services.amortisation import build_schedule_result
+from app.services.amortisation import build_amortisation_schedule
 from app.services.ongoing_costs import build_ongoing_cost_projection
 from app.services.tax_deductions import build_tax_deduction_summary
 from app.services.upfront_costs import build_upfront_cost_estimate
@@ -88,7 +88,7 @@ def _build_projection_inputs(
         Tuple of (resolved upfront costs, amortisation schedule, ongoing cost projection)
     """
     upfront_costs = build_upfront_cost_estimate(property=property, loan=loan)
-    schedule = build_schedule_result(property=property, loan=loan).schedule
+    schedule = build_amortisation_schedule(property=property, loan=loan)
     cost_projection = build_ongoing_cost_projection(property=property, ongoing_costs=ongoing_costs, projection_years=projection_years)
     return upfront_costs, schedule, cost_projection
 
