@@ -332,6 +332,7 @@ def build_rentvest_cashflow(
             rental_income=year_costs.rental_income,
             tax_profile=grown_profile,
             financial_year=financial_year,
+            loan=loan,
         )
 
         cashflow_year = _calculate_cashflow_year(

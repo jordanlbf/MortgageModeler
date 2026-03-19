@@ -14,6 +14,7 @@ from app.services.tax_deductions import (
 )
 from app.models.deductions import DepreciableBuilding, DepreciableAsset, DepreciationMethod
 from app.models.financial import FinancialYear
+from app.models.loan import LoanConfig, BorrowingCosts
 from app.models.property import YearCost, Property
 from app.models.tax import TaxProfile
 from app.engine.tax import calculate_total_tax
@@ -88,6 +89,16 @@ def _make_tax_profile(taxable_income=100_000, **overrides) -> TaxProfile:
     )
     defaults.update(overrides)
     return TaxProfile(**defaults)
+
+
+def _make_loan(loan_term_years=30, borrowing_costs=None) -> LoanConfig:
+    """Create a LoanConfig with sensible defaults."""
+    return LoanConfig(
+        deposit=100_000,
+        annual_rate=0.06,
+        loan_term_years=loan_term_years,
+        borrowing_costs=borrowing_costs or BorrowingCosts(),
+    )
 
 
 # ──────────────────────────────────────────────
@@ -187,6 +198,7 @@ class TestBuildTaxDeductionSummaryBasic:
             rental_income=25_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.is_negatively_geared is True
@@ -210,6 +222,7 @@ class TestBuildTaxDeductionSummaryBasic:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.is_negatively_geared is False
@@ -229,6 +242,7 @@ class TestBuildTaxDeductionSummaryBasic:
             rental_income=0,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.is_negatively_geared is True
@@ -251,6 +265,7 @@ class TestBuildTaxDeductionSummaryBasic:
             rental_income=30_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.total_deductions == 0.0
@@ -278,6 +293,7 @@ class TestDeductionBreakdown:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         expected = (2_000 + 1_200 + 1_500 + 1_000 + 3_000 + 5_000 + 2_000)
@@ -300,6 +316,7 @@ class TestDeductionBreakdown:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.mortgage_interest == 18_500
@@ -320,6 +337,7 @@ class TestDeductionBreakdown:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         expected = (result.mortgage_interest + result.deductible_expenses +
@@ -339,6 +357,7 @@ class TestDeductionBreakdown:
             rental_income=30_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.net_rental_income == pytest.approx(30_000 - result.total_deductions)
@@ -369,6 +388,7 @@ class TestDiv43InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_building == pytest.approx(10_000, abs=1)
@@ -392,6 +412,7 @@ class TestDiv43InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_building == pytest.approx(12_500, abs=1)
@@ -414,6 +435,7 @@ class TestDiv43InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_building == 0.0
@@ -436,6 +458,7 @@ class TestDiv43InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         days = (date(2025, 7, 1) - date(2025, 1, 1)).days
@@ -462,6 +485,7 @@ class TestDiv43InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_building == 0.0
@@ -485,6 +509,7 @@ class TestDiv43InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_building == 0.0
@@ -508,6 +533,7 @@ class TestDiv43InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_building == pytest.approx(10_000, abs=1)
@@ -535,6 +561,7 @@ class TestDiv43InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_building == pytest.approx(10_000, abs=1)
@@ -556,6 +583,7 @@ class TestDiv43InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_building == 0.0
@@ -586,6 +614,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant > 0
@@ -608,6 +637,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == 0.0
@@ -630,6 +660,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant > 0
@@ -652,6 +683,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant > 0
@@ -675,6 +707,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == pytest.approx(400, abs=1)
@@ -697,6 +730,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == pytest.approx(400, abs=1)
@@ -719,6 +753,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == pytest.approx(200, abs=1)
@@ -742,6 +777,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == pytest.approx(1_150, abs=1)
@@ -764,6 +800,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == 0.0
@@ -785,6 +822,7 @@ class TestDiv40InService:
             rental_income=50_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == 0.0
@@ -811,6 +849,7 @@ class TestTaxSaving:
             rental_income=25_000,
             tax_profile=profile,
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         tax_without = calculate_total_tax(profile)
@@ -844,6 +883,7 @@ class TestTaxSaving:
             rental_income=30_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.tax_saving < 0
@@ -865,6 +905,7 @@ class TestTaxSaving:
             rental_income=30_000,
             tax_profile=_make_tax_profile(),
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         assert result.tax_saving == pytest.approx(0)
@@ -887,6 +928,7 @@ class TestTaxSaving:
             rental_income=0,
             tax_profile=profile,
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         simple_marginal = 10_000 * 0.30
@@ -914,6 +956,7 @@ class TestTaxSaving:
             rental_income=0,
             tax_profile=profile,
             financial_year=fy,
+            loan=_make_loan(),
         )
 
         tax_without = calculate_total_tax(TaxProfile(20_000, 20_000, 20_000, 0, True))
@@ -1111,3 +1154,193 @@ class TestCalculatePlantDepreciation:
         result = _calculate_plant_depreciation([old, new], date(2020, 1, 15), fy)
         # Only new aircon: 2000 * 2/10 = 400
         assert result == pytest.approx(400, abs=1)
+
+
+# ──────────────────────────────────────────────
+# Borrowing cost deduction in build_tax_deduction_summary
+# ──────────────────────────────────────────────
+
+class TestBorrowingCostDeductionInSummary:
+    """Tests for borrowing cost deduction integration in the service."""
+
+    def test_borrowing_costs_included_in_total_deductions(self):
+        """Borrowing cost deduction should be part of total_deductions."""
+        prop = _make_property()
+        fy = FinancialYear(2020)  # year 0 relative to 2020 purchase
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000, mortgage_registration_fee=238, loan_establishment_fee=300))
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=20_000,
+            ongoing_costs=costs,
+            rental_income=25_000,
+            tax_profile=_make_tax_profile(),
+            financial_year=fy,
+            loan=loan,
+        )
+
+        # Total should include borrowing cost deduction
+        expected_bc = (10_000 + 238 + 300) / 5  # spread over 5 years
+        assert result.borrowing_costs_deduction == pytest.approx(expected_bc, abs=1)
+        assert result.total_deductions == pytest.approx(20_000 + expected_bc, abs=1)
+
+    def test_borrowing_costs_field_on_result(self):
+        prop = _make_property()
+        fy = FinancialYear(2021)
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=5_000))
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            ongoing_costs=costs,
+            rental_income=25_000,
+            tax_profile=_make_tax_profile(),
+            financial_year=fy,
+            loan=loan,
+        )
+
+        assert result.borrowing_costs_deduction == pytest.approx(5_000 / 5)
+
+    def test_no_borrowing_costs_zero_deduction(self):
+        """No borrowing costs → zero deduction."""
+        prop = _make_property()
+        fy = FinancialYear(2021)
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        loan = _make_loan()  # default BorrowingCosts — all None
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            ongoing_costs=costs,
+            rental_income=25_000,
+            tax_profile=_make_tax_profile(),
+            financial_year=fy,
+            loan=loan,
+        )
+
+        assert result.borrowing_costs_deduction == 0.0
+
+    def test_borrowing_costs_beyond_5_years_zero(self):
+        """Year 6 (beyond spread period) → zero deduction."""
+        prop = _make_property()
+        fy = FinancialYear(2025)  # year 5 relative to 2020 purchase (beyond 5-year spread)
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000))
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            ongoing_costs=costs,
+            rental_income=25_000,
+            tax_profile=_make_tax_profile(),
+            financial_year=fy,
+            loan=loan,
+        )
+
+        assert result.borrowing_costs_deduction == 0.0
+
+    def test_borrowing_costs_short_loan_term(self):
+        """3-year loan → spread over 3 years instead of 5."""
+        prop = _make_property()
+        fy = FinancialYear(2021)
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        loan = _make_loan(
+            loan_term_years=3,
+            borrowing_costs=BorrowingCosts(lmi=9_000),
+        )
+
+        result = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            ongoing_costs=costs,
+            rental_income=25_000,
+            tax_profile=_make_tax_profile(),
+            financial_year=fy,
+            loan=loan,
+        )
+
+        assert result.borrowing_costs_deduction == pytest.approx(3_000)
+
+    def test_borrowing_costs_increases_tax_saving(self):
+        """Borrowing cost deduction should increase tax saving (more deductions)."""
+        prop = _make_property()
+        fy = FinancialYear(2021)
+        costs = _make_year_cost()
+
+        result_no_bc = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=20_000,
+            ongoing_costs=costs,
+            rental_income=25_000,
+            tax_profile=_make_tax_profile(),
+            financial_year=fy,
+            loan=_make_loan(),
+        )
+
+        result_with_bc = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=20_000,
+            ongoing_costs=costs,
+            rental_income=25_000,
+            tax_profile=_make_tax_profile(),
+            financial_year=fy,
+            loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=20_000)),
+        )
+
+        assert result_with_bc.total_deductions > result_no_bc.total_deductions
+        assert result_with_bc.tax_saving > result_no_bc.tax_saving
+
+    def test_small_borrowing_costs_full_year_zero(self):
+        """$50 borrowing costs — fully deducted in year 0, zero in year 1."""
+        prop = _make_property()
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=50))
+
+        result_y0 = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            ongoing_costs=costs,
+            rental_income=25_000,
+            tax_profile=_make_tax_profile(),
+            financial_year=FinancialYear(2020),  # year 0
+            loan=loan,
+        )
+
+        result_y1 = build_tax_deduction_summary(
+            property=prop,
+            mortgage_interest=0,
+            ongoing_costs=costs,
+            rental_income=25_000,
+            tax_profile=_make_tax_profile(),
+            financial_year=FinancialYear(2021),  # year 1
+            loan=loan,
+        )
+
+        assert result_y0.borrowing_costs_deduction == pytest.approx(50)
+        assert result_y1.borrowing_costs_deduction == 0.0
