@@ -104,6 +104,9 @@ def _build_loan(req: CashFlowPPORRequest) -> LoanConfig:
             lmi=req.loan.borrowing_costs.lmi,
             mortgage_registration_fee=req.loan.borrowing_costs.mortgage_registration_fee,
             loan_establishment_fee=req.loan.borrowing_costs.loan_establishment_fee,
+            capitalise_lmi=req.loan.borrowing_costs.capitalise_lmi,
+            capitalise_mortgage_registration_fee=req.loan.borrowing_costs.capitalise_mortgage_registration_fee,
+            capitalise_loan_establishment_fee=req.loan.borrowing_costs.capitalise_loan_establishment_fee,
         ),
     )
 

@@ -31,6 +31,7 @@ def build_amortisation_schedule(
         AmortisationSchedule with per-period rows and summary stats
     """
     loan_amount = max(property.purchase_price - loan.deposit, 0.0)
+    loan_amount += loan.borrowing_costs.total_capitalised
 
     return generate_schedule(
         principal=loan_amount,
@@ -49,6 +50,7 @@ def build_year_chart_point(
     property: Property,
     loan: LoanConfig,
     schedule: AmortisationSchedule,
+    loan_amount: float,
 ) -> YearChartPoint:
     """
     Build a single year's chart data point.
@@ -61,11 +63,11 @@ def build_year_chart_point(
         property: Property details with purchase price and annual appreciation
         loan: Loan configuration (deposit, offset balance/contribution, frequency)
         schedule: Full amortisation schedule to read balances from
+        loan_amount: Pre-calculated loan principal (including capitalised costs)
 
     Returns:
         YearChartPoint for the given year
     """
-    loan_amount = max(property.purchase_price - loan.deposit, 0.0)
     ppy = schedule.periods_per_year
 
     if year == 0:
@@ -122,12 +124,13 @@ def build_schedule_result(
         ScheduleResult with per-period schedule, summary stats, and yearly chart data
     """
     loan_amount = max(property.purchase_price - loan.deposit, 0.0)
+    loan_amount += loan.borrowing_costs.total_capitalised
     lvr = loan_amount / property.purchase_price if property.purchase_price > 0 else 0.0
 
     schedule = build_amortisation_schedule(property=property, loan=loan)
 
     chart_data = [
-        build_year_chart_point(year, property, loan, schedule)
+        build_year_chart_point(year, property, loan, schedule, loan_amount)
         for year in range(loan.loan_term_years + 1)
     ]
 

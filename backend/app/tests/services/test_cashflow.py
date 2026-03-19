@@ -794,7 +794,7 @@ class TestBuildPporCashflow:
 
     def test_cumulative_is_running_total(self):
         result = self._build(projection_years=3)
-        expected = -result.upfront_costs.total
+        expected = -result.upfront_costs.total_cash_at_settlement
         for y in result.years:
             expected += y.net_position
             assert y.cumulative_position == pytest.approx(expected, abs=1)
@@ -1018,7 +1018,7 @@ class TestBuildRentvestCashflow:
 
     def test_cumulative_is_running_total(self):
         result = self._build(projection_years=3)
-        expected = -result.upfront_costs.total
+        expected = -result.upfront_costs.total_cash_at_settlement
         for y in result.years:
             expected += y.net_position
             assert y.cumulative_position == pytest.approx(expected, abs=1)

@@ -70,12 +70,22 @@ class UpfrontCosts:
     borrowing_costs: BorrowingCosts = field(default_factory=BorrowingCosts)
 
     @property
-    def total(self) -> float:
+    def total_cash_at_settlement(self) -> float:
         """
-        Total cash out at settlement.
+        Total cash required at settlement (excludes capitalised costs).
 
         Returns:
-            Sum of purchase costs and borrowing costs
+            Purchase costs + non-capitalised borrowing costs
+        """
+        return self.purchase_costs.total + self.borrowing_costs.total_upfront
+
+    @property
+    def total(self) -> float:
+        """
+        Total of all upfront costs (capitalised and non-capitalised).
+
+        Returns:
+            Sum of all purchase costs and all borrowing costs
         """
         return self.purchase_costs.total + self.borrowing_costs.total
 
