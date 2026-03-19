@@ -9,14 +9,12 @@ CashFlowYear entries, then computes the projection summary.
 
 from typing import Optional
 
-from dataclasses import replace
 from datetime import timedelta
 
 from app.engine.cgt import calculate_cgt
 from app.engine.property import calculate_property_value
 from app.models.amortisation import AmortisationSchedule, ScheduleRow
 from app.models.cashflow import CashFlowYear, CashFlowSummary, CashFlowPPORResult, CashFlowRentvestResult
-from app.models.cgt import CGTResult
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.financial import FinancialYear
 from app.models.loan import LoanConfig
