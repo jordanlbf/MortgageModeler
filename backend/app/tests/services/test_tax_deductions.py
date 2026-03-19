@@ -5,7 +5,13 @@ Tests for tax deductions service — build_tax_deduction_summary and _calculate_
 import pytest
 from datetime import date, timedelta
 
-from app.services.tax_deductions import build_tax_deduction_summary, _calculate_days_held_in_fy
+from app.services.tax_deductions import (
+    build_tax_deduction_summary,
+    _calculate_days_held_in_fy,
+    _calculate_ongoing_expenses,
+    _calculate_building_depreciation,
+    _calculate_plant_depreciation,
+)
 from app.models.deductions import DepreciableBuilding, DepreciableAsset, DepreciationMethod
 from app.models.financial import FinancialYear
 from app.models.property import YearCost, Property
@@ -914,3 +920,194 @@ class TestTaxSaving:
         tax_with = calculate_total_tax(TaxProfile(10_000, 20_000, 20_000, 0, True))
         expected = tax_without - tax_with
         assert result.tax_saving == pytest.approx(expected)
+
+
+# ──────────────────────────────────────────────
+# _calculate_ongoing_expenses
+# ──────────────────────────────────────────────
+
+class TestCalculateOngoingExpenses:
+    """Tests for the ongoing expenses helper."""
+
+    def test_sums_all_cost_fields(self):
+        costs = _make_year_cost()
+        result = _calculate_ongoing_expenses(costs)
+        expected = (2_000 + 1_200 + 1_500 + 1_000 + 3_000 + 5_000 + 2_000)
+        assert result == pytest.approx(expected)
+
+    def test_excludes_property_value(self):
+        """property_value should not be included in expenses."""
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        assert _calculate_ongoing_expenses(costs) == 0.0
+
+    def test_excludes_rental_income(self):
+        """rental_income should not be included in expenses."""
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        # YearCost still has rental_income and property_value but they shouldn't count
+        assert _calculate_ongoing_expenses(costs) == 0.0
+
+    def test_single_field(self):
+        costs = _make_year_cost(
+            council_rates=5_000, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        assert _calculate_ongoing_expenses(costs) == pytest.approx(5_000)
+
+    def test_all_zeros(self):
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        assert _calculate_ongoing_expenses(costs) == 0.0
+
+    def test_includes_landlord_insurance(self):
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=1_500, strata_fees=0, maintenance_cost=0,
+            management_fee=0,
+        )
+        assert _calculate_ongoing_expenses(costs) == pytest.approx(1_500)
+
+    def test_includes_management_fee(self):
+        costs = _make_year_cost(
+            council_rates=0, water_rates=0, building_insurance=0,
+            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+            management_fee=2_500,
+        )
+        assert _calculate_ongoing_expenses(costs) == pytest.approx(2_500)
+
+
+# ──────────────────────────────────────────────
+# _calculate_building_depreciation
+# ──────────────────────────────────────────────
+
+class TestCalculateBuildingDepreciation:
+    """Tests for the Div 43 building depreciation helper."""
+
+    def test_single_building_full_year(self):
+        """$400k building, full FY — $10,000 deduction."""
+        building = _make_building(cost=400_000, purchase_date=date(2020, 1, 15))
+        fy = FinancialYear(2025)
+        result = _calculate_building_depreciation([building], fy)
+        assert result == pytest.approx(10_000, abs=1)
+
+    def test_multiple_buildings(self):
+        b1 = _make_building(name="Original", cost=400_000, purchase_date=date(2020, 1, 15))
+        b2 = _make_building(name="Extension", cost=100_000, purchase_date=date(2022, 6, 1))
+        fy = FinancialYear(2025)
+        result = _calculate_building_depreciation([b1, b2], fy)
+        assert result == pytest.approx(12_500, abs=1)
+
+    def test_pre_1987_excluded(self):
+        building = _make_building(
+            cost=400_000, purchase_date=date(2020, 1, 15),
+            construction_start_date=date(1985, 3, 1),
+        )
+        fy = FinancialYear(2025)
+        result = _calculate_building_depreciation([building], fy)
+        assert result == 0.0
+
+    def test_expired_building(self):
+        building = _make_building(cost=400_000, purchase_date=date(1980, 1, 1))
+        fy = FinancialYear(2025)
+        result = _calculate_building_depreciation([building], fy)
+        assert result == 0.0
+
+    def test_empty_list(self):
+        assert _calculate_building_depreciation([], FinancialYear(2025)) == 0.0
+
+    def test_mid_fy_purchase_pro_rata(self):
+        building = _make_building(cost=400_000, purchase_date=date(2025, 1, 1))
+        fy = FinancialYear(2025)
+        result = _calculate_building_depreciation([building], fy)
+        assert result < 10_000
+        assert result > 0
+
+    def test_mixed_eligible_and_ineligible(self):
+        old = _make_building(name="Old", cost=200_000,
+                             construction_start_date=date(1980, 1, 1))
+        new = _make_building(name="New", cost=400_000,
+                             construction_start_date=date(2019, 6, 1))
+        fy = FinancialYear(2025)
+        result = _calculate_building_depreciation([old, new], fy)
+        assert result == pytest.approx(10_000, abs=1)
+
+
+# ──────────────────────────────────────────────
+# _calculate_plant_depreciation
+# ──────────────────────────────────────────────
+
+class TestCalculatePlantDepreciation:
+    """Tests for the Div 40 plant depreciation helper."""
+
+    def test_diminishing_value(self):
+        """$2,000 asset, 10yr life, DV = $400."""
+        asset = _make_asset(cost=2_000, life=10, wdv=2_000)
+        fy = FinancialYear(2025)
+        result = _calculate_plant_depreciation([asset], date(2020, 1, 15), fy)
+        assert result == pytest.approx(400, abs=1)
+
+    def test_prime_cost(self):
+        """$2,000 asset, 10yr life, PC = $200."""
+        asset = _make_asset(cost=2_000, life=10, wdv=2_000,
+                            method=DepreciationMethod.PRIME_COST)
+        fy = FinancialYear(2025)
+        result = _calculate_plant_depreciation([asset], date(2020, 1, 15), fy)
+        assert result == pytest.approx(200, abs=1)
+
+    def test_multiple_assets(self):
+        a1 = _make_asset(name="Aircon", cost=2_000, life=10, wdv=2_000)
+        a2 = _make_asset(name="Carpet", cost=3_000, life=8, wdv=3_000)
+        fy = FinancialYear(2025)
+        result = _calculate_plant_depreciation([a1, a2], date(2020, 1, 15), fy)
+        assert result == pytest.approx(1_150, abs=1)
+
+    def test_secondhand_post_2017_excluded(self):
+        asset = _make_asset(cost=2_000, life=10, wdv=2_000,
+                            purchase_date=date(2018, 6, 1))
+        fy = FinancialYear(2025)
+        result = _calculate_plant_depreciation([asset], date(2020, 1, 15), fy)
+        assert result == 0.0
+
+    def test_secondhand_pre_2017_allowed(self):
+        asset = _make_asset(cost=2_000, life=20, wdv=2_000,
+                            purchase_date=date(2014, 1, 1))
+        fy = FinancialYear(2025)
+        result = _calculate_plant_depreciation([asset], date(2016, 3, 1), fy)
+        assert result > 0
+
+    def test_owner_installed_post_2017_allowed(self):
+        asset = _make_asset(cost=2_000, life=10, wdv=2_000,
+                            purchase_date=date(2020, 1, 15))
+        fy = FinancialYear(2025)
+        result = _calculate_plant_depreciation([asset], date(2020, 1, 15), fy)
+        assert result > 0
+
+    def test_expired_asset(self):
+        asset = _make_asset(cost=2_000, life=5, purchase_date=date(2010, 1, 1), wdv=100)
+        fy = FinancialYear(2025)
+        result = _calculate_plant_depreciation([asset], date(2010, 1, 1), fy)
+        assert result == 0.0
+
+    def test_empty_list(self):
+        assert _calculate_plant_depreciation([], date(2020, 1, 15), FinancialYear(2025)) == 0.0
+
+    def test_mixed_depreciable_and_non_depreciable(self):
+        old = _make_asset(name="Old carpet", cost=3_000, life=10, wdv=3_000,
+                          purchase_date=date(2015, 1, 1))
+        new = _make_asset(name="New aircon", cost=2_000, life=10, wdv=2_000,
+                          purchase_date=date(2020, 6, 1))
+        fy = FinancialYear(2025)
+        result = _calculate_plant_depreciation([old, new], date(2020, 1, 15), fy)
+        # Only new aircon: 2000 * 2/10 = 400
+        assert result == pytest.approx(400, abs=1)
