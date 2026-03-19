@@ -6,16 +6,17 @@ Run with: uvicorn app.main:app --reload
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.config.settings import settings
 from app.routers import amortisation, tax, upfront_costs, ongoing_costs, cashflow
 
 app = FastAPI(
-    title="MortgageModeler",
-    version="0.1.0",
+    title=settings.APP_TITLE,
+    version=settings.APP_VERSION,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -29,4 +30,10 @@ app.include_router(cashflow.router, prefix="/api")
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    """Health check with environment context."""
+    return {
+        "status": "ok",
+        "environment": settings.APP_ENV,
+        "version": settings.APP_VERSION,
+        "debug": settings.DEBUG,
+    }

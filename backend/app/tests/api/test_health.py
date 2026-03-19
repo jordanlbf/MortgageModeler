@@ -8,7 +8,22 @@ client = TestClient(app)
 
 
 class TestHealthCheck:
-    def test_health(self):
+    def test_health_returns_200(self):
         res = client.get("/health")
         assert res.status_code == 200
-        assert res.json() == {"status": "ok"}
+
+    def test_health_has_status_ok(self):
+        data = client.get("/health").json()
+        assert data["status"] == "ok"
+
+    def test_health_has_environment(self):
+        data = client.get("/health").json()
+        assert "environment" in data
+
+    def test_health_has_version(self):
+        data = client.get("/health").json()
+        assert "version" in data
+
+    def test_health_has_debug(self):
+        data = client.get("/health").json()
+        assert "debug" in data
