@@ -22,14 +22,14 @@ class Mortgage:
     Attributes:
         property: Property details (purchase price, costs, appreciation, rental, depreciation)
         loan: Mortgage loan configuration (deposit, rate, term, offset, borrowing costs)
-        tax_profile: Taxpayer income configuration (with income growth rate)
-        ongoing_costs: Base ongoing cost rates and growth rate
+        tax_profile: Taxpayer income configuration (None for amortisation-only use)
+        ongoing_costs: Base ongoing cost rates and growth rate (None for amortisation-only use)
         rentvest: Tenant rental configuration (None for PPOR)
         projection_years: Number of years to project
     """
     property: Property
     loan: LoanConfig
-    tax_profile: TaxProfile
-    ongoing_costs: OngoingCostsConfig
+    tax_profile: Optional[TaxProfile] = None
+    ongoing_costs: Optional[OngoingCostsConfig] = None
     rentvest: Optional[RentvestConfig] = None
     projection_years: int = 30
