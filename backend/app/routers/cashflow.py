@@ -10,6 +10,7 @@ from fastapi import APIRouter
 
 from app.models.deductions import DepreciableBuilding, DepreciableAsset
 from app.models.loan import RateChange, LoanConfig, BorrowingCosts
+from app.models.mortgage import Mortgage
 from app.models.property import Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig, RentalConfig
 from app.models.tax import TaxProfile
 from app.schemas.cashflow import (
@@ -201,13 +202,14 @@ def get_ppor_cashflow(req: CashFlowPPORRequest) -> CashFlowPPORResponse:
     Returns:
         PPOR cash flow projection with year breakdown and summary
     """
-    result = build_ppor_cashflow(
+    mortgage = Mortgage(
         property=_build_property(req),
-        tax_profile=_build_tax_profile(req),
         loan=_build_loan(req),
+        tax_profile=_build_tax_profile(req),
         ongoing_costs=_build_ongoing_costs(req),
         projection_years=req.projection_years,
     )
+    result = build_ppor_cashflow(mortgage)
 
     return CashFlowPPORResponse(
         projection_years=result.projection_years,
@@ -229,10 +231,10 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
     Returns:
         Rentvesting cash flow projection with year breakdown, CGT, and summary
     """
-    result = build_rentvest_cashflow(
+    mortgage = Mortgage(
         property=_build_property(req),
-        tax_profile=_build_tax_profile(req),
         loan=_build_loan(req),
+        tax_profile=_build_tax_profile(req),
         ongoing_costs=_build_ongoing_costs(req),
         rentvest=RentvestConfig(
             weekly_rent_paid=req.weekly_rent_paid,
@@ -240,6 +242,7 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
         ),
         projection_years=req.projection_years,
     )
+    result = build_rentvest_cashflow(mortgage)
 
     return CashFlowRentvestResponse(
         projection_years=result.projection_years,
