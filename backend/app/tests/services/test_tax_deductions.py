@@ -15,6 +15,7 @@ from app.services.tax_deductions import (
 from app.models.deductions import DepreciableBuilding, DepreciableAsset, DepreciationMethod
 from app.models.financial import FinancialYear
 from app.models.loan import LoanConfig, BorrowingCosts
+from app.models.mortgage import Mortgage
 from app.models.property import YearCost, Property
 from app.models.tax import TaxProfile
 from app.engine.tax import calculate_total_tax
@@ -98,6 +99,27 @@ def _make_loan(loan_term_years=30, borrowing_costs=None) -> LoanConfig:
         annual_rate=0.06,
         loan_term_years=loan_term_years,
         borrowing_costs=borrowing_costs or BorrowingCosts(),
+    )
+
+
+def _make_mortgage(property=None, loan=None, tax_profile=None) -> Mortgage:
+    """Create a Mortgage aggregate with sensible defaults."""
+    return Mortgage(
+        property=property or _make_property(),
+        loan=loan or _make_loan(),
+        tax_profile=tax_profile or _make_tax_profile(),
+    )
+
+
+def _build(mortgage=None, mortgage_interest=0, ongoing_costs=None,
+           rental_income=50_000, financial_year=None):
+    """Shorthand for build_tax_deduction_summary with sensible defaults."""
+    return build_tax_deduction_summary(
+        mortgage=mortgage or _make_mortgage(),
+        mortgage_interest=mortgage_interest,
+        ongoing_costs=ongoing_costs or _make_year_cost(),
+        rental_income=rental_income,
+        financial_year=financial_year or FinancialYear(2021),
     )
 
 
@@ -192,13 +214,11 @@ class TestBuildTaxDeductionSummaryBasic:
         costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=20_000,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.is_negatively_geared is True
@@ -216,13 +236,11 @@ class TestBuildTaxDeductionSummaryBasic:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=5_000,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.is_negatively_geared is False
@@ -236,13 +254,11 @@ class TestBuildTaxDeductionSummaryBasic:
         costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=15_000,
             ongoing_costs=costs,
             rental_income=0,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.is_negatively_geared is True
@@ -259,13 +275,11 @@ class TestBuildTaxDeductionSummaryBasic:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=30_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.total_deductions == 0.0
@@ -287,13 +301,11 @@ class TestDeductionBreakdown:
         costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         expected = (2_000 + 1_200 + 1_500 + 1_000 + 3_000 + 5_000 + 2_000)
@@ -310,13 +322,11 @@ class TestDeductionBreakdown:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=18_500,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.mortgage_interest == 18_500
@@ -331,13 +341,11 @@ class TestDeductionBreakdown:
         costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=15_000,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         expected = (result.mortgage_interest + result.deductible_expenses +
@@ -351,13 +359,11 @@ class TestDeductionBreakdown:
         costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=10_000,
             ongoing_costs=costs,
             rental_income=30_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.net_rental_income == pytest.approx(30_000 - result.total_deductions)
@@ -382,13 +388,11 @@ class TestDiv43InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_building == pytest.approx(10_000, abs=1)
@@ -406,13 +410,11 @@ class TestDiv43InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_building == pytest.approx(12_500, abs=1)
@@ -429,13 +431,11 @@ class TestDiv43InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_building == 0.0
@@ -452,13 +452,11 @@ class TestDiv43InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         days = (date(2025, 7, 1) - date(2025, 1, 1)).days
@@ -479,13 +477,11 @@ class TestDiv43InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_building == 0.0
@@ -503,13 +499,11 @@ class TestDiv43InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_building == 0.0
@@ -527,13 +521,11 @@ class TestDiv43InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_building == pytest.approx(10_000, abs=1)
@@ -555,13 +547,11 @@ class TestDiv43InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_building == pytest.approx(10_000, abs=1)
@@ -577,13 +567,11 @@ class TestDiv43InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_building == 0.0
@@ -608,13 +596,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant > 0
@@ -631,13 +617,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == 0.0
@@ -654,13 +638,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant > 0
@@ -677,13 +659,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant > 0
@@ -701,13 +681,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == pytest.approx(400, abs=1)
@@ -724,13 +702,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == pytest.approx(400, abs=1)
@@ -747,13 +723,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == pytest.approx(200, abs=1)
@@ -771,13 +745,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == pytest.approx(1_150, abs=1)
@@ -794,13 +766,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == 0.0
@@ -816,13 +786,11 @@ class TestDiv40InService:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=50_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.depreciation_plant == 0.0
@@ -843,13 +811,11 @@ class TestTaxSaving:
         profile = _make_tax_profile()
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, tax_profile=profile),
             mortgage_interest=20_000,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=profile,
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         tax_without = calculate_total_tax(profile)
@@ -877,13 +843,11 @@ class TestTaxSaving:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=30_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.tax_saving < 0
@@ -899,13 +863,11 @@ class TestTaxSaving:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=30_000,
             ongoing_costs=costs,
             rental_income=30_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         assert result.tax_saving == pytest.approx(0)
@@ -922,13 +884,11 @@ class TestTaxSaving:
         profile = _make_tax_profile(taxable_income=50_000)
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, tax_profile=profile),
             mortgage_interest=10_000,
             ongoing_costs=costs,
             rental_income=0,
-            tax_profile=profile,
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         simple_marginal = 10_000 * 0.30
@@ -950,13 +910,11 @@ class TestTaxSaving:
         profile = _make_tax_profile(taxable_income=20_000)
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, tax_profile=profile),
             mortgage_interest=10_000,
             ongoing_costs=costs,
             rental_income=0,
-            tax_profile=profile,
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         tax_without = calculate_total_tax(TaxProfile(20_000, 20_000, 20_000, 0, True))
@@ -1175,13 +1133,11 @@ class TestBorrowingCostDeductionInSummary:
         loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000, mortgage_registration_fee=238, loan_establishment_fee=300))
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, loan=loan),
             mortgage_interest=20_000,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=loan,
         )
 
         # Total should include borrowing cost deduction
@@ -1200,13 +1156,11 @@ class TestBorrowingCostDeductionInSummary:
         loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=5_000))
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, loan=loan),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=loan,
         )
 
         assert result.borrowing_costs_deduction == pytest.approx(5_000 / 5)
@@ -1223,13 +1177,11 @@ class TestBorrowingCostDeductionInSummary:
         loan = _make_loan()  # default BorrowingCosts — all None
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, loan=loan),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=loan,
         )
 
         assert result.borrowing_costs_deduction == 0.0
@@ -1246,13 +1198,11 @@ class TestBorrowingCostDeductionInSummary:
         loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000))
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, loan=loan),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=loan,
         )
 
         assert result.borrowing_costs_deduction == 0.0
@@ -1272,13 +1222,11 @@ class TestBorrowingCostDeductionInSummary:
         )
 
         result = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, loan=loan),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=loan,
         )
 
         assert result.borrowing_costs_deduction == pytest.approx(3_000)
@@ -1290,23 +1238,19 @@ class TestBorrowingCostDeductionInSummary:
         costs = _make_year_cost()
 
         result_no_bc = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop),
             mortgage_interest=20_000,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(),
         )
 
         result_with_bc = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=20_000))),
             mortgage_interest=20_000,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=fy,
-            loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=20_000)),
         )
 
         assert result_with_bc.total_deductions > result_no_bc.total_deductions
@@ -1323,23 +1267,19 @@ class TestBorrowingCostDeductionInSummary:
         loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=50))
 
         result_y0 = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, loan=loan),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=FinancialYear(2020),  # year 0
-            loan=loan,
         )
 
         result_y1 = build_tax_deduction_summary(
-            property=prop,
+            mortgage=_make_mortgage(property=prop, loan=loan),
             mortgage_interest=0,
             ongoing_costs=costs,
             rental_income=25_000,
-            tax_profile=_make_tax_profile(),
             financial_year=FinancialYear(2021),  # year 1
-            loan=loan,
         )
 
         assert result_y0.borrowing_costs_deduction == pytest.approx(50)
