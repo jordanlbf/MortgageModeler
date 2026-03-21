@@ -19,9 +19,8 @@ from app.engine.deductions import (
 from app.engine.tax import calculate_tax_saving
 from app.models.deductions import PropertyTaxDeductionSummary, DepreciableBuilding, DepreciableAsset, DepreciationMethod
 from app.models.financial import FinancialYear
-from app.models.loan import LoanConfig
-from app.models.property import YearCost, Property
-from app.models.tax import TaxProfile
+from app.models.mortgage import Mortgage
+from app.models.property import YearCost
 
 
 def _calculate_days_held_in_fy(
@@ -142,13 +141,11 @@ def _calculate_plant_depreciation(
 
 
 def build_tax_deduction_summary(
-    property: Property,
+    mortgage: Mortgage,
     mortgage_interest: float,
     ongoing_costs: YearCost,
     rental_income: float,
-    tax_profile: TaxProfile,
     financial_year: FinancialYear,
-    loan: LoanConfig
 ) -> PropertyTaxDeductionSummary:
     """
     Build a single financial-year tax deduction summary for an investment property.
@@ -158,29 +155,25 @@ def build_tax_deduction_summary(
     via two-pass call to the tax engine.
 
     Args:
-        property: Property with purchase details, depreciable buildings, and assets
+        mortgage: Mortgage aggregate with property, loan, and tax profile details
         mortgage_interest: Annual interest portion of repayments
         ongoing_costs: Single year's ongoing property costs
         rental_income: Annual gross rental income
-        tax_profile: Taxpayer's base income profile (without this property's income).
-            Used for two-pass tax saving calculation across all components
-            (income tax, Medicare levy, MLS, HECS)
         financial_year: Financial year to calculate for (e.g. 2025 = FY 2024-25, ending 30 June 2025)
-        loan: Loan configuration (borrowing costs and term for deduction amortisation)
 
     Returns:
         PropertyTaxDeductionSummary with deduction breakdown and tax saving
     """
     # Calculate each deduction component
-    depreciation_building = _calculate_building_depreciation(property.depreciable_buildings, financial_year)
-    depreciation_plant = _calculate_plant_depreciation(property.depreciable_assets, property.purchase_date, financial_year)
+    depreciation_building = _calculate_building_depreciation(mortgage.property.depreciable_buildings, financial_year)
+    depreciation_plant = _calculate_plant_depreciation(mortgage.property.depreciable_assets, mortgage.property.purchase_date, financial_year)
     deductible_expenses = _calculate_ongoing_expenses(ongoing_costs)
 
     # Calculate borrowing costs deduction based on ATO rules
     borrowing_costs_deduction = calculate_borrowing_cost_deduction(
-        loan.borrowing_costs.total,
-        loan.loan_term_years,
-        financial_year.year - property.purchase_date.year
+        mortgage.loan.borrowing_costs.total,
+        mortgage.loan.loan_term_years,
+        financial_year.year - mortgage.property.purchase_date.year
     )
 
     # Sum all deductions to get total deduction for the year
@@ -194,7 +187,7 @@ def build_tax_deduction_summary(
     # Calculate net rental income after deductions and determine if negatively geared
     net_rental_income = rental_income - total_deductions
     is_negatively_geared = net_rental_income < 0
-    tax_saving = calculate_tax_saving(tax_profile, net_rental_income)
+    tax_saving = calculate_tax_saving(mortgage.tax_profile, net_rental_income)
 
     return PropertyTaxDeductionSummary(
         mortgage_interest=mortgage_interest,

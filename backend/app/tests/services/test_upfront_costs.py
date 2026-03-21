@@ -7,6 +7,7 @@ from datetime import date
 
 from app.services.upfront_costs import build_upfront_cost_estimate
 from app.models.loan import LoanConfig, BorrowingCosts
+from app.models.mortgage import Mortgage
 from app.models.property import Property, PurchaseCosts
 
 
@@ -33,11 +34,15 @@ def _make_loan(deposit=100_000, borrowing_costs=None) -> LoanConfig:
     )
 
 
-def _build(property=None, loan=None):
-    return build_upfront_cost_estimate(
+def _make_mortgage(property=None, loan=None) -> Mortgage:
+    return Mortgage(
         property=property or _make_property(),
         loan=loan or _make_loan(),
     )
+
+
+def _build(property=None, loan=None):
+    return build_upfront_cost_estimate(_make_mortgage(property, loan))
 
 
 # ──────────────────────────────────────────────

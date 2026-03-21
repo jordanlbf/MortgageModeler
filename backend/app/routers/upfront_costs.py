@@ -10,6 +10,7 @@ from datetime import date
 from fastapi import APIRouter
 
 from app.models.loan import LoanConfig, BorrowingCosts
+from app.models.mortgage import Mortgage
 from app.models.property import Property, PurchaseCosts
 from app.schemas.upfront_costs import UpfrontCostRequest, UpfrontCostResponse
 from app.services.upfront_costs import build_upfront_cost_estimate
@@ -53,7 +54,8 @@ def get_upfront_costs(req: UpfrontCostRequest) -> UpfrontCostResponse:
         ),
     )
 
-    result = build_upfront_cost_estimate(property=property, loan=loan)
+    mortgage = Mortgage(property=property, loan=loan)
+    result = build_upfront_cost_estimate(mortgage)
 
     return UpfrontCostResponse(
         purchase_costs=UpfrontCostResponse.PurchaseCostsDetail(

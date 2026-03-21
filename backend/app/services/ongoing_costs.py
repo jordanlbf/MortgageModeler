@@ -17,14 +17,11 @@ from app.engine.property import (
     calculate_property_value,
     calculate_rental_income,
 )
-from app.models.property import Property, OngoingCostsConfig, YearCost, OngoingCostProjection
+from app.models.mortgage import Mortgage
+from app.models.property import YearCost, OngoingCostProjection
 
 
-def calculate_year_cost(
-    year: int,
-    property: Property,
-    ongoing_costs: OngoingCostsConfig,
-) -> YearCost:
+def calculate_year_cost(year: int, mortgage: Mortgage) -> YearCost:
     """
     Calculate a single year's ongoing property costs.
 
@@ -34,25 +31,25 @@ def calculate_year_cost(
 
     Args:
         year: Projection year (0 = purchase year)
-        property: Property details with purchase price, appreciation, and rental config
-        ongoing_costs: Base ongoing cost rates and growth rate
+        mortgage: Mortgage aggregate with property and ongoing cost details
 
     Returns:
         YearCost with itemised cost breakdown for this year
     """
-    is_investment = not property.is_ppor
+    is_investment = not mortgage.property.is_ppor
+    ongoing_costs = mortgage.ongoing_costs
 
     cr = calculate_council_rates(year, ongoing_costs.council_rates, ongoing_costs.annual_cost_growth_rate)
     wr = calculate_water_rates(year, ongoing_costs.water_rates, ongoing_costs.annual_cost_growth_rate)
     bi = calculate_building_insurance(year, ongoing_costs.building_insurance, ongoing_costs.annual_cost_growth_rate)
     li = calculate_landlord_insurance(year, ongoing_costs.landlord_insurance, ongoing_costs.annual_cost_growth_rate, is_investment)
     sf = calculate_strata_fees(year, ongoing_costs.strata_fees, ongoing_costs.annual_cost_growth_rate)
-    mc = calculate_maintenance_cost(year, property.purchase_price, ongoing_costs.maintenance_rate, property.annual_appreciation)
-    mf = calculate_management_fee(year, property.rental.weekly_rent, property.rental.vacancy_weeks,
-                                  ongoing_costs.management_rate, property.rental.annual_growth_rate, is_investment)
-    pv = calculate_property_value(year, property.purchase_price, property.annual_appreciation)
-    ri = calculate_rental_income(year, property.rental.weekly_rent, property.rental.vacancy_weeks,
-                                 property.rental.annual_growth_rate)
+    mc = calculate_maintenance_cost(year, mortgage.property.purchase_price, ongoing_costs.maintenance_rate, mortgage.property.annual_appreciation)
+    mf = calculate_management_fee(year, mortgage.property.rental.weekly_rent, mortgage.property.rental.vacancy_weeks,
+                                  ongoing_costs.management_rate, mortgage.property.rental.annual_growth_rate, is_investment)
+    pv = calculate_property_value(year, mortgage.property.purchase_price, mortgage.property.annual_appreciation)
+    ri = calculate_rental_income(year, mortgage.property.rental.weekly_rent, mortgage.property.rental.vacancy_weeks,
+                                 mortgage.property.rental.annual_growth_rate)
 
     total = cr + wr + bi + li + sf + mc + mf
 
@@ -71,11 +68,7 @@ def calculate_year_cost(
     )
 
 
-def build_ongoing_cost_projection(
-    property: Property,
-    ongoing_costs: OngoingCostsConfig,
-    projection_years: int,
-) -> OngoingCostProjection:
+def build_ongoing_cost_projection(mortgage: Mortgage) -> OngoingCostProjection:
     """
     Build a full ongoing cost projection over N years.
 
@@ -83,17 +76,15 @@ def build_ongoing_cost_projection(
     with summary stats.
 
     Args:
-        property: Property details with purchase price, appreciation, and rental config
-        ongoing_costs: Base ongoing cost rates and growth rate
-        projection_years: Number of years to project
+        mortgage: Mortgage aggregate with property, ongoing cost, and projection year details
 
     Returns:
         OngoingCostProjection with per-year breakdowns and summary stats
     """
-    is_investment = not property.is_ppor
+    is_investment = not mortgage.property.is_ppor
     annual_costs = [
-        calculate_year_cost(year, property, ongoing_costs)
-        for year in range(projection_years)
+        calculate_year_cost(year, mortgage)
+        for year in range(mortgage.projection_years)
     ]
 
     year_one = annual_costs[0]

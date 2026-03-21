@@ -9,6 +9,7 @@ from datetime import date
 
 from fastapi import APIRouter
 from app.models.loan import RateChange, LoanConfig
+from app.models.mortgage import Mortgage
 from app.models.property import Property
 from app.schemas.amortisation import (
     ScheduleRequest,
@@ -34,28 +35,31 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
     Returns:
         Full schedule with per-period rows, summary stats, and yearly chart data
     """
-    property = Property(
-        purchase_date=date.today(),
-        purchase_price=req.purchase_price,
-        is_new_property=False,
-        annual_appreciation=req.annual_appreciation,
+    mortgage = Mortgage(
+        property=Property(
+            purchase_date=date.today(),
+            purchase_price=req.purchase_price,
+            is_new_property=False,
+            annual_appreciation=req.annual_appreciation,
+        ),
+        loan=LoanConfig(
+            deposit=req.deposit,
+            annual_rate=req.annual_rate,
+            loan_term_years=req.loan_term_years,
+            frequency=req.frequency,
+            offset_balance=req.offset_balance,
+            offset_contribution=req.offset_contribution,
+            extra_repayment=req.extra_repayment,
+            rate_changes=[
+                RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
+                for rc in req.rate_changes
+            ],
+        ),
+        tax_profile=None,
+        ongoing_costs=None,
     )
 
-    loan = LoanConfig(
-        deposit=req.deposit,
-        annual_rate=req.annual_rate,
-        loan_term_years=req.loan_term_years,
-        frequency=req.frequency,
-        offset_balance=req.offset_balance,
-        offset_contribution=req.offset_contribution,
-        extra_repayment=req.extra_repayment,
-        rate_changes=[
-            RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
-            for rc in req.rate_changes
-        ],
-    )
-
-    result = build_schedule_result(property=property, loan=loan)
+    result = build_schedule_result(mortgage)
 
     return ScheduleResponse(
         summary=ScheduleSummary(

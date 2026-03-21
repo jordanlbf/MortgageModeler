@@ -9,6 +9,8 @@ from datetime import date
 
 from fastapi import APIRouter
 
+from app.models.loan import LoanConfig
+from app.models.mortgage import Mortgage
 from app.models.property import Property, OngoingCostsConfig, RentalConfig
 from app.schemas.ongoing_costs import OngoingCostResponse, OngoingPropertyCostRequest, YearByYearCostResponse
 from app.services.ongoing_costs import build_ongoing_cost_projection
@@ -51,11 +53,13 @@ def get_ongoing_costs(req: OngoingPropertyCostRequest) -> OngoingCostResponse:
         annual_cost_growth_rate=req.annual_cost_growth_rate,
     )
 
-    projection = build_ongoing_cost_projection(
+    mortgage = Mortgage(
         property=property,
+        loan=LoanConfig(deposit=0, annual_rate=0.0, loan_term_years=30),
         ongoing_costs=ongoing_costs,
         projection_years=req.projection_years,
     )
+    projection = build_ongoing_cost_projection(mortgage)
 
     return OngoingCostResponse(
         total_annual_cost=projection.total_annual_cost,
