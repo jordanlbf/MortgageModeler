@@ -88,10 +88,13 @@ def _build_projection_inputs(
         Tuple of (resolved upfront costs, amortisation schedule, ongoing cost projection)
     """
     from app.models.mortgage import Mortgage
-    mortgage = Mortgage(property=property, loan=loan)
-    upfront_costs = build_upfront_cost_estimate(property=property, loan=loan)
+    mortgage = Mortgage(
+        property=property, loan=loan,
+        ongoing_costs=ongoing_costs, projection_years=projection_years,
+    )
+    upfront_costs = build_upfront_cost_estimate(mortgage)
     schedule = build_amortisation_schedule(mortgage)
-    cost_projection = build_ongoing_cost_projection(property=property, ongoing_costs=ongoing_costs, projection_years=projection_years)
+    cost_projection = build_ongoing_cost_projection(mortgage)
     return upfront_costs, schedule, cost_projection
 
 

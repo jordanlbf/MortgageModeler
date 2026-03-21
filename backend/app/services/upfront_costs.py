@@ -15,14 +15,12 @@ from app.engine.property import (
     calculate_building_pest_inspection_fee,
     calculate_loan_establishment_fee,
 )
-from app.models.loan import LoanConfig, BorrowingCosts
-from app.models.property import Property, PurchaseCosts, UpfrontCosts
+from app.models.loan import BorrowingCosts
+from app.models.mortgage import Mortgage
+from app.models.property import PurchaseCosts, UpfrontCosts
 
 
-def build_upfront_cost_estimate(
-    property: Property,
-    loan: LoanConfig,
-) -> UpfrontCosts:
+def build_upfront_cost_estimate(mortgage: Mortgage) -> UpfrontCosts:
     """
     Resolve and estimate all upfront costs for a property purchase.
 
@@ -32,28 +30,27 @@ def build_upfront_cost_estimate(
     - Any value → user override, preserved as-is
 
     Args:
-        property: Property details (purchase price, is_ppor for stamp duty rates)
-        loan: Loan configuration (deposit for LVR, borrowing costs with optional overrides)
+        mortgage: Mortgage aggregate with property and loan details
 
     Returns:
         Fully resolved UpfrontCosts with no None values
     """
-    loan_amount = max(property.purchase_price - loan.deposit, 0.0)
-    lvr = loan_amount / property.purchase_price if property.purchase_price > 0 else 0.0
-    is_investment = not property.is_ppor
+    loan_amount = max(mortgage.property.purchase_price - mortgage.loan.deposit, 0.0)
+    lvr = loan_amount / mortgage.property.purchase_price if mortgage.property.purchase_price > 0 else 0.0
+    is_investment = not mortgage.property.is_ppor
 
     # Resolve purchase costs — None means auto-estimate
-    src_pc = property.purchase_costs
+    src_pc = mortgage.property.purchase_costs
     purchase_costs = PurchaseCosts(
-        stamp_duty=src_pc.stamp_duty if src_pc.stamp_duty is not None else estimate_qld_stamp_duty(property.purchase_price, is_investment),
+        stamp_duty=src_pc.stamp_duty if src_pc.stamp_duty is not None else estimate_qld_stamp_duty(mortgage.property.purchase_price, is_investment),
         legal_fees=src_pc.legal_fees if src_pc.legal_fees is not None else calculate_conveyancing_fee(),
         building_pest_inspection=src_pc.building_pest_inspection if src_pc.building_pest_inspection is not None else calculate_building_pest_inspection_fee(),
-        registration_fee=src_pc.registration_fee if src_pc.registration_fee is not None else calculate_registration_fee(property.purchase_price),
+        registration_fee=src_pc.registration_fee if src_pc.registration_fee is not None else calculate_registration_fee(mortgage.property.purchase_price),
         other_costs=src_pc.other_costs,
     )
 
     # Resolve borrowing costs — None means auto-estimate
-    src_bc = loan.borrowing_costs
+    src_bc = mortgage.loan.borrowing_costs
     borrowing_costs = BorrowingCosts(
         lmi=src_bc.lmi if src_bc.lmi is not None else estimate_lmi(loan_amount, lvr, is_investment),
         mortgage_registration_fee=src_bc.mortgage_registration_fee if src_bc.mortgage_registration_fee is not None else calculate_mortgage_registration_fee(),
