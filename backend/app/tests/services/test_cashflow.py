@@ -18,6 +18,7 @@ from app.models.cashflow import CashFlowYear
 from app.models.deductions import PropertyTaxDeductionSummary, DepreciableBuilding
 from app.models.loan import LoanConfig, BorrowingCosts, Loan
 from app.models.mortgage import Mortgage
+from app.models.person import Person
 from app.models.property import (
     Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig,
     RentalConfig, YearCost,
@@ -104,7 +105,7 @@ def _make_mortgage(property=None, tax_profile=None, loan=None,
     return Mortgage(
         property=p,
         loan=build_loan(p, lc),
-        tax_profile=tax_profile or _make_tax_profile(),
+        person=Person(tax_profile=tax_profile or _make_tax_profile()),
         ongoing_costs=ongoing_costs or _make_ongoing_costs(),
         rentvest=rentvest,
         projection_years=projection_years,

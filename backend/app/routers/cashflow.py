@@ -11,6 +11,7 @@ from fastapi import APIRouter
 from app.models.deductions import DepreciableBuilding, DepreciableAsset
 from app.models.loan import RateChange, LoanConfig, BorrowingCosts
 from app.models.mortgage import Mortgage
+from app.models.person import Person
 from app.models.property import Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig, RentalConfig
 from app.models.tax import TaxProfile
 from app.schemas.cashflow import (
@@ -207,7 +208,7 @@ def get_ppor_cashflow(req: CashFlowPPORRequest) -> CashFlowPPORResponse:
     mortgage = Mortgage(
         property=property,
         loan=build_loan(property, _build_loan_config(req)),
-        tax_profile=_build_tax_profile(req),
+        person=Person(tax_profile=_build_tax_profile(req)),
         ongoing_costs=_build_ongoing_costs(req),
         projection_years=req.projection_years,
     )
@@ -237,7 +238,7 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
     mortgage = Mortgage(
         property=property,
         loan=build_loan(property, _build_loan_config(req)),
-        tax_profile=_build_tax_profile(req),
+        person=Person(tax_profile=_build_tax_profile(req)),
         ongoing_costs=_build_ongoing_costs(req),
         rentvest=RentvestConfig(
             weekly_rent_paid=req.weekly_rent_paid,
