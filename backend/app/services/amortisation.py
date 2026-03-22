@@ -2,7 +2,7 @@
 Amortisation service.
 
 Provides three functions:
-- build_amortisation_schedule: raw schedule only (used by cashflow service)
+- build_loan: constructs a Loan aggregate from Property and LoanConfig
 - build_year_chart_point: single year's chart data point
 - build_schedule_result: schedule + chart data (used by amortisation endpoint)
 """
@@ -42,19 +42,6 @@ def build_loan(property: Property, loan_config: LoanConfig) -> Loan:
     )
 
     return Loan(config=loan_config, schedule=schedule)
-
-
-def build_amortisation_schedule(mortgage: Mortgage) -> AmortisationSchedule:
-    """
-    Return the pre-built amortisation schedule from the Mortgage's Loan.
-
-    Args:
-        mortgage: Mortgage aggregate containing a Loan with its schedule.
-
-    Returns:
-        AmortisationSchedule with per-period rows and summary stats.
-    """
-    return mortgage.loan.schedule
 
 
 def build_year_chart_point(
@@ -120,8 +107,8 @@ def build_schedule_result(mortgage: Mortgage) -> ScheduleResult:
     """
     Generate a full amortisation schedule with chart data.
 
-    Delegates to build_amortisation_schedule for the raw schedule,
-    then builds yearly chart points via build_year_chart_point.
+    Reads the pre-built schedule from the Mortgage's Loan, then builds
+    yearly chart points via build_year_chart_point.
 
     Args:
         mortgage: Mortgage aggregate with property and loan details

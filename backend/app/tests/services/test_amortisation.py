@@ -5,7 +5,7 @@ Tests for amortisation service — build_schedule_result.
 import pytest
 from datetime import date
 
-from app.services.amortisation import build_loan, build_schedule_result, build_amortisation_schedule, build_year_chart_point
+from app.services.amortisation import build_loan, build_schedule_result, build_year_chart_point
 from app.models.amortisation import AmortisationSchedule
 from app.models.loan import RepaymentFrequency, RateChange, LoanConfig, BorrowingCosts
 from app.models.mortgage import Mortgage
@@ -301,46 +301,42 @@ class TestEdgeCases:
             assert pt.equity == round(pt.equity, 2)
 
 
-class TestBuildAmortisationScheduleDirect:
-    """Direct tests for build_amortisation_schedule (currently only tested indirectly)."""
+class TestMortgageLoanSchedule:
+    """Tests for the amortisation schedule accessed via Mortgage.loan.schedule."""
 
     def test_returns_amortisation_schedule(self):
-        schedule = build_amortisation_schedule(_make_mortgage())
+        schedule = _make_mortgage().loan.schedule
         assert isinstance(schedule, AmortisationSchedule)
 
     def test_has_rows(self):
-        schedule = build_amortisation_schedule(_make_mortgage())
+        schedule = _make_mortgage().loan.schedule
         assert len(schedule.rows) > 0
 
     def test_periods_per_year_monthly(self):
-        schedule = build_amortisation_schedule(_make_mortgage())
+        schedule = _make_mortgage().loan.schedule
         assert schedule.periods_per_year == 12
 
     def test_periods_per_year_weekly(self):
-        schedule = build_amortisation_schedule(
-            _make_mortgage(loan=_make_loan(frequency=RepaymentFrequency.WEEKLY)),
-        )
+        schedule = _make_mortgage(loan=_make_loan(frequency=RepaymentFrequency.WEEKLY)).loan.schedule
         assert schedule.periods_per_year == 52
 
     def test_zero_loan_empty_schedule(self):
-        schedule = build_amortisation_schedule(
-            _make_mortgage(
-                property=_make_property(purchase_price=500_000),
-                loan=_make_loan(deposit=500_000),
-            ),
-        )
+        schedule = _make_mortgage(
+            property=_make_property(purchase_price=500_000),
+            loan=_make_loan(deposit=500_000),
+        ).loan.schedule
         assert len(schedule.rows) == 0
 
     def test_total_interest_positive(self):
-        schedule = build_amortisation_schedule(_make_mortgage())
+        schedule = _make_mortgage().loan.schedule
         assert schedule.total_interest > 0
 
     def test_capitalised_borrowing_costs_increase_principal(self):
         """Capitalised borrowing costs should increase the loan principal."""
         from app.models.loan import BorrowingCosts
-        schedule_no_bc = build_amortisation_schedule(_make_mortgage())
-        schedule_with_bc = build_amortisation_schedule(
-            _make_mortgage(loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=20_000))),
-        )
+        schedule_no_bc = _make_mortgage().loan.schedule
+        schedule_with_bc = _make_mortgage(
+            loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=20_000)),
+        ).loan.schedule
         # Higher principal means more total interest
         assert schedule_with_bc.total_interest > schedule_no_bc.total_interest
