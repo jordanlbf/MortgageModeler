@@ -175,7 +175,7 @@ def build_tax_deduction_summary(
     borrowing_costs_deduction = calculate_borrowing_cost_deduction(
         mortgage.loan.config.borrowing_costs.total,
         mortgage.loan.config.loan_term_years,
-        financial_year.year - mortgage.property.purchase_date.year
+        year,
     )
 
     # Sum all deductions to get total deduction for the year

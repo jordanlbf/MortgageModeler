@@ -7,7 +7,7 @@ from datetime import date
 
 from app.services.amortisation import build_loan, build_schedule_result, build_year_chart_point
 from app.models.amortisation import AmortisationSchedule
-from app.models.loan import RepaymentFrequency, RateChange, LoanConfig, BorrowingCosts
+from app.models.loan import Loan, RepaymentFrequency, RateChange, LoanConfig, BorrowingCosts
 from app.models.mortgage import Mortgage
 from app.models.property import Property
 
@@ -340,3 +340,160 @@ class TestMortgageLoanSchedule:
         ).loan.schedule
         # Higher principal means more total interest
         assert schedule_with_bc.total_interest > schedule_no_bc.total_interest
+
+
+# ──────────────────────────────────────────────
+# build_loan factory
+# ──────────────────────────────────────────────
+
+class TestBuildLoan:
+    """Tests for the build_loan factory function."""
+
+    def test_returns_loan(self):
+        loan = build_loan(_make_property(), _make_loan())
+        assert isinstance(loan, Loan)
+
+    def test_config_preserved(self):
+        lc = _make_loan(deposit=200_000, annual_rate=0.05)
+        loan = build_loan(_make_property(), lc)
+        assert loan.config is lc
+
+    def test_schedule_generated(self):
+        loan = build_loan(_make_property(), _make_loan())
+        assert isinstance(loan.schedule, AmortisationSchedule)
+        assert len(loan.schedule.rows) > 0
+
+    def test_loan_amount_is_price_minus_deposit(self):
+        """First row opening balance should equal purchase_price - deposit."""
+        loan = build_loan(
+            _make_property(purchase_price=500_000),
+            _make_loan(deposit=100_000),
+        )
+        assert loan.schedule.rows[0].opening_balance == pytest.approx(400_000)
+
+    def test_capitalised_costs_added_to_principal(self):
+        bc = BorrowingCosts(lmi=20_000)
+        loan = build_loan(
+            _make_property(purchase_price=500_000),
+            _make_loan(deposit=100_000, borrowing_costs=bc),
+        )
+        assert loan.schedule.rows[0].opening_balance == pytest.approx(420_000)
+
+    def test_deposit_exceeds_price_zero_loan(self):
+        loan = build_loan(
+            _make_property(purchase_price=500_000),
+            _make_loan(deposit=600_000),
+        )
+        assert len(loan.schedule.rows) == 0
+
+    def test_zero_rate_no_interest(self):
+        loan = build_loan(
+            _make_property(),
+            _make_loan(annual_rate=0.0, loan_term_years=10),
+        )
+        assert loan.schedule.total_interest == pytest.approx(0, abs=1)
+
+    def test_weekly_frequency(self):
+        loan = build_loan(
+            _make_property(),
+            _make_loan(frequency=RepaymentFrequency.WEEKLY),
+        )
+        assert loan.schedule.periods_per_year == 52
+
+    def test_fortnightly_frequency(self):
+        loan = build_loan(
+            _make_property(),
+            _make_loan(frequency=RepaymentFrequency.FORTNIGHTLY),
+        )
+        assert loan.schedule.periods_per_year == 26
+
+
+# ──────────────────────────────────────────────
+# Loan aggregate methods
+# ──────────────────────────────────────────────
+
+class TestLoanMethods:
+    """Tests for Loan.interest_for_year, balance_at_year, principal_for_year."""
+
+    def _make_test_loan(self) -> Loan:
+        return build_loan(
+            _make_property(purchase_price=500_000),
+            _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30),
+        )
+
+    def test_interest_for_year_zero_positive(self):
+        loan = self._make_test_loan()
+        assert loan.interest_for_year(0) > 0
+
+    def test_interest_decreases_over_time(self):
+        loan = self._make_test_loan()
+        assert loan.interest_for_year(5) < loan.interest_for_year(0)
+
+    def test_interest_beyond_term_zero(self):
+        loan = self._make_test_loan()
+        assert loan.interest_for_year(50) == 0.0
+
+    def test_interest_matches_row_sum(self):
+        loan = self._make_test_loan()
+        rows = loan.rows_for_year(0)
+        assert loan.interest_for_year(0) == pytest.approx(sum(r.interest for r in rows))
+
+    def test_balance_at_year_zero_less_than_principal(self):
+        loan = self._make_test_loan()
+        assert loan.balance_at_year(0) < 400_000
+
+    def test_balance_decreases_over_time(self):
+        loan = self._make_test_loan()
+        assert loan.balance_at_year(5) < loan.balance_at_year(0)
+
+    def test_balance_beyond_term_zero(self):
+        loan = self._make_test_loan()
+        assert loan.balance_at_year(50) == 0.0
+
+    def test_balance_at_final_year_near_zero(self):
+        loan = self._make_test_loan()
+        assert loan.balance_at_year(29) == pytest.approx(0, abs=1)
+
+    def test_principal_for_year_zero_positive(self):
+        loan = self._make_test_loan()
+        assert loan.principal_for_year(0) > 0
+
+    def test_principal_increases_over_time(self):
+        """More principal paid as interest shrinks."""
+        loan = self._make_test_loan()
+        assert loan.principal_for_year(10) > loan.principal_for_year(0)
+
+    def test_principal_beyond_term_zero(self):
+        loan = self._make_test_loan()
+        assert loan.principal_for_year(50) == 0.0
+
+    def test_principal_matches_row_sum(self):
+        loan = self._make_test_loan()
+        rows = loan.rows_for_year(0)
+        assert loan.principal_for_year(0) == pytest.approx(
+            sum(r.principal_paid + r.extra_paid for r in rows)
+        )
+
+    def test_interest_plus_principal_equals_repayment(self):
+        loan = self._make_test_loan()
+        rows = loan.rows_for_year(0)
+        total_repayment = sum(r.scheduled_repayment + r.extra_paid for r in rows)
+        assert loan.interest_for_year(0) + loan.principal_for_year(0) == pytest.approx(total_repayment)
+
+    def test_methods_work_with_weekly_frequency(self):
+        loan = build_loan(
+            _make_property(),
+            _make_loan(frequency=RepaymentFrequency.WEEKLY),
+        )
+        assert loan.interest_for_year(0) > 0
+        assert loan.balance_at_year(0) > 0
+        assert loan.principal_for_year(0) > 0
+
+    def test_methods_work_with_zero_loan(self):
+        loan = build_loan(
+            _make_property(purchase_price=500_000),
+            _make_loan(deposit=500_000),
+        )
+        assert loan.interest_for_year(0) == 0.0
+        assert loan.balance_at_year(0) == 0.0
+        assert loan.principal_for_year(0) == 0.0

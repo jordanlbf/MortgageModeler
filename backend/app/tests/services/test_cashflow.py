@@ -1121,3 +1121,60 @@ class TestCashflowEdgeCases:
         ))
         assert len(result.years) == 1
         assert result.cgt is not None
+
+    def test_ppor_projection_beyond_loan_term(self):
+        """Projection longer than loan term — years after payoff should have zero mortgage."""
+        result = build_ppor_cashflow(_make_mortgage(
+            property=_make_property(is_ppor=True),
+            loan=_make_loan(loan_term_years=3),
+            projection_years=5,
+        ))
+        # Year 4 (5th year) is beyond a 3-year loan
+        assert result.years[4].mortgage_repayment == 0
+        assert result.years[4].mortgage_interest == 0
+        assert result.years[4].loan_balance == 0
+
+    def test_rentvest_borrowing_cost_deduction_year_zero(self):
+        """Borrowing cost deduction should apply in year 0 (regression test for off-by-one)."""
+        result = build_rentvest_cashflow(_make_mortgage(
+            property=_make_property(
+                is_ppor=False, weekly_rent=450, rent_growth=0.03, vacancy_weeks=2,
+                buildings=[
+                    DepreciableBuilding(
+                        name="Main", construction_cost=250_000,
+                        purchase_date=date(2020, 1, 15),
+                        construction_start_date=date(2019, 1, 1),
+                    )
+                ],
+            ),
+            loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)),
+            ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
+            rentvest=_make_rentvest(),
+            projection_years=1,
+        ))
+        # Year 0 should have a borrowing cost deduction
+        assert result.years[0].tax_deduction_detail is not None
+        assert result.years[0].tax_deduction_detail.borrowing_costs_deduction > 0
+
+    def test_rentvest_borrowing_cost_deduction_year_four(self):
+        """Borrowing cost deduction should still apply in year 4 (5th year of 5-year spread)."""
+        result = build_rentvest_cashflow(_make_mortgage(
+            property=_make_property(
+                is_ppor=False, weekly_rent=450, rent_growth=0.03, vacancy_weeks=2,
+                buildings=[
+                    DepreciableBuilding(
+                        name="Main", construction_cost=250_000,
+                        purchase_date=date(2020, 1, 15),
+                        construction_start_date=date(2019, 1, 1),
+                    )
+                ],
+            ),
+            loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)),
+            ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
+            rentvest=_make_rentvest(),
+            projection_years=6,
+        ))
+        # Year 4 (5th year) should still have deduction
+        assert result.years[4].tax_deduction_detail.borrowing_costs_deduction > 0
+        # Year 5 (6th year) should have zero
+        assert result.years[5].tax_deduction_detail.borrowing_costs_deduction == 0

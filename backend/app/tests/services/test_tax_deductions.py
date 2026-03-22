@@ -1038,14 +1038,14 @@ class TestBorrowingCostDeductionInSummary:
         assert result.borrowing_costs_deduction == 0.0
 
     def test_borrowing_costs_beyond_5_years_zero(self):
-        """Year 6 (beyond spread period) → zero deduction."""
+        """Year 5 (beyond 5-year spread period) → zero deduction."""
         prop = _make_property()
-        fy = FinancialYear(2025)  # year 5 relative to 2020 purchase (beyond 5-year spread)
+        fy = FinancialYear(2025)
         loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)))
 
         result = build_tax_deduction_summary(
             mortgage=_make_mortgage(property=prop, loan=loan),
-            year=0,
+            year=5,
             ongoing_costs=_zero_costs(rental_income=25_000),
             financial_year=fy,
         )
@@ -1101,14 +1101,14 @@ class TestBorrowingCostDeductionInSummary:
             mortgage=_make_mortgage(property=prop, loan=loan),
             year=0,
             ongoing_costs=costs,
-            financial_year=FinancialYear(2020),  # year 0
+            financial_year=FinancialYear(2021),
         )
 
         result_y1 = build_tax_deduction_summary(
             mortgage=_make_mortgage(property=prop, loan=loan),
-            year=0,
+            year=1,
             ongoing_costs=costs,
-            financial_year=FinancialYear(2021),  # year 1
+            financial_year=FinancialYear(2022),
         )
 
         assert result_y0.borrowing_costs_deduction == pytest.approx(50)
@@ -1133,3 +1133,118 @@ class TestTaxDeductionLeapYear:
         purchase = date(2020, 1, 1)
         expiry = date(2060, 1, 1)
         assert _calculate_days_held_in_fy(purchase, expiry, fy) == 365
+
+
+# ──────────────────────────────────────────────
+# Borrowing cost year indexing (regression)
+# ──────────────────────────────────────────────
+
+class TestBorrowingCostYearIndex:
+    """Regression tests for borrowing cost year calculation using year param."""
+
+    def test_year_zero_gets_deduction(self):
+        """Year 0 should receive borrowing cost deduction."""
+        prop = _make_property()
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)))
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=prop, loan=loan),
+            year=0,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2021),
+        )
+        assert result.borrowing_costs_deduction == pytest.approx(2_000)  # 10k / 5
+
+    def test_year_four_gets_deduction(self):
+        """Year 4 (5th year) should still receive deduction."""
+        prop = _make_property()
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)))
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=prop, loan=loan),
+            year=4,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2025),
+        )
+        assert result.borrowing_costs_deduction == pytest.approx(2_000)
+
+    def test_year_five_gets_zero(self):
+        """Year 5 (6th year) should receive no deduction."""
+        prop = _make_property()
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)))
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=prop, loan=loan),
+            year=5,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2026),
+        )
+        assert result.borrowing_costs_deduction == 0.0
+
+    def test_five_years_sum_to_total(self):
+        """Years 0-4 should sum to the full borrowing costs."""
+        prop = _make_property()
+        bc = BorrowingCosts(lmi=10_000)
+        total = 0.0
+        for y in range(6):
+            loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=bc))
+            result = build_tax_deduction_summary(
+                mortgage=_make_mortgage(property=prop, loan=loan),
+                year=y,
+                ongoing_costs=_zero_costs(),
+                financial_year=FinancialYear(2021 + y),
+            )
+            total += result.borrowing_costs_deduction
+        assert total == pytest.approx(10_000)
+
+
+# ──────────────────────────────────────────────
+# Tax saving integration
+# ──────────────────────────────────────────────
+
+class TestTaxSavingIntegration:
+    """Tests for tax saving calculation within the deduction summary."""
+
+    def test_negatively_geared_positive_saving(self):
+        """Large deductions relative to rental income — positive tax saving."""
+        prop = _make_property(buildings=[_make_building()])
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(20_000)),
+            year=0,
+            ongoing_costs=_make_year_cost(rental_income=10_000),
+            financial_year=FinancialYear(2025),
+        )
+        assert result.tax_saving > 0
+        assert result.is_negatively_geared is True
+
+    def test_positively_geared_negative_saving(self):
+        """Rental income exceeds deductions — negative saving (extra tax)."""
+        prop = _make_property()
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=100_000),
+            financial_year=FinancialYear(2025),
+        )
+        assert result.tax_saving < 0
+        assert result.is_negatively_geared is False
+
+    def test_tax_saving_uses_correct_profile(self):
+        """Tax saving should use mortgage.person.tax_profile for two-pass calculation."""
+        prop = _make_property()
+        low_income = _make_tax_profile(taxable_income=30_000)
+        high_income = _make_tax_profile(taxable_income=200_000)
+
+        result_low = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(20_000),
+                                    tax_profile=low_income),
+            year=0,
+            ongoing_costs=_make_year_cost(rental_income=5_000),
+            financial_year=FinancialYear(2025),
+        )
+        result_high = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(20_000),
+                                    tax_profile=high_income),
+            year=0,
+            ongoing_costs=_make_year_cost(rental_income=5_000),
+            financial_year=FinancialYear(2025),
+        )
+        # Higher marginal rate = higher tax saving for same loss
+        assert result_high.tax_saving > result_low.tax_saving

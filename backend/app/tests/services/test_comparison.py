@@ -182,6 +182,21 @@ class TestFindBreakEvenYear:
     def test_crossover_at_year_one(self):
         assert _find_break_even_year([100, -50]) == 1
 
+    def test_initial_zero_then_positive(self):
+        """Starting tied then PPOR pulls ahead — break-even departure at year 1."""
+        assert _find_break_even_year([0, 10, 20]) == 1
+
+    def test_initial_zero_then_negative(self):
+        """Starting tied then rentvest pulls ahead — break-even departure at year 1."""
+        assert _find_break_even_year([0, -10, -20]) == 1
+
+    def test_oscillating_returns_first_crossover(self):
+        """Multiple crossovers — should return the first one."""
+        assert _find_break_even_year([100, -50, 100, -50]) == 1
+
+    def test_all_zeros(self):
+        assert _find_break_even_year([0, 0, 0]) is None
+
 
 # ──────────────────────────────────────────────
 # build_ppor_vs_rentvest — Structure

@@ -43,6 +43,8 @@ def _find_break_even_year(by_year: list[float]) -> Optional[int]:
             return i
         if initial < 0 and by_year[i] >= 0:
             return i
+        if initial == 0 and by_year[i] != 0:
+            return i
 
     return None
 
