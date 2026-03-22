@@ -9,7 +9,39 @@ Provides three functions:
 
 from app.engine.amortisation import generate_schedule
 from app.models.amortisation import AmortisationSchedule, ScheduleResult, YearChartPoint
+from app.models.loan import Loan, LoanConfig
 from app.models.mortgage import Mortgage
+from app.models.property import Property
+
+
+def build_loan(property: Property, loan_config: LoanConfig) -> Loan:
+    """Build a Loan aggregate from property and loan configuration.
+
+    Computes the loan principal from purchase price, deposit, and capitalised
+    borrowing costs, then generates the full amortisation schedule.
+
+    Args:
+        property: Property with purchase price for loan amount calculation.
+        loan_config: Loan configuration (rate, term, offset, etc.).
+
+    Returns:
+        Loan wrapping the config and its generated amortisation schedule.
+    """
+    loan_amount = max(property.purchase_price - loan_config.deposit, 0.0)
+    loan_amount += loan_config.borrowing_costs.total_capitalised
+
+    schedule = generate_schedule(
+        principal=loan_amount,
+        annual_rate=loan_config.annual_rate,
+        loan_term_years=loan_config.loan_term_years,
+        frequency=loan_config.frequency,
+        offset_balance=loan_config.offset_balance,
+        extra_repayment=loan_config.extra_repayment,
+        rate_changes=loan_config.rate_changes or None,
+        offset_contribution=loan_config.offset_contribution,
+    )
+
+    return Loan(config=loan_config, schedule=schedule)
 
 
 def build_amortisation_schedule(mortgage: Mortgage) -> AmortisationSchedule:
