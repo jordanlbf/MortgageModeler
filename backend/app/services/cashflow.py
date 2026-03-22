@@ -19,7 +19,7 @@ from app.models.cashflow import CashFlowYear, CashFlowSummary, CashFlowPPORResul
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
-from app.models.property import OngoingCostProjection, YearCost, UpfrontCosts
+from app.models.property import OngoingCostProjection, RentvestConfig, YearCost, UpfrontCosts
 from app.models.tax import TaxProfile
 from app.services.amortisation import build_amortisation_schedule
 from app.services.ongoing_costs import build_ongoing_cost_projection
