@@ -189,7 +189,7 @@ def build_tax_deduction_summary(
     # Calculate net rental income after deductions and determine if negatively geared
     net_rental_income = rental_income - total_deductions
     is_negatively_geared = net_rental_income < 0
-    tax_saving = calculate_tax_saving(mortgage.tax_profile, net_rental_income)
+    tax_saving = calculate_tax_saving(mortgage.person.tax_profile, net_rental_income)
 
     return PropertyTaxDeductionSummary(
         mortgage_interest=mortgage_interest,

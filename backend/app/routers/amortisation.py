@@ -57,7 +57,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
     mortgage = Mortgage(
         property=property,
         loan=build_loan(property, loan_config),
-        tax_profile=None,
+        person=None,
         ongoing_costs=None,
     )
 

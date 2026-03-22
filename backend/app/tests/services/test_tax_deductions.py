@@ -18,6 +18,7 @@ from app.models.deductions import DepreciableBuilding, DepreciableAsset, Depreci
 from app.models.financial import FinancialYear
 from app.models.loan import Loan, LoanConfig, BorrowingCosts
 from app.models.mortgage import Mortgage
+from app.models.person import Person
 from app.models.property import YearCost, Property
 from app.models.tax import TaxProfile
 from app.engine.tax import calculate_total_tax
@@ -155,7 +156,7 @@ def _make_mortgage(property=None, loan=None, tax_profile=None) -> Mortgage:
     return Mortgage(
         property=p,
         loan=loan_obj,
-        tax_profile=tax_profile or _make_tax_profile(),
+        person=Person(tax_profile=tax_profile or _make_tax_profile()),
     )
 
 

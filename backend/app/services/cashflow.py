@@ -19,6 +19,7 @@ from app.models.cashflow import CashFlowYear, CashFlowSummary, CashFlowPPORResul
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
+from app.models.person import Person
 from app.models.property import OngoingCostProjection, RentvestConfig, YearCost, UpfrontCosts
 from app.models.tax import TaxProfile
 from app.services.ongoing_costs import build_ongoing_cost_projection
@@ -197,7 +198,7 @@ def build_ppor_cashflow(mortgage: Mortgage) -> CashFlowPPORResult:
     Owner lives in the property. No rental income, no tax deductions, no CGT.
 
     Growth rates are sourced from domain models:
-    - Income growth from mortgage.tax_profile.income_growth_rate
+    - Income growth from mortgage.person.tax_profile.income_growth_rate
     - Property appreciation from mortgage.property.annual_appreciation
     - Cost inflation from mortgage.ongoing_costs.annual_cost_growth_rate
 
@@ -215,7 +216,7 @@ def build_ppor_cashflow(mortgage: Mortgage) -> CashFlowPPORResult:
     cumulative_cash_position = -upfront_costs.total_cash_at_settlement
     cashflow_years = []
     for year in range(mortgage.projection_years):
-        grown_profile = _grow_tax_profile(mortgage.tax_profile, year)
+        grown_profile = _grow_tax_profile(mortgage.person.tax_profile, year)
 
         cashflow_year = _calculate_cashflow_year(
             year=year,
@@ -243,7 +244,7 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
     Includes rental income, tax deductions, tax saving, and CGT at sale.
 
     Growth rates are sourced from domain models:
-    - Income growth from mortgage.tax_profile.income_growth_rate
+    - Income growth from mortgage.person.tax_profile.income_growth_rate
     - Property appreciation from mortgage.property.annual_appreciation
     - Rental income growth from mortgage.property.rental.annual_growth_rate
     - Rent paid growth from mortgage.rentvest.annual_rent_paid_growth
@@ -271,10 +272,10 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
         financial_year = FinancialYear(fy_year)
 
         # Grow tax profile for this year
-        grown_profile = _grow_tax_profile(mortgage.tax_profile, year)
+        grown_profile = _grow_tax_profile(mortgage.person.tax_profile, year)
 
         # Calculate tax deductions for this year
-        year_mortgage = replace(mortgage, tax_profile=grown_profile)
+        year_mortgage = replace(mortgage, person=Person(tax_profile=grown_profile))
         tax_deduction = build_tax_deduction_summary(
             mortgage=year_mortgage,
             year=year,
@@ -299,7 +300,7 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
         mortgage.projection_years, mortgage.property.purchase_price, mortgage.property.annual_appreciation
     )
     sale_date = mortgage.property.purchase_date + timedelta(days=365 * mortgage.projection_years)
-    grown_profile = _grow_tax_profile(mortgage.tax_profile, mortgage.projection_years)
+    grown_profile = _grow_tax_profile(mortgage.person.tax_profile, mortgage.projection_years)
     cgt = calculate_cgt(
         property=mortgage.property,
         sale_price=sale_price,
