@@ -18,7 +18,7 @@ from app.schemas.amortisation import (
     ScheduleSummary,
     ChartPoint,
 )
-from app.services.amortisation import build_schedule_result
+from app.services.amortisation import build_loan, build_schedule_result
 
 router = APIRouter(prefix="/amortisation", tags=["amortisation"])
 
@@ -35,26 +35,28 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
     Returns:
         Full schedule with per-period rows, summary stats, and yearly chart data
     """
+    property = Property(
+        purchase_date=date.today(),
+        purchase_price=req.purchase_price,
+        is_new_property=False,
+        annual_appreciation=req.annual_appreciation,
+    )
+    loan_config = LoanConfig(
+        deposit=req.deposit,
+        annual_rate=req.annual_rate,
+        loan_term_years=req.loan_term_years,
+        frequency=req.frequency,
+        offset_balance=req.offset_balance,
+        offset_contribution=req.offset_contribution,
+        extra_repayment=req.extra_repayment,
+        rate_changes=[
+            RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
+            for rc in req.rate_changes
+        ],
+    )
     mortgage = Mortgage(
-        property=Property(
-            purchase_date=date.today(),
-            purchase_price=req.purchase_price,
-            is_new_property=False,
-            annual_appreciation=req.annual_appreciation,
-        ),
-        loan=LoanConfig(
-            deposit=req.deposit,
-            annual_rate=req.annual_rate,
-            loan_term_years=req.loan_term_years,
-            frequency=req.frequency,
-            offset_balance=req.offset_balance,
-            offset_contribution=req.offset_contribution,
-            extra_repayment=req.extra_repayment,
-            rate_changes=[
-                RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
-                for rc in req.rate_changes
-            ],
-        ),
+        property=property,
+        loan=build_loan(property, loan_config),
         tax_profile=None,
         ongoing_costs=None,
     )

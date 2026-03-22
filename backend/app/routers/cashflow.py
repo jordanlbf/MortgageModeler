@@ -25,6 +25,7 @@ from app.schemas.cashflow import (
     PurchaseCostsResponse,
     BorrowingCostsResponse,
 )
+from app.services.amortisation import build_loan
 from app.services.cashflow import build_ppor_cashflow, build_rentvest_cashflow
 
 router = APIRouter(prefix="/cashflow", tags=["cashflow"])
@@ -87,7 +88,7 @@ def _build_property(req: CashFlowPPORRequest) -> Property:
     )
 
 
-def _build_loan(req: CashFlowPPORRequest) -> LoanConfig:
+def _build_loan_config(req: CashFlowPPORRequest) -> LoanConfig:
     """Map LoanRequest to LoanConfig domain model."""
     return LoanConfig(
         deposit=req.loan.deposit,
@@ -202,9 +203,10 @@ def get_ppor_cashflow(req: CashFlowPPORRequest) -> CashFlowPPORResponse:
     Returns:
         PPOR cash flow projection with year breakdown and summary
     """
+    property = _build_property(req)
     mortgage = Mortgage(
-        property=_build_property(req),
-        loan=_build_loan(req),
+        property=property,
+        loan=build_loan(property, _build_loan_config(req)),
         tax_profile=_build_tax_profile(req),
         ongoing_costs=_build_ongoing_costs(req),
         projection_years=req.projection_years,
@@ -231,9 +233,10 @@ def get_rentvest_cashflow(req: CashFlowRentvestRequest) -> CashFlowRentvestRespo
     Returns:
         Rentvesting cash flow projection with year breakdown, CGT, and summary
     """
+    property = _build_property(req)
     mortgage = Mortgage(
-        property=_build_property(req),
-        loan=_build_loan(req),
+        property=property,
+        loan=build_loan(property, _build_loan_config(req)),
         tax_profile=_build_tax_profile(req),
         ongoing_costs=_build_ongoing_costs(req),
         rentvest=RentvestConfig(

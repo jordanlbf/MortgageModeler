@@ -5,6 +5,7 @@ Tests for tax deductions service — build_tax_deduction_summary and _calculate_
 import pytest
 from datetime import date, timedelta
 
+from app.services.amortisation import build_loan
 from app.services.tax_deductions import (
     build_tax_deduction_summary,
     _calculate_days_held_in_fy,
@@ -104,9 +105,11 @@ def _make_loan(loan_term_years=30, borrowing_costs=None) -> LoanConfig:
 
 def _make_mortgage(property=None, loan=None, tax_profile=None) -> Mortgage:
     """Create a Mortgage aggregate with sensible defaults."""
+    p = property or _make_property()
+    lc = loan or _make_loan()
     return Mortgage(
-        property=property or _make_property(),
-        loan=loan or _make_loan(),
+        property=p,
+        loan=build_loan(p, lc),
         tax_profile=tax_profile or _make_tax_profile(),
     )
 

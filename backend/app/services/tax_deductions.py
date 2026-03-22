@@ -171,8 +171,8 @@ def build_tax_deduction_summary(
 
     # Calculate borrowing costs deduction based on ATO rules
     borrowing_costs_deduction = calculate_borrowing_cost_deduction(
-        mortgage.loan.borrowing_costs.total,
-        mortgage.loan.loan_term_years,
+        mortgage.loan.config.borrowing_costs.total,
+        mortgage.loan.config.loan_term_years,
         financial_year.year - mortgage.property.purchase_date.year
     )
 

@@ -5,6 +5,7 @@ Tests for upfront costs service — build_upfront_cost_estimate.
 import pytest
 from datetime import date
 
+from app.services.amortisation import build_loan
 from app.services.upfront_costs import build_upfront_cost_estimate
 from app.models.loan import LoanConfig, BorrowingCosts
 from app.models.mortgage import Mortgage
@@ -35,9 +36,11 @@ def _make_loan(deposit=100_000, borrowing_costs=None) -> LoanConfig:
 
 
 def _make_mortgage(property=None, loan=None) -> Mortgage:
+    p = property or _make_property()
+    lc = loan or _make_loan()
     return Mortgage(
-        property=property or _make_property(),
-        loan=loan or _make_loan(),
+        property=p,
+        loan=build_loan(p, lc),
     )
 
 
