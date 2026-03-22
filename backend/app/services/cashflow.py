@@ -275,12 +275,10 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
 
         # Calculate tax deductions for this year
         year_mortgage = replace(mortgage, tax_profile=grown_profile)
-        mortgage_interest = mortgage.loan.interest_for_year(year)
         tax_deduction = build_tax_deduction_summary(
             mortgage=year_mortgage,
-            mortgage_interest=mortgage_interest,
+            year=year,
             ongoing_costs=year_costs,
-            rental_income=year_costs.rental_income,
             financial_year=financial_year,
         )
 
