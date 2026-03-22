@@ -13,6 +13,7 @@ from app.models.loan import LoanConfig, BorrowingCosts
 from app.models.mortgage import Mortgage
 from app.models.property import Property, PurchaseCosts
 from app.schemas.upfront_costs import UpfrontCostRequest, UpfrontCostResponse
+from app.services.amortisation import build_loan
 from app.services.upfront_costs import build_upfront_cost_estimate
 
 router = APIRouter(prefix="/upfront-costs", tags=["upfront-costs"])
@@ -43,7 +44,7 @@ def get_upfront_costs(req: UpfrontCostRequest) -> UpfrontCostResponse:
         ),
     )
 
-    loan = LoanConfig(
+    loan_config = LoanConfig(
         deposit=req.deposit,
         annual_rate=0.0,
         loan_term_years=30,
@@ -54,7 +55,7 @@ def get_upfront_costs(req: UpfrontCostRequest) -> UpfrontCostResponse:
         ),
     )
 
-    mortgage = Mortgage(property=property, loan=loan)
+    mortgage = Mortgage(property=property, loan=build_loan(property, loan_config))
     result = build_upfront_cost_estimate(mortgage)
 
     return UpfrontCostResponse(

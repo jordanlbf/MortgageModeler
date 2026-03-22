@@ -5,6 +5,7 @@ Tests for ongoing costs service — calculate_year_cost and build_ongoing_cost_p
 import pytest
 from datetime import date
 
+from app.services.amortisation import build_loan
 from app.services.ongoing_costs import calculate_year_cost, build_ongoing_cost_projection
 from app.models.loan import LoanConfig
 from app.models.mortgage import Mortgage
@@ -49,9 +50,11 @@ def _make_ongoing_costs(council_rates=2_000, water_rates=1_200,
 
 
 def _make_mortgage(property=None, ongoing_costs=None, projection_years=10) -> Mortgage:
+    p = property or _make_property()
+    lc = LoanConfig(deposit=0, annual_rate=0.0, loan_term_years=30)
     return Mortgage(
-        property=property or _make_property(),
-        loan=LoanConfig(deposit=0, annual_rate=0.0, loan_term_years=30),
+        property=p,
+        loan=build_loan(p, lc),
         ongoing_costs=ongoing_costs or _make_ongoing_costs(),
         projection_years=projection_years,
     )

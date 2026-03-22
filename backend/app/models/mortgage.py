@@ -5,7 +5,7 @@ Mortgage domain model — aggregate root composing all models needed for a proje
 from dataclasses import dataclass
 from typing import Optional
 
-from app.models.loan import LoanConfig
+from app.models.loan import Loan
 from app.models.property import Property, OngoingCostsConfig, RentvestConfig
 from app.models.tax import TaxProfile
 
@@ -21,14 +21,14 @@ class Mortgage:
 
     Attributes:
         property: Property details (purchase price, costs, appreciation, rental, depreciation)
-        loan: Mortgage loan configuration (deposit, rate, term, offset, borrowing costs)
+        loan: Loan aggregate (config + amortisation schedule)
         tax_profile: Taxpayer income configuration (None for amortisation-only use)
         ongoing_costs: Base ongoing cost rates and growth rate (None for amortisation-only use)
         rentvest: Tenant rental configuration (None for PPOR)
         projection_years: Number of years to project
     """
     property: Property
-    loan: LoanConfig
+    loan: Loan
     tax_profile: Optional[TaxProfile] = None
     ongoing_costs: Optional[OngoingCostsConfig] = None
     rentvest: Optional[RentvestConfig] = None

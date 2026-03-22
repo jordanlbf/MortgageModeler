@@ -1,10 +1,12 @@
 """
-Loan domain models — mortgage configuration and rate changes.
+Loan domain models — mortgage configuration, rate changes, and loan aggregate.
 """
 
 from dataclasses import dataclass, field
 from typing import Optional
 from enum import Enum
+
+from app.models.amortisation import AmortisationSchedule, ScheduleRow
 
 
 class RepaymentFrequency(str, Enum):
@@ -145,3 +147,68 @@ class LoanConfig:
     extra_repayment: float = 0.0
     rate_changes: list[RateChange] = field(default_factory=list)
     borrowing_costs: BorrowingCosts = field(default_factory=BorrowingCosts)
+
+
+@dataclass
+class Loan:
+    """
+    Behaviour-rich loan aggregate combining configuration with its
+    generated amortisation schedule.
+
+    Provides per-year accessors that eliminate the need to pass loose
+    schedule-derived values (interest, balance, rows) through service layers.
+
+    Attributes:
+        config: Loan configuration (rates, term, offset, etc.)
+        schedule: Generated amortisation schedule for this loan
+    """
+    config: LoanConfig
+    schedule: AmortisationSchedule
+
+    def rows_for_year(self, year: int) -> list[ScheduleRow]:
+        """Slice schedule rows for a specific projection year.
+
+        Args:
+            year: Projection year (0-indexed).
+
+        Returns:
+            List of ScheduleRow for this year.
+        """
+        ppy = self.schedule.periods_per_year
+        start = year * ppy
+        end = min((year + 1) * ppy, len(self.schedule.rows))
+        return self.schedule.rows[start:end]
+
+    def interest_for_year(self, year: int) -> float:
+        """Total interest charged in the given projection year.
+
+        Args:
+            year: Projection year (0-indexed).
+
+        Returns:
+            Sum of interest across all periods in the year.
+        """
+        return sum(r.interest for r in self.rows_for_year(year))
+
+    def balance_at_year(self, year: int) -> float:
+        """Closing loan balance at the end of the given projection year.
+
+        Args:
+            year: Projection year (0-indexed).
+
+        Returns:
+            Closing balance of the last period in the year, or 0.0 if no rows.
+        """
+        rows = self.rows_for_year(year)
+        return rows[-1].closing_balance if rows else 0.0
+
+    def principal_for_year(self, year: int) -> float:
+        """Total principal (scheduled + extra) repaid in the given projection year.
+
+        Args:
+            year: Projection year (0-indexed).
+
+        Returns:
+            Sum of principal paid and extra repayments across all periods in the year.
+        """
+        return sum(r.principal_paid + r.extra_paid for r in self.rows_for_year(year))

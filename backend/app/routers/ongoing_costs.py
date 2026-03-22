@@ -13,6 +13,7 @@ from app.models.loan import LoanConfig
 from app.models.mortgage import Mortgage
 from app.models.property import Property, OngoingCostsConfig, RentalConfig
 from app.schemas.ongoing_costs import OngoingCostResponse, OngoingPropertyCostRequest, YearByYearCostResponse
+from app.services.amortisation import build_loan
 from app.services.ongoing_costs import build_ongoing_cost_projection
 
 router = APIRouter(prefix="/ongoing-costs", tags=["ongoing-costs"])
@@ -53,9 +54,10 @@ def get_ongoing_costs(req: OngoingPropertyCostRequest) -> OngoingCostResponse:
         annual_cost_growth_rate=req.annual_cost_growth_rate,
     )
 
+    loan_config = LoanConfig(deposit=0, annual_rate=0.0, loan_term_years=30)
     mortgage = Mortgage(
         property=property,
-        loan=LoanConfig(deposit=0, annual_rate=0.0, loan_term_years=30),
+        loan=build_loan(property, loan_config),
         ongoing_costs=ongoing_costs,
         projection_years=req.projection_years,
     )

@@ -5,6 +5,7 @@ Tests for tax deductions service — build_tax_deduction_summary and _calculate_
 import pytest
 from datetime import date, timedelta
 
+from app.services.amortisation import build_loan
 from app.services.tax_deductions import (
     build_tax_deduction_summary,
     _calculate_days_held_in_fy,
@@ -12,9 +13,10 @@ from app.services.tax_deductions import (
     _calculate_building_depreciation,
     _calculate_plant_depreciation,
 )
+from app.models.amortisation import AmortisationSchedule, ScheduleRow
 from app.models.deductions import DepreciableBuilding, DepreciableAsset, DepreciationMethod
 from app.models.financial import FinancialYear
-from app.models.loan import LoanConfig, BorrowingCosts
+from app.models.loan import Loan, LoanConfig, BorrowingCosts
 from app.models.mortgage import Mortgage
 from app.models.property import YearCost, Property
 from app.models.tax import TaxProfile
@@ -102,23 +104,67 @@ def _make_loan(loan_term_years=30, borrowing_costs=None) -> LoanConfig:
     )
 
 
+def _make_loan_with_interest(annual_interest, loan_config=None) -> Loan:
+    """Create a Loan with a synthetic schedule producing the given interest at year 0."""
+    lc = loan_config or _make_loan()
+    if annual_interest == 0:
+        rows = []
+    else:
+        per_period = annual_interest / 12
+        rows = [
+            ScheduleRow(
+                period=i + 1, opening_balance=400_000, interest=per_period,
+                principal_paid=500, extra_paid=0, closing_balance=399_500,
+                annual_rate=0.06, scheduled_repayment=2500, offset_balance=0,
+            )
+            for i in range(12)
+        ]
+    schedule = AmortisationSchedule(
+        rows=rows, total_interest=annual_interest,
+        total_periods=len(rows), periods_per_year=12,
+    )
+    return Loan(config=lc, schedule=schedule)
+
+
+def _zero_costs(**overrides) -> YearCost:
+    """YearCost with all cost fields zeroed. Override individual fields as needed."""
+    defaults = dict(
+        council_rates=0, water_rates=0, building_insurance=0,
+        landlord_insurance=0, strata_fees=0, maintenance_cost=0,
+        management_fee=0, rental_income=50_000,
+    )
+    defaults.update(overrides)
+    return _make_year_cost(**defaults)
+
+
 def _make_mortgage(property=None, loan=None, tax_profile=None) -> Mortgage:
-    """Create a Mortgage aggregate with sensible defaults."""
+    """Create a Mortgage aggregate with sensible defaults.
+
+    Args:
+        property: Property override.
+        loan: Either a Loan (used directly) or LoanConfig (built via build_loan).
+        tax_profile: TaxProfile override.
+    """
+    p = property or _make_property()
+    if isinstance(loan, Loan):
+        loan_obj = loan
+    elif loan is not None:
+        loan_obj = build_loan(p, loan)
+    else:
+        loan_obj = build_loan(p, _make_loan())
     return Mortgage(
-        property=property or _make_property(),
-        loan=loan or _make_loan(),
+        property=p,
+        loan=loan_obj,
         tax_profile=tax_profile or _make_tax_profile(),
     )
 
 
-def _build(mortgage=None, mortgage_interest=0, ongoing_costs=None,
-           rental_income=50_000, financial_year=None):
+def _build(mortgage=None, year=0, ongoing_costs=None, financial_year=None):
     """Shorthand for build_tax_deduction_summary with sensible defaults."""
     return build_tax_deduction_summary(
         mortgage=mortgage or _make_mortgage(),
-        mortgage_interest=mortgage_interest,
+        year=year,
         ongoing_costs=ongoing_costs or _make_year_cost(),
-        rental_income=rental_income,
         financial_year=financial_year or FinancialYear(2021),
     )
 
@@ -211,13 +257,11 @@ class TestBuildTaxDeductionSummaryBasic:
         """Deductions exceed rental income — negatively geared."""
         prop = _make_property(buildings=[_make_building()])
         fy = FinancialYear(2025)
-        costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=20_000,
-            ongoing_costs=costs,
-            rental_income=25_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(20_000)),
+            year=0,
+            ongoing_costs=_make_year_cost(),
             financial_year=fy,
         )
 
@@ -232,14 +276,13 @@ class TestBuildTaxDeductionSummaryBasic:
         costs = _make_year_cost(
             council_rates=500, water_rates=300, building_insurance=400,
             landlord_insurance=200, strata_fees=0, maintenance_cost=500,
-            management_fee=400,
+            management_fee=400, rental_income=50_000,
         )
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=5_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(5_000)),
+            year=0,
             ongoing_costs=costs,
-            rental_income=50_000,
             financial_year=fy,
         )
 
@@ -251,13 +294,11 @@ class TestBuildTaxDeductionSummaryBasic:
         """No rental income — all deductions create a loss."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=15_000,
-            ongoing_costs=costs,
-            rental_income=0,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(15_000)),
+            year=0,
+            ongoing_costs=_make_year_cost(rental_income=0),
             financial_year=fy,
         )
 
@@ -268,17 +309,11 @@ class TestBuildTaxDeductionSummaryBasic:
         """No deductions at all — net rental income equals rental income."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=30_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=30_000),
             financial_year=fy,
         )
 
@@ -298,38 +333,30 @@ class TestDeductionBreakdown:
         """Ongoing expenses should sum individual cost fields."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_make_year_cost(rental_income=50_000),
             financial_year=fy,
         )
 
         expected = (2_000 + 1_200 + 1_500 + 1_000 + 3_000 + 5_000 + 2_000)
         assert result.deductible_expenses == pytest.approx(expected)
 
-    def test_mortgage_interest_passed_through(self):
-        """Mortgage interest should appear as-is in the output."""
+    def test_mortgage_interest_derived_from_loan(self):
+        """Mortgage interest should be derived from the loan schedule."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=18_500,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(18_500)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
-        assert result.mortgage_interest == 18_500
+        assert result.mortgage_interest == pytest.approx(18_500)
 
     def test_total_deductions_is_sum_of_all(self):
         """Total deductions = interest + ongoing + building depreciation + plant depreciation."""
@@ -338,13 +365,11 @@ class TestDeductionBreakdown:
             assets=[_make_asset()],
         )
         fy = FinancialYear(2025)
-        costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=15_000,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(15_000)),
+            year=0,
+            ongoing_costs=_make_year_cost(rental_income=50_000),
             financial_year=fy,
         )
 
@@ -356,13 +381,11 @@ class TestDeductionBreakdown:
         """Net rental income = rental income - total deductions."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost()
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=10_000,
-            ongoing_costs=costs,
-            rental_income=30_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(10_000)),
+            year=0,
+            ongoing_costs=_make_year_cost(rental_income=30_000),
             financial_year=fy,
         )
 
@@ -381,17 +404,10 @@ class TestDiv43InService:
         building = _make_building(cost=400_000, purchase_date=date(2020, 1, 15))
         prop = _make_property(purchase_date=date(2020, 1, 15), buildings=[building])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -403,17 +419,10 @@ class TestDiv43InService:
         b2 = _make_building(name="Extension", cost=100_000, purchase_date=date(2022, 6, 1))
         prop = _make_property(buildings=[b1, b2])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -424,17 +433,10 @@ class TestDiv43InService:
         building = _make_building(cost=400_000, purchase_date=date(1980, 1, 1))
         prop = _make_property(purchase_date=date(1980, 1, 1), buildings=[building])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -445,17 +447,10 @@ class TestDiv43InService:
         building = _make_building(cost=400_000, purchase_date=date(2025, 1, 1))
         prop = _make_property(purchase_date=date(2025, 1, 1), buildings=[building])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -470,17 +465,10 @@ class TestDiv43InService:
                                   construction_start_date=date(1985, 3, 1))
         prop = _make_property(buildings=[building])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -492,17 +480,10 @@ class TestDiv43InService:
                                   construction_start_date=date(1987, 9, 15))
         prop = _make_property(buildings=[building])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -514,17 +495,10 @@ class TestDiv43InService:
                                   construction_start_date=date(1987, 9, 16))
         prop = _make_property(buildings=[building])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -540,17 +514,10 @@ class TestDiv43InService:
                                       construction_start_date=date(2019, 6, 1))
         prop = _make_property(buildings=[old_building, new_building])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -560,17 +527,10 @@ class TestDiv43InService:
         """Empty buildings list — zero depreciation."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -589,17 +549,10 @@ class TestDiv40InService:
         asset = _make_asset(cost=2_000, life=10, wdv=2_000)
         prop = _make_property(is_new=True, assets=[asset])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -610,17 +563,10 @@ class TestDiv40InService:
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, purchase_date=date(2018, 6, 1))
         prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False, assets=[asset])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -631,17 +577,10 @@ class TestDiv40InService:
         asset = _make_asset(cost=2_000, life=20, wdv=2_000, purchase_date=date(2014, 1, 1))
         prop = _make_property(purchase_date=date(2016, 3, 1), is_new=False, assets=[asset])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -652,17 +591,10 @@ class TestDiv40InService:
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, purchase_date=date(2020, 1, 15))
         prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False, assets=[asset])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -674,17 +606,10 @@ class TestDiv40InService:
         new_asset = _make_asset(name="New aircon", cost=2_000, life=10, wdv=2_000, purchase_date=date(2020, 6, 1))
         prop = _make_property(purchase_date=date(2020, 1, 15), is_new=False, assets=[old_asset, new_asset])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -695,17 +620,10 @@ class TestDiv40InService:
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, method=DepreciationMethod.DIMINISHING_VALUE)
         prop = _make_property(is_new=True, assets=[asset])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -716,17 +634,10 @@ class TestDiv40InService:
         asset = _make_asset(cost=2_000, life=10, wdv=2_000, method=DepreciationMethod.PRIME_COST)
         prop = _make_property(is_new=True, assets=[asset])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -738,17 +649,10 @@ class TestDiv40InService:
         a2 = _make_asset(name="Carpet", cost=3_000, life=8, wdv=3_000)
         prop = _make_property(is_new=True, assets=[a1, a2])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -759,17 +663,10 @@ class TestDiv40InService:
         asset = _make_asset(cost=2_000, life=5, purchase_date=date(2010, 1, 1), wdv=100)
         prop = _make_property(is_new=True, purchase_date=date(2010, 1, 1), assets=[asset])
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -779,17 +676,10 @@ class TestDiv40InService:
         """Empty assets list — zero depreciation."""
         prop = _make_property(is_new=True)
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=50_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(),
             financial_year=fy,
         )
 
@@ -811,10 +701,10 @@ class TestTaxSaving:
         profile = _make_tax_profile()
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop, tax_profile=profile),
-            mortgage_interest=20_000,
+            mortgage=_make_mortgage(property=prop, tax_profile=profile,
+                                    loan=_make_loan_with_interest(20_000)),
+            year=0,
             ongoing_costs=costs,
-            rental_income=25_000,
             financial_year=fy,
         )
 
@@ -836,17 +726,11 @@ class TestTaxSaving:
         """Positively geared — tax saving should be negative (extra tax owed)."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=30_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=30_000),
             financial_year=fy,
         )
 
@@ -856,17 +740,11 @@ class TestTaxSaving:
         """Net rental income exactly zero — no tax impact."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=30_000,
-            ongoing_costs=costs,
-            rental_income=30_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(30_000)),
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=30_000),
             financial_year=fy,
         )
 
@@ -876,18 +754,13 @@ class TestTaxSaving:
         """Loss large enough to push income across a tax bracket boundary."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
         profile = _make_tax_profile(taxable_income=50_000)
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop, tax_profile=profile),
-            mortgage_interest=10_000,
-            ongoing_costs=costs,
-            rental_income=0,
+            mortgage=_make_mortgage(property=prop, tax_profile=profile,
+                                    loan=_make_loan_with_interest(10_000)),
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=0),
             financial_year=fy,
         )
 
@@ -902,18 +775,13 @@ class TestTaxSaving:
         """Low income — deductions may push into tax-free threshold."""
         prop = _make_property()
         fy = FinancialYear(2025)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
         profile = _make_tax_profile(taxable_income=20_000)
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop, tax_profile=profile),
-            mortgage_interest=10_000,
-            ongoing_costs=costs,
-            rental_income=0,
+            mortgage=_make_mortgage(property=prop, tax_profile=profile,
+                                    loan=_make_loan_with_interest(10_000)),
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=0),
             financial_year=fy,
         )
 
@@ -1125,18 +993,13 @@ class TestBorrowingCostDeductionInSummary:
         """Borrowing cost deduction should be part of total_deductions."""
         prop = _make_property()
         fy = FinancialYear(2020)  # year 0 relative to 2020 purchase
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-        loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000, mortgage_registration_fee=238, loan_establishment_fee=300))
+        bc = BorrowingCosts(lmi=10_000, mortgage_registration_fee=238, loan_establishment_fee=300)
+        loan = _make_loan_with_interest(20_000, _make_loan(borrowing_costs=bc))
 
         result = build_tax_deduction_summary(
             mortgage=_make_mortgage(property=prop, loan=loan),
-            mortgage_interest=20_000,
-            ongoing_costs=costs,
-            rental_income=25_000,
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=25_000),
             financial_year=fy,
         )
 
@@ -1148,18 +1011,12 @@ class TestBorrowingCostDeductionInSummary:
     def test_borrowing_costs_field_on_result(self):
         prop = _make_property()
         fy = FinancialYear(2021)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-        loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=5_000))
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=BorrowingCosts(lmi=5_000)))
 
         result = build_tax_deduction_summary(
             mortgage=_make_mortgage(property=prop, loan=loan),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=25_000,
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=25_000),
             financial_year=fy,
         )
 
@@ -1169,18 +1026,11 @@ class TestBorrowingCostDeductionInSummary:
         """No borrowing costs → zero deduction."""
         prop = _make_property()
         fy = FinancialYear(2021)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-        loan = _make_loan()  # default BorrowingCosts — all None
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop, loan=loan),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=25_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=25_000),
             financial_year=fy,
         )
 
@@ -1190,18 +1040,12 @@ class TestBorrowingCostDeductionInSummary:
         """Year 6 (beyond spread period) → zero deduction."""
         prop = _make_property()
         fy = FinancialYear(2025)  # year 5 relative to 2020 purchase (beyond 5-year spread)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-        loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000))
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)))
 
         result = build_tax_deduction_summary(
             mortgage=_make_mortgage(property=prop, loan=loan),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=25_000,
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=25_000),
             financial_year=fy,
         )
 
@@ -1211,21 +1055,12 @@ class TestBorrowingCostDeductionInSummary:
         """3-year loan → spread over 3 years instead of 5."""
         prop = _make_property()
         fy = FinancialYear(2021)
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-        loan = _make_loan(
-            loan_term_years=3,
-            borrowing_costs=BorrowingCosts(lmi=9_000),
-        )
+        lc = _make_loan(loan_term_years=3, borrowing_costs=BorrowingCosts(lmi=9_000))
 
         result = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop, loan=loan),
-            mortgage_interest=0,
-            ongoing_costs=costs,
-            rental_income=25_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0, lc)),
+            year=0,
+            ongoing_costs=_zero_costs(rental_income=25_000),
             financial_year=fy,
         )
 
@@ -1238,18 +1073,17 @@ class TestBorrowingCostDeductionInSummary:
         costs = _make_year_cost()
 
         result_no_bc = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop),
-            mortgage_interest=20_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(20_000)),
+            year=0,
             ongoing_costs=costs,
-            rental_income=25_000,
             financial_year=fy,
         )
 
+        lc_with_bc = _make_loan(borrowing_costs=BorrowingCosts(lmi=20_000))
         result_with_bc = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop, loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=20_000))),
-            mortgage_interest=20_000,
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(20_000, lc_with_bc)),
+            year=0,
             ongoing_costs=costs,
-            rental_income=25_000,
             financial_year=fy,
         )
 
@@ -1259,26 +1093,20 @@ class TestBorrowingCostDeductionInSummary:
     def test_small_borrowing_costs_full_year_zero(self):
         """$50 borrowing costs — fully deducted in year 0, zero in year 1."""
         prop = _make_property()
-        costs = _make_year_cost(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_cost=0,
-            management_fee=0,
-        )
-        loan = _make_loan(borrowing_costs=BorrowingCosts(lmi=50))
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=BorrowingCosts(lmi=50)))
+        costs = _zero_costs(rental_income=25_000)
 
         result_y0 = build_tax_deduction_summary(
             mortgage=_make_mortgage(property=prop, loan=loan),
-            mortgage_interest=0,
+            year=0,
             ongoing_costs=costs,
-            rental_income=25_000,
             financial_year=FinancialYear(2020),  # year 0
         )
 
         result_y1 = build_tax_deduction_summary(
             mortgage=_make_mortgage(property=prop, loan=loan),
-            mortgage_interest=0,
+            year=0,
             ongoing_costs=costs,
-            rental_income=25_000,
             financial_year=FinancialYear(2021),  # year 1
         )
 

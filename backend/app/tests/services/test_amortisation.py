@@ -5,7 +5,7 @@ Tests for amortisation service — build_schedule_result.
 import pytest
 from datetime import date
 
-from app.services.amortisation import build_schedule_result, build_amortisation_schedule, build_year_chart_point
+from app.services.amortisation import build_loan, build_schedule_result, build_amortisation_schedule, build_year_chart_point
 from app.models.amortisation import AmortisationSchedule
 from app.models.loan import RepaymentFrequency, RateChange, LoanConfig, BorrowingCosts
 from app.models.mortgage import Mortgage
@@ -43,9 +43,11 @@ def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30,
 
 
 def _make_mortgage(property=None, loan=None) -> Mortgage:
+    p = property or _make_property()
+    lc = loan or _make_loan()
     return Mortgage(
-        property=property or _make_property(),
-        loan=loan or _make_loan(),
+        property=p,
+        loan=build_loan(p, lc),
     )
 
 

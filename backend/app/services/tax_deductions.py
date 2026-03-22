@@ -142,9 +142,8 @@ def _calculate_plant_depreciation(
 
 def build_tax_deduction_summary(
     mortgage: Mortgage,
-    mortgage_interest: float,
+    year: int,
     ongoing_costs: YearCost,
-    rental_income: float,
     financial_year: FinancialYear,
 ) -> PropertyTaxDeductionSummary:
     """
@@ -155,15 +154,18 @@ def build_tax_deduction_summary(
     via two-pass call to the tax engine.
 
     Args:
-        mortgage: Mortgage aggregate with property, loan, and tax profile details
-        mortgage_interest: Annual interest portion of repayments
-        ongoing_costs: Single year's ongoing property costs
-        rental_income: Annual gross rental income
-        financial_year: Financial year to calculate for (e.g. 2025 = FY 2024-25, ending 30 June 2025)
+        mortgage: Mortgage aggregate with property, loan, and tax profile details.
+        year: Projection year (0-indexed), used to derive mortgage interest from
+            the loan schedule.
+        ongoing_costs: Single year's ongoing property costs (includes rental_income).
+        financial_year: Financial year to calculate for (e.g. 2025 = FY 2024-25,
+            ending 30 June 2025).
 
     Returns:
-        PropertyTaxDeductionSummary with deduction breakdown and tax saving
+        PropertyTaxDeductionSummary with deduction breakdown and tax saving.
     """
+    mortgage_interest = mortgage.loan.interest_for_year(year)
+    rental_income = ongoing_costs.rental_income
     # Calculate each deduction component
     depreciation_building = _calculate_building_depreciation(mortgage.property.depreciable_buildings, financial_year)
     depreciation_plant = _calculate_plant_depreciation(mortgage.property.depreciable_assets, mortgage.property.purchase_date, financial_year)
@@ -171,8 +173,8 @@ def build_tax_deduction_summary(
 
     # Calculate borrowing costs deduction based on ATO rules
     borrowing_costs_deduction = calculate_borrowing_cost_deduction(
-        mortgage.loan.borrowing_costs.total,
-        mortgage.loan.loan_term_years,
+        mortgage.loan.config.borrowing_costs.total,
+        mortgage.loan.config.loan_term_years,
         financial_year.year - mortgage.property.purchase_date.year
     )
 

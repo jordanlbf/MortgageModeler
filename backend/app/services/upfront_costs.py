@@ -35,7 +35,7 @@ def build_upfront_cost_estimate(mortgage: Mortgage) -> UpfrontCosts:
     Returns:
         Fully resolved UpfrontCosts with no None values
     """
-    loan_amount = max(mortgage.property.purchase_price - mortgage.loan.deposit, 0.0)
+    loan_amount = max(mortgage.property.purchase_price - mortgage.loan.config.deposit, 0.0)
     lvr = loan_amount / mortgage.property.purchase_price if mortgage.property.purchase_price > 0 else 0.0
     is_investment = not mortgage.property.is_ppor
 
@@ -50,7 +50,7 @@ def build_upfront_cost_estimate(mortgage: Mortgage) -> UpfrontCosts:
     )
 
     # Resolve borrowing costs — None means auto-estimate
-    src_bc = mortgage.loan.borrowing_costs
+    src_bc = mortgage.loan.config.borrowing_costs
     borrowing_costs = BorrowingCosts(
         lmi=src_bc.lmi if src_bc.lmi is not None else estimate_lmi(loan_amount, lvr, is_investment),
         mortgage_registration_fee=src_bc.mortgage_registration_fee if src_bc.mortgage_registration_fee is not None else calculate_mortgage_registration_fee(),

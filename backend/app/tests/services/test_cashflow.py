@@ -5,9 +5,9 @@ Tests for cashflow projection services — helpers, PPOR, and rentvesting.
 import pytest
 from datetime import date
 
+from app.services.amortisation import build_loan
 from app.services.cashflow import (
     _calculate_cashflow_summary,
-    _get_year_rows,
     _grow_tax_profile,
     _calculate_cashflow_year,
     build_ppor_cashflow,
@@ -16,7 +16,7 @@ from app.services.cashflow import (
 from app.models.amortisation import AmortisationSchedule, ScheduleRow
 from app.models.cashflow import CashFlowYear
 from app.models.deductions import PropertyTaxDeductionSummary, DepreciableBuilding
-from app.models.loan import LoanConfig, BorrowingCosts
+from app.models.loan import LoanConfig, BorrowingCosts, Loan
 from app.models.mortgage import Mortgage
 from app.models.property import (
     Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig,
@@ -99,9 +99,11 @@ def _make_rentvest(weekly_rent_paid=500, annual_rent_paid_growth=0.03) -> Rentve
 def _make_mortgage(property=None, tax_profile=None, loan=None,
                    ongoing_costs=None, rentvest=None,
                    projection_years=30) -> Mortgage:
+    p = property or _make_property()
+    lc = loan or _make_loan()
     return Mortgage(
-        property=property or _make_property(),
-        loan=loan or _make_loan(),
+        property=p,
+        loan=build_loan(p, lc),
         tax_profile=tax_profile or _make_tax_profile(),
         ongoing_costs=ongoing_costs or _make_ongoing_costs(),
         rentvest=rentvest,
@@ -244,64 +246,66 @@ class TestGrowTaxProfile:
 
 
 # ──────────────────────────────────────────────
-# _get_year_rows
+# Loan.rows_for_year
 # ──────────────────────────────────────────────
 
-class TestGetYearRows:
-    """Tests for schedule row slicing by year."""
+class TestLoanRowsForYear:
+    """Tests for Loan.rows_for_year schedule row slicing."""
 
-    def _make_schedule(self, num_rows=360, periods_per_year=12):
+    def _make_loan_with_schedule(self, num_rows=360, periods_per_year=12):
         rows = [_make_schedule_row(period=i + 1) for i in range(num_rows)]
-        return AmortisationSchedule(
+        schedule = AmortisationSchedule(
             rows=rows,
             total_interest=100_000,
             total_periods=num_rows,
             periods_per_year=periods_per_year,
         )
+        return Loan(config=_make_loan(), schedule=schedule)
 
     def test_year_zero_monthly(self):
-        schedule = self._make_schedule(360, 12)
-        rows = _get_year_rows(schedule, 0)
+        loan = self._make_loan_with_schedule(360, 12)
+        rows = loan.rows_for_year(0)
         assert len(rows) == 12
 
     def test_year_zero_weekly(self):
-        schedule = self._make_schedule(1560, 52)
-        rows = _get_year_rows(schedule, 0)
+        loan = self._make_loan_with_schedule(1560, 52)
+        rows = loan.rows_for_year(0)
         assert len(rows) == 52
 
     def test_year_zero_fortnightly(self):
-        schedule = self._make_schedule(780, 26)
-        rows = _get_year_rows(schedule, 0)
+        loan = self._make_loan_with_schedule(780, 26)
+        rows = loan.rows_for_year(0)
         assert len(rows) == 26
 
     def test_year_one_starts_after_year_zero(self):
-        schedule = self._make_schedule(360, 12)
-        y0 = _get_year_rows(schedule, 0)
-        y1 = _get_year_rows(schedule, 1)
+        loan = self._make_loan_with_schedule(360, 12)
+        y0 = loan.rows_for_year(0)
+        y1 = loan.rows_for_year(1)
         assert y0[-1].period == 12
         assert y1[0].period == 13
 
     def test_last_year(self):
-        schedule = self._make_schedule(360, 12)
-        rows = _get_year_rows(schedule, 29)
+        loan = self._make_loan_with_schedule(360, 12)
+        rows = loan.rows_for_year(29)
         assert len(rows) == 12
         assert rows[-1].period == 360
 
     def test_beyond_schedule_returns_empty(self):
         """Year beyond schedule should return empty list."""
-        schedule = self._make_schedule(120, 12)  # 10 year loan
-        rows = _get_year_rows(schedule, 15)
+        loan = self._make_loan_with_schedule(120, 12)  # 10 year loan
+        rows = loan.rows_for_year(15)
         assert rows == []
 
     def test_partial_final_year(self):
         """If loan pays off mid-year, returns fewer rows."""
-        schedule = self._make_schedule(100, 12)  # 8.33 years
-        rows = _get_year_rows(schedule, 8)
+        loan = self._make_loan_with_schedule(100, 12)  # 8.33 years
+        rows = loan.rows_for_year(8)
         assert len(rows) == 4  # 100 - 96 = 4 remaining
 
     def test_empty_schedule(self):
         schedule = AmortisationSchedule(rows=[], total_interest=0, total_periods=0, periods_per_year=12)
-        rows = _get_year_rows(schedule, 0)
+        loan = Loan(config=_make_loan(), schedule=schedule)
+        rows = loan.rows_for_year(0)
         assert rows == []
 
 

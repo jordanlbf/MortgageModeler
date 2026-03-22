@@ -9,35 +9,52 @@ Provides three functions:
 
 from app.engine.amortisation import generate_schedule
 from app.models.amortisation import AmortisationSchedule, ScheduleResult, YearChartPoint
+from app.models.loan import Loan, LoanConfig
 from app.models.mortgage import Mortgage
+from app.models.property import Property
+
+
+def build_loan(property: Property, loan_config: LoanConfig) -> Loan:
+    """Build a Loan aggregate from property and loan configuration.
+
+    Computes the loan principal from purchase price, deposit, and capitalised
+    borrowing costs, then generates the full amortisation schedule.
+
+    Args:
+        property: Property with purchase price for loan amount calculation.
+        loan_config: Loan configuration (rate, term, offset, etc.).
+
+    Returns:
+        Loan wrapping the config and its generated amortisation schedule.
+    """
+    loan_amount = max(property.purchase_price - loan_config.deposit, 0.0)
+    loan_amount += loan_config.borrowing_costs.total_capitalised
+
+    schedule = generate_schedule(
+        principal=loan_amount,
+        annual_rate=loan_config.annual_rate,
+        loan_term_years=loan_config.loan_term_years,
+        frequency=loan_config.frequency,
+        offset_balance=loan_config.offset_balance,
+        extra_repayment=loan_config.extra_repayment,
+        rate_changes=loan_config.rate_changes or None,
+        offset_contribution=loan_config.offset_contribution,
+    )
+
+    return Loan(config=loan_config, schedule=schedule)
 
 
 def build_amortisation_schedule(mortgage: Mortgage) -> AmortisationSchedule:
     """
-    Generate a raw amortisation schedule without chart data.
-
-    Derives loan_amount from property and loan config. Calls the engine
-    to produce the period-by-period schedule.
+    Return the pre-built amortisation schedule from the Mortgage's Loan.
 
     Args:
-        mortgage: Mortgage aggregate with property and loan details
+        mortgage: Mortgage aggregate containing a Loan with its schedule.
 
     Returns:
-        AmortisationSchedule with per-period rows and summary stats
+        AmortisationSchedule with per-period rows and summary stats.
     """
-    loan_amount = max(mortgage.property.purchase_price - mortgage.loan.deposit, 0.0)
-    loan_amount += mortgage.loan.borrowing_costs.total_capitalised
-
-    return generate_schedule(
-        principal=loan_amount,
-        annual_rate=mortgage.loan.annual_rate,
-        loan_term_years=mortgage.loan.loan_term_years,
-        frequency=mortgage.loan.frequency,
-        offset_balance=mortgage.loan.offset_balance,
-        extra_repayment=mortgage.loan.extra_repayment,
-        rate_changes=mortgage.loan.rate_changes or None,
-        offset_contribution=mortgage.loan.offset_contribution,
-    )
+    return mortgage.loan.schedule
 
 
 def build_year_chart_point(
@@ -69,8 +86,8 @@ def build_year_chart_point(
             balance=loan_amount,
             total_interest=0.0,
             property_value=mortgage.property.purchase_price,
-            equity=round(mortgage.loan.deposit, 2),
-            offset_balance=round(mortgage.loan.offset_balance, 2),
+            equity=round(mortgage.loan.config.deposit, 2),
+            offset_balance=round(mortgage.loan.config.offset_balance, 2),
         )
 
     property_value = mortgage.property.purchase_price * (1 + mortgage.property.annual_appreciation) ** year
@@ -87,7 +104,7 @@ def build_year_chart_point(
     equity = property_value - balance
 
     periods_elapsed = year * ppy
-    projected_offset = mortgage.loan.offset_balance + mortgage.loan.offset_contribution * max(periods_elapsed - 1, 0)
+    projected_offset = mortgage.loan.config.offset_balance + mortgage.loan.config.offset_contribution * max(periods_elapsed - 1, 0)
 
     return YearChartPoint(
         year=year,
@@ -112,22 +129,22 @@ def build_schedule_result(mortgage: Mortgage) -> ScheduleResult:
     Returns:
         ScheduleResult with per-period schedule, summary stats, and yearly chart data
     """
-    loan_amount = max(mortgage.property.purchase_price - mortgage.loan.deposit, 0.0)
-    loan_amount += mortgage.loan.borrowing_costs.total_capitalised
+    loan_amount = max(mortgage.property.purchase_price - mortgage.loan.config.deposit, 0.0)
+    loan_amount += mortgage.loan.config.borrowing_costs.total_capitalised
     lvr = loan_amount / mortgage.property.purchase_price if mortgage.property.purchase_price > 0 else 0.0
 
-    schedule = build_amortisation_schedule(mortgage)
+    schedule = mortgage.loan.schedule
 
     chart_data = [
         build_year_chart_point(year, mortgage, schedule, loan_amount)
-        for year in range(mortgage.loan.loan_term_years + 1)
+        for year in range(mortgage.loan.config.loan_term_years + 1)
     ]
 
     return ScheduleResult(
         schedule=schedule,
         payment=round(schedule.rows[0].scheduled_repayment, 2) if schedule.rows else 0.0,
         purchase_price=mortgage.property.purchase_price,
-        deposit=mortgage.loan.deposit,
+        deposit=mortgage.loan.config.deposit,
         loan_amount=round(loan_amount, 2),
         lvr=round(lvr, 4),
         annual_appreciation=mortgage.property.annual_appreciation,
