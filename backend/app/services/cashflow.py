@@ -14,7 +14,6 @@ from datetime import timedelta
 
 from app.engine.cgt import calculate_cgt
 from app.engine.property import calculate_property_value
-from app.models.amortisation import ScheduleRow
 from app.models.cashflow import CashFlowYear, CashFlowSummary, CashFlowPPORResult, CashFlowRentvestResult
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.financial import FinancialYear
