@@ -9,6 +9,10 @@ from enum import Enum
 from app.models.amortisation import AmortisationSchedule, ScheduleRow
 
 
+_FREQUENCY_PERIODS = {"weekly": 52, "fortnightly": 26, "monthly": 12}
+_FREQUENCY_DAYS = {"weekly": 7.0, "fortnightly": 14.0, "monthly": 365.0 / 12}
+
+
 class RepaymentFrequency(str, Enum):
     """
     Supported repayment frequencies for mortgage calculations.
@@ -28,9 +32,9 @@ class RepaymentFrequency(str, Enum):
         Number of repayment periods in a year.
 
         Returns:
-            52 for weekly, 26 for fortnightly, 12 for monthly
+            52 for weekly, 26 for fortnightly, 12 for monthly.
         """
-        return {"weekly": 52, "fortnightly": 26, "monthly": 12}[self.value]
+        return _FREQUENCY_PERIODS[self.value]
 
     @property
     def days_per_period(self) -> float:
@@ -38,9 +42,9 @@ class RepaymentFrequency(str, Enum):
         Number of days in each repayment period.
 
         Returns:
-            7 for weekly, 14 for fortnightly, 365/12 for monthly
+            7 for weekly, 14 for fortnightly, 365/12 for monthly.
         """
-        return {"weekly": 7, "fortnightly": 14, "monthly": 365 / 12}[self.value]
+        return _FREQUENCY_DAYS[self.value]
 
 
 @dataclass
