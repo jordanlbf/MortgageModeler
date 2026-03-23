@@ -128,16 +128,12 @@
   max-width: 1300px;
   margin-bottom: 36px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
 .home-featured .home-card-link {
   width: 100%;
-}
-
-.home-featured > :first-child {
-  grid-column: 2;
 }
 
 /* ── Section divider ──────────────────────────────── */
@@ -566,9 +562,6 @@
     gap: 14px;
   }
 
-  .home-featured > :first-child {
-    grid-column: auto;
-  }
 }
 
 /* Small tablet — ≤ 680px */

@@ -15,6 +15,16 @@ const icons: Record<string, React.ReactNode> = {
       <path d="M8 12L22 8L38 4" stroke={mix(t.accent, 40)} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 3" />
     </svg>
   ),
+  tax: (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+      <rect x="10" y="8" width="28" height="32" rx="4" stroke={mix(t.accent, 40)} strokeWidth="1.5" />
+      <rect x="14" y="12" width="20" height="8" rx="2" fill={mix(t.accent, 25)} />
+      <circle cx="19" cy="28" r="2" fill={mix(t.accent, 50)} />
+      <circle cx="29" cy="28" r="2" fill={mix(t.accent, 50)} />
+      <circle cx="19" cy="34" r="2" fill={mix(t.accent, 70)} />
+      <circle cx="29" cy="34" r="2" fill={mix(t.accent, 35)} />
+    </svg>
+  ),
   "ppor-vs-rent": (
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
       <circle cx="24" cy="24" r="16" stroke="rgba(168,139,250,0.2)" strokeWidth="1.5" />
