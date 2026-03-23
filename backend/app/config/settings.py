@@ -20,6 +20,7 @@ class Settings(BaseSettings):
         APP_VERSION: Application version string
         CORS_ORIGINS: Comma-separated list of allowed CORS origins
     """
+
     APP_ENV: str = "development"
     DEBUG: bool = True
     APP_TITLE: str = "MortgageModeler"

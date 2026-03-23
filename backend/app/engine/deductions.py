@@ -7,7 +7,7 @@ calculations. All functions are pure — no side effects or external dependencie
 
 from datetime import date
 
-from app.config.deductions import DIV43_CONSTRUCTION_CUTOFF_DATE, DIV40_SECONDHAND_CUTOFF_DATE
+from app.config.deductions import DIV40_SECONDHAND_CUTOFF_DATE, DIV43_CONSTRUCTION_CUTOFF_DATE
 
 
 def calculate_division_43_deduction(

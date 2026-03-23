@@ -4,6 +4,7 @@ Tests for API Ongoing Costs endpoints.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -70,9 +71,17 @@ class TestOngoingCostsEstimate:
         data = self._post().json()
         year_entry = data["annual_costs"][0]
         expected_fields = {
-            "year", "council_rates", "water_rates", "building_insurance",
-            "landlord_insurance", "strata_fees", "maintenance_cost",
-            "management_fee", "property_value", "rental_income", "total",
+            "year",
+            "council_rates",
+            "water_rates",
+            "building_insurance",
+            "landlord_insurance",
+            "strata_fees",
+            "maintenance_cost",
+            "management_fee",
+            "property_value",
+            "rental_income",
+            "total",
         }
         assert set(year_entry.keys()) == expected_fields
 
@@ -138,10 +147,13 @@ class TestOngoingCostsEstimate:
         data = self._post().json()
         for entry in data["annual_costs"]:
             component_sum = (
-                entry["council_rates"] + entry["water_rates"] +
-                entry["building_insurance"] + entry["landlord_insurance"] +
-                entry["strata_fees"] + entry["maintenance_cost"] +
-                entry["management_fee"]
+                entry["council_rates"]
+                + entry["water_rates"]
+                + entry["building_insurance"]
+                + entry["landlord_insurance"]
+                + entry["strata_fees"]
+                + entry["maintenance_cost"]
+                + entry["management_fee"]
             )
             assert entry["total"] == pytest.approx(component_sum, abs=0.01)
 
@@ -212,13 +224,15 @@ class TestOngoingCostsEstimate:
     # ── Management fee ────────────────────────────
 
     def test_management_fee_year_1(self):
-        data = self._post(weekly_rent=500, vacancy_weeks=2, management_rate=0.08,
-                          annual_rent_growth_rate=0.03, is_investment=True).json()
+        data = self._post(
+            weekly_rent=500, vacancy_weeks=2, management_rate=0.08, annual_rent_growth_rate=0.03, is_investment=True
+        ).json()
         assert data["annual_costs"][0]["management_fee"] == pytest.approx(25_000 * 0.08)
 
     def test_management_fee_year_2(self):
-        data = self._post(weekly_rent=500, vacancy_weeks=2, management_rate=0.08,
-                          annual_rent_growth_rate=0.03, is_investment=True).json()
+        data = self._post(
+            weekly_rent=500, vacancy_weeks=2, management_rate=0.08, annual_rent_growth_rate=0.03, is_investment=True
+        ).json()
         assert data["annual_costs"][1]["management_fee"] == pytest.approx(25_000 * 1.03 * 0.08)
 
     def test_management_fee_grows_with_rent(self):
@@ -374,9 +388,14 @@ class TestOngoingCostsEstimate:
 
     def test_all_zero_costs(self):
         data = self._post(
-            council_rates=0, water_rates=0, building_insurance=0,
-            landlord_insurance=0, strata_fees=0, maintenance_rate=0,
-            management_rate=0, weekly_rent=0,
+            council_rates=0,
+            water_rates=0,
+            building_insurance=0,
+            landlord_insurance=0,
+            strata_fees=0,
+            maintenance_rate=0,
+            management_rate=0,
+            weekly_rent=0,
         ).json()
         for entry in data["annual_costs"]:
             assert entry["total"] == 0.0
@@ -419,12 +438,21 @@ class TestOngoingCostsEstimate:
 
     def test_end_to_end_investment_year_1(self):
         data = self._post(
-            purchase_price=500_000, annual_growth_rate=0.05,
-            weekly_rent=500, vacancy_weeks=2, annual_rent_growth_rate=0.03,
-            is_investment=True, projection_years=3, annual_cost_growth_rate=0.025,
-            council_rates=1_800, water_rates=1_200, building_insurance=1_500,
-            landlord_insurance=1_000, strata_fees=3_000,
-            maintenance_rate=0.01, management_rate=0.08,
+            purchase_price=500_000,
+            annual_growth_rate=0.05,
+            weekly_rent=500,
+            vacancy_weeks=2,
+            annual_rent_growth_rate=0.03,
+            is_investment=True,
+            projection_years=3,
+            annual_cost_growth_rate=0.025,
+            council_rates=1_800,
+            water_rates=1_200,
+            building_insurance=1_500,
+            landlord_insurance=1_000,
+            strata_fees=3_000,
+            maintenance_rate=0.01,
+            management_rate=0.08,
         ).json()
 
         yr1 = data["annual_costs"][0]
@@ -446,12 +474,21 @@ class TestOngoingCostsEstimate:
 
     def test_end_to_end_investment_year_2(self):
         data = self._post(
-            purchase_price=500_000, annual_growth_rate=0.05,
-            weekly_rent=500, vacancy_weeks=2, annual_rent_growth_rate=0.03,
-            is_investment=True, projection_years=3, annual_cost_growth_rate=0.025,
-            council_rates=1_800, water_rates=1_200, building_insurance=1_500,
-            landlord_insurance=1_000, strata_fees=3_000,
-            maintenance_rate=0.01, management_rate=0.08,
+            purchase_price=500_000,
+            annual_growth_rate=0.05,
+            weekly_rent=500,
+            vacancy_weeks=2,
+            annual_rent_growth_rate=0.03,
+            is_investment=True,
+            projection_years=3,
+            annual_cost_growth_rate=0.025,
+            council_rates=1_800,
+            water_rates=1_200,
+            building_insurance=1_500,
+            landlord_insurance=1_000,
+            strata_fees=3_000,
+            maintenance_rate=0.01,
+            management_rate=0.08,
         ).json()
 
         yr2 = data["annual_costs"][1]
@@ -468,12 +505,21 @@ class TestOngoingCostsEstimate:
 
     def test_end_to_end_ppor_year_1(self):
         data = self._post(
-            purchase_price=500_000, annual_growth_rate=0.05,
-            weekly_rent=500, vacancy_weeks=2, annual_rent_growth_rate=0.03,
-            is_investment=False, projection_years=3, annual_cost_growth_rate=0.025,
-            council_rates=1_800, water_rates=1_200, building_insurance=1_500,
-            landlord_insurance=1_000, strata_fees=3_000,
-            maintenance_rate=0.01, management_rate=0.08,
+            purchase_price=500_000,
+            annual_growth_rate=0.05,
+            weekly_rent=500,
+            vacancy_weeks=2,
+            annual_rent_growth_rate=0.03,
+            is_investment=False,
+            projection_years=3,
+            annual_cost_growth_rate=0.025,
+            council_rates=1_800,
+            water_rates=1_200,
+            building_insurance=1_500,
+            landlord_insurance=1_000,
+            strata_fees=3_000,
+            maintenance_rate=0.01,
+            management_rate=0.08,
         ).json()
 
         yr1 = data["annual_costs"][0]

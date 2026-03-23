@@ -4,6 +4,7 @@ Tests for API Upfront Costs endpoints.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -37,8 +38,7 @@ class TestUpfrontCostsEstimate:
 
     def test_purchase_costs_has_all_fields(self):
         data = self._post().json()["purchase_costs"]
-        expected = {"stamp_duty", "legal_fees", "building_pest_inspection",
-                    "registration_fee", "other_costs", "total"}
+        expected = {"stamp_duty", "legal_fees", "building_pest_inspection", "registration_fee", "other_costs", "total"}
         assert set(data.keys()) == expected
 
     def test_borrowing_costs_has_all_fields(self):
@@ -97,8 +97,13 @@ class TestUpfrontCostsEstimate:
 
     def test_purchase_costs_total_is_sum(self):
         pc = self._post().json()["purchase_costs"]
-        expected = (pc["stamp_duty"] + pc["legal_fees"] + pc["building_pest_inspection"] +
-                    pc["registration_fee"] + pc["other_costs"])
+        expected = (
+            pc["stamp_duty"]
+            + pc["legal_fees"]
+            + pc["building_pest_inspection"]
+            + pc["registration_fee"]
+            + pc["other_costs"]
+        )
         assert pc["total"] == pytest.approx(expected, abs=0.01)
 
     def test_borrowing_costs_total_is_sum(self):

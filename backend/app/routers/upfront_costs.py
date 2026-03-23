@@ -9,7 +9,7 @@ from datetime import date
 
 from fastapi import APIRouter
 
-from app.models.loan import LoanConfig, BorrowingCosts
+from app.models.loan import BorrowingCosts, LoanConfig
 from app.models.mortgage import Mortgage
 from app.models.property import Property, PurchaseCosts
 from app.schemas.upfront_costs import UpfrontCostRequest, UpfrontCostResponse

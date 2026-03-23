@@ -4,12 +4,10 @@ API request/response schemas for the upfront costs estimation endpoint.
 Separate from domain models — these define the API contract.
 """
 
-from typing import Optional
-
 from pydantic import BaseModel, Field, model_validator
 
-
 # ── Request ───────────────────────────────────
+
 
 class UpfrontCostRequest(BaseModel):
     """
@@ -31,17 +29,26 @@ class UpfrontCostRequest(BaseModel):
         mortgage_registration_fee: Override mortgage registration (None = auto-estimate)
         loan_establishment_fee: Override loan establishment (None = auto-estimate)
     """
+
     purchase_price: float = Field(default=0.0, ge=0, description="Property purchase price")
     deposit: float = Field(default=0.0, ge=0, description="Upfront deposit amount")
     is_investment: bool = Field(default=False, description="Whether the property is an investment")
-    stamp_duty: Optional[float] = Field(default=None, ge=0, description="Override stamp duty (None = auto-estimate)")
-    legal_fees: Optional[float] = Field(default=None, ge=0, description="Override legal fees (None = auto-estimate)")
-    building_pest_inspection: Optional[float] = Field(default=None, ge=0, description="Override inspection fees (None = auto-estimate)")
-    registration_fee: Optional[float] = Field(default=None, ge=0, description="Override registration fee (None = auto-estimate)")
+    stamp_duty: float | None = Field(default=None, ge=0, description="Override stamp duty (None = auto-estimate)")
+    legal_fees: float | None = Field(default=None, ge=0, description="Override legal fees (None = auto-estimate)")
+    building_pest_inspection: float | None = Field(
+        default=None, ge=0, description="Override inspection fees (None = auto-estimate)"
+    )
+    registration_fee: float | None = Field(
+        default=None, ge=0, description="Override registration fee (None = auto-estimate)"
+    )
     other_costs: float = Field(default=0.0, ge=0, description="Other acquisition costs")
-    lmi: Optional[float] = Field(default=None, ge=0, description="Override LMI (None = auto-estimate)")
-    mortgage_registration_fee: Optional[float] = Field(default=None, ge=0, description="Override mortgage registration (None = auto-estimate)")
-    loan_establishment_fee: Optional[float] = Field(default=None, ge=0, description="Override loan establishment (None = auto-estimate)")
+    lmi: float | None = Field(default=None, ge=0, description="Override LMI (None = auto-estimate)")
+    mortgage_registration_fee: float | None = Field(
+        default=None, ge=0, description="Override mortgage registration (None = auto-estimate)"
+    )
+    loan_establishment_fee: float | None = Field(
+        default=None, ge=0, description="Override loan establishment (None = auto-estimate)"
+    )
 
     @model_validator(mode="after")
     def deposit_not_exceeding_price(self):
@@ -75,6 +82,7 @@ class UpfrontCostRequest(BaseModel):
 
 # ── Response ──────────────────────────────────
 
+
 class UpfrontCostResponse(BaseModel):
     """
     Fully resolved upfront costs — no None values.
@@ -98,6 +106,7 @@ class UpfrontCostResponse(BaseModel):
             other_costs: Any other acquisition costs
             total: Sum of all property acquisition costs
         """
+
         stamp_duty: float
         legal_fees: float
         building_pest_inspection: float
@@ -115,6 +124,7 @@ class UpfrontCostResponse(BaseModel):
             loan_establishment_fee: Loan establishment fee
             total: Sum of all borrowing costs
         """
+
         lmi: float
         mortgage_registration_fee: float
         loan_establishment_fee: float

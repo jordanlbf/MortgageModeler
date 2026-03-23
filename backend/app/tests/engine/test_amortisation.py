@@ -7,13 +7,14 @@ All expected values calculated using daily compounding:
 """
 
 import pytest
+
 from app.engine.amortisation import (
-    calculate_periodic_repayment,
-    calculate_io_repayment,
-    generate_schedule,
     _recalculate_repayment,
+    calculate_io_repayment,
+    calculate_periodic_repayment,
+    generate_schedule,
 )
-from app.models.loan import RepaymentFrequency, RateChange
+from app.models.loan import RateChange, RepaymentFrequency
 
 
 class TestPeriodicRepayment:
@@ -264,7 +265,9 @@ class TestScheduleWithRateChange:
     @pytest.fixture
     def schedule(self):
         return generate_schedule(
-            500_000, 0.055, 30,
+            500_000,
+            0.055,
+            30,
             rate_changes=[RateChange(from_period=25, annual_rate=0.062)],
         )
 
@@ -317,7 +320,9 @@ class TestScheduleWithOffsetGrowth:
     @pytest.fixture
     def schedule(self):
         return generate_schedule(
-            100_000, 0.06, 1,
+            100_000,
+            0.06,
+            1,
             offset_balance=10_000,
             offset_contribution=1_000,
         )
@@ -333,7 +338,9 @@ class TestScheduleWithOffsetGrowth:
     def test_offset_exceeds_balance_interest_zero(self):
         """When offset exceeds balance, interest is zero but offset keeps growing."""
         schedule = generate_schedule(
-            20_000, 0.06, 1,
+            20_000,
+            0.06,
+            1,
             offset_balance=15_000,
             offset_contribution=5_000,
         )

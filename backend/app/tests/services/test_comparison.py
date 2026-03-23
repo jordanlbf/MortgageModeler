@@ -2,34 +2,45 @@
 Tests for comparison service — build_ppor_vs_rentvest.
 """
 
-import pytest
 from datetime import date
 
-from app.services.amortisation import build_loan
-from app.services.comparison import (
-    build_ppor_vs_rentvest,
-    _net_wealth_for_year,
-    _find_break_even_year,
-)
+import pytest
+
 from app.models.cashflow import CashFlowPPORResult, CashFlowRentvestResult
 from app.models.comparison import PporVsRentvestResult
 from app.models.deductions import DepreciableBuilding
-from app.models.loan import LoanConfig, BorrowingCosts
+from app.models.loan import BorrowingCosts, LoanConfig
 from app.models.mortgage import Mortgage
 from app.models.person import Person
 from app.models.property import (
-    Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig, RentalConfig,
+    OngoingCostsConfig,
+    Property,
+    PurchaseCosts,
+    RentalConfig,
+    RentvestConfig,
 )
 from app.models.tax import TaxProfile
-
+from app.services.amortisation import build_loan
+from app.services.comparison import (
+    _find_break_even_year,
+    _net_wealth_for_year,
+    build_ppor_vs_rentvest,
+)
 
 # ──────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────
 
-def _make_property(purchase_price=500_000, annual_appreciation=0.05,
-                   is_ppor=True, weekly_rent=0.0, rent_growth=0.03,
-                   vacancy_weeks=2, buildings=None) -> Property:
+
+def _make_property(
+    purchase_price=500_000,
+    annual_appreciation=0.05,
+    is_ppor=True,
+    weekly_rent=0.0,
+    rent_growth=0.03,
+    vacancy_weeks=2,
+    buildings=None,
+) -> Property:
     return Property(
         purchase_date=date(2020, 1, 15),
         purchase_price=purchase_price,
@@ -86,11 +97,18 @@ def _make_rentvest(weekly_rent_paid=500, annual_rent_paid_growth=0.03) -> Rentve
     )
 
 
-def _build_pair(projection_years=5, annual_appreciation=0.05,
-                weekly_rent=450, deposit=100_000, annual_rate=0.06,
-                taxable_income=100_000, weekly_rent_paid=500,
-                landlord_insurance=1_000, management_rate=0.08,
-                buildings=None):
+def _build_pair(
+    projection_years=5,
+    annual_appreciation=0.05,
+    weekly_rent=450,
+    deposit=100_000,
+    annual_rate=0.06,
+    taxable_income=100_000,
+    weekly_rent_paid=500,
+    landlord_insurance=1_000,
+    management_rate=0.08,
+    buildings=None,
+):
     """Build a matched PPOR + rentvest Mortgage pair for comparison."""
     tax_profile = _make_tax_profile(taxable_income=taxable_income)
     loan_config = _make_loan(deposit=deposit, annual_rate=annual_rate)
@@ -133,6 +151,7 @@ def _build_pair(projection_years=5, annual_appreciation=0.05,
 # _net_wealth_for_year
 # ──────────────────────────────────────────────
 
+
 class TestNetWealthForYear:
     """Tests for the per-year net wealth helper."""
 
@@ -140,6 +159,7 @@ class TestNetWealthForYear:
         """Net wealth = equity + cumulative_position + offset_balance."""
         ppor, _ = _build_pair(projection_years=3)
         from app.services.cashflow import build_ppor_cashflow
+
         result = build_ppor_cashflow(ppor)
         for y in result.years:
             expected = y.equity + y.cumulative_position + y.offset_balance
@@ -149,6 +169,7 @@ class TestNetWealthForYear:
 # ──────────────────────────────────────────────
 # _find_break_even_year
 # ──────────────────────────────────────────────
+
 
 class TestFindBreakEvenYear:
     """Tests for the break-even year detection."""
@@ -202,6 +223,7 @@ class TestFindBreakEvenYear:
 # build_ppor_vs_rentvest — Structure
 # ──────────────────────────────────────────────
 
+
 class TestComparisonStructure:
     """Tests that the result has the correct shape and types."""
 
@@ -244,6 +266,7 @@ class TestComparisonStructure:
 # ──────────────────────────────────────────────
 # build_ppor_vs_rentvest — Wealth calculation
 # ──────────────────────────────────────────────
+
 
 class TestWealthCalculation:
     """Tests for the net wealth and delta calculations."""
@@ -300,6 +323,7 @@ class TestWealthCalculation:
 # build_ppor_vs_rentvest — Scenario outcomes
 # ──────────────────────────────────────────────
 
+
 class TestScenarioOutcomes:
     """Tests verifying correct winner identification."""
 
@@ -342,6 +366,7 @@ class TestScenarioOutcomes:
 # build_ppor_vs_rentvest — Break-even
 # ──────────────────────────────────────────────
 
+
 class TestBreakEven:
     """Tests for break-even year detection in real projections."""
 
@@ -370,6 +395,7 @@ class TestBreakEven:
 # ──────────────────────────────────────────────
 # build_ppor_vs_rentvest — Consistency
 # ──────────────────────────────────────────────
+
 
 class TestConsistency:
     """Tests for consistency between comparison and underlying cashflow results."""

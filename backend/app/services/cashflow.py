@@ -8,18 +8,16 @@ CashFlowYear entries, then computes the projection summary.
 """
 
 from dataclasses import replace
-from typing import Optional
-
 from datetime import timedelta
 
 from app.engine.cgt import calculate_cgt
 from app.engine.property import calculate_property_value
-from app.models.cashflow import CashFlowYear, CashFlowSummary, CashFlowPPORResult, CashFlowRentvestResult
+from app.models.cashflow import CashFlowPPORResult, CashFlowRentvestResult, CashFlowSummary, CashFlowYear
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
 from app.models.person import Person
-from app.models.property import OngoingCostProjection, RentvestConfig, YearCost, UpfrontCosts
+from app.models.property import OngoingCostProjection, RentvestConfig, UpfrontCosts, YearCost
 from app.models.tax import TaxProfile
 from app.services.ongoing_costs import build_ongoing_cost_projection
 from app.services.tax_deductions import build_tax_deduction_summary
@@ -114,8 +112,8 @@ def _calculate_cashflow_year(
     schedule_rows: list,
     ongoing_costs: YearCost,
     previous_cumulative: float,
-    rentvest: Optional[RentvestConfig] = None,
-    tax_deduction_detail: Optional[PropertyTaxDeductionSummary] = None,
+    rentvest: RentvestConfig | None = None,
+    tax_deduction_detail: PropertyTaxDeductionSummary | None = None,
 ) -> CashFlowYear:
     """
     Calculate a single year's cash flow breakdown.
@@ -137,6 +135,7 @@ def _calculate_cashflow_year(
     """
     # Calculate net income from pre-grown tax profile
     from app.engine.tax import calculate_total_tax
+
     net_income = tax_profile.taxable_income - calculate_total_tax(tax_profile)
 
     # Sum mortgage payments from this year's rows

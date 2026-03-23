@@ -5,24 +5,24 @@ Maps Pydantic request schemas to domain models and domain models back
 to Pydantic response schemas. Used by both cashflow and comparison routers.
 """
 
-from app.models.deductions import DepreciableBuilding, DepreciableAsset
-from app.models.loan import RateChange, LoanConfig, BorrowingCosts
-from app.models.property import Property, PurchaseCosts, OngoingCostsConfig, RentalConfig
+from app.models.deductions import DepreciableAsset, DepreciableBuilding
+from app.models.loan import BorrowingCosts, LoanConfig, RateChange
+from app.models.property import OngoingCostsConfig, Property, PurchaseCosts, RentalConfig
 from app.models.tax import TaxProfile
 from app.schemas.cashflow import (
+    BorrowingCostsResponse,
     CashFlowPPORRequest,
     CashFlowPPORResponse,
     CashFlowRentvestResponse,
-    CashFlowYearResponse,
     CashFlowSummaryResponse,
+    CashFlowYearResponse,
     CGTResponse,
-    UpfrontCostsResponse,
     PurchaseCostsResponse,
-    BorrowingCostsResponse,
+    UpfrontCostsResponse,
 )
 
-
 # ── Request schema → domain model ─────────────
+
 
 def build_tax_profile(req: CashFlowPPORRequest) -> TaxProfile:
     """Map TaxProfileRequest to TaxProfile domain model."""
@@ -90,8 +90,7 @@ def build_loan_config(req: CashFlowPPORRequest) -> LoanConfig:
         offset_contribution=req.loan.offset_contribution,
         extra_repayment=req.loan.extra_repayment,
         rate_changes=[
-            RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
-            for rc in req.loan.rate_changes
+            RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate) for rc in req.loan.rate_changes
         ],
         borrowing_costs=BorrowingCosts(
             lmi=req.loan.borrowing_costs.lmi,
@@ -119,6 +118,7 @@ def build_ongoing_costs(req: CashFlowPPORRequest) -> OngoingCostsConfig:
 
 
 # ── Domain model → response schema ────────────
+
 
 def map_year_response(year) -> CashFlowYearResponse:
     """Map CashFlowYear domain model to response schema."""

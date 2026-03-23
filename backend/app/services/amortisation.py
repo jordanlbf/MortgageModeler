@@ -91,7 +91,9 @@ def build_year_chart_point(
     equity = property_value - balance
 
     periods_elapsed = year * ppy
-    projected_offset = mortgage.loan.config.offset_balance + mortgage.loan.config.offset_contribution * max(periods_elapsed - 1, 0)
+    projected_offset = mortgage.loan.config.offset_balance + mortgage.loan.config.offset_contribution * max(
+        periods_elapsed - 1, 0
+    )
 
     return YearChartPoint(
         year=year,

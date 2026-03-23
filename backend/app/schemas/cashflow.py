@@ -4,8 +4,8 @@ API request/response schemas for the cash flow projection endpoints.
 Defines contracts for both PPOR and rentvesting scenarios.
 Separate from domain models — these define the API contract.
 """
+
 from datetime import date
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -13,8 +13,8 @@ from app.models.deductions import DepreciationMethod
 from app.models.loan import RepaymentFrequency
 from app.schemas.amortisation import RateChangeRequest
 
-
 # ── Nested request models ─────────────────────
+
 
 class TaxProfileRequest(BaseModel):
     """
@@ -28,6 +28,7 @@ class TaxProfileRequest(BaseModel):
         has_private_health: Whether the taxpayer holds private health insurance
         income_growth_rate: Annual salary/wage growth rate as decimal
     """
+
     taxable_income: float = Field(default=0.0, ge=0, description="Annual taxable income")
     repayment_income: float = Field(default=0.0, ge=0, description="Annual income used for HECS repayment calculations")
     mls_income: float = Field(default=0.0, ge=0, description="Annual income used for MLS calculations")
@@ -50,10 +51,15 @@ class PurchaseCostsRequest(BaseModel):
         registration_fee: Override registration fee (None = auto-estimate)
         other_costs: Other acquisition costs (no auto-estimate)
     """
-    stamp_duty: Optional[float] = Field(default=None, ge=0, description="Override stamp duty (None = auto-estimate)")
-    legal_fees: Optional[float] = Field(default=None, ge=0, description="Override legal fees (None = auto-estimate)")
-    building_pest_inspection: Optional[float] = Field(default=None, ge=0, description="Override inspection fees (None = auto-estimate)")
-    registration_fee: Optional[float] = Field(default=None, ge=0, description="Override registration fee (None = auto-estimate)")
+
+    stamp_duty: float | None = Field(default=None, ge=0, description="Override stamp duty (None = auto-estimate)")
+    legal_fees: float | None = Field(default=None, ge=0, description="Override legal fees (None = auto-estimate)")
+    building_pest_inspection: float | None = Field(
+        default=None, ge=0, description="Override inspection fees (None = auto-estimate)"
+    )
+    registration_fee: float | None = Field(
+        default=None, ge=0, description="Override registration fee (None = auto-estimate)"
+    )
     other_costs: float = Field(default=0.0, ge=0, description="Other acquisition costs")
 
 
@@ -69,12 +75,21 @@ class BorrowingCostsRequest(BaseModel):
         mortgage_registration_fee: Override mortgage registration (None = auto-estimate)
         loan_establishment_fee: Override loan establishment (None = auto-estimate)
     """
-    lmi: Optional[float] = Field(default=None, ge=0, description="Override LMI (None = auto-estimate)")
-    mortgage_registration_fee: Optional[float] = Field(default=None, ge=0, description="Override mortgage registration (None = auto-estimate)")
-    loan_establishment_fee: Optional[float] = Field(default=None, ge=0, description="Override loan establishment (None = auto-estimate)")
+
+    lmi: float | None = Field(default=None, ge=0, description="Override LMI (None = auto-estimate)")
+    mortgage_registration_fee: float | None = Field(
+        default=None, ge=0, description="Override mortgage registration (None = auto-estimate)"
+    )
+    loan_establishment_fee: float | None = Field(
+        default=None, ge=0, description="Override loan establishment (None = auto-estimate)"
+    )
     capitalise_lmi: bool = Field(default=True, description="Add LMI to loan principal")
-    capitalise_mortgage_registration_fee: bool = Field(default=True, description="Add mortgage registration to loan principal")
-    capitalise_loan_establishment_fee: bool = Field(default=True, description="Add loan establishment to loan principal")
+    capitalise_mortgage_registration_fee: bool = Field(
+        default=True, description="Add mortgage registration to loan principal"
+    )
+    capitalise_loan_establishment_fee: bool = Field(
+        default=True, description="Add loan establishment to loan principal"
+    )
 
 
 class RentalConfigRequest(BaseModel):
@@ -88,8 +103,11 @@ class RentalConfigRequest(BaseModel):
         annual_growth_rate: Annual rental income growth rate as decimal
         vacancy_weeks: Expected vacant weeks per year (0–52)
     """
+
     weekly_rent: float = Field(default=0.0, ge=0, description="Weekly rental amount")
-    annual_growth_rate: float = Field(default=0.03, ge=0, le=1, description="Annual rental income growth rate as decimal")
+    annual_growth_rate: float = Field(
+        default=0.03, ge=0, le=1, description="Annual rental income growth rate as decimal"
+    )
     vacancy_weeks: int = Field(default=2, ge=0, le=52, description="Expected vacant weeks per year")
 
 
@@ -103,6 +121,7 @@ class DepreciableBuildingRequest(BaseModel):
         purchase_date: Date the building was purchased by the current owner
         construction_start_date: Date construction commenced
     """
+
     name: str = Field(description="Description of the building or construction")
     construction_cost: float = Field(ge=0, description="Original construction cost")
     purchase_date: date = Field(description="Date the building was purchased")
@@ -121,6 +140,7 @@ class DepreciableAssetRequest(BaseModel):
         method: Depreciation method (diminishing_value or prime_cost)
         written_down_value: Remaining book value after prior deductions
     """
+
     name: str = Field(description="Description of the asset")
     cost: float = Field(ge=0, description="Original cost of the asset")
     effective_life_years: int = Field(ge=1, description="ATO effective life in years")
@@ -145,15 +165,22 @@ class PropertyRequest(BaseModel):
         depreciable_buildings: Div 43 buildings/constructions (empty for PPOR)
         depreciable_assets: Div 40 plant/equipment (empty for PPOR)
     """
+
     purchase_price: float = Field(ge=0, description="Property purchase price")
     purchase_date: date = Field(description="Date of property purchase")
     is_new_property: bool = Field(default=False, description="Whether the owner is the first occupant")
     is_ppor: bool = Field(default=False, description="Whether the property is a primary place of residence")
-    annual_appreciation: float = Field(default=0.0, ge=0, le=1, description="Annual property value growth rate as decimal")
+    annual_appreciation: float = Field(
+        default=0.0, ge=0, le=1, description="Annual property value growth rate as decimal"
+    )
     purchase_costs: PurchaseCostsRequest = Field(default_factory=PurchaseCostsRequest)
     rental: RentalConfigRequest = Field(default_factory=RentalConfigRequest)
-    depreciable_buildings: list[DepreciableBuildingRequest] = Field(default_factory=list, description="Div 43 buildings/constructions")
-    depreciable_assets: list[DepreciableAssetRequest] = Field(default_factory=list, description="Div 40 plant/equipment")
+    depreciable_buildings: list[DepreciableBuildingRequest] = Field(
+        default_factory=list, description="Div 43 buildings/constructions"
+    )
+    depreciable_assets: list[DepreciableAssetRequest] = Field(
+        default_factory=list, description="Div 40 plant/equipment"
+    )
 
 
 class LoanRequest(BaseModel):
@@ -171,6 +198,7 @@ class LoanRequest(BaseModel):
         rate_changes: Scheduled interest rate changes
         borrowing_costs: Upfront loan-related costs (LMI, registration, establishment)
     """
+
     deposit: float = Field(default=0.0, ge=0, description="Initial deposit amount")
     annual_rate: float = Field(ge=0, le=1, description="Annual interest rate as decimal (e.g. 0.05 for 5%)")
     loan_term_years: int = Field(default=30, ge=1, description="Loan term in years")
@@ -199,17 +227,25 @@ class OngoingCostsRequest(BaseModel):
         management_rate: Management fee as fraction of rental income (0 for PPOR)
         annual_cost_growth_rate: Annual growth rate for ongoing costs as decimal
     """
+
     council_rates: float = Field(default=0.0, ge=0, description="Base annual council rates")
     water_rates: float = Field(default=0.0, ge=0, description="Base annual water rates")
     building_insurance: float = Field(default=0.0, ge=0, description="Base annual building insurance")
     strata_fees: float = Field(default=0.0, ge=0, description="Base annual strata fees")
-    maintenance_rate: float = Field(default=0.01, ge=0, le=1, description="Annual maintenance as fraction of property value")
+    maintenance_rate: float = Field(
+        default=0.01, ge=0, le=1, description="Annual maintenance as fraction of property value"
+    )
     landlord_insurance: float = Field(default=0.0, ge=0, description="Base annual landlord insurance (0 for PPOR)")
-    management_rate: float = Field(default=0.0, ge=0, le=1, description="Management fee as fraction of rental income (0 for PPOR)")
-    annual_cost_growth_rate: float = Field(default=0.03, ge=0, le=1, description="Annual growth rate for ongoing costs as decimal")
+    management_rate: float = Field(
+        default=0.0, ge=0, le=1, description="Management fee as fraction of rental income (0 for PPOR)"
+    )
+    annual_cost_growth_rate: float = Field(
+        default=0.03, ge=0, le=1, description="Annual growth rate for ongoing costs as decimal"
+    )
 
 
 # ── Requests ───────────────────────────────────
+
 
 class CashFlowPPORRequest(BaseModel):
     """
@@ -224,6 +260,7 @@ class CashFlowPPORRequest(BaseModel):
         ongoing_costs: Ongoing property cost configuration
         projection_years: Number of years to project
     """
+
     tax_profile: TaxProfileRequest = Field(default_factory=TaxProfileRequest)
     property: PropertyRequest
     loan: LoanRequest
@@ -245,11 +282,15 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
         weekly_rent_paid: Weekly rent where the investor lives
         annual_rent_paid_growth: Annual rent paid growth rate as decimal
     """
+
     weekly_rent_paid: float = Field(ge=0, description="Weekly rent where the investor lives")
-    annual_rent_paid_growth: float = Field(default=0.03, ge=0, le=1, description="Annual rent paid growth rate as decimal")
+    annual_rent_paid_growth: float = Field(
+        default=0.03, ge=0, le=1, description="Annual rent paid growth rate as decimal"
+    )
 
 
 # ── Responses ──────────────────────────────────
+
 
 class CashFlowYearResponse(BaseModel):
     """
@@ -274,6 +315,7 @@ class CashFlowYearResponse(BaseModel):
         equity: Property value minus loan balance
         offset_balance: Offset account balance at end of year
     """
+
     year: int
     net_income: float
     total_inflows: float
@@ -310,6 +352,7 @@ class CashFlowSummaryResponse(BaseModel):
         average_annual_net: Average net position per year
         net_wealth: Final equity plus cumulative cash position
     """
+
     total_income: float
     total_outflows: float
     total_interest_paid: float
@@ -335,6 +378,7 @@ class CGTResponse(BaseModel):
         cgt_payable: Tax payable on the discounted gain
         net_proceeds: Sale price minus CGT payable
     """
+
     cost_base: float
     capital_gain: float
     cgt_discount: float
@@ -355,6 +399,7 @@ class PurchaseCostsResponse(BaseModel):
         other_costs: Any other acquisition costs
         total: Sum of all property acquisition costs
     """
+
     stamp_duty: float
     legal_fees: float
     building_pest_inspection: float
@@ -373,6 +418,7 @@ class BorrowingCostsResponse(BaseModel):
         loan_establishment_fee: Loan establishment fee
         total: Sum of all borrowing costs
     """
+
     lmi: float
     mortgage_registration_fee: float
     loan_establishment_fee: float
@@ -388,6 +434,7 @@ class UpfrontCostsResponse(BaseModel):
         borrowing_costs: Itemised loan-related costs (deductible over 5 years)
         total: Total cash out at settlement
     """
+
     purchase_costs: PurchaseCostsResponse
     borrowing_costs: BorrowingCostsResponse
     total: float
@@ -404,6 +451,7 @@ class CashFlowPPORResponse(BaseModel):
         years: Year-by-year cash flow breakdown
         summary: Summary stats across the full projection
     """
+
     scenario: str = "ppor"
     projection_years: int
     upfront_costs: UpfrontCostsResponse
@@ -423,6 +471,7 @@ class CashFlowRentvestResponse(BaseModel):
         cgt: Capital gains tax result
         summary: Summary stats across the full projection
     """
+
     scenario: str = "rentvesting"
     projection_years: int
     upfront_costs: UpfrontCostsResponse

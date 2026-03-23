@@ -4,15 +4,14 @@ Property domain models — property, ongoing cost projections and related types.
 
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Optional
 
-from app.models.deductions import DepreciableBuilding, DepreciableAsset
+from app.models.deductions import DepreciableAsset, DepreciableBuilding
 from app.models.loan import BorrowingCosts
-
 
 # ──────────────────────────────────────────────
 # Purchase costs
 # ──────────────────────────────────────────────
+
 
 @dataclass
 class PurchaseCosts:
@@ -29,10 +28,11 @@ class PurchaseCosts:
         registration_fee: Title registration fee (None = auto-estimate)
         other_costs: Any other acquisition costs (no auto-estimate)
     """
-    stamp_duty: Optional[float] = None
-    legal_fees: Optional[float] = None
-    building_pest_inspection: Optional[float] = None
-    registration_fee: Optional[float] = None
+
+    stamp_duty: float | None = None
+    legal_fees: float | None = None
+    building_pest_inspection: float | None = None
+    registration_fee: float | None = None
     other_costs: float = 0.0
 
     @property
@@ -46,11 +46,11 @@ class PurchaseCosts:
             Total property acquisition costs
         """
         return (
-            (self.stamp_duty or 0.0) +
-            (self.legal_fees or 0.0) +
-            (self.building_pest_inspection or 0.0) +
-            (self.registration_fee or 0.0) +
-            self.other_costs
+            (self.stamp_duty or 0.0)
+            + (self.legal_fees or 0.0)
+            + (self.building_pest_inspection or 0.0)
+            + (self.registration_fee or 0.0)
+            + self.other_costs
         )
 
 
@@ -66,6 +66,7 @@ class UpfrontCosts:
         purchase_costs: Property acquisition costs (stamp duty, legal, etc.)
         borrowing_costs: Loan-related costs (LMI, mortgage registration, etc.)
     """
+
     purchase_costs: PurchaseCosts = field(default_factory=PurchaseCosts)
     borrowing_costs: BorrowingCosts = field(default_factory=BorrowingCosts)
 
@@ -94,6 +95,7 @@ class UpfrontCosts:
 # Rental config (sub-model of Property)
 # ──────────────────────────────────────────────
 
+
 @dataclass
 class RentalConfig:
     """
@@ -108,6 +110,7 @@ class RentalConfig:
         annual_growth_rate: Annual rental income growth rate as decimal
         vacancy_weeks: Expected vacant weeks per year (0–52)
     """
+
     weekly_rent: float = 0.0
     annual_growth_rate: float = 0.03
     vacancy_weeks: int = 2
@@ -116,6 +119,7 @@ class RentalConfig:
 # ──────────────────────────────────────────────
 # Core property
 # ──────────────────────────────────────────────
+
 
 @dataclass
 class Property:
@@ -133,6 +137,7 @@ class Property:
         depreciable_assets: Div 40 plant/equipment to depreciate
         rental: Rental income configuration (defaults to zeros for PPOR)
     """
+
     purchase_date: date
     purchase_price: float
     is_new_property: bool
@@ -148,6 +153,7 @@ class Property:
 # Rentvesting config (investor as tenant)
 # ──────────────────────────────────────────────
 
+
 @dataclass
 class RentvestConfig:
     """
@@ -160,6 +166,7 @@ class RentvestConfig:
         weekly_rent_paid: Weekly rent where the investor lives
         annual_rent_paid_growth: Annual rent paid growth rate as decimal
     """
+
     weekly_rent_paid: float
     annual_rent_paid_growth: float
 
@@ -167,6 +174,7 @@ class RentvestConfig:
 # ──────────────────────────────────────────────
 # Ongoing costs
 # ──────────────────────────────────────────────
+
 
 @dataclass
 class OngoingCostsConfig:
@@ -188,6 +196,7 @@ class OngoingCostsConfig:
         management_rate: Management fee as fraction of rental income (e.g. 0.08 for 8%, 0 for PPOR)
         annual_cost_growth_rate: Annual growth rate for ongoing costs as decimal
     """
+
     council_rates: float = 0.0
     water_rates: float = 0.0
     building_insurance: float = 0.0
@@ -216,6 +225,7 @@ class YearCost:
         rental_income: Annual rental income at this year
         total_costs: Total of all cost fields
     """
+
     year: int
     council_rates: float
     water_rates: float
@@ -240,6 +250,7 @@ class OngoingCostProjection:
         total_monthly_cost: Year 0 total ongoing cost divided by 12
         total_deductible_cost: Year 0 total deductible cost (investment properties only)
     """
+
     annual_costs: list[YearCost]
     total_annual_cost: float
     total_monthly_cost: float

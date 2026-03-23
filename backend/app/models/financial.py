@@ -2,9 +2,9 @@
 Financial domain models — shared financial concepts.
 """
 
+from calendar import isleap
 from dataclasses import dataclass
 from datetime import date
-from calendar import isleap
 
 
 @dataclass
@@ -15,6 +15,7 @@ class FinancialYear:
     Attributes:
         year: Ending calendar year (e.g. 2025 = FY 2024-25, ending 30 June 2025)
     """
+
     year: int
 
     @property

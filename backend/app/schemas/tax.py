@@ -6,8 +6,8 @@ Separate from domain models — these define the API contract.
 
 from pydantic import BaseModel, Field
 
-
 # ── Request ───────────────────────────────────
+
 
 class TaxBreakdownRequest(BaseModel):
     """
@@ -24,6 +24,7 @@ class TaxBreakdownRequest(BaseModel):
         hecs_balance: Outstanding HECS/HELP debt
         has_private_health: Whether the individual holds private health insurance
     """
+
     taxable_income: float = Field(default=0.0, ge=0, description="Assessable income minus allowable deductions")
     repayment_income: float = Field(default=0.0, ge=0, description="Income for HECS repayment calculation")
     mls_income: float = Field(default=0.0, ge=0, description="Income for Medicare Levy Surcharge calculation")
@@ -32,6 +33,7 @@ class TaxBreakdownRequest(BaseModel):
 
 
 # ── Response ──────────────────────────────────
+
 
 class TaxBreakdownResponse(BaseModel):
     """
@@ -46,6 +48,7 @@ class TaxBreakdownResponse(BaseModel):
         total_tax: Sum of all tax components
         net_income: Taxable income minus total tax
     """
+
     taxable_income: float
     income_tax: float
     medicare_levy: float

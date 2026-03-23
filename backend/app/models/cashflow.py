@@ -3,13 +3,11 @@ Cash flow domain models — year-by-year projection results for PPOR and rentves
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
 
 from app.models.amortisation import ScheduleRow
 from app.models.cgt import CGTResult
-from app.models.property import UpfrontCosts
 from app.models.deductions import PropertyTaxDeductionSummary
-from app.models.property import YearCost
+from app.models.property import UpfrontCosts, YearCost
 
 
 @dataclass
@@ -42,6 +40,7 @@ class CashFlowYear:
         schedule_rows_detail: Per-period mortgage rows for this year
         tax_deduction_detail: Tax deduction breakdown for this year (None for PPOR)
     """
+
     year: int
     net_income: float
     total_inflows: float
@@ -59,9 +58,9 @@ class CashFlowYear:
     loan_balance: float
     equity: float
     offset_balance: float
-    ongoing_costs_detail: Optional[YearCost] = None
+    ongoing_costs_detail: YearCost | None = None
     schedule_rows_detail: list[ScheduleRow] = field(default_factory=list)
-    tax_deduction_detail: Optional[PropertyTaxDeductionSummary] = None
+    tax_deduction_detail: PropertyTaxDeductionSummary | None = None
 
 
 @dataclass
@@ -82,6 +81,7 @@ class CashFlowSummary:
         average_annual_net: Average net position per year
         net_wealth: Final equity plus cumulative cash position
     """
+
     total_income: float
     total_outflows: float
     total_interest_paid: float
@@ -106,6 +106,7 @@ class CashFlowPPORResult:
         years: Year-by-year cash flow breakdown
         summary: Summary stats across the full projection
     """
+
     projection_years: int
     upfront_costs: UpfrontCosts
     years: list[CashFlowYear]
@@ -124,6 +125,7 @@ class CashFlowRentvestResult:
         cgt: Capital gains tax result at end of projection
         summary: Summary stats across the full projection
     """
+
     projection_years: int
     upfront_costs: UpfrontCosts
     years: list[CashFlowYear]

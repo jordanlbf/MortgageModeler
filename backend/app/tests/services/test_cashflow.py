@@ -2,38 +2,50 @@
 Tests for cashflow projection services — helpers, PPOR, and rentvesting.
 """
 
-import pytest
 from datetime import date
 
-from app.services.amortisation import build_loan
-from app.services.cashflow import (
-    _calculate_cashflow_summary,
-    _grow_tax_profile,
-    _calculate_cashflow_year,
-    build_ppor_cashflow,
-    build_rentvest_cashflow,
-)
+import pytest
+
 from app.models.amortisation import AmortisationSchedule, ScheduleRow
 from app.models.cashflow import CashFlowYear
-from app.models.deductions import PropertyTaxDeductionSummary, DepreciableBuilding
-from app.models.loan import LoanConfig, BorrowingCosts, Loan
+from app.models.deductions import DepreciableBuilding, PropertyTaxDeductionSummary
+from app.models.loan import BorrowingCosts, Loan, LoanConfig
 from app.models.mortgage import Mortgage
 from app.models.person import Person
 from app.models.property import (
-    Property, PurchaseCosts, OngoingCostsConfig, RentvestConfig,
-    RentalConfig, YearCost,
+    OngoingCostsConfig,
+    Property,
+    PurchaseCosts,
+    RentalConfig,
+    RentvestConfig,
+    YearCost,
 )
 from app.models.tax import TaxProfile
-
+from app.services.amortisation import build_loan
+from app.services.cashflow import (
+    _calculate_cashflow_summary,
+    _calculate_cashflow_year,
+    _grow_tax_profile,
+    build_ppor_cashflow,
+    build_rentvest_cashflow,
+)
 
 # ──────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────
 
-def _make_property(purchase_price=500_000, annual_appreciation=0.05,
-                   is_ppor=True, weekly_rent=0.0, rent_growth=0.03,
-                   vacancy_weeks=2, purchase_costs=None,
-                   buildings=None, assets=None) -> Property:
+
+def _make_property(
+    purchase_price=500_000,
+    annual_appreciation=0.05,
+    is_ppor=True,
+    weekly_rent=0.0,
+    rent_growth=0.03,
+    vacancy_weeks=2,
+    purchase_costs=None,
+    buildings=None,
+    assets=None,
+) -> Property:
     return Property(
         purchase_date=date(2020, 1, 15),
         purchase_price=purchase_price,
@@ -51,8 +63,9 @@ def _make_property(purchase_price=500_000, annual_appreciation=0.05,
     )
 
 
-def _make_tax_profile(taxable_income=100_000, income_growth_rate=0.03,
-                      hecs_balance=0, has_private_health=True) -> TaxProfile:
+def _make_tax_profile(
+    taxable_income=100_000, income_growth_rate=0.03, hecs_balance=0, has_private_health=True
+) -> TaxProfile:
     return TaxProfile(
         taxable_income=taxable_income,
         repayment_income=taxable_income,
@@ -63,8 +76,7 @@ def _make_tax_profile(taxable_income=100_000, income_growth_rate=0.03,
     )
 
 
-def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30,
-               borrowing_costs=None) -> LoanConfig:
+def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30, borrowing_costs=None) -> LoanConfig:
     return LoanConfig(
         deposit=deposit,
         annual_rate=annual_rate,
@@ -73,11 +85,16 @@ def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30,
     )
 
 
-def _make_ongoing_costs(council_rates=2_000, water_rates=1_200,
-                        building_insurance=1_500, strata_fees=0,
-                        maintenance_rate=0.01, landlord_insurance=0,
-                        management_rate=0.0,
-                        annual_cost_growth_rate=0.025) -> OngoingCostsConfig:
+def _make_ongoing_costs(
+    council_rates=2_000,
+    water_rates=1_200,
+    building_insurance=1_500,
+    strata_fees=0,
+    maintenance_rate=0.01,
+    landlord_insurance=0,
+    management_rate=0.0,
+    annual_cost_growth_rate=0.025,
+) -> OngoingCostsConfig:
     return OngoingCostsConfig(
         council_rates=council_rates,
         water_rates=water_rates,
@@ -97,9 +114,9 @@ def _make_rentvest(weekly_rent_paid=500, annual_rent_paid_growth=0.03) -> Rentve
     )
 
 
-def _make_mortgage(property=None, tax_profile=None, loan=None,
-                   ongoing_costs=None, rentvest=None,
-                   projection_years=30) -> Mortgage:
+def _make_mortgage(
+    property=None, tax_profile=None, loan=None, ongoing_costs=None, rentvest=None, projection_years=30
+) -> Mortgage:
     p = property or _make_property()
     lc = loan or _make_loan()
     return Mortgage(
@@ -112,10 +129,17 @@ def _make_mortgage(property=None, tax_profile=None, loan=None,
     )
 
 
-def _make_schedule_row(period=1, opening_balance=400_000, interest=2000,
-                       principal_paid=500, extra_paid=0,
-                       closing_balance=399_500, annual_rate=0.06,
-                       scheduled_repayment=2500, offset_balance=0) -> ScheduleRow:
+def _make_schedule_row(
+    period=1,
+    opening_balance=400_000,
+    interest=2000,
+    principal_paid=500,
+    extra_paid=0,
+    closing_balance=399_500,
+    annual_rate=0.06,
+    scheduled_repayment=2500,
+    offset_balance=0,
+) -> ScheduleRow:
     return ScheduleRow(
         period=period,
         opening_balance=opening_balance,
@@ -129,12 +153,27 @@ def _make_schedule_row(period=1, opening_balance=400_000, interest=2000,
     )
 
 
-def _make_year_cost(year=0, council_rates=2_000, water_rates=1_200,
-                    building_insurance=1_500, landlord_insurance=0,
-                    strata_fees=0, maintenance_cost=5_000,
-                    management_fee=0, property_value=500_000,
-                    rental_income=0) -> YearCost:
-    total = council_rates + water_rates + building_insurance + landlord_insurance + strata_fees + maintenance_cost + management_fee
+def _make_year_cost(
+    year=0,
+    council_rates=2_000,
+    water_rates=1_200,
+    building_insurance=1_500,
+    landlord_insurance=0,
+    strata_fees=0,
+    maintenance_cost=5_000,
+    management_fee=0,
+    property_value=500_000,
+    rental_income=0,
+) -> YearCost:
+    total = (
+        council_rates
+        + water_rates
+        + building_insurance
+        + landlord_insurance
+        + strata_fees
+        + maintenance_cost
+        + management_fee
+    )
     return YearCost(
         year=year,
         council_rates=council_rates,
@@ -150,12 +189,21 @@ def _make_year_cost(year=0, council_rates=2_000, water_rates=1_200,
     )
 
 
-def _make_cashflow_year(year=0, net_income=77_000, mortgage_repayment=30_000,
-                        mortgage_interest=24_000, mortgage_principal=6_000,
-                        property_costs=10_000, rent_paid=0, rental_income=0,
-                        tax_saving=0, property_value=500_000,
-                        loan_balance=394_000, offset_balance=0,
-                        previous_cumulative=0) -> CashFlowYear:
+def _make_cashflow_year(
+    year=0,
+    net_income=77_000,
+    mortgage_repayment=30_000,
+    mortgage_interest=24_000,
+    mortgage_principal=6_000,
+    property_costs=10_000,
+    rent_paid=0,
+    rental_income=0,
+    tax_saving=0,
+    property_value=500_000,
+    loan_balance=394_000,
+    offset_balance=0,
+    previous_cumulative=0,
+) -> CashFlowYear:
     total_inflows = net_income + rental_income + tax_saving
     total_outflows = mortgage_repayment + property_costs + rent_paid
     net_position = total_inflows - total_outflows
@@ -186,6 +234,7 @@ def _make_cashflow_year(year=0, net_income=77_000, mortgage_repayment=30_000,
 # _grow_tax_profile
 # ──────────────────────────────────────────────
 
+
 class TestGrowTaxProfile:
     """Tests for tax profile income growth."""
 
@@ -205,7 +254,7 @@ class TestGrowTaxProfile:
         """Year 5 should apply compound growth."""
         profile = _make_tax_profile(taxable_income=100_000, income_growth_rate=0.03)
         grown = _grow_tax_profile(profile, 5)
-        assert grown.taxable_income == pytest.approx(100_000 * 1.03 ** 5)
+        assert grown.taxable_income == pytest.approx(100_000 * 1.03**5)
 
     def test_all_income_measures_grow(self):
         """All three income measures should grow together."""
@@ -218,7 +267,7 @@ class TestGrowTaxProfile:
             income_growth_rate=0.05,
         )
         grown = _grow_tax_profile(profile, 2)
-        factor = 1.05 ** 2
+        factor = 1.05**2
         assert grown.taxable_income == pytest.approx(100_000 * factor)
         assert grown.repayment_income == pytest.approx(110_000 * factor)
         assert grown.mls_income == pytest.approx(105_000 * factor)
@@ -249,6 +298,7 @@ class TestGrowTaxProfile:
 # ──────────────────────────────────────────────
 # Loan.rows_for_year
 # ──────────────────────────────────────────────
+
 
 class TestLoanRowsForYear:
     """Tests for Loan.rows_for_year schedule row slicing."""
@@ -314,6 +364,7 @@ class TestLoanRowsForYear:
 # _calculate_cashflow_summary
 # ──────────────────────────────────────────────
 
+
 class TestCalculateCashflowSummary:
     """Tests for summary calculation from yearly entries."""
 
@@ -374,13 +425,17 @@ class TestCalculateCashflowSummary:
         assert summary.final_equity == pytest.approx(525_000 - 388_000)
 
     def test_net_wealth_includes_cumulative(self):
-        y0 = _make_cashflow_year(year=0, property_value=500_000, loan_balance=394_000,
-                                 net_income=77_000, mortgage_repayment=30_000, property_costs=10_000,
-                                 previous_cumulative=-20_000)
-        summary = _calculate_cashflow_summary([y0])
-        assert summary.net_wealth == pytest.approx(
-            summary.final_equity + y0.cumulative_position
+        y0 = _make_cashflow_year(
+            year=0,
+            property_value=500_000,
+            loan_balance=394_000,
+            net_income=77_000,
+            mortgage_repayment=30_000,
+            property_costs=10_000,
+            previous_cumulative=-20_000,
         )
+        summary = _calculate_cashflow_summary([y0])
+        assert summary.net_wealth == pytest.approx(summary.final_equity + y0.cumulative_position)
 
     def test_average_annual_net(self):
         y0 = _make_cashflow_year(year=0, net_income=70_000, mortgage_repayment=30_000, property_costs=10_000)
@@ -411,15 +466,19 @@ class TestCalculateCashflowSummary:
 # _calculate_cashflow_year
 # ──────────────────────────────────────────────
 
+
 class TestCalculateCashflowYear:
     """Tests for single year cashflow calculation."""
 
-    def _make_rows(self, count=12, interest=2000, principal=500, extra=0,
-                   closing=399_500, offset=0):
+    def _make_rows(self, count=12, interest=2000, principal=500, extra=0, closing=399_500, offset=0):
         return [
             _make_schedule_row(
-                period=i + 1, interest=interest, principal_paid=principal,
-                extra_paid=extra, closing_balance=closing, offset_balance=offset,
+                period=i + 1,
+                interest=interest,
+                principal_paid=principal,
+                extra_paid=extra,
+                closing_balance=closing,
+                offset_balance=offset,
             )
             for i in range(count)
         ]
@@ -427,10 +486,12 @@ class TestCalculateCashflowYear:
     def test_net_income_is_income_minus_tax(self):
         """Net income should be taxable income minus total tax."""
         from app.engine.tax import calculate_total_tax
+
         profile = _make_tax_profile(taxable_income=100_000)
         expected_tax = calculate_total_tax(profile)
         year = _calculate_cashflow_year(
-            year=0, tax_profile=profile,
+            year=0,
+            tax_profile=profile,
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -440,7 +501,8 @@ class TestCalculateCashflowYear:
     def test_mortgage_sums_from_rows(self):
         rows = self._make_rows(count=12, interest=2000, principal=500, extra=100)
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=rows,
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -452,7 +514,8 @@ class TestCalculateCashflowYear:
     def test_empty_rows_zero_mortgage(self):
         """No schedule rows (loan paid off) → zero mortgage."""
         year = _calculate_cashflow_year(
-            year=5, tax_profile=_make_tax_profile(),
+            year=5,
+            tax_profile=_make_tax_profile(),
             schedule_rows=[],
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -465,7 +528,8 @@ class TestCalculateCashflowYear:
     def test_loan_balance_from_last_row(self):
         rows = self._make_rows(count=12, closing=390_000)
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=rows,
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -475,7 +539,8 @@ class TestCalculateCashflowYear:
     def test_offset_balance_from_last_row(self):
         rows = self._make_rows(count=12, offset=15_000)
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=rows,
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -483,10 +548,10 @@ class TestCalculateCashflowYear:
         assert year.offset_balance == pytest.approx(15_000)
 
     def test_property_costs_from_year_cost(self):
-        costs = _make_year_cost(council_rates=2000, water_rates=1200,
-                                building_insurance=1500, maintenance_cost=5000)
+        costs = _make_year_cost(council_rates=2000, water_rates=1200, building_insurance=1500, maintenance_cost=5000)
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=costs,
             previous_cumulative=0,
@@ -496,7 +561,8 @@ class TestCalculateCashflowYear:
     def test_property_value_from_year_cost(self):
         costs = _make_year_cost(property_value=525_000)
         year = _calculate_cashflow_year(
-            year=1, tax_profile=_make_tax_profile(),
+            year=1,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=costs,
             previous_cumulative=0,
@@ -506,7 +572,8 @@ class TestCalculateCashflowYear:
     def test_rental_income_from_year_cost(self):
         costs = _make_year_cost(rental_income=25_000)
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=costs,
             previous_cumulative=0,
@@ -517,7 +584,8 @@ class TestCalculateCashflowYear:
         costs = _make_year_cost(property_value=525_000)
         rows = self._make_rows(closing=390_000)
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=rows,
             ongoing_costs=costs,
             previous_cumulative=0,
@@ -528,7 +596,8 @@ class TestCalculateCashflowYear:
 
     def test_ppor_zero_rent_paid(self):
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -537,7 +606,8 @@ class TestCalculateCashflowYear:
 
     def test_ppor_zero_tax_saving(self):
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -546,7 +616,8 @@ class TestCalculateCashflowYear:
 
     def test_ppor_total_inflows_is_net_income(self):
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -559,19 +630,21 @@ class TestCalculateCashflowYear:
         """Rent paid should be weekly * 52 * growth^year."""
         rentvest = _make_rentvest(weekly_rent_paid=500, annual_rent_paid_growth=0.03)
         year = _calculate_cashflow_year(
-            year=2, tax_profile=_make_tax_profile(),
+            year=2,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
             rentvest=rentvest,
         )
-        expected = 500 * 52 * (1.03 ** 2)
+        expected = 500 * 52 * (1.03**2)
         assert year.rent_paid == pytest.approx(expected)
 
     def test_rentvest_rent_paid_year_zero(self):
         rentvest = _make_rentvest(weekly_rent_paid=500)
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -581,13 +654,18 @@ class TestCalculateCashflowYear:
 
     def test_rentvest_tax_saving(self):
         deduction = PropertyTaxDeductionSummary(
-            mortgage_interest=24_000, depreciation_building=10_000,
-            depreciation_plant=400, deductible_expenses=15_000,
-            total_deductions=49_400, net_rental_income=-24_400,
-            is_negatively_geared=True, tax_saving=7_320,
+            mortgage_interest=24_000,
+            depreciation_building=10_000,
+            depreciation_plant=400,
+            deductible_expenses=15_000,
+            total_deductions=49_400,
+            net_rental_income=-24_400,
+            is_negatively_geared=True,
+            tax_saving=7_320,
         )
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(rental_income=25_000),
             previous_cumulative=0,
@@ -598,13 +676,18 @@ class TestCalculateCashflowYear:
 
     def test_rentvest_total_inflows_includes_rental_and_tax_saving(self):
         deduction = PropertyTaxDeductionSummary(
-            mortgage_interest=0, depreciation_building=0,
-            depreciation_plant=0, deductible_expenses=0,
-            total_deductions=0, net_rental_income=0,
-            is_negatively_geared=False, tax_saving=5_000,
+            mortgage_interest=0,
+            depreciation_building=0,
+            depreciation_plant=0,
+            deductible_expenses=0,
+            total_deductions=0,
+            net_rental_income=0,
+            is_negatively_geared=False,
+            tax_saving=5_000,
         )
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(rental_income=25_000),
             previous_cumulative=0,
@@ -616,21 +699,21 @@ class TestCalculateCashflowYear:
     def test_rentvest_total_outflows_includes_rent_paid(self):
         rentvest = _make_rentvest(weekly_rent_paid=500)
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
             rentvest=rentvest,
         )
-        assert year.total_outflows == pytest.approx(
-            year.mortgage_repayment + year.property_costs + 500 * 52
-        )
+        assert year.total_outflows == pytest.approx(year.mortgage_repayment + year.property_costs + 500 * 52)
 
     # ── Net position and cumulative ───────────
 
     def test_net_position_is_inflows_minus_outflows(self):
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -639,7 +722,8 @@ class TestCalculateCashflowYear:
 
     def test_cumulative_adds_to_previous(self):
         year = _calculate_cashflow_year(
-            year=1, tax_profile=_make_tax_profile(),
+            year=1,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=-15_000,
@@ -651,7 +735,8 @@ class TestCalculateCashflowYear:
     def test_ongoing_costs_detail_attached(self):
         costs = _make_year_cost()
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=costs,
             previous_cumulative=0,
@@ -661,7 +746,8 @@ class TestCalculateCashflowYear:
     def test_schedule_rows_detail_attached(self):
         rows = self._make_rows()
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=rows,
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -670,7 +756,8 @@ class TestCalculateCashflowYear:
 
     def test_tax_deduction_detail_none_for_ppor(self):
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -679,13 +766,18 @@ class TestCalculateCashflowYear:
 
     def test_tax_deduction_detail_attached_for_rentvest(self):
         deduction = PropertyTaxDeductionSummary(
-            mortgage_interest=0, depreciation_building=0,
-            depreciation_plant=0, deductible_expenses=0,
-            total_deductions=0, net_rental_income=0,
-            is_negatively_geared=False, tax_saving=0,
+            mortgage_interest=0,
+            depreciation_building=0,
+            depreciation_plant=0,
+            deductible_expenses=0,
+            total_deductions=0,
+            net_rental_income=0,
+            is_negatively_geared=False,
+            tax_saving=0,
         )
         year = _calculate_cashflow_year(
-            year=0, tax_profile=_make_tax_profile(),
+            year=0,
+            tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
@@ -697,6 +789,7 @@ class TestCalculateCashflowYear:
 # ──────────────────────────────────────────────
 # build_ppor_cashflow
 # ──────────────────────────────────────────────
+
 
 class TestBuildPporCashflow:
     """Tests for the full PPOR cashflow projection."""
@@ -872,6 +965,7 @@ class TestBuildPporCashflow:
 # build_rentvest_cashflow
 # ──────────────────────────────────────────────
 
+
 class TestBuildRentvestCashflow:
     """Tests for the full rentvesting cashflow projection."""
 
@@ -969,8 +1063,10 @@ class TestBuildRentvestCashflow:
         """Property should appreciate over 5 years → positive capital gain."""
         result = self._build(
             property=_make_property(
-                is_ppor=False, purchase_price=500_000,
-                annual_appreciation=0.05, weekly_rent=450,
+                is_ppor=False,
+                purchase_price=500_000,
+                annual_appreciation=0.05,
+                weekly_rent=450,
             ),
             projection_years=5,
         )
@@ -1058,77 +1154,97 @@ class TestCashflowEdgeCases:
 
     def test_ppor_negative_income_growth(self):
         """Negative income growth should reduce income over time."""
-        result = build_ppor_cashflow(_make_mortgage(
-            property=_make_property(is_ppor=True),
-            tax_profile=_make_tax_profile(income_growth_rate=-0.02),
-            projection_years=3,
-        ))
+        result = build_ppor_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=True),
+                tax_profile=_make_tax_profile(income_growth_rate=-0.02),
+                projection_years=3,
+            )
+        )
         assert result.years[2].net_income < result.years[0].net_income
 
     def test_ppor_zero_appreciation(self):
         """Zero appreciation should keep property value flat."""
-        result = build_ppor_cashflow(_make_mortgage(
-            property=_make_property(is_ppor=True, annual_appreciation=0.0),
-            projection_years=3,
-        ))
+        result = build_ppor_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=True, annual_appreciation=0.0),
+                projection_years=3,
+            )
+        )
         assert result.years[0].property_value == pytest.approx(result.years[2].property_value, abs=1)
 
     def test_rentvest_negative_appreciation(self):
         """Negative appreciation (property depreciation) should reduce value."""
-        result = build_rentvest_cashflow(_make_mortgage(
-            property=_make_property(
-                is_ppor=False, annual_appreciation=-0.02,
-                weekly_rent=450, rent_growth=0.03, vacancy_weeks=2,
-                buildings=[
-                    DepreciableBuilding(
-                        name="Main", construction_cost=250_000,
-                        purchase_date=date(2020, 1, 15),
-                        construction_start_date=date(2019, 1, 1),
-                    )
-                ],
-            ),
-            ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
-            rentvest=_make_rentvest(),
-            projection_years=3,
-        ))
+        result = build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(
+                    is_ppor=False,
+                    annual_appreciation=-0.02,
+                    weekly_rent=450,
+                    rent_growth=0.03,
+                    vacancy_weeks=2,
+                    buildings=[
+                        DepreciableBuilding(
+                            name="Main",
+                            construction_cost=250_000,
+                            purchase_date=date(2020, 1, 15),
+                            construction_start_date=date(2019, 1, 1),
+                        )
+                    ],
+                ),
+                ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
+                rentvest=_make_rentvest(),
+                projection_years=3,
+            )
+        )
         assert result.years[2].property_value < result.years[0].property_value
 
     def test_ppor_single_year(self):
         """Single year projection should work."""
-        result = build_ppor_cashflow(_make_mortgage(
-            property=_make_property(is_ppor=True),
-            projection_years=1,
-        ))
+        result = build_ppor_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=True),
+                projection_years=1,
+            )
+        )
         assert len(result.years) == 1
         assert result.summary is not None
 
     def test_rentvest_single_year(self):
         """Single year rentvest should work and have CGT."""
-        result = build_rentvest_cashflow(_make_mortgage(
-            property=_make_property(
-                is_ppor=False, weekly_rent=450, rent_growth=0.03, vacancy_weeks=2,
-                buildings=[
-                    DepreciableBuilding(
-                        name="Main", construction_cost=250_000,
-                        purchase_date=date(2020, 1, 15),
-                        construction_start_date=date(2019, 1, 1),
-                    )
-                ],
-            ),
-            ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
-            rentvest=_make_rentvest(),
-            projection_years=1,
-        ))
+        result = build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(
+                    is_ppor=False,
+                    weekly_rent=450,
+                    rent_growth=0.03,
+                    vacancy_weeks=2,
+                    buildings=[
+                        DepreciableBuilding(
+                            name="Main",
+                            construction_cost=250_000,
+                            purchase_date=date(2020, 1, 15),
+                            construction_start_date=date(2019, 1, 1),
+                        )
+                    ],
+                ),
+                ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
+                rentvest=_make_rentvest(),
+                projection_years=1,
+            )
+        )
         assert len(result.years) == 1
         assert result.cgt is not None
 
     def test_ppor_projection_beyond_loan_term(self):
         """Projection longer than loan term — years after payoff should have zero mortgage."""
-        result = build_ppor_cashflow(_make_mortgage(
-            property=_make_property(is_ppor=True),
-            loan=_make_loan(loan_term_years=3),
-            projection_years=5,
-        ))
+        result = build_ppor_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=True),
+                loan=_make_loan(loan_term_years=3),
+                projection_years=5,
+            )
+        )
         # Year 4 (5th year) is beyond a 3-year loan
         assert result.years[4].mortgage_repayment == 0
         assert result.years[4].mortgage_interest == 0
@@ -1136,44 +1252,56 @@ class TestCashflowEdgeCases:
 
     def test_rentvest_borrowing_cost_deduction_year_zero(self):
         """Borrowing cost deduction should apply in year 0 (regression test for off-by-one)."""
-        result = build_rentvest_cashflow(_make_mortgage(
-            property=_make_property(
-                is_ppor=False, weekly_rent=450, rent_growth=0.03, vacancy_weeks=2,
-                buildings=[
-                    DepreciableBuilding(
-                        name="Main", construction_cost=250_000,
-                        purchase_date=date(2020, 1, 15),
-                        construction_start_date=date(2019, 1, 1),
-                    )
-                ],
-            ),
-            loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)),
-            ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
-            rentvest=_make_rentvest(),
-            projection_years=1,
-        ))
+        result = build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(
+                    is_ppor=False,
+                    weekly_rent=450,
+                    rent_growth=0.03,
+                    vacancy_weeks=2,
+                    buildings=[
+                        DepreciableBuilding(
+                            name="Main",
+                            construction_cost=250_000,
+                            purchase_date=date(2020, 1, 15),
+                            construction_start_date=date(2019, 1, 1),
+                        )
+                    ],
+                ),
+                loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)),
+                ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
+                rentvest=_make_rentvest(),
+                projection_years=1,
+            )
+        )
         # Year 0 should have a borrowing cost deduction
         assert result.years[0].tax_deduction_detail is not None
         assert result.years[0].tax_deduction_detail.borrowing_costs_deduction > 0
 
     def test_rentvest_borrowing_cost_deduction_year_four(self):
         """Borrowing cost deduction should still apply in year 4 (5th year of 5-year spread)."""
-        result = build_rentvest_cashflow(_make_mortgage(
-            property=_make_property(
-                is_ppor=False, weekly_rent=450, rent_growth=0.03, vacancy_weeks=2,
-                buildings=[
-                    DepreciableBuilding(
-                        name="Main", construction_cost=250_000,
-                        purchase_date=date(2020, 1, 15),
-                        construction_start_date=date(2019, 1, 1),
-                    )
-                ],
-            ),
-            loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)),
-            ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
-            rentvest=_make_rentvest(),
-            projection_years=6,
-        ))
+        result = build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(
+                    is_ppor=False,
+                    weekly_rent=450,
+                    rent_growth=0.03,
+                    vacancy_weeks=2,
+                    buildings=[
+                        DepreciableBuilding(
+                            name="Main",
+                            construction_cost=250_000,
+                            purchase_date=date(2020, 1, 15),
+                            construction_start_date=date(2019, 1, 1),
+                        )
+                    ],
+                ),
+                loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=10_000)),
+                ongoing_costs=_make_ongoing_costs(landlord_insurance=1_000, management_rate=0.08),
+                rentvest=_make_rentvest(),
+                projection_years=6,
+            )
+        )
         # Year 4 (5th year) should still have deduction
         assert result.years[4].tax_deduction_detail.borrowing_costs_deduction > 0
         # Year 5 (6th year) should have zero

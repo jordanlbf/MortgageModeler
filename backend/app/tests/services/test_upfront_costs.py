@@ -2,19 +2,20 @@
 Tests for upfront costs service — build_upfront_cost_estimate.
 """
 
-import pytest
 from datetime import date
 
-from app.services.amortisation import build_loan
-from app.services.upfront_costs import build_upfront_cost_estimate
-from app.models.loan import LoanConfig, BorrowingCosts
+import pytest
+
+from app.models.loan import BorrowingCosts, LoanConfig
 from app.models.mortgage import Mortgage
 from app.models.property import Property, PurchaseCosts
-
+from app.services.amortisation import build_loan
+from app.services.upfront_costs import build_upfront_cost_estimate
 
 # ──────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────
+
 
 def _make_property(purchase_price=500_000, is_ppor=False, purchase_costs=None) -> Property:
     return Property(
@@ -51,6 +52,7 @@ def _build(property=None, loan=None):
 # ──────────────────────────────────────────────
 # Auto-estimation (None values)
 # ──────────────────────────────────────────────
+
 
 class TestAutoEstimation:
     """Tests that None values are auto-estimated from engine functions."""
@@ -113,6 +115,7 @@ class TestAutoEstimation:
 # Explicit overrides
 # ──────────────────────────────────────────────
 
+
 class TestOverrides:
     """Tests that explicit values are preserved."""
 
@@ -156,6 +159,7 @@ class TestOverrides:
 # Stamp duty
 # ──────────────────────────────────────────────
 
+
 class TestStampDuty:
     """Tests for stamp duty estimation."""
 
@@ -176,6 +180,7 @@ class TestStampDuty:
 # ──────────────────────────────────────────────
 # LMI
 # ──────────────────────────────────────────────
+
 
 class TestLmi:
     """Tests for LMI estimation."""
@@ -203,14 +208,13 @@ class TestLmi:
 # Totals
 # ──────────────────────────────────────────────
 
+
 class TestTotals:
     """Tests for total calculations."""
 
     def test_total_equals_purchase_plus_borrowing(self):
         result = _build()
-        assert result.total == pytest.approx(
-            result.purchase_costs.total + result.borrowing_costs.total, abs=0.01
-        )
+        assert result.total == pytest.approx(result.purchase_costs.total + result.borrowing_costs.total, abs=0.01)
 
     def test_purchase_costs_total_is_sum(self):
         result = _build()
@@ -239,6 +243,7 @@ class TestTotals:
 # ──────────────────────────────────────────────
 # Edge cases
 # ──────────────────────────────────────────────
+
 
 class TestEdgeCases:
     """Tests for edge case inputs."""

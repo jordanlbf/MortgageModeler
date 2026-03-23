@@ -24,6 +24,7 @@ class ScheduleRow:
         scheduled_repayment: Fixed repayment amount per period
         offset_balance: Offset account balance this period
     """
+
     period: int
     opening_balance: float
     interest: float
@@ -46,6 +47,7 @@ class AmortisationSchedule:
         total_periods: Number of periods until loan is paid off
         periods_per_year: Number of repayment periods per year
     """
+
     rows: list[ScheduleRow]
     total_interest: float
     total_periods: int
@@ -65,6 +67,7 @@ class YearChartPoint:
         equity: Property value minus remaining loan balance
         offset_balance: Offset account balance at end of year
     """
+
     year: int
     balance: float
     total_interest: float
@@ -88,6 +91,7 @@ class ScheduleResult:
         annual_appreciation: Annual property growth rate as decimal
         chart_data: Per-year chart data points for visualisation
     """
+
     schedule: AmortisationSchedule
     payment: float
     purchase_price: float

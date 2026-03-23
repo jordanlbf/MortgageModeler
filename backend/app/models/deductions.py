@@ -15,6 +15,7 @@ class DepreciationMethod(Enum):
         DIMINISHING_VALUE: Higher deductions in early years, decreasing over time
         PRIME_COST: Equal deductions each year (straight-line)
     """
+
     DIMINISHING_VALUE = "diminishing_value"
     PRIME_COST = "prime_cost"
 
@@ -31,6 +32,7 @@ class DepreciableBuilding:
         construction_start_date: Date construction commenced (must be on/after
             16 Sep 1987 to qualify for Div 43)
     """
+
     name: str
     construction_cost: float
     purchase_date: date
@@ -51,6 +53,7 @@ class DepreciableAsset:
         written_down_value: Remaining book value after prior deductions
             (caller maintains this for diminishing value)
     """
+
     name: str
     cost: float
     effective_life_years: int
@@ -75,6 +78,7 @@ class PropertyTaxDeductionSummary:
         tax_saving: Tax benefit from deductions (positive = saving, negative = extra tax)
         borrowing_costs_deduction: Annual borrowing cost deduction (ATO 5-year amortisation)
     """
+
     mortgage_interest: float
     depreciation_building: float
     depreciation_plant: float

@@ -14,10 +14,10 @@ from app.models.mortgage import Mortgage
 from app.models.person import Person
 from app.models.property import RentvestConfig
 from app.routers._cashflow_mapping import (
-    build_tax_profile,
-    build_property,
     build_loan_config,
     build_ongoing_costs,
+    build_property,
+    build_tax_profile,
     map_ppor_response,
     map_rentvest_response,
 )

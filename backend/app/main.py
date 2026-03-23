@@ -6,8 +6,9 @@ Run with: uvicorn app.main:app --reload
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.config.settings import settings
-from app.routers import amortisation, tax, upfront_costs, ongoing_costs, cashflow, comparison
+from app.routers import amortisation, cashflow, comparison, ongoing_costs, tax, upfront_costs
 
 app = FastAPI(
     title=settings.APP_TITLE,

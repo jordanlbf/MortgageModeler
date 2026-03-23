@@ -2,19 +2,20 @@
 Tests for amortisation service — build_schedule_result.
 """
 
-import pytest
 from datetime import date
 
-from app.services.amortisation import build_loan, build_schedule_result, build_year_chart_point
+import pytest
+
 from app.models.amortisation import AmortisationSchedule
-from app.models.loan import Loan, RepaymentFrequency, RateChange, LoanConfig, BorrowingCosts
+from app.models.loan import BorrowingCosts, Loan, LoanConfig, RateChange, RepaymentFrequency
 from app.models.mortgage import Mortgage
 from app.models.property import Property
-
+from app.services.amortisation import build_loan, build_schedule_result
 
 # ──────────────────────────────────────────────
 # Fixtures / Helpers
 # ──────────────────────────────────────────────
+
 
 def _make_property(purchase_price=500_000, annual_appreciation=0.03) -> Property:
     return Property(
@@ -25,10 +26,17 @@ def _make_property(purchase_price=500_000, annual_appreciation=0.03) -> Property
     )
 
 
-def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30,
-               frequency=RepaymentFrequency.MONTHLY, offset_balance=0.0,
-               offset_contribution=0.0, extra_repayment=0.0,
-               rate_changes=None, borrowing_costs=None) -> LoanConfig:
+def _make_loan(
+    deposit=100_000,
+    annual_rate=0.06,
+    loan_term_years=30,
+    frequency=RepaymentFrequency.MONTHLY,
+    offset_balance=0.0,
+    offset_contribution=0.0,
+    extra_repayment=0.0,
+    rate_changes=None,
+    borrowing_costs=None,
+) -> LoanConfig:
     return LoanConfig(
         deposit=deposit,
         annual_rate=annual_rate,
@@ -59,6 +67,7 @@ def _build(property=None, loan=None):
 # ScheduleResult structure
 # ──────────────────────────────────────────────
 
+
 class TestScheduleResultStructure:
     """Tests that the returned ScheduleResult has correct fields and types."""
 
@@ -86,6 +95,7 @@ class TestScheduleResultStructure:
 # ──────────────────────────────────────────────
 # Chart data
 # ──────────────────────────────────────────────
+
 
 class TestChartData:
     """Tests for the yearly chart data points."""
@@ -146,7 +156,7 @@ class TestChartData:
             loan=_make_loan(loan_term_years=10),
         )
         y10 = result.chart_data[10]
-        expected = 500_000 * (1.04 ** 10)
+        expected = 500_000 * (1.04**10)
         assert y10.property_value == pytest.approx(expected, rel=1e-4)
 
     def test_equity_equals_property_value_minus_balance(self):
@@ -168,6 +178,7 @@ class TestChartData:
 # ──────────────────────────────────────────────
 # Offset account
 # ──────────────────────────────────────────────
+
 
 class TestOffsetAccount:
     """Tests for offset account behaviour in chart data."""
@@ -195,6 +206,7 @@ class TestOffsetAccount:
 # Extra repayments
 # ──────────────────────────────────────────────
 
+
 class TestExtraRepayments:
     """Tests for extra repayment behaviour."""
 
@@ -215,6 +227,7 @@ class TestExtraRepayments:
 # Frequencies
 # ──────────────────────────────────────────────
 
+
 class TestFrequencies:
     """Tests for different repayment frequencies."""
 
@@ -227,7 +240,11 @@ class TestFrequencies:
         result_monthly = _build(loan=_make_loan(frequency=RepaymentFrequency.MONTHLY))
         result_fortnightly = _build(loan=_make_loan(frequency=RepaymentFrequency.FORTNIGHTLY))
         result_weekly = _build(loan=_make_loan(frequency=RepaymentFrequency.WEEKLY))
-        assert result_monthly.schedule.total_periods < result_fortnightly.schedule.total_periods < result_weekly.schedule.total_periods
+        assert (
+            result_monthly.schedule.total_periods
+            < result_fortnightly.schedule.total_periods
+            < result_weekly.schedule.total_periods
+        )
 
     def test_chart_data_length_same_across_frequencies(self):
         """Chart data is always loan_term_years + 1 regardless of frequency."""
@@ -240,31 +257,37 @@ class TestFrequencies:
 # Rate changes
 # ──────────────────────────────────────────────
 
+
 class TestRateChanges:
     """Tests for mid-loan rate changes."""
 
     def test_rate_increase_raises_interest(self):
         """A rate increase partway through should increase total interest."""
         result_flat = _build(loan=_make_loan(annual_rate=0.05))
-        result_increase = _build(loan=_make_loan(
-            annual_rate=0.05,
-            rate_changes=[RateChange(from_period=60, annual_rate=0.08)],
-        ))
+        result_increase = _build(
+            loan=_make_loan(
+                annual_rate=0.05,
+                rate_changes=[RateChange(from_period=60, annual_rate=0.08)],
+            )
+        )
         assert result_increase.schedule.total_interest > result_flat.schedule.total_interest
 
     def test_rate_decrease_reduces_interest(self):
         """A rate decrease partway through should reduce total interest."""
         result_flat = _build(loan=_make_loan(annual_rate=0.06))
-        result_decrease = _build(loan=_make_loan(
-            annual_rate=0.06,
-            rate_changes=[RateChange(from_period=60, annual_rate=0.03)],
-        ))
+        result_decrease = _build(
+            loan=_make_loan(
+                annual_rate=0.06,
+                rate_changes=[RateChange(from_period=60, annual_rate=0.03)],
+            )
+        )
         assert result_decrease.schedule.total_interest < result_flat.schedule.total_interest
 
 
 # ──────────────────────────────────────────────
 # Edge cases
 # ──────────────────────────────────────────────
+
 
 class TestEdgeCases:
     """Tests for edge case inputs."""
@@ -334,6 +357,7 @@ class TestMortgageLoanSchedule:
     def test_capitalised_borrowing_costs_increase_principal(self):
         """Capitalised borrowing costs should increase the loan principal."""
         from app.models.loan import BorrowingCosts
+
         schedule_no_bc = _make_mortgage().loan.schedule
         schedule_with_bc = _make_mortgage(
             loan=_make_loan(borrowing_costs=BorrowingCosts(lmi=20_000)),
@@ -345,6 +369,7 @@ class TestMortgageLoanSchedule:
 # ──────────────────────────────────────────────
 # build_loan factory
 # ──────────────────────────────────────────────
+
 
 class TestBuildLoan:
     """Tests for the build_loan factory function."""
@@ -412,6 +437,7 @@ class TestBuildLoan:
 # Loan aggregate methods
 # ──────────────────────────────────────────────
 
+
 class TestLoanMethods:
     """Tests for Loan.interest_for_year, balance_at_year, principal_for_year."""
 
@@ -470,9 +496,7 @@ class TestLoanMethods:
     def test_principal_matches_row_sum(self):
         loan = self._make_test_loan()
         rows = loan.rows_for_year(0)
-        assert loan.principal_for_year(0) == pytest.approx(
-            sum(r.principal_paid + r.extra_paid for r in rows)
-        )
+        assert loan.principal_for_year(0) == pytest.approx(sum(r.principal_paid + r.extra_paid for r in rows))
 
     def test_interest_plus_principal_equals_repayment(self):
         loan = self._make_test_loan()

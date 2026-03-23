@@ -22,6 +22,7 @@ class TaxProfile:
         has_private_health: Whether the taxpayer holds private health insurance
         income_growth_rate: Annual salary/wage growth rate as decimal
     """
+
     taxable_income: float
     repayment_income: float
     mls_income: float

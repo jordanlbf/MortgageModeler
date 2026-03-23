@@ -11,7 +11,7 @@ from fastapi import APIRouter
 
 from app.models.loan import LoanConfig
 from app.models.mortgage import Mortgage
-from app.models.property import Property, OngoingCostsConfig, RentalConfig
+from app.models.property import OngoingCostsConfig, Property, RentalConfig
 from app.schemas.ongoing_costs import OngoingCostResponse, OngoingPropertyCostRequest, YearByYearCostResponse
 from app.services.amortisation import build_loan
 from app.services.ongoing_costs import build_ongoing_cost_projection

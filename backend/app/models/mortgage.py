@@ -3,11 +3,10 @@ Mortgage domain model — aggregate root composing all models needed for a proje
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 from app.models.loan import Loan
 from app.models.person import Person
-from app.models.property import Property, OngoingCostsConfig, RentvestConfig
+from app.models.property import OngoingCostsConfig, Property, RentvestConfig
 
 
 @dataclass
@@ -27,9 +26,10 @@ class Mortgage:
         rentvest: Tenant rental configuration (None for PPOR)
         projection_years: Number of years to project
     """
+
     property: Property
     loan: Loan
-    person: Optional[Person] = None
-    ongoing_costs: Optional[OngoingCostsConfig] = None
-    rentvest: Optional[RentvestConfig] = None
+    person: Person | None = None
+    ongoing_costs: OngoingCostsConfig | None = None
+    rentvest: RentvestConfig | None = None
     projection_years: int = 30

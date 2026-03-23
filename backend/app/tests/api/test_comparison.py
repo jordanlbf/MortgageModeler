@@ -4,6 +4,7 @@ Tests for API comparison endpoint — PPOR vs rentvesting.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -12,6 +13,7 @@ client = TestClient(app)
 # ──────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────
+
 
 def _comparison_payload(**overrides):
     """Build a comparison request payload with sensible defaults."""
@@ -67,6 +69,7 @@ def _comparison_payload(**overrides):
 # ──────────────────────────────────────────────
 # POST /api/comparison — Structure
 # ──────────────────────────────────────────────
+
 
 class TestComparisonEndpointStructure:
     """Tests for comparison endpoint response structure."""
@@ -135,6 +138,7 @@ class TestComparisonEndpointStructure:
 # POST /api/comparison — Scenarios
 # ──────────────────────────────────────────────
 
+
 class TestComparisonEndpointScenarios:
     """Tests for different scenario outcomes via the API."""
 
@@ -168,6 +172,7 @@ class TestComparisonEndpointScenarios:
 # POST /api/comparison — Consistency
 # ──────────────────────────────────────────────
 
+
 class TestComparisonEndpointConsistency:
     """Tests for consistency between comparison and individual endpoints."""
 
@@ -194,6 +199,4 @@ class TestComparisonEndpointConsistency:
         ppor_resp = client.post("/api/cashflow/ppor", json=ppor_payload)
         standalone_ppor = ppor_resp.json()
 
-        assert comp_ppor["summary"]["net_wealth"] == pytest.approx(
-            standalone_ppor["summary"]["net_wealth"], abs=1
-        )
+        assert comp_ppor["summary"]["net_wealth"] == pytest.approx(standalone_ppor["summary"]["net_wealth"], abs=1)

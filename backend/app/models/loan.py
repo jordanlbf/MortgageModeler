@@ -3,17 +3,15 @@ Loan domain models — mortgage configuration, rate changes, and loan aggregate.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional
 from enum import Enum
 
 from app.models.amortisation import AmortisationSchedule, ScheduleRow
-
 
 _FREQUENCY_PERIODS = {"weekly": 52, "fortnightly": 26, "monthly": 12}
 _FREQUENCY_DAYS = {"weekly": 7.0, "fortnightly": 14.0, "monthly": 365.0 / 12}
 
 
-class RepaymentFrequency(str, Enum):
+class RepaymentFrequency(Enum):
     """
     Supported repayment frequencies for mortgage calculations.
 
@@ -22,6 +20,7 @@ class RepaymentFrequency(str, Enum):
         FORTNIGHTLY: 26 payments per year, 14 days per period
         MONTHLY: 12 payments per year, ~30.42 days per period
     """
+
     WEEKLY = "weekly"
     FORTNIGHTLY = "fortnightly"
     MONTHLY = "monthly"
@@ -56,6 +55,7 @@ class RateChange:
         from_period: Period number when the new rate takes effect
         annual_rate: New annual interest rate as decimal (e.g. 0.062 for 6.2%)
     """
+
     from_period: int
     annual_rate: float
 
@@ -78,9 +78,10 @@ class BorrowingCosts:
         capitalise_mortgage_registration_fee: Whether to add mortgage registration to principal (default True)
         capitalise_loan_establishment_fee: Whether to add loan establishment to principal (default True)
     """
-    lmi: Optional[float] = None
-    mortgage_registration_fee: Optional[float] = None
-    loan_establishment_fee: Optional[float] = None
+
+    lmi: float | None = None
+    mortgage_registration_fee: float | None = None
+    loan_establishment_fee: float | None = None
     capitalise_lmi: bool = True
     capitalise_mortgage_registration_fee: bool = True
     capitalise_loan_establishment_fee: bool = True
@@ -94,9 +95,9 @@ class BorrowingCosts:
             Sum of borrowing costs where capitalise flag is True
         """
         return (
-            ((self.lmi or 0.0) if self.capitalise_lmi else 0.0) +
-            ((self.mortgage_registration_fee or 0.0) if self.capitalise_mortgage_registration_fee else 0.0) +
-            ((self.loan_establishment_fee or 0.0) if self.capitalise_loan_establishment_fee else 0.0)
+            ((self.lmi or 0.0) if self.capitalise_lmi else 0.0)
+            + ((self.mortgage_registration_fee or 0.0) if self.capitalise_mortgage_registration_fee else 0.0)
+            + ((self.loan_establishment_fee or 0.0) if self.capitalise_loan_establishment_fee else 0.0)
         )
 
     @property
@@ -108,9 +109,9 @@ class BorrowingCosts:
             Sum of borrowing costs where capitalise flag is False
         """
         return (
-            ((self.lmi or 0.0) if not self.capitalise_lmi else 0.0) +
-            ((self.mortgage_registration_fee or 0.0) if not self.capitalise_mortgage_registration_fee else 0.0) +
-            ((self.loan_establishment_fee or 0.0) if not self.capitalise_loan_establishment_fee else 0.0)
+            ((self.lmi or 0.0) if not self.capitalise_lmi else 0.0)
+            + ((self.mortgage_registration_fee or 0.0) if not self.capitalise_mortgage_registration_fee else 0.0)
+            + ((self.loan_establishment_fee or 0.0) if not self.capitalise_loan_establishment_fee else 0.0)
         )
 
     @property
@@ -142,6 +143,7 @@ class LoanConfig:
         rate_changes: Scheduled interest rate changes during the loan term
         borrowing_costs: Upfront loan-related costs (LMI, registration, establishment)
     """
+
     deposit: float
     annual_rate: float
     loan_term_years: int
@@ -166,6 +168,7 @@ class Loan:
         config: Loan configuration (rates, term, offset, etc.)
         schedule: Generated amortisation schedule for this loan
     """
+
     config: LoanConfig
     schedule: AmortisationSchedule
 

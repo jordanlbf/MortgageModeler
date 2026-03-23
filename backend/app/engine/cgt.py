@@ -8,6 +8,7 @@ for accurate marginal rate calculation on combined income.
 
 All functions are pure — no side effects or external dependencies.
 """
+
 from dataclasses import replace
 from datetime import date
 
@@ -46,11 +47,7 @@ def calculate_cost_base(
 
 
 def calculate_cgt(
-        property: Property,
-        sale_price: float,
-        sale_date: date,
-        tax_profile: TaxProfile,
-        is_ppor: bool
+    property: Property, sale_price: float, sale_date: date, tax_profile: TaxProfile, is_ppor: bool
 ) -> CGTResult:
     """
     Calculate the CGT liability for a property sale.

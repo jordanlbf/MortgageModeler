@@ -18,6 +18,7 @@ class CGTResult:
         cgt_payable: Tax payable on the taxable gain (taxable_gain * applicable tax rate)
         net_proceeds: Net amount received after paying CGT (sale price - cgt)
     """
+
     cost_base: float
     capital_gain: float
     cgt_discount: float

@@ -2,23 +2,24 @@
 Tests for Capital Gains Tax engine — calculate_cost_base and calculate_cgt.
 """
 
-import pytest
 from datetime import date
 
-from app.engine.cgt import calculate_cost_base, calculate_cgt
-from app.engine.tax import calculate_total_tax
-from app.models.cgt import CGTResult
-from app.models.property import Property, PurchaseCosts
-from app.models.deductions import DepreciableBuilding, DepreciableAsset, DepreciationMethod
-from app.models.tax import TaxProfile
+import pytest
 
+from app.engine.cgt import calculate_cgt, calculate_cost_base
+from app.engine.tax import calculate_total_tax
+from app.models.deductions import DepreciableAsset, DepreciableBuilding
+from app.models.property import Property, PurchaseCosts
+from app.models.tax import TaxProfile
 
 # ──────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────
 
-def _make_property(purchase_date=None, purchase_price=500_000, is_new=True,
-                   purchase_costs=None, buildings=None, assets=None) -> Property:
+
+def _make_property(
+    purchase_date=None, purchase_price=500_000, is_new=True, purchase_costs=None, buildings=None, assets=None
+) -> Property:
     return Property(
         purchase_date=purchase_date or date(2020, 1, 15),
         purchase_price=purchase_price,
@@ -29,8 +30,9 @@ def _make_property(purchase_date=None, purchase_price=500_000, is_new=True,
     )
 
 
-def _make_building(name="Main building", cost=400_000, purchase_date=None,
-                   construction_start_date=None) -> DepreciableBuilding:
+def _make_building(
+    name="Main building", cost=400_000, purchase_date=None, construction_start_date=None
+) -> DepreciableBuilding:
     return DepreciableBuilding(
         name=name,
         construction_cost=cost,
@@ -64,6 +66,7 @@ def _make_tax_profile(taxable_income=100_000, **overrides) -> TaxProfile:
 # Basic cost base — purchase price only
 # ──────────────────────────────────────────────
 
+
 class TestCostBaseBasic:
     """Tests for cost base with purchase price only (no extras)."""
 
@@ -84,6 +87,7 @@ class TestCostBaseBasic:
 # ──────────────────────────────────────────────
 # Cost base — with purchase costs
 # ──────────────────────────────────────────────
+
 
 class TestCostBaseWithPurchaseCosts:
     """Tests for cost base including acquisition costs."""
@@ -130,6 +134,7 @@ class TestCostBaseWithPurchaseCosts:
 # Cost base — capital improvements (post-purchase buildings)
 # ──────────────────────────────────────────────
 
+
 class TestCostBaseCapitalImprovements:
     """Tests for buildings constructed after property purchase (capital improvements)."""
 
@@ -175,6 +180,7 @@ class TestCostBaseCapitalImprovements:
 # ──────────────────────────────────────────────
 # Cost base — non-depreciable second-hand assets
 # ──────────────────────────────────────────────
+
 
 class TestCostBaseNonDepreciableAssets:
     """Tests for second-hand Div 40 assets added to cost base."""
@@ -234,6 +240,7 @@ class TestCostBaseNonDepreciableAssets:
 # Cost base — combined scenarios
 # ──────────────────────────────────────────────
 
+
 class TestCostBaseCombined:
     """Tests combining purchase costs, improvements, and non-depreciable assets."""
 
@@ -255,10 +262,10 @@ class TestCostBaseCombined:
         )
 
         expected = (
-            600_000 +     # purchase price
-            19_000 +      # stamp duty + legal (cost base items)
-            80_000 +      # capital improvement (post-purchase building)
-            3_000         # non-depreciable second-hand asset
+            600_000  # purchase price
+            + 19_000  # stamp duty + legal (cost base items)
+            + 80_000  # capital improvement (post-purchase building)
+            + 3_000  # non-depreciable second-hand asset
         )
         assert calculate_cost_base(prop) == pytest.approx(expected)
 
@@ -290,10 +297,13 @@ class TestCostBaseCombined:
         )
 
         expected = (
-            300_000 +                  # purchase price
-            8_925 + 2_000 + 600 + 250 + # cost base purchase costs (excl borrowing)
-            35_000 +                   # kitchen reno (post-purchase)
-            4_000                      # old aircon (non-depreciable, post-2017)
+            300_000  # purchase price
+            + 8_925
+            + 2_000
+            + 600
+            + 250  # cost base purchase costs (excl borrowing)
+            + 35_000  # kitchen reno (post-purchase)
+            + 4_000  # old aircon (non-depreciable, post-2017)
         )
         assert calculate_cost_base(prop) == pytest.approx(expected)
 
@@ -301,6 +311,7 @@ class TestCostBaseCombined:
 # ──────────────────────────────────────────────
 # calculate_cgt — PPOR exemption
 # ──────────────────────────────────────────────
+
 
 class TestCgtPpor:
     """PPOR properties are CGT-exempt."""
@@ -346,6 +357,7 @@ class TestCgtPpor:
 # ──────────────────────────────────────────────
 # calculate_cgt — 50% discount
 # ──────────────────────────────────────────────
+
 
 class TestCgtDiscount:
     """Tests for the 50% CGT discount based on holding period."""
@@ -393,6 +405,7 @@ class TestCgtDiscount:
 # calculate_cgt — capital gain and loss
 # ──────────────────────────────────────────────
 
+
 class TestCgtGainAndLoss:
     """Tests for capital gain/loss calculation."""
 
@@ -434,6 +447,7 @@ class TestCgtGainAndLoss:
 # ──────────────────────────────────────────────
 # calculate_cgt — CGT payable (two-pass tax)
 # ──────────────────────────────────────────────
+
 
 class TestCgtPayable:
     """Tests for CGT payable via two-pass total tax calculation."""
@@ -477,10 +491,8 @@ class TestCgtPayable:
     def test_higher_income_means_higher_cgt(self):
         """Higher base income should result in higher CGT due to marginal rates."""
         prop = _make_property(purchase_price=500_000)
-        low_income = calculate_cgt(prop, 700_000, date(2025, 1, 15),
-                                   _make_tax_profile(50_000), is_ppor=False)
-        high_income = calculate_cgt(prop, 700_000, date(2025, 1, 15),
-                                    _make_tax_profile(200_000), is_ppor=False)
+        low_income = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(50_000), is_ppor=False)
+        high_income = calculate_cgt(prop, 700_000, date(2025, 1, 15), _make_tax_profile(200_000), is_ppor=False)
         assert high_income.cgt_payable > low_income.cgt_payable
 
     def test_discount_reduces_cgt_payable(self):
@@ -505,6 +517,7 @@ class TestCgtPayable:
 # ──────────────────────────────────────────────
 # calculate_cgt — net proceeds
 # ──────────────────────────────────────────────
+
 
 class TestCgtNetProceeds:
     """Tests for net proceeds after CGT."""
@@ -534,6 +547,7 @@ class TestCgtNetProceeds:
 # ──────────────────────────────────────────────
 # calculate_cgt — combined realistic scenario
 # ──────────────────────────────────────────────
+
 
 class TestCgtRealistic:
     """End-to-end realistic CGT scenarios."""

@@ -4,6 +4,7 @@ Tests for API Cashflow endpoints — PPOR and rentvesting.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -12,6 +13,7 @@ client = TestClient(app)
 # ──────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────
+
 
 def _ppor_payload(**overrides):
     payload = {
@@ -74,6 +76,7 @@ def _rentvest_payload(**overrides):
 # POST /api/cashflow/ppor — Structure
 # ──────────────────────────────────────────────
 
+
 class TestPporEndpointStructure:
     """Tests for PPOR endpoint response structure."""
 
@@ -109,10 +112,17 @@ class TestPporEndpointStructure:
         data = client.post("/api/cashflow/ppor", json=_ppor_payload()).json()
         assert "summary" in data
         expected_fields = {
-            "total_income", "total_outflows", "total_interest_paid",
-            "total_rent_paid", "total_rental_income", "total_tax_saving",
-            "final_property_value", "final_loan_balance", "final_equity",
-            "average_annual_net", "net_wealth",
+            "total_income",
+            "total_outflows",
+            "total_interest_paid",
+            "total_rent_paid",
+            "total_rental_income",
+            "total_tax_saving",
+            "final_property_value",
+            "final_loan_balance",
+            "final_equity",
+            "average_annual_net",
+            "net_wealth",
         }
         assert set(data["summary"].keys()) == expected_fields
 
@@ -120,11 +130,23 @@ class TestPporEndpointStructure:
         data = client.post("/api/cashflow/ppor", json=_ppor_payload()).json()
         y0 = data["years"][0]
         expected_fields = {
-            "year", "net_income", "total_inflows", "mortgage_repayment",
-            "mortgage_interest", "mortgage_principal", "property_costs",
-            "rent_paid", "rental_income", "tax_saving",
-            "total_outflows", "net_position", "cumulative_position",
-            "property_value", "loan_balance", "equity", "offset_balance",
+            "year",
+            "net_income",
+            "total_inflows",
+            "mortgage_repayment",
+            "mortgage_interest",
+            "mortgage_principal",
+            "property_costs",
+            "rent_paid",
+            "rental_income",
+            "tax_saving",
+            "total_outflows",
+            "net_position",
+            "cumulative_position",
+            "property_value",
+            "loan_balance",
+            "equity",
+            "offset_balance",
         }
         assert set(y0.keys()) == expected_fields
 
@@ -132,6 +154,7 @@ class TestPporEndpointStructure:
 # ──────────────────────────────────────────────
 # POST /api/cashflow/ppor — Values
 # ──────────────────────────────────────────────
+
 
 class TestPporEndpointValues:
     """Tests for PPOR endpoint response values."""
@@ -188,9 +211,7 @@ class TestPporEndpointValues:
     def test_net_position_is_inflows_minus_outflows(self):
         data = client.post("/api/cashflow/ppor", json=_ppor_payload()).json()
         for y in data["years"]:
-            assert y["net_position"] == pytest.approx(
-                y["total_inflows"] - y["total_outflows"], abs=0.01
-            )
+            assert y["net_position"] == pytest.approx(y["total_inflows"] - y["total_outflows"], abs=0.01)
 
     def test_summary_net_wealth(self):
         data = client.post("/api/cashflow/ppor", json=_ppor_payload(projection_years=5)).json()
@@ -208,6 +229,7 @@ class TestPporEndpointValues:
 # ──────────────────────────────────────────────
 # POST /api/cashflow/ppor — Validation
 # ──────────────────────────────────────────────
+
 
 class TestPporEndpointValidation:
     """Tests for PPOR endpoint input validation."""
@@ -257,6 +279,7 @@ class TestPporEndpointValidation:
 # POST /api/cashflow/rentvest — Structure
 # ──────────────────────────────────────────────
 
+
 class TestRentvestEndpointStructure:
     """Tests for rentvesting endpoint response structure."""
 
@@ -276,8 +299,12 @@ class TestRentvestEndpointStructure:
         data = client.post("/api/cashflow/rentvest", json=_rentvest_payload()).json()
         assert "cgt" in data
         expected_cgt_fields = {
-            "cost_base", "capital_gain", "cgt_discount",
-            "discounted_gain", "cgt_payable", "net_proceeds",
+            "cost_base",
+            "capital_gain",
+            "cgt_discount",
+            "discounted_gain",
+            "cgt_payable",
+            "net_proceeds",
         }
         assert set(data["cgt"].keys()) == expected_cgt_fields
 
@@ -293,6 +320,7 @@ class TestRentvestEndpointStructure:
 # ──────────────────────────────────────────────
 # POST /api/cashflow/rentvest — Values
 # ──────────────────────────────────────────────
+
 
 class TestRentvestEndpointValues:
     """Tests for rentvesting endpoint response values."""
@@ -371,6 +399,7 @@ class TestRentvestEndpointValues:
 # POST /api/cashflow/rentvest — Validation
 # ──────────────────────────────────────────────
 
+
 class TestRentvestEndpointValidation:
     """Tests for rentvesting endpoint input validation."""
 
@@ -407,6 +436,7 @@ class TestRentvestEndpointValidation:
 # ──────────────────────────────────────────────
 # Comparison — PPOR vs Rentvesting
 # ──────────────────────────────────────────────
+
 
 class TestPporVsRentvest:
     """Tests comparing PPOR and rentvesting responses."""

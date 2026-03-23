@@ -4,8 +4,16 @@ Australian tax calculation engine.
 All functions are pure — no side effects or external dependencies.
 """
 
-from app.config.tax import TAX_BRACKETS, MEDICARE_LOWER_THRESHOLD, MEDICARE_HIGH_THRESHOLD, MEDICARE_PHASE_IN_RATE, \
-    MEDICARE_LEVY_RATE, MLS_THRESHOLDS, HECS_THRESHOLDS, HECS_TOP_THRESHOLD
+from app.config.tax import (
+    HECS_THRESHOLDS,
+    HECS_TOP_THRESHOLD,
+    MEDICARE_HIGH_THRESHOLD,
+    MEDICARE_LEVY_RATE,
+    MEDICARE_LOWER_THRESHOLD,
+    MEDICARE_PHASE_IN_RATE,
+    MLS_THRESHOLDS,
+    TAX_BRACKETS,
+)
 from app.models.tax import TaxProfile
 
 
@@ -29,8 +37,7 @@ def calculate_income_tax(taxable_income: float) -> float:
     # Calculate tax by iterating through brackets until we find the correct one
     prev_threshold = 0
     tax_owing = 0
-    for (taxable_cap, tax_rate) in TAX_BRACKETS:
-
+    for taxable_cap, tax_rate in TAX_BRACKETS:
         if taxable_income > taxable_cap:
             tax_owing += (taxable_cap - prev_threshold) * tax_rate
             prev_threshold = taxable_cap
@@ -80,7 +87,7 @@ def calculate_medicare_levy_surcharge(mls_income: float, has_private_health: boo
     """
     if has_private_health:
         return 0
-    for (threshold, rate) in MLS_THRESHOLDS:
+    for threshold, rate in MLS_THRESHOLDS:
         if mls_income <= threshold:
             return mls_income * rate
     raise ValueError("MLS_THRESHOLDS config missing catch-all bracket (e.g. float('inf'))")
@@ -102,7 +109,7 @@ def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> fl
     """
     repayment_owing = 0.0
     prev_threshold = 0
-    for (threshold, rate) in HECS_THRESHOLDS:
+    for threshold, rate in HECS_THRESHOLDS:
         if repayment_income < threshold:
             repayment_owing += (repayment_income - prev_threshold) * rate
             break
@@ -132,10 +139,10 @@ def calculate_total_tax(tax_profile: TaxProfile) -> float:
         Total tax owing (sum of all components)
     """
     return (
-        calculate_income_tax(tax_profile.taxable_income) +
-        calculate_medicare_levy(tax_profile.taxable_income) +
-        calculate_medicare_levy_surcharge(tax_profile.mls_income, tax_profile.has_private_health) +
-        calculate_hecs_repayment(tax_profile.repayment_income, tax_profile.hecs_balance)
+        calculate_income_tax(tax_profile.taxable_income)
+        + calculate_medicare_levy(tax_profile.taxable_income)
+        + calculate_medicare_levy_surcharge(tax_profile.mls_income, tax_profile.has_private_health)
+        + calculate_hecs_repayment(tax_profile.repayment_income, tax_profile.hecs_balance)
     )
 
 

@@ -2,17 +2,17 @@
 Tests for property tax deduction engine — Division 43 and Division 40 depreciation.
 """
 
-import pytest
-
 from datetime import date
 
+import pytest
+
 from app.engine.deductions import (
-    calculate_division_43_deduction,
-    calculate_division_40_prime_cost,
-    calculate_division_40_diminishing_value,
-    is_building_depreciable,
-    is_asset_depreciable,
     calculate_borrowing_cost_deduction,
+    calculate_division_40_diminishing_value,
+    calculate_division_40_prime_cost,
+    calculate_division_43_deduction,
+    is_asset_depreciable,
+    is_building_depreciable,
 )
 
 
@@ -163,8 +163,7 @@ class TestDivision43Consistency:
     def test_deduction_increases_with_days(self):
         """More days held = higher deduction."""
         for d in range(1, 365):
-            assert calculate_division_43_deduction(400_000, d + 1) > \
-                   calculate_division_43_deduction(400_000, d)
+            assert calculate_division_43_deduction(400_000, d + 1) > calculate_division_43_deduction(400_000, d)
 
     def test_always_positive_for_positive_inputs(self):
         """Positive cost and positive days should always yield positive deduction."""
@@ -311,7 +310,7 @@ class TestDivision40DiminishingValueConsistency:
         """Simulating multiple years — deduction should decrease each year."""
         wdv = 2_000.0
         life = 10
-        prev_deduction = float('inf')
+        prev_deduction = float("inf")
         for _ in range(10):
             deduction = calculate_division_40_diminishing_value(wdv, life, 365)
             assert deduction < prev_deduction

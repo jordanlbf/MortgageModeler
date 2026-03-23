@@ -7,15 +7,15 @@ Separate from domain models — these define the API contract.
 from pydantic import BaseModel, Field
 
 from app.config.property import (
-    DEFAULT_VACANCY_WEEKS,
     DEFAULT_ANNUAL_COST_GROWTH_RATE,
     DEFAULT_MAINTENANCE_RATE,
     DEFAULT_MANAGEMENT_RATE,
     DEFAULT_PROJECTION_YEARS,
+    DEFAULT_VACANCY_WEEKS,
 )
 
-
 # ── Request ───────────────────────────────────
+
 
 class OngoingPropertyCostRequest(BaseModel):
     """
@@ -38,24 +38,52 @@ class OngoingPropertyCostRequest(BaseModel):
         maintenance_rate: Annual maintenance as fraction of property value (e.g. 0.01 for 1%)
         management_rate: Annual management fee as fraction of rental income (e.g. 0.08 for 8%)
     """
+
     purchase_price: float = Field(default=0.0, ge=0, description="Property purchase price")
-    annual_growth_rate: float = Field(default=0.0, ge=0, le=1, description="Expected annual property growth rate (as a decimal, e.g., 0.05 for 5%)")
+    annual_growth_rate: float = Field(
+        default=0.0, ge=0, le=1, description="Expected annual property growth rate (as a decimal, e.g., 0.05 for 5%)"
+    )
     weekly_rent: float = Field(default=0.0, ge=0, description="Expected weekly rental income")
-    annual_rent_growth_rate: float = Field(default=0.0, ge=0, le=1, description="Expected annual rent growth rate (as a decimal, e.g., 0.05 for 5%)")
-    vacancy_weeks: int = Field(default=DEFAULT_VACANCY_WEEKS, ge=0, le=52, description="Expected number of weeks the property will be vacant per year")
+    annual_rent_growth_rate: float = Field(
+        default=0.0, ge=0, le=1, description="Expected annual rent growth rate (as a decimal, e.g., 0.05 for 5%)"
+    )
+    vacancy_weeks: int = Field(
+        default=DEFAULT_VACANCY_WEEKS,
+        ge=0,
+        le=52,
+        description="Expected number of weeks the property will be vacant per year",
+    )
     is_investment: bool = Field(default=False, description="Whether the property is an investment property")
-    projection_years: int = Field(default=DEFAULT_PROJECTION_YEARS, ge=1, le=50, description="Number of years to project ongoing costs for")
-    annual_cost_growth_rate: float = Field(default=DEFAULT_ANNUAL_COST_GROWTH_RATE, ge=0, le=1, description="Expected annual growth rate for ongoing costs (as a decimal, e.g., 0.03 for 3%)")
+    projection_years: int = Field(
+        default=DEFAULT_PROJECTION_YEARS, ge=1, le=50, description="Number of years to project ongoing costs for"
+    )
+    annual_cost_growth_rate: float = Field(
+        default=DEFAULT_ANNUAL_COST_GROWTH_RATE,
+        ge=0,
+        le=1,
+        description="Expected annual growth rate for ongoing costs (as a decimal, e.g., 0.03 for 3%)",
+    )
     council_rates: float = Field(default=0.0, ge=0, description="Annual council rates")
     water_rates: float = Field(default=0.0, ge=0, description="Annual water rates")
     building_insurance: float = Field(default=0.0, ge=0, description="Annual building insurance cost")
     landlord_insurance: float = Field(default=0.0, ge=0, description="Annual landlord insurance cost (if applicable)")
     strata_fees: float = Field(default=0.0, ge=0, description="Annual strata fees (if applicable)")
-    maintenance_rate: float = Field(default=DEFAULT_MAINTENANCE_RATE, ge=0, le=1, description="Annual maintenance cost as a percentage of property value (as a decimal, e.g., 0.01 for 1%)")
-    management_rate: float = Field(default=DEFAULT_MANAGEMENT_RATE, ge=0, le=1, description="Annual property management fee as a percentage of rental income (as a decimal, e.g., 0.08 for 8%)")
+    maintenance_rate: float = Field(
+        default=DEFAULT_MAINTENANCE_RATE,
+        ge=0,
+        le=1,
+        description="Annual maintenance cost as a percentage of property value (as a decimal, e.g., 0.01 for 1%)",
+    )
+    management_rate: float = Field(
+        default=DEFAULT_MANAGEMENT_RATE,
+        ge=0,
+        le=1,
+        description="Annual property management fee as a percentage of rental income (as a decimal, e.g., 0.08 for 8%)",
+    )
 
 
 # ── Response ──────────────────────────────────
+
 
 class YearByYearCostResponse(BaseModel):
     """
@@ -74,6 +102,7 @@ class YearByYearCostResponse(BaseModel):
         rental_income: Annual rental income at this year
         total: Total of all cost fields for this year
     """
+
     year: int
     council_rates: float
     water_rates: float
@@ -97,6 +126,7 @@ class OngoingCostResponse(BaseModel):
         total_monthly_cost: Year 1 total ongoing cost divided by 12
         total_deductible_cost: Year 1 total deductible cost (for investment properties)
     """
+
     annual_costs: list[YearByYearCostResponse]
     total_annual_cost: float
     total_monthly_cost: float

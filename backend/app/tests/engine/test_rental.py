@@ -6,8 +6,8 @@ effective (vacancy-adjusted) annual rent.
 import pytest
 
 from app.engine.rental import (
-    calculate_gross_annual_rent,
     calculate_effective_annual_rent,
+    calculate_gross_annual_rent,
     calculate_weekly_rent_from_annual,
 )
 
@@ -44,13 +44,13 @@ class TestCalculateGrossAnnualRent:
     def test_year_four_with_growth(self):
         """Year 4 at 3% growth: 600 * 52 * 1.03^4."""
         result = calculate_gross_annual_rent(4, 600.0, 0.03)
-        expected = 600 * 52 * (1.03 ** 4)
+        expected = 600 * 52 * (1.03**4)
         assert result == pytest.approx(expected)
 
     def test_year_nine_with_growth(self):
         """Year 9 at 4% growth: 450 * 52 * 1.04^9."""
         result = calculate_gross_annual_rent(9, 450.0, 0.04)
-        expected = 450 * 52 * (1.04 ** 9)
+        expected = 450 * 52 * (1.04**9)
         assert result == pytest.approx(expected)
 
     def test_growth_compounds_not_linear(self):
@@ -132,7 +132,7 @@ class TestCalculateEffectiveAnnualRent:
     def test_vacancy_with_growth_year_four(self):
         """Year 4 at 3% growth with 8% vacancy."""
         effective = calculate_effective_annual_rent(4, 0.08, 700.0, 0.03)
-        expected = 700 * 52 * (1.03 ** 4) * 0.92
+        expected = 700 * 52 * (1.03**4) * 0.92
         assert effective == pytest.approx(expected)
 
     def test_vacancy_applied_after_growth(self):
@@ -202,22 +202,17 @@ class TestCalculateWeeklyRentFromAnnual:
     """Tests for calculate_weekly_rent_from_annual — currently NO tests."""
 
     def test_basic_conversion(self):
-        from app.engine.rental import calculate_weekly_rent_from_annual
         assert calculate_weekly_rent_from_annual(26_000) == pytest.approx(500)
 
     def test_zero(self):
-        from app.engine.rental import calculate_weekly_rent_from_annual
         assert calculate_weekly_rent_from_annual(0) == 0.0
 
     def test_small_amount(self):
-        from app.engine.rental import calculate_weekly_rent_from_annual
         assert calculate_weekly_rent_from_annual(52) == pytest.approx(1.0)
 
     def test_fractional_result(self):
-        from app.engine.rental import calculate_weekly_rent_from_annual
         result = calculate_weekly_rent_from_annual(10_000)
         assert result == pytest.approx(10_000 / 52)
 
     def test_large_amount(self):
-        from app.engine.rental import calculate_weekly_rent_from_annual
         assert calculate_weekly_rent_from_annual(260_000) == pytest.approx(5_000)

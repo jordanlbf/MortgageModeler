@@ -7,16 +7,24 @@ Handles:
 - Investment property running costs
 - Stamp duty estimation (QLD)
 """
+
 import math
 
-from app.config.property import QLD_STAMP_DUTY_CONCESSION_BRACKETS, \
-    QLD_STAMP_DUTY_BASE_BRACKETS, LMI_ESTIMATE, QLD_REGISTRATION_FEE_THRESHOLD, QLD_REGISTRATION_FEE_BASE, \
-    QLD_REGISTRATION_FEE_PER_10K, QLD_MORTGAGE_REGISTRATION_FEE, DEFAULT_CONVEYANCING_FEE, \
-    DEFAULT_BUILDING_PEST_INSPECTION_FEE, DEFAULT_LOAN_ESTABLISHMENT_FEE
+from app.config.property import (
+    DEFAULT_BUILDING_PEST_INSPECTION_FEE,
+    DEFAULT_CONVEYANCING_FEE,
+    DEFAULT_LOAN_ESTABLISHMENT_FEE,
+    LMI_ESTIMATE,
+    QLD_MORTGAGE_REGISTRATION_FEE,
+    QLD_REGISTRATION_FEE_BASE,
+    QLD_REGISTRATION_FEE_PER_10K,
+    QLD_REGISTRATION_FEE_THRESHOLD,
+    QLD_STAMP_DUTY_BASE_BRACKETS,
+    QLD_STAMP_DUTY_CONCESSION_BRACKETS,
+)
 
 
-def calculate_qld_stamp_duty_with_bracket(purchase_price: float,
-                                          bracket: list[tuple[float, float, float]]) -> float:
+def calculate_qld_stamp_duty_with_bracket(purchase_price: float, bracket: list[tuple[float, float, float]]) -> float:
     """
     Calculate QLD stamp duty amount from the given bracket.
 
@@ -35,7 +43,7 @@ def calculate_qld_stamp_duty_with_bracket(purchase_price: float,
     purchase_price = math.ceil(purchase_price / 100) * 100
 
     prev_threshold = 0
-    for (threshold, rate, base) in bracket:
+    for threshold, rate, base in bracket:
         if purchase_price <= threshold:
             return base + (purchase_price - prev_threshold) * (rate / 100)
         prev_threshold = threshold
@@ -77,7 +85,7 @@ def estimate_lmi(loan_amount: float, lvr: float, is_investment: bool) -> float:
         Estimated LMI cost
     """
     lmi_amount = 0.0
-    for (threshold, rate) in LMI_ESTIMATE:
+    for threshold, rate in LMI_ESTIMATE:
         if lvr <= threshold:
             lmi_amount = loan_amount * rate
             break
@@ -100,8 +108,7 @@ def calculate_registration_fee(purchase_price: float) -> float:
         return QLD_REGISTRATION_FEE_BASE
     else:
         excess = purchase_price - QLD_REGISTRATION_FEE_THRESHOLD
-        return (QLD_REGISTRATION_FEE_BASE + math.ceil(excess / 10_000) *
-                QLD_REGISTRATION_FEE_PER_10K)
+        return QLD_REGISTRATION_FEE_BASE + math.ceil(excess / 10_000) * QLD_REGISTRATION_FEE_PER_10K
 
 
 def calculate_mortgage_registration_fee() -> float:
@@ -144,7 +151,6 @@ def calculate_loan_establishment_fee() -> float:
     return DEFAULT_LOAN_ESTABLISHMENT_FEE  # Flat estimate for simplicity
 
 
-
 def calculate_lvr(purchase_price: float, deposit: float) -> float:
     """
     Calculate loan-to-value ratio (LVR) for a property purchase.
@@ -163,6 +169,7 @@ def calculate_lvr(purchase_price: float, deposit: float) -> float:
 # ─────────────────────────────────────────────────────────────────────────────────
 # ----------------------ON-GOING PROPERTY COST CALCULATIONS------------------------
 # ─────────────────────────────────────────────────────────────────────────────────
+
 
 def calculate_property_value(year: int, purchase_price: float, growth_rate: float) -> float:
     """
@@ -184,8 +191,7 @@ def calculate_property_value(year: int, purchase_price: float, growth_rate: floa
     return purchase_price * ((1 + growth_rate) ** year)
 
 
-def calculate_rental_income(year: int, weekly_rent: float, vacancy_weeks: int,
-                            growth_rate: float) -> float:
+def calculate_rental_income(year: int, weekly_rent: float, vacancy_weeks: int, growth_rate: float) -> float:
     """
     Calculate annual rental income for a given year, accounting for vacancy.
 
@@ -290,8 +296,7 @@ def calculate_strata_fees(year: int, base_rate: float, growth_rate: float) -> fl
     return compound_annual_cost(year, base_rate, growth_rate)
 
 
-def calculate_landlord_insurance(year: int, base_rate: float,
-                                 growth_rate: float, is_investment: bool) -> float:
+def calculate_landlord_insurance(year: int, base_rate: float, growth_rate: float, is_investment: bool) -> float:
     """
     Calculate landlord insurance cost for a given year.
 
@@ -307,8 +312,7 @@ def calculate_landlord_insurance(year: int, base_rate: float,
     return compound_annual_cost(year, base_rate, growth_rate) if is_investment else 0.0
 
 
-def calculate_maintenance_cost(year: int, purchase_price: float, maintenance_rate: float,
-                               growth_rate: float) -> float:
+def calculate_maintenance_cost(year: int, purchase_price: float, maintenance_rate: float, growth_rate: float) -> float:
     """
     Calculate maintenance cost for a given year based on appreciated property value.
 
@@ -325,9 +329,9 @@ def calculate_maintenance_cost(year: int, purchase_price: float, maintenance_rat
     return property_value * maintenance_rate
 
 
-def calculate_management_fee(year: int, weekly_rent: float, vacancy_weeks: int,
-                             management_rate: float, growth_rate: float,
-                             is_investment: bool) -> float:
+def calculate_management_fee(
+    year: int, weekly_rent: float, vacancy_weeks: int, management_rate: float, growth_rate: float, is_investment: bool
+) -> float:
     """
     Calculate property management fee for a given year.
 

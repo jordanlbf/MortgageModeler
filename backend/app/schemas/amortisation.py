@@ -5,10 +5,11 @@ Separate from domain models — these define the API contract.
 """
 
 from pydantic import BaseModel, Field, model_validator
+
 from app.models.loan import RepaymentFrequency
 
-
 # ── Request ───────────────────────────────────
+
 
 class RateChangeRequest(BaseModel):
     """
@@ -18,6 +19,7 @@ class RateChangeRequest(BaseModel):
         from_period: Period number when the new rate takes effect
         annual_rate: New annual interest rate as decimal
     """
+
     from_period: int
     annual_rate: float
 
@@ -38,6 +40,7 @@ class ScheduleRequest(BaseModel):
         annual_appreciation: Annual property growth rate as decimal (e.g. 0.05 for 5%)
         rate_changes: Scheduled interest rate changes during the loan term
     """
+
     purchase_price: float = Field(ge=0, description="Property purchase price")
     deposit: float = Field(default=0.0, ge=0, description="Upfront deposit amount")
     annual_rate: float = Field(ge=0, le=1, description="Annual rate as decimal, e.g. 0.062")
@@ -46,7 +49,9 @@ class ScheduleRequest(BaseModel):
     offset_balance: float = Field(default=0.0, ge=0)
     offset_contribution: float = Field(default=0.0, ge=0)
     extra_repayment: float = Field(default=0.0, ge=0)
-    annual_appreciation: float = Field(default=0.0, ge=0, le=1, description="Annual property growth rate as decimal, e.g. 0.05")
+    annual_appreciation: float = Field(
+        default=0.0, ge=0, le=1, description="Annual property growth rate as decimal, e.g. 0.05"
+    )
     rate_changes: list[RateChangeRequest] = Field(default_factory=list)
 
     @property
@@ -81,6 +86,7 @@ class ScheduleRequest(BaseModel):
 
 # ── Response ──────────────────────────────────
 
+
 class ScheduleRowResponse(BaseModel):
     """
     A single period in the amortisation schedule response.
@@ -96,6 +102,7 @@ class ScheduleRowResponse(BaseModel):
         scheduled_repayment: Fixed repayment amount per period
         offset_balance: Offset account balance this period
     """
+
     period: int
     opening_balance: float
     interest: float
@@ -119,6 +126,7 @@ class ChartPoint(BaseModel):
         equity: Property value minus remaining loan balance
         offset_balance: Offset account balance at end of year
     """
+
     year: int
     balance: float
     total_interest: float
@@ -138,6 +146,7 @@ class ScheduleSummary(BaseModel):
         lvr: Loan-to-value ratio as decimal
         annual_appreciation: Annual property growth rate as decimal
     """
+
     purchase_price: float
     deposit: float
     loan_amount: float
@@ -157,6 +166,7 @@ class ScheduleResponse(BaseModel):
         rows: Per-period schedule rows
         chart_data: Per-year chart data points for visualisation
     """
+
     summary: ScheduleSummary
     payment: float
     total_interest: float

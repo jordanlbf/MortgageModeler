@@ -10,14 +10,15 @@ This is a single-year calculation — multi-year orchestration lives elsewhere.
 from datetime import date, timedelta
 
 from app.engine.deductions import (
-    calculate_division_43_deduction,
+    calculate_borrowing_cost_deduction,
     calculate_division_40_diminishing_value,
     calculate_division_40_prime_cost,
+    calculate_division_43_deduction,
+    is_asset_depreciable,
     is_building_depreciable,
-    is_asset_depreciable, calculate_borrowing_cost_deduction,
 )
 from app.engine.tax import calculate_tax_saving
-from app.models.deductions import PropertyTaxDeductionSummary, DepreciableBuilding, DepreciableAsset, DepreciationMethod
+from app.models.deductions import DepreciableAsset, DepreciableBuilding, DepreciationMethod, PropertyTaxDeductionSummary
 from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
 from app.models.property import YearCost
@@ -67,13 +68,13 @@ def _calculate_ongoing_expenses(ongoing_costs: YearCost) -> float:
         Total deductible ongoing expenses for the year
     """
     return (
-        ongoing_costs.council_rates +
-        ongoing_costs.water_rates +
-        ongoing_costs.building_insurance +
-        ongoing_costs.landlord_insurance +
-        ongoing_costs.strata_fees +
-        ongoing_costs.maintenance_cost +
-        ongoing_costs.management_fee
+        ongoing_costs.council_rates
+        + ongoing_costs.water_rates
+        + ongoing_costs.building_insurance
+        + ongoing_costs.landlord_insurance
+        + ongoing_costs.strata_fees
+        + ongoing_costs.maintenance_cost
+        + ongoing_costs.management_fee
     )
 
 
@@ -134,9 +135,13 @@ def _calculate_plant_depreciation(
         if days_held <= 0:
             continue
         if asset.method == DepreciationMethod.DIMINISHING_VALUE:
-            total += calculate_division_40_diminishing_value(asset.written_down_value, asset.effective_life_years, days_held, financial_year.days)
+            total += calculate_division_40_diminishing_value(
+                asset.written_down_value, asset.effective_life_years, days_held, financial_year.days
+            )
         else:
-            total += calculate_division_40_prime_cost(asset.cost, asset.effective_life_years, days_held, financial_year.days)
+            total += calculate_division_40_prime_cost(
+                asset.cost, asset.effective_life_years, days_held, financial_year.days
+            )
     return total
 
 
@@ -168,7 +173,9 @@ def build_tax_deduction_summary(
     rental_income = ongoing_costs.rental_income
     # Calculate each deduction component
     depreciation_building = _calculate_building_depreciation(mortgage.property.depreciable_buildings, financial_year)
-    depreciation_plant = _calculate_plant_depreciation(mortgage.property.depreciable_assets, mortgage.property.purchase_date, financial_year)
+    depreciation_plant = _calculate_plant_depreciation(
+        mortgage.property.depreciable_assets, mortgage.property.purchase_date, financial_year
+    )
     deductible_expenses = _calculate_ongoing_expenses(ongoing_costs)
 
     # Calculate borrowing costs deduction based on ATO rules
@@ -179,12 +186,9 @@ def build_tax_deduction_summary(
     )
 
     # Sum all deductions to get total deduction for the year
-    total_deductions = (mortgage_interest +
-                        deductible_expenses +
-                        depreciation_building +
-                        depreciation_plant +
-                        borrowing_costs_deduction
-                        )
+    total_deductions = (
+        mortgage_interest + deductible_expenses + depreciation_building + depreciation_plant + borrowing_costs_deduction
+    )
 
     # Calculate net rental income after deductions and determine if negatively geared
     net_rental_income = rental_income - total_deductions
@@ -200,5 +204,5 @@ def build_tax_deduction_summary(
         net_rental_income=net_rental_income,
         is_negatively_geared=is_negatively_geared,
         tax_saving=tax_saving,
-        borrowing_costs_deduction=borrowing_costs_deduction
+        borrowing_costs_deduction=borrowing_costs_deduction,
     )

@@ -4,6 +4,7 @@ Tests for API Schedule endpoints.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -102,7 +103,7 @@ class TestScheduleEndpoint:
         """5% annual growth over 30 years."""
         data = self._post(annual_appreciation=0.05).json()
         pt = data["chart_data"][-1]
-        expected_value = 600_000 * (1.05 ** 30)
+        expected_value = 600_000 * (1.05**30)
         assert pt["property_value"] == pytest.approx(expected_value, rel=0.001)
 
     def test_chart_appreciation_increases_equity(self):

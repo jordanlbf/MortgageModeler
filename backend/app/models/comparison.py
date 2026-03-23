@@ -3,7 +3,6 @@ Comparison domain models — scenario comparison results.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 from app.models.cashflow import CashFlowPPORResult, CashFlowRentvestResult
 
@@ -24,9 +23,10 @@ class PporVsRentvestResult:
         break_even_year: First year one scenario overtakes the other (None if never).
         by_year: PPOR net wealth minus rentvest net wealth per year, for charting.
     """
+
     ppor: CashFlowPPORResult
     rentvest: CashFlowRentvestResult
     winner: str
     difference: float
-    break_even_year: Optional[int]
+    break_even_year: int | None
     by_year: list[float]

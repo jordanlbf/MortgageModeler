@@ -4,9 +4,11 @@ Tests for API Tax endpoints.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
+
 
 class TestTaxBreakdownEndpoint:
     """POST /api/tax/breakdown"""
@@ -40,9 +42,13 @@ class TestTaxBreakdownEndpoint:
     def test_response_has_all_fields(self):
         data = self._post().json()
         expected_fields = {
-            "taxable_income", "income_tax", "medicare_levy",
-            "medicare_levy_surcharge", "hecs_repayment",
-            "net_income", "total_tax",
+            "taxable_income",
+            "income_tax",
+            "medicare_levy",
+            "medicare_levy_surcharge",
+            "hecs_repayment",
+            "net_income",
+            "total_tax",
         }
         assert set(data.keys()) == expected_fields
 
@@ -99,10 +105,7 @@ class TestTaxBreakdownEndpoint:
     def test_total_tax_equals_component_sum(self):
         data = self._post_uniform(150_000, hecs_balance=20_000).json()
         component_sum = (
-            data["income_tax"] +
-            data["medicare_levy"] +
-            data["medicare_levy_surcharge"] +
-            data["hecs_repayment"]
+            data["income_tax"] + data["medicare_levy"] + data["medicare_levy_surcharge"] + data["hecs_repayment"]
         )
         assert data["total_tax"] == pytest.approx(component_sum, abs=0.01)
 

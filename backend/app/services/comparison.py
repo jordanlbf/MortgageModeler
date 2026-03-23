@@ -5,10 +5,8 @@ Runs both PPOR and rentvesting projections, then computes a wealth
 comparison showing which strategy wins, by how much, and when.
 """
 
-from typing import Optional
-
-from app.models.comparison import PporVsRentvestResult
 from app.models.cashflow import CashFlowYear
+from app.models.comparison import PporVsRentvestResult
 from app.models.mortgage import Mortgage
 from app.services.cashflow import build_ppor_cashflow, build_rentvest_cashflow
 
@@ -25,7 +23,7 @@ def _net_wealth_for_year(year: CashFlowYear) -> float:
     return year.equity + year.cumulative_position + year.offset_balance
 
 
-def _find_break_even_year(by_year: list[float]) -> Optional[int]:
+def _find_break_even_year(by_year: list[float]) -> int | None:
     """Find the first year where the wealth delta changes sign.
 
     Args:
@@ -79,10 +77,7 @@ def build_ppor_vs_rentvest(
     if rentvest_wealth:
         rentvest_wealth[-1] -= rentvest_result.cgt.cgt_payable
 
-    by_year = [
-        ppor_wealth[i] - rentvest_wealth[i]
-        for i in range(len(ppor_wealth))
-    ]
+    by_year = [ppor_wealth[i] - rentvest_wealth[i] for i in range(len(ppor_wealth))]
 
     winner = "ppor" if not by_year or by_year[-1] >= 0 else "rentvesting"
     difference = abs(by_year[-1]) if by_year else 0.0

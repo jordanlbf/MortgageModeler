@@ -18,4 +18,5 @@ class Person:
     Attributes:
         tax_profile: Taxpayer income configuration for tax calculations.
     """
+
     tax_profile: TaxProfile

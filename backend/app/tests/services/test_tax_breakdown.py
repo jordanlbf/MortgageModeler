@@ -4,19 +4,19 @@ Tests for tax breakdown service — build_tax_breakdown.
 
 import pytest
 
-from app.services.tax_breakdown import build_tax_breakdown
-from app.models.tax import TaxProfile
 from app.engine.tax import (
+    calculate_hecs_repayment,
     calculate_income_tax,
     calculate_medicare_levy,
     calculate_medicare_levy_surcharge,
-    calculate_hecs_repayment,
 )
-
+from app.models.tax import TaxProfile
+from app.services.tax_breakdown import build_tax_breakdown
 
 # ──────────────────────────────────────────────
 # Helpers
 # ──────────────────────────────────────────────
+
 
 def _make_profile(income=100_000, **overrides) -> TaxProfile:
     """Create a TaxProfile with uniform income defaults."""
@@ -34,6 +34,7 @@ def _make_profile(income=100_000, **overrides) -> TaxProfile:
 # ──────────────────────────────────────────────
 # Basic breakdown
 # ──────────────────────────────────────────────
+
 
 class TestBuildTaxBreakdown:
     """Tests for build_tax_breakdown service function."""
@@ -64,10 +65,7 @@ class TestBuildTaxBreakdown:
     def test_total_tax_is_sum_of_components(self):
         result = build_tax_breakdown(_make_profile(150_000, hecs_balance=20_000))
         component_sum = (
-            result.income_tax +
-            result.medicare_levy +
-            result.medicare_levy_surcharge +
-            result.hecs_repayment
+            result.income_tax + result.medicare_levy + result.medicare_levy_surcharge + result.hecs_repayment
         )
         assert result.total_tax == pytest.approx(component_sum, abs=0.01)
 
@@ -79,6 +77,7 @@ class TestBuildTaxBreakdown:
 # ──────────────────────────────────────────────
 # Zero income
 # ──────────────────────────────────────────────
+
 
 class TestZeroIncome:
     """Tests for zero income edge case."""
@@ -96,6 +95,7 @@ class TestZeroIncome:
 # ──────────────────────────────────────────────
 # HECS
 # ──────────────────────────────────────────────
+
 
 class TestHecs:
     """Tests for HECS repayment component."""
@@ -119,6 +119,7 @@ class TestHecs:
 # ──────────────────────────────────────────────
 # Private health / MLS
 # ──────────────────────────────────────────────
+
 
 class TestPrivateHealth:
     """Tests for Medicare Levy Surcharge and private health."""
@@ -145,6 +146,7 @@ class TestPrivateHealth:
 # ──────────────────────────────────────────────
 # Divergent incomes
 # ──────────────────────────────────────────────
+
 
 class TestDivergentIncomes:
     """Tests for profiles where TI, RI, and MLSI differ."""
@@ -218,6 +220,7 @@ class TestDivergentIncomes:
 # ──────────────────────────────────────────────
 # High income
 # ──────────────────────────────────────────────
+
 
 class TestHighIncome:
     """Tests for high income with all components active."""

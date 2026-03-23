@@ -6,11 +6,10 @@ using the TaxProfile model for accurate multi-component results.
 """
 
 from app.engine.tax import (
+    calculate_hecs_repayment,
     calculate_income_tax,
     calculate_medicare_levy,
     calculate_medicare_levy_surcharge,
-    calculate_hecs_repayment,
-    calculate_total_tax,
 )
 from app.models.tax import TaxProfile
 from app.schemas.tax import TaxBreakdownResponse
@@ -32,12 +31,8 @@ def build_tax_breakdown(profile: TaxProfile) -> TaxBreakdownResponse:
     """
     income_tax = calculate_income_tax(profile.taxable_income)
     medicare_levy = calculate_medicare_levy(profile.taxable_income)
-    medicare_levy_surcharge = calculate_medicare_levy_surcharge(
-        profile.mls_income, profile.has_private_health
-    )
-    hecs_repayment = calculate_hecs_repayment(
-        profile.repayment_income, profile.hecs_balance
-    )
+    medicare_levy_surcharge = calculate_medicare_levy_surcharge(profile.mls_income, profile.has_private_health)
+    hecs_repayment = calculate_hecs_repayment(profile.repayment_income, profile.hecs_balance)
 
     total_tax = income_tax + medicare_levy + medicare_levy_surcharge + hecs_repayment
     net_income = profile.taxable_income - total_tax

@@ -8,15 +8,16 @@ schedules with offset, extra repayments, and rate change support.
 from datetime import date
 
 from fastapi import APIRouter
-from app.models.loan import RateChange, LoanConfig
+
+from app.models.loan import LoanConfig, RateChange
 from app.models.mortgage import Mortgage
 from app.models.property import Property
 from app.schemas.amortisation import (
+    ChartPoint,
     ScheduleRequest,
     ScheduleResponse,
     ScheduleRowResponse,
     ScheduleSummary,
-    ChartPoint,
 )
 from app.services.amortisation import build_loan, build_schedule_result
 
@@ -49,10 +50,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
         offset_balance=req.offset_balance,
         offset_contribution=req.offset_contribution,
         extra_repayment=req.extra_repayment,
-        rate_changes=[
-            RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate)
-            for rc in req.rate_changes
-        ],
+        rate_changes=[RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate) for rc in req.rate_changes],
     )
     mortgage = Mortgage(
         property=property,

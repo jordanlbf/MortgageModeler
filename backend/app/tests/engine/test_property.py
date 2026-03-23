@@ -5,36 +5,36 @@ and ongoing property cost calculations.
 
 import pytest
 
-from app.engine.property import (
-    calculate_qld_stamp_duty_with_bracket,
-    estimate_qld_stamp_duty,
-    estimate_lmi,
-    calculate_registration_fee,
-    calculate_mortgage_registration_fee,
-    calculate_conveyancing_fee,
-    calculate_building_pest_inspection_fee,
-    calculate_loan_establishment_fee,
-    calculate_lvr,
-    calculate_property_value,
-    calculate_rental_income,
-    compound_annual_cost,
-    calculate_council_rates,
-    calculate_water_rates,
-    calculate_building_insurance,
-    calculate_strata_fees,
-    calculate_landlord_insurance,
-    calculate_maintenance_cost,
-    calculate_management_fee,
-)
 from app.config.property import (
-    QLD_STAMP_DUTY_BASE_BRACKETS,
-    QLD_STAMP_DUTY_CONCESSION_BRACKETS,
+    DEFAULT_BUILDING_PEST_INSPECTION_FEE,
+    DEFAULT_CONVEYANCING_FEE,
+    DEFAULT_LOAN_ESTABLISHMENT_FEE,
+    QLD_MORTGAGE_REGISTRATION_FEE,
     QLD_REGISTRATION_FEE_BASE,
     QLD_REGISTRATION_FEE_PER_10K,
-    QLD_MORTGAGE_REGISTRATION_FEE,
-    DEFAULT_CONVEYANCING_FEE,
-    DEFAULT_BUILDING_PEST_INSPECTION_FEE,
-    DEFAULT_LOAN_ESTABLISHMENT_FEE,
+    QLD_STAMP_DUTY_BASE_BRACKETS,
+    QLD_STAMP_DUTY_CONCESSION_BRACKETS,
+)
+from app.engine.property import (
+    calculate_building_insurance,
+    calculate_building_pest_inspection_fee,
+    calculate_conveyancing_fee,
+    calculate_council_rates,
+    calculate_landlord_insurance,
+    calculate_loan_establishment_fee,
+    calculate_lvr,
+    calculate_maintenance_cost,
+    calculate_management_fee,
+    calculate_mortgage_registration_fee,
+    calculate_property_value,
+    calculate_qld_stamp_duty_with_bracket,
+    calculate_registration_fee,
+    calculate_rental_income,
+    calculate_strata_fees,
+    calculate_water_rates,
+    compound_annual_cost,
+    estimate_lmi,
+    estimate_qld_stamp_duty,
 )
 
 
@@ -186,13 +186,11 @@ class TestStampDutyConcessionVsBase:
 
     def test_concession_converges_above_1m(self):
         """Above $1M both brackets use 5.75%, so the gap stays constant."""
-        gap_at_1m = (
-            estimate_qld_stamp_duty(1_000_000, is_investment=True)
-            - estimate_qld_stamp_duty(1_000_000, is_investment=False)
+        gap_at_1m = estimate_qld_stamp_duty(1_000_000, is_investment=True) - estimate_qld_stamp_duty(
+            1_000_000, is_investment=False
         )
-        gap_at_2m = (
-            estimate_qld_stamp_duty(2_000_000, is_investment=True)
-            - estimate_qld_stamp_duty(2_000_000, is_investment=False)
+        gap_at_2m = estimate_qld_stamp_duty(2_000_000, is_investment=True) - estimate_qld_stamp_duty(
+            2_000_000, is_investment=False
         )
         assert gap_at_1m == pytest.approx(gap_at_2m, abs=0.1)
 
@@ -202,13 +200,15 @@ class TestCalculateWithBracketDirect:
 
     def test_base_bracket_direct(self):
         """Direct call with base brackets matches estimate_qld_stamp_duty."""
-        assert calculate_qld_stamp_duty_with_bracket(500_000, QLD_STAMP_DUTY_BASE_BRACKETS) == \
-            estimate_qld_stamp_duty(500_000, is_investment=True)
+        assert calculate_qld_stamp_duty_with_bracket(500_000, QLD_STAMP_DUTY_BASE_BRACKETS) == estimate_qld_stamp_duty(
+            500_000, is_investment=True
+        )
 
     def test_concession_bracket_direct(self):
         """Direct call with concession brackets matches estimate_qld_stamp_duty."""
-        assert calculate_qld_stamp_duty_with_bracket(500_000, QLD_STAMP_DUTY_CONCESSION_BRACKETS) == \
-            estimate_qld_stamp_duty(500_000, is_investment=False)
+        assert calculate_qld_stamp_duty_with_bracket(
+            500_000, QLD_STAMP_DUTY_CONCESSION_BRACKETS
+        ) == estimate_qld_stamp_duty(500_000, is_investment=False)
 
 
 class TestEstimateLmi:
@@ -351,8 +351,9 @@ class TestEstimateLmi:
         lvrs = [0.70, 0.80, 0.85, 0.90, 0.95, 1.00]
         lmi_amounts = [estimate_lmi(loan, lvr, False) for lvr in lvrs]
         for i in range(1, len(lmi_amounts)):
-            assert lmi_amounts[i] >= lmi_amounts[i - 1], \
-                f"LMI at {lvrs[i]} ({lmi_amounts[i]}) < LMI at {lvrs[i-1]} ({lmi_amounts[i-1]})"
+            assert lmi_amounts[i] >= lmi_amounts[i - 1], (
+                f"LMI at {lvrs[i]} ({lmi_amounts[i]}) < LMI at {lvrs[i - 1]} ({lmi_amounts[i - 1]})"
+            )
 
     def test_lmi_scales_linearly_with_loan(self):
         """Doubling the loan amount should double the LMI."""
@@ -418,7 +419,6 @@ class TestFlatFees:
 
     def test_loan_establishment_fee(self):
         assert calculate_loan_establishment_fee() == DEFAULT_LOAN_ESTABLISHMENT_FEE
-
 
 
 class TestCalculateLvr:
@@ -527,8 +527,7 @@ class TestCalculateRentalIncome:
     def test_income_increases_with_year(self):
         """Rental income should grow year-over-year when growth > 0."""
         for yr in range(0, 9):
-            assert calculate_rental_income(yr + 1, 500, 2, 0.03) > \
-                   calculate_rental_income(yr, 500, 2, 0.03)
+            assert calculate_rental_income(yr + 1, 500, 2, 0.03) > calculate_rental_income(yr, 500, 2, 0.03)
 
 
 class TestCompoundAnnualCost:
@@ -563,14 +562,12 @@ class TestCouncilRates:
         assert calculate_council_rates(0, 1_800, 0.025) == pytest.approx(1_800)
 
     def test_year_4(self):
-        assert calculate_council_rates(4, 1_800, 0.025) == \
-               pytest.approx(compound_annual_cost(4, 1_800, 0.025))
+        assert calculate_council_rates(4, 1_800, 0.025) == pytest.approx(compound_annual_cost(4, 1_800, 0.025))
 
     def test_matches_compound(self):
         """Should always equal compound_annual_cost for same inputs."""
         for yr in range(10):
-            assert calculate_council_rates(yr, 2_000, 0.03) == \
-                   pytest.approx(compound_annual_cost(yr, 2_000, 0.03))
+            assert calculate_council_rates(yr, 2_000, 0.03) == pytest.approx(compound_annual_cost(yr, 2_000, 0.03))
 
 
 class TestWaterRates:
@@ -580,13 +577,11 @@ class TestWaterRates:
         assert calculate_water_rates(0, 1_200, 0.025) == pytest.approx(1_200)
 
     def test_year_4(self):
-        assert calculate_water_rates(4, 1_200, 0.025) == \
-               pytest.approx(compound_annual_cost(4, 1_200, 0.025))
+        assert calculate_water_rates(4, 1_200, 0.025) == pytest.approx(compound_annual_cost(4, 1_200, 0.025))
 
     def test_matches_compound(self):
         for yr in range(10):
-            assert calculate_water_rates(yr, 1_200, 0.03) == \
-                   pytest.approx(compound_annual_cost(yr, 1_200, 0.03))
+            assert calculate_water_rates(yr, 1_200, 0.03) == pytest.approx(compound_annual_cost(yr, 1_200, 0.03))
 
 
 class TestBuildingInsurance:
@@ -596,13 +591,11 @@ class TestBuildingInsurance:
         assert calculate_building_insurance(0, 1_500, 0.025) == pytest.approx(1_500)
 
     def test_year_4(self):
-        assert calculate_building_insurance(4, 1_500, 0.025) == \
-               pytest.approx(compound_annual_cost(4, 1_500, 0.025))
+        assert calculate_building_insurance(4, 1_500, 0.025) == pytest.approx(compound_annual_cost(4, 1_500, 0.025))
 
     def test_matches_compound(self):
         for yr in range(10):
-            assert calculate_building_insurance(yr, 1_500, 0.03) == \
-                   pytest.approx(compound_annual_cost(yr, 1_500, 0.03))
+            assert calculate_building_insurance(yr, 1_500, 0.03) == pytest.approx(compound_annual_cost(yr, 1_500, 0.03))
 
 
 class TestStrataFees:
@@ -612,8 +605,7 @@ class TestStrataFees:
         assert calculate_strata_fees(0, 3_000, 0.025) == pytest.approx(3_000)
 
     def test_year_4(self):
-        assert calculate_strata_fees(4, 3_000, 0.025) == \
-               pytest.approx(compound_annual_cost(4, 3_000, 0.025))
+        assert calculate_strata_fees(4, 3_000, 0.025) == pytest.approx(compound_annual_cost(4, 3_000, 0.025))
 
     def test_zero_strata(self):
         """No strata = 0 every year."""
@@ -621,8 +613,7 @@ class TestStrataFees:
 
     def test_matches_compound(self):
         for yr in range(10):
-            assert calculate_strata_fees(yr, 3_000, 0.03) == \
-                   pytest.approx(compound_annual_cost(yr, 3_000, 0.03))
+            assert calculate_strata_fees(yr, 3_000, 0.03) == pytest.approx(compound_annual_cost(yr, 3_000, 0.03))
 
 
 class TestLandlordInsurance:
@@ -632,8 +623,9 @@ class TestLandlordInsurance:
         assert calculate_landlord_insurance(0, 1_000, 0.025, True) == pytest.approx(1_000)
 
     def test_investment_year_4(self):
-        assert calculate_landlord_insurance(4, 1_000, 0.025, True) == \
-               pytest.approx(compound_annual_cost(4, 1_000, 0.025))
+        assert calculate_landlord_insurance(4, 1_000, 0.025, True) == pytest.approx(
+            compound_annual_cost(4, 1_000, 0.025)
+        )
 
     def test_ppor_returns_zero(self):
         """PPOR should always return 0 regardless of inputs."""
@@ -643,8 +635,9 @@ class TestLandlordInsurance:
 
     def test_investment_grows_over_time(self):
         for yr in range(0, 9):
-            assert calculate_landlord_insurance(yr + 1, 1_000, 0.025, True) > \
-                   calculate_landlord_insurance(yr, 1_000, 0.025, True)
+            assert calculate_landlord_insurance(yr + 1, 1_000, 0.025, True) > calculate_landlord_insurance(
+                yr, 1_000, 0.025, True
+            )
 
     def test_zero_base_investment(self):
         assert calculate_landlord_insurance(4, 0.0, 0.025, True) == 0.0
@@ -674,14 +667,14 @@ class TestMaintenanceCost:
 
     def test_no_property_growth(self):
         """Without growth, maintenance stays flat."""
-        assert calculate_maintenance_cost(0, 500_000, 0.01, 0.0) == \
-               calculate_maintenance_cost(9, 500_000, 0.01, 0.0)
+        assert calculate_maintenance_cost(0, 500_000, 0.01, 0.0) == calculate_maintenance_cost(9, 500_000, 0.01, 0.0)
 
     def test_increases_with_property_growth(self):
         """Maintenance should grow as property appreciates."""
         for yr in range(0, 9):
-            assert calculate_maintenance_cost(yr + 1, 500_000, 0.01, 0.05) > \
-                   calculate_maintenance_cost(yr, 500_000, 0.01, 0.05)
+            assert calculate_maintenance_cost(yr + 1, 500_000, 0.01, 0.05) > calculate_maintenance_cost(
+                yr, 500_000, 0.01, 0.05
+            )
 
     def test_scales_with_rate(self):
         """Higher maintenance rate = higher cost."""
@@ -704,8 +697,7 @@ class TestManagementFee:
     def test_investment_year_4(self):
         """Should equal rental_income(year 4) * management_rate."""
         rental = calculate_rental_income(4, 500, 2, 0.03)
-        assert calculate_management_fee(4, 500, 2, 0.08, 0.03, True) == \
-               pytest.approx(rental * 0.08)
+        assert calculate_management_fee(4, 500, 2, 0.08, 0.03, True) == pytest.approx(rental * 0.08)
 
     def test_ppor_returns_zero(self):
         """PPOR should always return 0."""
@@ -724,8 +716,9 @@ class TestManagementFee:
 
     def test_investment_grows_over_time(self):
         for yr in range(0, 9):
-            assert calculate_management_fee(yr + 1, 500, 2, 0.08, 0.03, True) > \
-                   calculate_management_fee(yr, 500, 2, 0.08, 0.03, True)
+            assert calculate_management_fee(yr + 1, 500, 2, 0.08, 0.03, True) > calculate_management_fee(
+                yr, 500, 2, 0.08, 0.03, True
+            )
 
     def test_scales_with_management_rate(self):
         low = calculate_management_fee(4, 500, 2, 0.05, 0.03, True)

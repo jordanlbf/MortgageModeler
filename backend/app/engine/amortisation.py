@@ -12,14 +12,13 @@ Builds incrementally:
 5. Rate changes mid-loan (recalculates repayment on remaining balance/term)
 """
 
-
-from app.models.loan import RepaymentFrequency, RateChange
-from app.models.amortisation import ScheduleRow, AmortisationSchedule
-
+from app.models.amortisation import AmortisationSchedule, ScheduleRow
+from app.models.loan import RateChange, RepaymentFrequency
 
 # ──────────────────────────────────────────────
 # Core calculations
 # ──────────────────────────────────────────────
+
 
 def effective_periodic_rate(annual_rate: float, frequency: RepaymentFrequency) -> float:
     """
@@ -148,6 +147,7 @@ def calculate_io_repayment(
 # Amortisation schedule
 # ──────────────────────────────────────────────
 
+
 def generate_schedule(
     principal: float,
     annual_rate: float,
@@ -239,17 +239,19 @@ def generate_schedule(
 
         total_interest += interest
 
-        rows.append(ScheduleRow(
-            period=period,
-            opening_balance=balance + principal_component + extra,
-            interest=interest,
-            principal_paid=principal_component,
-            extra_paid=extra,
-            closing_balance=balance,
-            annual_rate=current_rate,
-            scheduled_repayment=scheduled,
-            offset_balance=current_offset,
-        ))
+        rows.append(
+            ScheduleRow(
+                period=period,
+                opening_balance=balance + principal_component + extra,
+                interest=interest,
+                principal_paid=principal_component,
+                extra_paid=extra,
+                closing_balance=balance,
+                annual_rate=current_rate,
+                scheduled_repayment=scheduled,
+                offset_balance=current_offset,
+            )
+        )
 
     return AmortisationSchedule(
         rows=rows,
