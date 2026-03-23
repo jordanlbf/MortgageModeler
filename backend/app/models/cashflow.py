@@ -26,6 +26,7 @@ class CashFlowYear:
         mortgage_interest: Interest portion of mortgage payments
         mortgage_principal: Principal portion of mortgage payments
         property_costs: Ongoing property costs for the year
+        offset_contributions: Cash added to offset account this year
         rent_paid: Annual rent where the investor lives (0 for PPOR)
         rental_income: Annual rental income received (0 for PPOR)
         tax_saving: Tax benefit from deductions (0 for PPOR, negative if positively geared)
@@ -48,6 +49,7 @@ class CashFlowYear:
     mortgage_interest: float
     mortgage_principal: float
     property_costs: float
+    offset_contributions: float
     rent_paid: float
     rental_income: float
     tax_saving: float

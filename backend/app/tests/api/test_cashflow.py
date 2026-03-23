@@ -137,6 +137,7 @@ class TestPporEndpointStructure:
             "mortgage_interest",
             "mortgage_principal",
             "property_costs",
+            "offset_contributions",
             "rent_paid",
             "rental_income",
             "tax_saving",

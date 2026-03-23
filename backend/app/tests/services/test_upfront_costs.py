@@ -32,7 +32,8 @@ def _make_loan(deposit=100_000, borrowing_costs=None) -> LoanConfig:
         deposit=deposit,
         annual_rate=0.06,
         loan_term_years=30,
-        borrowing_costs=borrowing_costs or BorrowingCosts(),
+        borrowing_costs=borrowing_costs
+        or BorrowingCosts(lmi=0.0, mortgage_registration_fee=0.0, loan_establishment_fee=0.0),
     )
 
 
@@ -80,7 +81,7 @@ class TestAutoEstimation:
 
     def test_lmi_auto_estimated_high_lvr(self):
         """90% LVR should auto-estimate LMI > 0."""
-        result = _build(loan=_make_loan(deposit=50_000))
+        result = _build(loan=_make_loan(deposit=50_000, borrowing_costs=BorrowingCosts()))
         assert result.borrowing_costs.lmi is not None
         assert result.borrowing_costs.lmi > 0
 
@@ -90,12 +91,12 @@ class TestAutoEstimation:
         assert result.borrowing_costs.lmi == 0.0
 
     def test_mortgage_registration_auto_estimated(self):
-        result = _build()
+        result = _build(loan=_make_loan(borrowing_costs=BorrowingCosts()))
         assert result.borrowing_costs.mortgage_registration_fee is not None
         assert result.borrowing_costs.mortgage_registration_fee > 0
 
     def test_loan_establishment_auto_estimated(self):
-        result = _build()
+        result = _build(loan=_make_loan(borrowing_costs=BorrowingCosts()))
         assert result.borrowing_costs.loan_establishment_fee is not None
         assert result.borrowing_costs.loan_establishment_fee > 0
 
@@ -188,18 +189,18 @@ class TestLmi:
     def test_lmi_90_lvr(self):
         result = _build(
             property=_make_property(is_ppor=True),
-            loan=_make_loan(deposit=50_000),
+            loan=_make_loan(deposit=50_000, borrowing_costs=BorrowingCosts()),
         )
         assert result.borrowing_costs.lmi == pytest.approx(450_000 * 0.02, abs=1)
 
     def test_lmi_investment_multiplier(self):
         ppor = _build(
             property=_make_property(is_ppor=True),
-            loan=_make_loan(deposit=50_000),
+            loan=_make_loan(deposit=50_000, borrowing_costs=BorrowingCosts()),
         )
         inv = _build(
             property=_make_property(is_ppor=False),
-            loan=_make_loan(deposit=50_000),
+            loan=_make_loan(deposit=50_000, borrowing_costs=BorrowingCosts()),
         )
         assert inv.borrowing_costs.lmi == pytest.approx(ppor.borrowing_costs.lmi * 1.15, abs=1)
 
@@ -231,7 +232,7 @@ class TestTotals:
     def test_investment_higher_total(self):
         inv = _build(
             property=_make_property(is_ppor=False),
-            loan=_make_loan(deposit=50_000),
+            loan=_make_loan(deposit=50_000, borrowing_costs=BorrowingCosts()),
         )
         ppor = _build(
             property=_make_property(is_ppor=True),

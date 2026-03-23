@@ -9,7 +9,7 @@ from datetime import date
 
 from fastapi import APIRouter
 
-from app.models.loan import LoanConfig
+from app.models.loan import BorrowingCosts, LoanConfig
 from app.models.mortgage import Mortgage
 from app.models.property import OngoingCostsConfig, Property, RentalConfig
 from app.schemas.ongoing_costs import OngoingCostResponse, OngoingPropertyCostRequest, YearByYearCostResponse
@@ -54,7 +54,12 @@ def get_ongoing_costs(req: OngoingPropertyCostRequest) -> OngoingCostResponse:
         annual_cost_growth_rate=req.annual_cost_growth_rate,
     )
 
-    loan_config = LoanConfig(deposit=0, annual_rate=0.0, loan_term_years=30)
+    loan_config = LoanConfig(
+        deposit=0,
+        annual_rate=0.0,
+        loan_term_years=30,
+        borrowing_costs=BorrowingCosts(lmi=0.0, mortgage_registration_fee=0.0, loan_establishment_fee=0.0),
+    )
     mortgage = Mortgage(
         property=property,
         loan=build_loan(property, loan_config),

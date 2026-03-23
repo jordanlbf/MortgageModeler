@@ -9,7 +9,7 @@ from datetime import date
 
 from fastapi import APIRouter
 
-from app.models.loan import LoanConfig, RateChange
+from app.models.loan import BorrowingCosts, LoanConfig, RateChange
 from app.models.mortgage import Mortgage
 from app.models.property import Property
 from app.schemas.amortisation import (
@@ -51,6 +51,7 @@ def get_schedule(req: ScheduleRequest) -> ScheduleResponse:
         offset_contribution=req.offset_contribution,
         extra_repayment=req.extra_repayment,
         rate_changes=[RateChange(from_period=rc.from_period, annual_rate=rc.annual_rate) for rc in req.rate_changes],
+        borrowing_costs=BorrowingCosts(lmi=0.0, mortgage_registration_fee=0.0, loan_establishment_fee=0.0),
     )
     mortgage = Mortgage(
         property=property,

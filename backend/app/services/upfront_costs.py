@@ -20,6 +20,42 @@ from app.models.mortgage import Mortgage
 from app.models.property import PurchaseCosts, UpfrontCosts
 
 
+def resolve_borrowing_costs(
+    loan_amount: float,
+    lvr: float,
+    is_investment: bool,
+    borrowing_costs: BorrowingCosts,
+) -> BorrowingCosts:
+    """Resolve None borrowing cost fields to auto-estimated values.
+
+    For each field:
+    - None -> auto-estimated from engine functions
+    - 0.0 -> explicitly zero (e.g. LMI waived)
+    - Any value -> user override, preserved as-is
+
+    Args:
+        loan_amount: Loan principal for LMI estimation.
+        lvr: Loan-to-value ratio for LMI estimation.
+        is_investment: Whether the property is an investment (affects LMI).
+        borrowing_costs: Unresolved borrowing costs (may contain None fields).
+
+    Returns:
+        Fully resolved BorrowingCosts with no None values.
+    """
+    return BorrowingCosts(
+        lmi=borrowing_costs.lmi if borrowing_costs.lmi is not None else estimate_lmi(loan_amount, lvr, is_investment),
+        mortgage_registration_fee=borrowing_costs.mortgage_registration_fee
+        if borrowing_costs.mortgage_registration_fee is not None
+        else calculate_mortgage_registration_fee(),
+        loan_establishment_fee=borrowing_costs.loan_establishment_fee
+        if borrowing_costs.loan_establishment_fee is not None
+        else calculate_loan_establishment_fee(),
+        capitalise_lmi=borrowing_costs.capitalise_lmi,
+        capitalise_mortgage_registration_fee=borrowing_costs.capitalise_mortgage_registration_fee,
+        capitalise_loan_establishment_fee=borrowing_costs.capitalise_loan_establishment_fee,
+    )
+
+
 def build_upfront_cost_estimate(mortgage: Mortgage) -> UpfrontCosts:
     """
     Resolve and estimate all upfront costs for a property purchase.
@@ -56,16 +92,7 @@ def build_upfront_cost_estimate(mortgage: Mortgage) -> UpfrontCosts:
     )
 
     # Resolve borrowing costs — None means auto-estimate
-    src_bc = mortgage.loan.config.borrowing_costs
-    borrowing_costs = BorrowingCosts(
-        lmi=src_bc.lmi if src_bc.lmi is not None else estimate_lmi(loan_amount, lvr, is_investment),
-        mortgage_registration_fee=src_bc.mortgage_registration_fee
-        if src_bc.mortgage_registration_fee is not None
-        else calculate_mortgage_registration_fee(),
-        loan_establishment_fee=src_bc.loan_establishment_fee
-        if src_bc.loan_establishment_fee is not None
-        else calculate_loan_establishment_fee(),
-    )
+    borrowing_costs = resolve_borrowing_costs(loan_amount, lvr, is_investment, mortgage.loan.config.borrowing_costs)
 
     return UpfrontCosts(
         purchase_costs=purchase_costs,
