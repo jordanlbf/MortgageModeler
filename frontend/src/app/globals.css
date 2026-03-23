@@ -22,23 +22,23 @@
 }
 
 
-/* ── Coral Reef theme ── */
-[data-theme="coral"] {
-  --color-background: #081620;
-  --color-foreground: #e8f4f4;
-  --color-accent: #00c8b4;
-  --color-accent-contrast: #081620;
-  --color-muted: #b0d0d0;
-  --color-subtle: #6a9a9a;
+/* ── Midnight Indigo theme ── */
+[data-theme="indigo"] {
+  --color-background: #0a0e1a;
+  --color-foreground: #e2e8f4;
+  --color-accent: #6366f1;
+  --color-accent-contrast: #fff;
+  --color-muted: #c4ccdf;
+  --color-subtle: #7c8db5;
 
-  --color-card: rgba(7,26,40,0.88);
-  --color-card-elevated: rgba(9,30,46,0.90);
-  --color-control: rgba(0,200,180,0.08);
-  --color-slider-thumb: #0e2a3c;
+  --color-card: rgba(16,22,42,0.55);
+  --color-card-elevated: rgba(20,26,50,0.65);
+  --color-control: rgba(99,102,241,0.08);
+  --color-slider-thumb: #0e1228;
 
-  --color-border: rgba(0,200,180,0.18);
-  --color-accent-border: rgba(0,200,180,0.40);
-  --color-scrollbar: rgba(0,200,180,0.15);
+  --color-border: rgba(99,102,241,0.12);
+  --color-accent-border: rgba(99,102,241,0.35);
+  --color-scrollbar: rgba(99,102,241,0.15);
 }
 
 body {
@@ -46,9 +46,9 @@ body {
   color: var(--color-foreground);
 }
 
-/* Coral reef logo gradient */
-[data-theme="coral"] .header-logo {
-  background: linear-gradient(135deg, #ff6e61, #00c8b4) !important;
+/* Midnight Indigo logo */
+[data-theme="indigo"] .header-logo {
+  background: #6366f1 !important;
   color: #fff !important;
 }
 
@@ -75,14 +75,14 @@ body {
               inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-/* Coral reef — glass card adjustments */
-[data-theme="coral"] .glass-card {
+/* Midnight Indigo — glass card adjustments */
+[data-theme="indigo"] .glass-card {
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.30),
-              0 0 0 0.5px rgba(0, 200, 180, 0.06),
-              inset 0 1px 0 rgba(0, 200, 180, 0.04);
+              0 0 0 0.5px rgba(99, 102, 241, 0.06),
+              inset 0 1px 0 rgba(99, 102, 241, 0.04);
 }
-[data-theme="coral"] .glass-card:hover {
+[data-theme="indigo"] .glass-card:hover {
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45),
-              0 0 0 0.5px rgba(0, 200, 180, 0.10),
-              inset 0 1px 0 rgba(0, 200, 180, 0.06);
+              0 0 0 0.5px rgba(99, 102, 241, 0.10),
+              inset 0 1px 0 rgba(99, 102, 241, 0.06);
 }
