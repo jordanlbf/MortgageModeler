@@ -130,6 +130,7 @@ def map_year_response(year) -> CashFlowYearResponse:
         mortgage_interest=year.mortgage_interest,
         mortgage_principal=year.mortgage_principal,
         property_costs=year.property_costs,
+        offset_contributions=year.offset_contributions,
         rent_paid=year.rent_paid,
         rental_income=year.rental_income,
         tax_saving=year.tax_saving,

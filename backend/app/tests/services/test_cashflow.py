@@ -81,7 +81,8 @@ def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30, borrowing_
         deposit=deposit,
         annual_rate=annual_rate,
         loan_term_years=loan_term_years,
-        borrowing_costs=borrowing_costs or BorrowingCosts(),
+        borrowing_costs=borrowing_costs
+        or BorrowingCosts(lmi=0.0, mortgage_registration_fee=0.0, loan_establishment_fee=0.0),
     )
 
 
@@ -196,6 +197,7 @@ def _make_cashflow_year(
     mortgage_interest=24_000,
     mortgage_principal=6_000,
     property_costs=10_000,
+    offset_contributions=0,
     rent_paid=0,
     rental_income=0,
     tax_saving=0,
@@ -205,7 +207,7 @@ def _make_cashflow_year(
     previous_cumulative=0,
 ) -> CashFlowYear:
     total_inflows = net_income + rental_income + tax_saving
-    total_outflows = mortgage_repayment + property_costs + rent_paid
+    total_outflows = mortgage_repayment + property_costs + offset_contributions + rent_paid
     net_position = total_inflows - total_outflows
     cumulative_position = previous_cumulative + net_position
     equity = property_value - loan_balance
@@ -217,6 +219,7 @@ def _make_cashflow_year(
         mortgage_interest=mortgage_interest,
         mortgage_principal=mortgage_principal,
         property_costs=property_costs,
+        offset_contributions=offset_contributions,
         rent_paid=rent_paid,
         rental_income=rental_income,
         tax_saving=tax_saving,

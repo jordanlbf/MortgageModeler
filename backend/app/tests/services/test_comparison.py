@@ -73,7 +73,7 @@ def _make_loan(deposit=100_000, annual_rate=0.06, loan_term_years=30) -> LoanCon
         deposit=deposit,
         annual_rate=annual_rate,
         loan_term_years=loan_term_years,
-        borrowing_costs=BorrowingCosts(),
+        borrowing_costs=BorrowingCosts(lmi=0.0, mortgage_registration_fee=0.0, loan_establishment_fee=0.0),
     )
 
 

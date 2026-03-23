@@ -6,7 +6,7 @@ from datetime import date
 
 import pytest
 
-from app.models.loan import LoanConfig
+from app.models.loan import BorrowingCosts, LoanConfig
 from app.models.mortgage import Mortgage
 from app.models.property import OngoingCostsConfig, Property, RentalConfig
 from app.services.amortisation import build_loan
@@ -58,7 +58,12 @@ def _make_ongoing_costs(
 
 def _make_mortgage(property=None, ongoing_costs=None, projection_years=10) -> Mortgage:
     p = property or _make_property()
-    lc = LoanConfig(deposit=0, annual_rate=0.0, loan_term_years=30)
+    lc = LoanConfig(
+        deposit=0,
+        annual_rate=0.0,
+        loan_term_years=30,
+        borrowing_costs=BorrowingCosts(lmi=0.0, mortgage_registration_fee=0.0, loan_establishment_fee=0.0),
+    )
     return Mortgage(
         property=p,
         loan=build_loan(p, lc),

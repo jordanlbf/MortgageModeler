@@ -304,6 +304,7 @@ class CashFlowYearResponse(BaseModel):
         mortgage_interest: Interest portion of mortgage payments
         mortgage_principal: Principal portion of mortgage payments
         property_costs: Ongoing property costs for the year
+        offset_contributions: Cash added to offset account this year
         rent_paid: Annual rent where the investor lives (rentvesting only, 0 for PPOR)
         rental_income: Annual rental income received (rentvesting only, 0 for PPOR)
         tax_saving: Tax benefit from deductions (rentvesting only, 0 for PPOR)
@@ -323,6 +324,7 @@ class CashFlowYearResponse(BaseModel):
     mortgage_interest: float
     mortgage_principal: float
     property_costs: float
+    offset_contributions: float = 0.0
     rent_paid: float = 0.0
     rental_income: float = 0.0
     tax_saving: float = 0.0

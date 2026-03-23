@@ -46,7 +46,8 @@ def _make_loan(
         offset_contribution=offset_contribution,
         extra_repayment=extra_repayment,
         rate_changes=rate_changes or [],
-        borrowing_costs=borrowing_costs or BorrowingCosts(),
+        borrowing_costs=borrowing_costs
+        or BorrowingCosts(lmi=0.0, mortgage_registration_fee=0.0, loan_establishment_fee=0.0),
     )
 
 
@@ -378,10 +379,12 @@ class TestBuildLoan:
         loan = build_loan(_make_property(), _make_loan())
         assert isinstance(loan, Loan)
 
-    def test_config_preserved(self):
+    def test_config_rate_and_term_preserved(self):
         lc = _make_loan(deposit=200_000, annual_rate=0.05)
         loan = build_loan(_make_property(), lc)
-        assert loan.config is lc
+        assert loan.config.deposit == lc.deposit
+        assert loan.config.annual_rate == lc.annual_rate
+        assert loan.config.loan_term_years == lc.loan_term_years
 
     def test_schedule_generated(self):
         loan = build_loan(_make_property(), _make_loan())
@@ -397,7 +400,7 @@ class TestBuildLoan:
         assert loan.schedule.rows[0].opening_balance == pytest.approx(400_000)
 
     def test_capitalised_costs_added_to_principal(self):
-        bc = BorrowingCosts(lmi=20_000)
+        bc = BorrowingCosts(lmi=20_000, mortgage_registration_fee=0.0, loan_establishment_fee=0.0)
         loan = build_loan(
             _make_property(purchase_price=500_000),
             _make_loan(deposit=100_000, borrowing_costs=bc),

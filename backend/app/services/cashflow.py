@@ -158,9 +158,17 @@ def _calculate_cashflow_year(
     rent_paid = rentvest.weekly_rent_paid * 52 * (1 + rentvest.annual_rent_paid_growth) ** year if rentvest else 0.0
     tax_saving = tax_deduction_detail.tax_saving if tax_deduction_detail else 0.0
 
+    # Offset contributions are cash outflows (money moved into offset account)
+    if len(schedule_rows) >= 2:
+        offset_contributions = schedule_rows[-1].offset_balance - schedule_rows[0].offset_balance
+    elif len(schedule_rows) == 1:
+        offset_contributions = 0.0
+    else:
+        offset_contributions = 0.0
+
     # Assemble totals
     total_inflows = net_income + rental_income + tax_saving
-    total_outflows = mortgage_repayment + property_costs + rent_paid
+    total_outflows = mortgage_repayment + property_costs + rent_paid + offset_contributions
     net_position = total_inflows - total_outflows
     cumulative_position = previous_cumulative + net_position
     equity = property_value - loan_balance
@@ -173,6 +181,7 @@ def _calculate_cashflow_year(
         mortgage_interest=mortgage_interest,
         mortgage_principal=mortgage_principal,
         property_costs=property_costs,
+        offset_contributions=offset_contributions,
         rent_paid=rent_paid,
         rental_income=rental_income,
         tax_saving=tax_saving,
