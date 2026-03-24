@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import { t } from "@/lib/theme";
 import { useAmortisationState } from "@/hooks/useAmortisationState";
 import { useFillHeight } from "@/hooks/useFillHeight";
@@ -237,9 +238,13 @@ export default function AmortisationView() {
           }}
         >
           <div className="overflow-hidden min-h-0">
-            <div className="py-3 text-center text-[10px] text-muted/15">
-              MortgageModeler v0.1 · Daily compounding · AUD
-            </div>
+            <Link
+              href="/"
+              className="group flex items-center justify-center gap-2 py-3 text-[12px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
+            >
+              <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
+              Return to Dashboard
+            </Link>
           </div>
         </div>
       </div>

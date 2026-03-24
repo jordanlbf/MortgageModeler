@@ -21,23 +21,15 @@ export default function TaxView() {
 
   return (
     <>
-      <Header>
-        <Link
-          href="/"
-          className="text-[10px] font-semibold uppercase tracking-[0.1em] no-underline transition-colors"
-          style={{ color: "rgba(148,163,184,0.4)" }}
-        >
-          &larr; Back
-        </Link>
-      </Header>
+      <Header />
 
       <div
-        className="grid px-9 py-4 overflow-hidden"
+        className="grid px-9 py-3 overflow-hidden"
         style={{
           height: "calc(100vh - 49px)",
           minHeight: 580,
-          gridTemplateRows: "auto 1fr 1.5fr",
-          gap: 10,
+          gridTemplateRows: "auto 1fr 1.5fr auto",
+          gap: 8,
         }}
       >
         {error && (
@@ -96,7 +88,7 @@ export default function TaxView() {
           </div>
 
           {/* ROW 3 — Donut (2/3) + KPI stack (1/3) */}
-          <div className="flex min-h-0" style={{ gap: 10 }}>
+          <div className="flex min-h-0" style={{ gap: 8 }}>
             <div className="flex-[2] min-h-0 min-w-0">
               <DonutChart
                 data={data}
@@ -110,6 +102,15 @@ export default function TaxView() {
               <TaxKpiCards data={data} gross={gross} />
             </div>
           </div>
+
+          {/* ROW 4 — Footer link */}
+          <Link
+            href="/"
+            className="group flex items-center justify-center gap-2 py-3 text-[12px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
+          >
+            <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
+            Return to Dashboard
+          </Link>
         </ErrorBoundary>
       </div>
     </>
