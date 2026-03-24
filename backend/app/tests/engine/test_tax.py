@@ -8,6 +8,7 @@ from app.engine.amortisation import effective_periodic_rate
 from app.engine.tax import (
     calculate_hecs_repayment,
     calculate_income_tax,
+    calculate_marginal_rate,
     calculate_medicare_levy,
     calculate_medicare_levy_surcharge,
     calculate_tax_saving,
@@ -216,6 +217,55 @@ class TestHecsTax:
         assert calculate_hecs_repayment(80_000, 1_000) == pytest.approx(1_000, abs=0.1)  # 1st <> 2nd Thresholds
         assert calculate_hecs_repayment(150_000, 6_000) == pytest.approx(6_000, abs=0.1)  # 2nd <> 3rd Thresholds
         assert calculate_hecs_repayment(800_000, 20_000) == pytest.approx(20_000, abs=0.1)  # Above max threshold
+
+
+class TestMarginalRate:
+    """Tests for marginal income tax rate lookup."""
+
+    def test_zero_income(self):
+        assert calculate_marginal_rate(0) == 0.0
+
+    def test_negative_income(self):
+        assert calculate_marginal_rate(-10_000) == 0.0
+
+    def test_within_tax_free_threshold(self):
+        assert calculate_marginal_rate(10_000) == 0.0
+
+    def test_at_tax_free_threshold(self):
+        assert calculate_marginal_rate(18_200) == 0.0
+
+    def test_just_above_tax_free(self):
+        assert calculate_marginal_rate(18_201) == 0.16
+
+    def test_second_bracket(self):
+        assert calculate_marginal_rate(30_000) == 0.16
+
+    def test_at_second_threshold(self):
+        assert calculate_marginal_rate(45_000) == 0.16
+
+    def test_just_above_second_threshold(self):
+        assert calculate_marginal_rate(45_001) == 0.30
+
+    def test_third_bracket(self):
+        assert calculate_marginal_rate(100_000) == 0.30
+
+    def test_at_third_threshold(self):
+        assert calculate_marginal_rate(135_000) == 0.30
+
+    def test_just_above_third_threshold(self):
+        assert calculate_marginal_rate(135_001) == 0.37
+
+    def test_fourth_bracket(self):
+        assert calculate_marginal_rate(160_000) == 0.37
+
+    def test_at_fourth_threshold(self):
+        assert calculate_marginal_rate(190_000) == 0.37
+
+    def test_just_above_fourth_threshold(self):
+        assert calculate_marginal_rate(190_001) == 0.45
+
+    def test_top_bracket(self):
+        assert calculate_marginal_rate(500_000) == 0.45
 
 
 class TestTotalTax:

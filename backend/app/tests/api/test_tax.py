@@ -49,6 +49,7 @@ class TestTaxBreakdownEndpoint:
             "hecs_repayment",
             "net_income",
             "total_tax",
+            "marginal_rate",
         }
         assert set(data.keys()) == expected_fields
 

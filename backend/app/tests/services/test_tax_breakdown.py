@@ -90,6 +90,36 @@ class TestZeroIncome:
         assert result.hecs_repayment == 0
         assert result.total_tax == 0
         assert result.net_income == 0
+        assert result.marginal_rate == 0.0
+
+
+# ──────────────────────────────────────────────
+# Marginal rate in breakdown
+# ──────────────────────────────────────────────
+
+
+class TestMarginalRateInBreakdown:
+    """Tests for marginal_rate field in service response."""
+
+    def test_marginal_rate_at_100k(self):
+        result = build_tax_breakdown(_make_profile(100_000))
+        assert result.marginal_rate == 0.30
+
+    def test_marginal_rate_at_200k(self):
+        result = build_tax_breakdown(_make_profile(200_000))
+        assert result.marginal_rate == 0.45
+
+    def test_marginal_rate_below_tax_free(self):
+        result = build_tax_breakdown(_make_profile(15_000))
+        assert result.marginal_rate == 0.0
+
+    def test_marginal_rate_at_50k(self):
+        result = build_tax_breakdown(_make_profile(50_000))
+        assert result.marginal_rate == 0.30
+
+    def test_marginal_rate_at_150k(self):
+        result = build_tax_breakdown(_make_profile(150_000))
+        assert result.marginal_rate == 0.37
 
 
 # ──────────────────────────────────────────────

@@ -47,6 +47,7 @@ class TaxBreakdownResponse(BaseModel):
         hecs_repayment: Annual HECS/HELP repayment
         total_tax: Sum of all tax components
         net_income: Taxable income minus total tax
+        marginal_rate: Top marginal income tax rate as decimal
     """
 
     taxable_income: float
@@ -56,3 +57,4 @@ class TaxBreakdownResponse(BaseModel):
     hecs_repayment: float
     total_tax: float
     net_income: float
+    marginal_rate: float
