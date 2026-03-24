@@ -10,8 +10,6 @@ interface TaxKpiCardsProps {
   gross: number;
 }
 
-const CARD_STYLE = "relative flex flex-col items-center py-2.5 text-center";
-
 const CARDS = [
   { label: "Total Income", color: "#94a3b8", field: "gross" as const },
   { label: "Total Tax", color: "#f87171", field: "total_tax" as const },
@@ -26,11 +24,11 @@ export default function TaxKpiCards({ data, gross }: TaxKpiCardsProps) {
   const values = { gross: animGross, total_tax: animTax, net_income: animNet };
 
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="flex h-full flex-col" style={{ gap: 10 }}>
       {CARDS.map((card) => (
         <GlassCard
           key={card.field}
-          className={CARD_STYLE}
+          className="flex flex-1 min-h-0 flex-col items-center justify-center text-center"
           style={{
             borderTopWidth: 3,
             borderTopColor: mix(card.color, 35),

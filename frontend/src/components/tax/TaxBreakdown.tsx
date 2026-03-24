@@ -7,6 +7,7 @@ interface TaxBreakdownProps {
   data: TaxBreakdownResponse | null;
   gross: number;
   effRate: number;
+  marginalRate: number;
   monthly: number;
 }
 
@@ -57,7 +58,7 @@ function ProgressBars({ data, gross }: { data: TaxBreakdownResponse | null; gros
 
 // ── Donut chart ──────────────────────────────
 
-function DonutChart({ data, gross, effRate, monthly }: TaxBreakdownProps) {
+function DonutChart({ data, gross, effRate, marginalRate, monthly }: TaxBreakdownProps) {
   const segments = DONUT_SEGMENTS
     .map(({ key, label, color }) => ({
       label,
@@ -80,13 +81,19 @@ function DonutChart({ data, gross, effRate, monthly }: TaxBreakdownProps) {
   });
 
   return (
-    <GlassCard className="flex h-full items-center justify-center gap-10 px-8 py-5" style={CARD_BORDER}>
-      {/* SVG donut */}
-      <div className="flex shrink items-center justify-center" style={{ aspectRatio: "1/1", height: "100%", maxHeight: 240 }}>
+    <GlassCard className="flex h-full items-center justify-center gap-8 px-8 py-5" style={CARD_BORDER}>
+      {/* Left — Effective rate */}
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted/40">Effective</span>
+        <span className="text-[28px] font-light tabular-nums text-foreground">
+          {data ? `${effRate.toFixed(1)}%` : "—"}
+        </span>
+      </div>
+
+      {/* Center — SVG donut */}
+      <div className="flex shrink items-center justify-center" style={{ aspectRatio: "1/1", height: "100%", maxHeight: 220 }}>
         <svg viewBox="0 0 160 160" className="h-full w-full">
-          {/* Background ring */}
           <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="18" />
-          {/* Segments */}
           {arcs.map((arc) => (
             <circle
               key={arc.label}
@@ -102,17 +109,15 @@ function DonutChart({ data, gross, effRate, monthly }: TaxBreakdownProps) {
               style={{ transformOrigin: "center" }}
             />
           ))}
-          {/* Center text */}
-          <text x="80" y="72" textAnchor="middle" className="fill-muted/40 text-[6px] font-semibold uppercase tracking-[0.14em]">
-            EFFECTIVE RATE
-          </text>
-          <text x="80" y="88" textAnchor="middle" className="fill-foreground text-[16px] font-light tabular-nums">
-            {data ? `${effRate.toFixed(1)}%` : "—"}
-          </text>
-          <text x="80" y="100" textAnchor="middle" style={{ fill: mix("var(--color-accent)", 40) }} className="text-[6px] tabular-nums">
-            {data ? `${formatCurrencyShort(monthly)}/mo` : ""}
-          </text>
         </svg>
+      </div>
+
+      {/* Right — Marginal rate */}
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted/40">Marginal</span>
+        <span className="text-[28px] font-light tabular-nums text-foreground">
+          {data ? `${(marginalRate * 100).toFixed(0)}%` : "—"}
+        </span>
       </div>
 
       {/* Legend */}

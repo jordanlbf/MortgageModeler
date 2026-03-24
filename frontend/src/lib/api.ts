@@ -75,6 +75,7 @@ export interface TaxBreakdownResponse {
   hecs_repayment: number;
   total_tax: number;
   net_income: number;
+  marginal_rate: number;
 }
 
 export async function fetchTaxBreakdown(

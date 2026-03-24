@@ -36,7 +36,7 @@ export default function TaxView() {
         style={{
           height: "calc(100vh - 49px)",
           minHeight: 580,
-          gridTemplateRows: "auto auto 1fr 2fr",
+          gridTemplateRows: "auto 1fr 1.5fr",
           gap: 10,
         }}
       >
@@ -90,17 +90,25 @@ export default function TaxView() {
             </div>
           </GlassCard>
 
-          {/* ROW 2 — KPI cards */}
-          <TaxKpiCards data={data} gross={gross} />
-
-          {/* ROW 3 — Progress bars (fills 1fr) */}
+          {/* ROW 2 — Progress bars */}
           <div className="min-h-0">
             <ProgressBars data={data} gross={gross} />
           </div>
 
-          {/* ROW 4 — Donut chart (fills 2fr) */}
-          <div className="min-h-0">
-            <DonutChart data={data} gross={gross} effRate={derived.effRate} monthly={derived.monthly} />
+          {/* ROW 3 — Donut (2/3) + KPI stack (1/3) */}
+          <div className="flex min-h-0" style={{ gap: 10 }}>
+            <div className="flex-[2] min-h-0 min-w-0">
+              <DonutChart
+                data={data}
+                gross={gross}
+                effRate={derived.effRate}
+                marginalRate={data?.marginal_rate ?? 0}
+                monthly={derived.monthly}
+              />
+            </div>
+            <div className="flex-1 min-h-0 min-w-0">
+              <TaxKpiCards data={data} gross={gross} />
+            </div>
           </div>
         </ErrorBoundary>
       </div>
