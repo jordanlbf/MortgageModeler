@@ -24,12 +24,12 @@ export default function TaxView() {
       <Header />
 
       <div
-        className="grid px-9 py-3 overflow-hidden"
+        className="grid px-12 py-4 overflow-hidden"
         style={{
           height: "calc(100vh - 49px)",
           minHeight: 580,
-          gridTemplateRows: "auto 1fr 1.5fr auto",
-          gap: 8,
+          gridTemplateRows: "auto 1fr 1.8fr auto",
+          gap: 12,
         }}
       >
         {error && (
@@ -39,7 +39,7 @@ export default function TaxView() {
         <ErrorBoundary>
           {/* ROW 1 — Input strip */}
           <GlassCard className="flex items-stretch" style={CARD_BORDER}>
-            <div className="flex-[2] px-5 py-3">
+            <div className="flex-[2] px-6 py-3.5">
               <Slider
                 label="Gross income"
                 value={gross}
@@ -55,7 +55,7 @@ export default function TaxView() {
 
             {hecsOn && (
               <div
-                className="flex-1 px-5 py-3"
+                className="flex-1 px-6 py-3.5"
                 style={{ borderLeft: `1px solid ${t.border.default}` }}
               >
                 <Slider
@@ -74,7 +74,7 @@ export default function TaxView() {
             )}
 
             <div
-              className="flex shrink-0 flex-col justify-center gap-3 px-5 py-3"
+              className="flex shrink-0 flex-col justify-center gap-3.5 px-6 py-3.5"
               style={{ borderLeft: `1px solid ${t.border.default}` }}
             >
               <Toggle label="HECS debt" checked={hecsOn} onChange={setters.setHecsOn} />
@@ -88,7 +88,7 @@ export default function TaxView() {
           </div>
 
           {/* ROW 3 — Donut (2/3) + KPI stack (1/3) */}
-          <div className="flex min-h-0" style={{ gap: 8 }}>
+          <div className="flex min-h-0" style={{ gap: 12 }}>
             <div className="flex-[2] min-h-0 min-w-0">
               <DonutChart
                 data={data}
@@ -106,7 +106,7 @@ export default function TaxView() {
           {/* ROW 4 — Footer link */}
           <Link
             href="/"
-            className="group flex items-center justify-center gap-2 py-3 text-[12px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
+            className="group flex items-center justify-center gap-2 py-4 text-[13px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
           >
             <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
             Return to Dashboard

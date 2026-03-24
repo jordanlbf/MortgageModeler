@@ -24,7 +24,7 @@ export default function TaxKpiCards({ data, gross }: TaxKpiCardsProps) {
   const values = { gross: animGross, total_tax: animTax, net_income: animNet };
 
   return (
-    <div className="flex h-full flex-col" style={{ gap: 10 }}>
+    <div className="flex h-full flex-col" style={{ gap: 12 }}>
       {CARDS.map((card) => (
         <GlassCard
           key={card.field}
@@ -36,13 +36,13 @@ export default function TaxKpiCards({ data, gross }: TaxKpiCardsProps) {
           }}
         >
           <div
-            className="text-[11px] font-medium uppercase tracking-[0.14em]"
+            className="text-[12px] font-medium uppercase tracking-[0.14em]"
             style={{ color: mix(card.color, 50) }}
           >
             {card.label}
           </div>
-          <div className="mt-1.5 text-[28px] font-light leading-none tabular-nums tracking-[-0.02em] text-foreground">
-            {data ? formatCurrencyShort(values[card.field]) : <Skeleton width="140px" height="28px" />}
+          <div className="mt-2 text-[30px] font-light leading-none tabular-nums tracking-[-0.02em] text-foreground">
+            {data ? formatCurrencyShort(values[card.field]) : <Skeleton width="140px" height="30px" />}
           </div>
         </GlassCard>
       ))}

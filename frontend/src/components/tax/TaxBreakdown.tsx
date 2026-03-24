@@ -32,21 +32,21 @@ const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.accentBorder };
 
 function ProgressBars({ data, gross }: { data: TaxBreakdownResponse | null; gross: number }) {
   return (
-    <GlassCard className="flex h-full min-h-0 flex-col justify-evenly overflow-hidden px-6" style={CARD_BORDER}>
+    <GlassCard className="flex h-full min-h-0 flex-col justify-evenly overflow-hidden px-7" style={CARD_BORDER}>
       {DEDUCTIONS.map(({ key, label, color }) => {
         const value = data ? (data[key] as number) : 0;
         const pct = gross > 0 ? Math.min((value / gross) * 100 * 3, 100) : 0;
         return (
-          <div key={key} className="flex items-center gap-4">
-            <span className="h-[8px] w-[8px] shrink-0 rounded-full" style={{ background: color }} />
-            <span className="w-[140px] shrink-0 text-[13px] font-medium text-muted/50">{label}</span>
-            <div className="relative flex-1 h-[8px] rounded-full" style={{ background: "rgba(255,255,255,0.04)" }}>
+          <div key={key} className="flex items-center gap-5">
+            <span className="h-[9px] w-[9px] shrink-0 rounded-full" style={{ background: color }} />
+            <span className="w-[155px] shrink-0 text-[13px] font-medium text-muted/50">{label}</span>
+            <div className="relative flex-1 h-[10px] rounded-full" style={{ background: "rgba(255,255,255,0.04)" }}>
               <div
                 className="absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${pct}%`, background: color }}
               />
             </div>
-            <span className="w-[90px] shrink-0 text-right text-[14px] tabular-nums text-foreground/70">
+            <span className="w-[95px] shrink-0 text-right text-[15px] tabular-nums text-foreground/70">
               {data ? formatCurrencyShort(value) : "—"}
             </span>
           </div>
@@ -81,19 +81,19 @@ function DonutChart({ data, gross, effRate, marginalRate, monthly }: TaxBreakdow
   });
 
   return (
-    <GlassCard className="flex h-full items-center justify-center gap-8 px-8 py-5" style={CARD_BORDER}>
+    <GlassCard className="flex h-full items-center justify-center gap-10 px-10 py-6" style={CARD_BORDER}>
       {/* Left — Effective rate */}
       <div className="flex flex-col items-center gap-1">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted/40">Effective</span>
-        <span className="text-[28px] font-light tabular-nums text-foreground">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted/40">Effective</span>
+        <span className="text-[32px] font-light tabular-nums text-foreground">
           {data ? `${effRate.toFixed(1)}%` : "—"}
         </span>
       </div>
 
       {/* Center — SVG donut */}
-      <div className="flex shrink items-center justify-center" style={{ aspectRatio: "1/1", height: "100%", maxHeight: 220 }}>
+      <div className="flex shrink items-center justify-center" style={{ aspectRatio: "1/1", height: "100%", maxHeight: 240 }}>
         <svg viewBox="0 0 160 160" className="h-full w-full">
-          <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="18" />
+          <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="20" />
           {arcs.map((arc) => (
             <circle
               key={arc.label}
@@ -102,7 +102,7 @@ function DonutChart({ data, gross, effRate, marginalRate, monthly }: TaxBreakdow
               r="60"
               fill="none"
               stroke={arc.color}
-              strokeWidth="18"
+              strokeWidth="20"
               strokeDasharray={`${arc.dash} ${circumference - arc.dash}`}
               strokeDashoffset={arc.offset}
               className="transition-all duration-500 ease-out"
@@ -114,20 +114,20 @@ function DonutChart({ data, gross, effRate, marginalRate, monthly }: TaxBreakdow
 
       {/* Right — Marginal rate */}
       <div className="flex flex-col items-center gap-1">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted/40">Marginal</span>
-        <span className="text-[28px] font-light tabular-nums text-foreground">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted/40">Marginal</span>
+        <span className="text-[32px] font-light tabular-nums text-foreground">
           {data ? `${(marginalRate * 100).toFixed(0)}%` : "—"}
         </span>
       </div>
 
       {/* Legend */}
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-3">
         {segments.map((s) => (
           <div key={s.label} className="flex items-center gap-3">
-            <span className="h-[10px] w-[10px] shrink-0 rounded-[3px]" style={{ background: s.color }} />
-            <span className="w-[110px] text-[12px] text-muted/50">{s.label}</span>
-            <span className="text-[13px] font-medium tabular-nums text-foreground">{formatCurrencyShort(s.value)}</span>
-            <span className="text-[11px] tabular-nums text-muted/30">
+            <span className="h-[11px] w-[11px] shrink-0 rounded-[3px]" style={{ background: s.color }} />
+            <span className="w-[120px] text-[13px] text-muted/50">{s.label}</span>
+            <span className="text-[14px] font-medium tabular-nums text-foreground">{formatCurrencyShort(s.value)}</span>
+            <span className="text-[12px] tabular-nums text-muted/30">
               {gross > 0 ? `${((s.value / gross) * 100).toFixed(1)}%` : "—"}
             </span>
           </div>
