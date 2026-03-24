@@ -483,21 +483,21 @@
 
 [data-theme="indigo"] .home-card--active {
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 60%),
-    rgba(120,128,175,0.22);
-  border-color: rgba(99,102,241,0.20);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.10) 0%, transparent 60%),
+    rgba(80,88,135,0.18);
+  border-color: rgba(99,102,241,0.18);
 }
 
 [data-theme="indigo"] .home-card--active:hover {
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.16) 0%, transparent 60%),
-    rgba(130,138,185,0.28);
-  border-color: rgba(99,102,241,0.35);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.14) 0%, transparent 60%),
+    rgba(90,98,145,0.24);
+  border-color: rgba(99,102,241,0.30);
 }
 
 [data-theme="indigo"] .home-card--inactive {
-  background: rgba(100,108,155,0.15);
-  border-color: rgba(99,102,241,0.10);
+  background: rgba(70,78,125,0.12);
+  border-color: rgba(99,102,241,0.08);
 }
 
 [data-theme="indigo"] .home-card-desc {

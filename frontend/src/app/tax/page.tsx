@@ -1,7 +1,5 @@
+import TaxView from "@/components/tax/TaxView";
+
 export default function TaxPage() {
-  return (
-    <div className="min-h-screen flex items-center justify-center text-muted/30">
-      Tax Calculator — coming next
-    </div>
-  );
+  return <TaxView />;
 }
