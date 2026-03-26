@@ -1,0 +1,12 @@
+name = "audit_readme"
+short_name = "readme"
+description = "Compares README.md against actual codebase structure"
+file_patterns = [
+    "README.md",
+    "backend/**/*.py",
+    "backend/pyproject.toml",
+    "backend/requirements.txt",
+    "frontend/**/*.ts",
+    "frontend/**/*.tsx",
+    "frontend/package.json",
+]
