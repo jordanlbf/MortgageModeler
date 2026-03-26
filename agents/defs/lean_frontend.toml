@@ -1,0 +1,8 @@
+name = "lean_frontend"
+short_name = "frontend"
+description = "Flags thick components, suggests hook extractions"
+file_patterns = [
+    "frontend/src/components/**/*.tsx",
+    "frontend/src/hooks/**/*.ts",
+    "frontend/src/lib/**/*.ts",
+]

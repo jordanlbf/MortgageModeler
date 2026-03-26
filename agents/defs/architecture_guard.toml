@@ -1,0 +1,9 @@
+name = "architecture_guard"
+short_name = "architecture"
+description = "Checks for layer violations across the stack"
+file_patterns = [
+    "backend/**/*.py",
+    "frontend/src/components/**/*.tsx",
+    "frontend/src/hooks/**/*.ts",
+    "frontend/src/lib/**/*.ts",
+]
