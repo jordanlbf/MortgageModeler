@@ -3,8 +3,6 @@ import { t, mix } from "@/lib/theme";
 import GlassCard from "@/components/ui/GlassCard";
 
 interface TaxDonutBreakdownProps {
-  assessableIncome?: number;
-  totalDeductions?: number;
   taxableIncome?: number;
   repaymentIncome?: number;
   mlsIncome?: number;
@@ -37,7 +35,6 @@ const DUMMY = {
 };
 
 export default function TaxDonutBreakdown({
-  assessableIncome = 0, totalDeductions = 0,
   taxableIncome = 0, repaymentIncome = 0, mlsIncome = 0,
 }: TaxDonutBreakdownProps) {
   const segments = DONUT_SEGMENTS.map(({ key, label, color }) => ({
@@ -110,7 +107,7 @@ export default function TaxDonutBreakdown({
         </div>
 
         {/* Centre — Donut */}
-        <svg viewBox="0 0 160 160" style={{ width: "100%", height: "100%", maxWidth: 240, maxHeight: 240, flexShrink: 0 }}>
+        <svg viewBox="0 0 160 160" style={{ width: "100%", height: "100%", maxWidth: 280, maxHeight: 280, flexShrink: 0 }}>
           <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="20" />
           {arcs.map((arc) => (
             <circle
@@ -147,24 +144,6 @@ export default function TaxDonutBreakdown({
 
       {/* Breakdown rows */}
       <div className="flex w-full flex-col pt-4">
-        {/* Assessable Income */}
-        <div className="flex items-center justify-between py-2">
-          <span className="text-[15px] font-medium text-foreground">Assessable Income</span>
-          <span className="text-[16px] font-medium tabular-nums text-foreground">{formatCurrencyShort(assessableIncome)}</span>
-        </div>
-        {/* Less: Deductions */}
-        <div className="flex items-center justify-between py-2" style={{ opacity: totalDeductions === 0 ? 0.35 : 1 }}>
-          <span className="text-[15px] text-muted/50">Less: Allowable Deductions</span>
-          <span className="text-[16px] font-medium tabular-nums" style={{ color: "rgba(248,113,113,0.8)" }}>-{formatCurrencyShort(totalDeductions)}</span>
-        </div>
-        {/* Taxable Income */}
-        <div className="my-2 h-px" style={{ background: t.border.default }} />
-        <div className="flex items-center justify-between py-2">
-          <span className="text-[15px] font-semibold text-foreground">Taxable Income</span>
-          <span className="text-[16px] font-semibold tabular-nums text-foreground">{formatCurrencyShort(taxableIncome)}</span>
-        </div>
-        <div className="my-2 h-px" style={{ background: t.border.default }} />
-
         {/* Tax components */}
         <div className="flex flex-col gap-3 py-2">
           {taxSegments.map((s) => (

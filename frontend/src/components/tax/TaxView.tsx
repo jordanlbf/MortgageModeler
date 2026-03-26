@@ -30,8 +30,6 @@ export default function TaxView() {
             {/* ── RIGHT COLUMN ── */}
             <div className="flex flex-col min-h-0">
               <TaxDonutBreakdown
-                assessableIncome={advanced.incomeMeasures.assessableIncome}
-                totalDeductions={advanced.incomeMeasures.totalDeductions}
                 taxableIncome={advanced.incomeMeasures.taxableIncome}
                 repaymentIncome={advanced.incomeMeasures.repaymentIncome}
                 mlsIncome={advanced.incomeMeasures.mlsIncome}
