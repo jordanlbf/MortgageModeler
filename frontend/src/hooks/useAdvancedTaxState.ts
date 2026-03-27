@@ -8,10 +8,10 @@ export interface AdvancedTaxInputs {
   interest: number;
   dividend: number;
   franking: number;
-  capitalGain: number;
+  capitalGainShort: number;
+  capitalGainLong: number;
   rentalDeductions: number;
   workDeductions: number;
-  cgtDiscount: boolean;
   salSac: number;
   rfb: number;
   hecsBal: number;
@@ -24,10 +24,10 @@ export interface AdvancedTaxSetters {
   setInterest: (v: number) => void;
   setDividend: (v: number) => void;
   setFranking: (v: number) => void;
-  setCapitalGain: (v: number) => void;
+  setCapitalGainShort: (v: number) => void;
+  setCapitalGainLong: (v: number) => void;
   setRentalDeductions: (v: number) => void;
   setWorkDeductions: (v: number) => void;
-  setCgtDiscount: (v: boolean) => void;
   setSalSac: (v: number) => void;
   setRfb: (v: number) => void;
   setHecsBal: (v: number) => void;
@@ -55,12 +55,12 @@ export function useAdvancedTaxState(): AdvancedTaxState {
   const [interest, setInterest] = useState(0);
   const [dividend, setDividend] = useState(0);
   const [franking, setFranking] = useState(0);
-  const [capitalGain, setCapitalGain] = useState(0);
+  const [capitalGainShort, setCapitalGainShort] = useState(0);
+  const [capitalGainLong, setCapitalGainLong] = useState(0);
 
   // ── Deductions ───────────────────────────────
   const [rentalDeductions, setRentalDeductions] = useState(0);
   const [workDeductions, setWorkDeductions] = useState(0);
-  const [cgtDiscount, setCgtDiscount] = useState(true);
 
   // ── Adjustments ──────────────────────────────
   const [salSac, setSalSac] = useState(0);
@@ -70,7 +70,8 @@ export function useAdvancedTaxState(): AdvancedTaxState {
 
   // ── Derived income measures ──────────────────
   const incomeMeasures = useMemo<IncomeMeasures>(() => {
-    const netCapitalGain = cgtDiscount ? capitalGain * 0.5 : capitalGain;
+    // TODO: move CGT split to backend when schema is updated
+    const netCapitalGain = capitalGainShort + capitalGainLong * 0.5;
     const assessable = salary + rental + interest + dividend + franking + netCapitalGain;
     const totalDeductions = rentalDeductions + workDeductions;
     const taxableIncome = Math.max(0, assessable - totalDeductions);
@@ -78,11 +79,11 @@ export function useAdvancedTaxState(): AdvancedTaxState {
     const repaymentIncome = taxableIncome + rfb + salSac + netInvestmentLoss;
     const mlsIncome = repaymentIncome;
     return { assessableIncome: assessable, totalDeductions, taxableIncome, repaymentIncome, mlsIncome };
-  }, [salary, rental, interest, dividend, franking, capitalGain, cgtDiscount, rentalDeductions, workDeductions, rfb, salSac]);
+  }, [salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, rfb, salSac]);
 
   return {
-    inputs: { salary, rental, interest, dividend, franking, capitalGain, rentalDeductions, workDeductions, cgtDiscount, salSac, rfb, hecsBal, phi },
-    setters: { setSalary, setRental, setInterest, setDividend, setFranking, setCapitalGain, setRentalDeductions, setWorkDeductions, setCgtDiscount, setSalSac, setRfb, setHecsBal, setPhi },
+    inputs: { salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi },
+    setters: { setSalary, setRental, setInterest, setDividend, setFranking, setCapitalGainShort, setCapitalGainLong, setRentalDeductions, setWorkDeductions, setSalSac, setRfb, setHecsBal, setPhi },
     incomeMeasures,
   };
 }

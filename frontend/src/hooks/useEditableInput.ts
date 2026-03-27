@@ -27,7 +27,7 @@ export function useEditableInput({ display, onCommit, parse }: UseEditableInputO
     setEditing(false);
     const stripped = draft.replace(/[^0-9.\-]/g, "");
     const parsed = Number(stripped);
-    if (!isNaN(parsed) && stripped.length > 0 && parsed > 0) {
+    if (!isNaN(parsed) && stripped.length > 0 && parsed >= 0) {
       onCommit(parsed);
     }
   }, [draft, onCommit, editing]);

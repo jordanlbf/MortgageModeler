@@ -21,7 +21,7 @@ export default function TaxView() {
         </h1>
 
         <ErrorBoundary>
-          <div className="flex-1 min-h-0 grid gap-3 content-start" style={{ gridTemplateColumns: "1fr 1fr" }}>
+          <div className="min-h-0 grid gap-3" style={{ gridTemplateColumns: "1fr 1fr" }}>
             {/* ── LEFT COLUMN ── */}
             <div className="flex flex-col min-h-0">
               <AdvancedColumn inputs={advanced.inputs} setters={advanced.setters} />
