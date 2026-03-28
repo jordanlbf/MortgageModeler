@@ -149,6 +149,8 @@ function EditableField({
   max,
   onChange,
   color,
+  touched,
+  onTouch,
 }: {
   label: string;
   value: number;
@@ -156,61 +158,59 @@ function EditableField({
   max: number;
   onChange: (v: number) => void;
   color: string;
+  touched: boolean;
+  onTouch: () => void;
 }) {
   const clampedCommit = useCallback(
-    (parsed: number) => onChange(Math.min(max, Math.max(min, parsed))),
-    [onChange, min, max],
+    (parsed: number) => { onTouch(); onChange(Math.min(max, Math.max(min, parsed))); },
+    [onChange, onTouch, min, max],
   );
   const parse = useCallback((d: string) => parseCurrency(d), []);
   const { editing, draft, inputRef, startEditing, commit, handleKeyDown, handleChange } =
     useEditableInput({ display: formatCurrencyShort(value), onCommit: clampedCommit, parse });
 
-  const isEmpty = value === 0 && !editing;
+  const completed = touched || value > 0;
 
   return (
     <div
-      className="group flex items-center justify-between rounded-md px-3 py-[10px] transition-all duration-150"
-      style={{
-        borderBottom: "1px solid rgba(255,255,255,0.04)",
-        background: editing ? mix(color, 4) : undefined,
-      }}
+      className="flex items-center gap-3 py-[10px] pl-2"
+      style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
     >
+      {/* Status dot */}
+      <div
+        className="h-2 w-2 shrink-0 rounded-full transition-colors duration-200"
+        style={{ background: completed ? color : "rgba(255,255,255,0.08)" }}
+      />
+
+      {/* Label */}
       <span
-        className="text-[16px] transition-opacity duration-150"
-        style={{ color: isEmpty ? "rgba(244,244,245,0.28)" : "rgba(244,244,245,1)" }}
+        className="flex-1 text-[14px] leading-snug"
+        style={{ color: completed ? "rgba(244,244,245,0.60)" : "rgba(244,244,245,0.30)" }}
       >
         {label}
       </span>
-      <div className="flex items-center gap-1">
-        {!isEmpty && !editing && (
-          <span className="text-[16px]" style={{ color: "rgba(244,244,245,1)" }}>$</span>
-        )}
-        <input
-          ref={inputRef}
-          type="text"
-          inputMode={editing ? "decimal" : "none"}
-          value={editing ? draft : (isEmpty ? "—" : formatCurrencyShort(value).replace("$", ""))}
-          readOnly={!editing}
-          onChange={handleChange}
-          onBlur={commit}
-          onKeyDown={handleKeyDown}
-          onClick={!editing ? startEditing : undefined}
-          onFocus={startEditing}
-          className={`w-[100px] bg-transparent text-right text-[18px] font-semibold tabular-nums outline-none transition-all duration-150 ${
-            editing
-              ? "text-foreground cursor-text"
-              : isEmpty
-                ? "text-muted/20 cursor-text"
-                : "text-foreground cursor-text group-hover:brightness-125"
-          }`}
-          style={{
-            caretColor: color,
-            boxShadow: editing ? `0 0 0 1px ${mix(color, 40)}` : undefined,
-            borderRadius: editing ? 4 : undefined,
-            padding: editing ? "2px 6px" : undefined,
-          }}
-        />
-      </div>
+
+      {/* Input */}
+      <input
+        ref={inputRef}
+        type="text"
+        inputMode="decimal"
+        value={editing ? draft : (completed ? formatCurrencyShort(value) : "—")}
+        readOnly={!editing}
+        onChange={handleChange}
+        onBlur={commit}
+        onKeyDown={handleKeyDown}
+        onFocus={startEditing}
+        onClick={startEditing}
+        className="w-[90px] rounded-md bg-transparent px-2 py-1 text-right text-[15px] font-semibold tabular-nums outline-none transition-all duration-150"
+        style={{
+          color: completed ? "rgba(244,244,245,0.90)" : "rgba(244,244,245,0.25)",
+          background: editing ? "rgba(255,255,255,0.06)" : "transparent",
+          boxShadow: editing ? `0 0 0 1px ${color}` : "none",
+          caretColor: color,
+          cursor: "text",
+        }}
+      />
     </div>
   );
 }
@@ -224,8 +224,13 @@ interface AdvancedColumnProps {
 
 export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps) {
   const [activeTab, setActiveTab] = useState(0);
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(() => new Set());
   const section = SECTIONS[activeTab];
   const aggregates = calculateTabAggregates(inputs);
+
+  const markTouched = useCallback((field: string) => {
+    setTouchedFields((prev) => { const next = new Set(prev); next.add(field); return next; });
+  }, []);
 
   return (
     <GlassCard className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
@@ -273,6 +278,35 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
           })}
         </div>
 
+        {/* Progress dots below tab strip */}
+        <div className="-mt-4 mb-6 flex gap-[3px] px-[3px]">
+          {SECTIONS.map((s, i) => {
+            const agg = aggregates[i];
+            return (
+              <div key={s.id} className="flex flex-1 items-center justify-center gap-[5px]" style={{ height: 14 }}>
+                {agg.filledCount === agg.itemCount && agg.filledCount > 0 ? (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ opacity: 0.9 }}>
+                    <circle cx="7" cy="7" r="6.5" stroke={s.color} strokeWidth="1" fill="none" opacity={0.35} />
+                    <path d="M4 7.2 L6.2 9.4 L10 4.8" stroke={s.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  </svg>
+                ) : (
+                  Array.from({ length: agg.itemCount }, (_, j) => (
+                    <div
+                      key={j}
+                      className="h-[6px] w-[6px] rounded-full transition-colors duration-200"
+                      style={{
+                        background: j < agg.filledCount
+                          ? s.color
+                          : "rgba(255,255,255,0.10)",
+                      }}
+                    />
+                  ))
+                )}
+              </div>
+            );
+          })}
+        </div>
+
         {/* Grouped fields */}
         <div className="flex flex-col gap-1">
           {section.groups.map((group, groupIdx) => (
@@ -285,7 +319,7 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
               }}
             >
               <div
-                className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em]"
+                className="mb-1 px-3 text-[12px] font-semibold uppercase tracking-[0.14em]"
                 style={{ color: section.color }}
               >
                 {group.label}
@@ -300,6 +334,8 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
                     max={f.max}
                     onChange={setters[f.setter] as (v: number) => void}
                     color={section.color}
+                    touched={touchedFields.has(f.field)}
+                    onTouch={() => markTouched(f.field)}
                   />
                 ) : (
                   <div key={f.field} className="px-3 py-[10px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>

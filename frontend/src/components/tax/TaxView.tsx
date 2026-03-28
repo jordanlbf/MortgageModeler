@@ -45,7 +45,7 @@ interface KpiHeroStripProps {
 
 function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
   return (
-    <div className="flex items-start justify-center gap-12 py-7 pb-2">
+    <div className="flex items-start justify-center gap-16 py-7 pb-2">
         {/* Gross Income */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
