@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { t, mix } from "@/lib/theme";
 import { formatCurrencyShort } from "@/lib/formatters";
 import { parseCurrency } from "@/lib/constants";
@@ -94,7 +94,7 @@ function EditableField({
 
   return (
     <div
-      className="flex items-center justify-between py-[7px]"
+      className="flex items-center justify-between py-[10px]"
       style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
     >
       <span className="text-[15px] text-muted/50">{label}</span>
@@ -125,50 +125,68 @@ interface AdvancedColumnProps {
   setters: AdvancedTaxSetters;
 }
 
+const TAB_LABELS = SECTIONS.map((s) => s.title.replace(/\s*\(.*\)/, ""));
+
 export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps) {
+  const [activeTab, setActiveTab] = useState(0);
+  const section = SECTIONS[activeTab];
+
   return (
     <GlassCard className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar overflow-y-auto px-8 py-6">
-        <span className="mb-6 block text-center text-[22px] font-semibold uppercase tracking-[0.14em]" style={{ color: mix(t.accent, 50) }}>
+        <span className="mb-8 block text-center text-[20px] font-semibold uppercase tracking-[0.14em]" style={{ color: mix(t.accent, 50) }}>
           Income &amp; Deductions
         </span>
 
-        <div className="flex flex-col gap-5">
-          {SECTIONS.map((section) => (
-            <div
-              key={section.title}
-              className="pl-[14px]"
-              style={{ borderLeft: `3px solid ${section.color}` }}
+        {/* Tab bar */}
+        <div className="mb-8 flex gap-[2px] rounded-[10px] p-[3px]" style={{ background: "rgba(255,255,255,0.03)" }}>
+          {TAB_LABELS.map((label, i) => (
+            <button
+              key={label}
+              onClick={() => setActiveTab(i)}
+              className="flex-1 rounded-[8px] py-2 px-4 text-[13px] font-semibold tracking-[0.04em] transition-all duration-200"
+              style={{
+                background: i === activeTab ? "rgba(45,212,191,0.12)" : "transparent",
+                color: i === activeTab ? t.accent : "rgba(244,244,245,0.50)",
+              }}
             >
-              <div
-                className="mb-2 text-[13px] font-bold uppercase"
-                style={{ letterSpacing: "0.16em", color: section.color }}
-              >
-                {section.title}
-              </div>
-              {section.fields.map((f) =>
-                f.type === "currency" ? (
-                  <EditableField
-                    key={f.field}
-                    label={f.label}
-                    value={inputs[f.field] as number}
-                    min={f.min}
-                    max={f.max}
-                    onChange={setters[f.setter] as (v: number) => void}
-                  />
-                ) : (
-                  <div key={f.field} className="py-[7px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <Toggle
-                      label={f.label}
-                      checked={inputs[f.field] as boolean}
-                      onChange={setters[f.setter] as (v: boolean) => void}
-                      reverse
-                    />
-                  </div>
-                ),
-              )}
-            </div>
+              {label}
+            </button>
           ))}
+        </div>
+
+        {/* Active section */}
+        <div
+          className="pl-[14px]"
+          style={{ borderLeft: `3px solid ${section.color}` }}
+        >
+          <div
+            className="mb-2 text-[13px] font-bold uppercase"
+            style={{ letterSpacing: "0.16em", color: section.color }}
+          >
+            {section.title}
+          </div>
+          {section.fields.map((f) =>
+            f.type === "currency" ? (
+              <EditableField
+                key={f.field}
+                label={f.label}
+                value={inputs[f.field] as number}
+                min={f.min}
+                max={f.max}
+                onChange={setters[f.setter] as (v: number) => void}
+              />
+            ) : (
+              <div key={f.field} className="py-[7px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <Toggle
+                  label={f.label}
+                  checked={inputs[f.field] as boolean}
+                  onChange={setters[f.setter] as (v: boolean) => void}
+                  reverse
+                />
+              </div>
+            ),
+          )}
         </div>
       </div>
     </GlassCard>
