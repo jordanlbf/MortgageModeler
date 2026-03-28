@@ -27,12 +27,13 @@ const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.accentBorder, backgrou
 
 const GAP = 0.008; // ~0.8% of circumference per gap
 
-function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick }: {
+function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick, activeSegment }: {
   segments: { key: string; label: string; color: string; value: number }[];
   totalTax: number;
   hoveredKey: string | null;
   onHover: (key: string | null) => void;
   onClick: (key: string) => void;
+  activeSegment: { label: string; value: number; pct: string; color: string; isDeduction: boolean } | null;
 }) {
   const visible = segments.filter((s) => s.value > 0);
   const total = segments.reduce((sum, s) => sum + s.value, 0);
@@ -81,12 +82,17 @@ function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick }: {
           />
         );
       })}
-      <text x="80" y="71" textAnchor="middle" className="fill-muted/40 text-[9px] font-semibold uppercase tracking-[0.14em]">
-        Total tax
+      <text x="80" y={activeSegment ? 68 : 71} textAnchor="middle" className="text-[9px] font-medium uppercase tracking-widest" style={{ transition: "all 0.2s" }} fill={activeSegment ? activeSegment.color : "rgba(161,161,170,0.4)"}>
+        {activeSegment ? activeSegment.label : "Total Tax"}
       </text>
-      <text x="80" y="93" textAnchor="middle" fill="#f87171" className="text-[16px] font-light tabular-nums">
-        {`-${formatCurrencyShort(totalTax)}`}
+      <text x="80" y={activeSegment ? 88 : 93} textAnchor="middle" className="text-[16px] font-bold tabular-nums" style={{ transition: "all 0.2s" }} fill={activeSegment ? activeSegment.color : "#f87171"}>
+        {activeSegment ? `${activeSegment.isDeduction ? "-" : ""}${formatCurrencyShort(activeSegment.value)}` : `-${formatCurrencyShort(totalTax)}`}
       </text>
+      {activeSegment && (
+        <text x="80" y="103" textAnchor="middle" className="text-[8px] font-medium tabular-nums" fill={activeSegment.color} opacity="0.6">
+          {activeSegment.pct}%
+        </text>
+      )}
     </svg>
   );
 }
@@ -229,6 +235,11 @@ export default function TaxComposition({
   const taxSegments = allSegments.filter((s) => s.key !== "net_income");
   const gross = taxableIncome > 0 ? taxableIncome : totalTax + netIncome;
 
+  const activeSegData = activeKey ? allSegments.find((s) => s.key === activeKey) : null;
+  const activeSegment = activeSegData && total > 0
+    ? { label: activeSegData.label, value: activeSegData.value, pct: ((activeSegData.value / total) * 100).toFixed(1), color: activeSegData.color, isDeduction: activeSegData.key !== "net_income" }
+    : null;
+
   return (
     <GlassCard className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar flex flex-col items-center gap-8 overflow-y-auto px-7 py-5">
@@ -264,13 +275,12 @@ export default function TaxComposition({
 
           {/* Donut — centre */}
           <div className="mx-6 shrink-0">
-            <DonutChart segments={allSegments} totalTax={totalTax} hoveredKey={activeKey} onHover={handleHover} onClick={handleClick} />
+            <DonutChart segments={allSegments} totalTax={totalTax} hoveredKey={activeKey} onHover={handleHover} onClick={handleClick} activeSegment={activeSegment} />
           </div>
 
           {/* Legend — right */}
           <div className="flex flex-1 flex-col gap-2">
             {allSegments.filter((s) => s.value > 0).map((s) => {
-              const pct = total > 0 ? ((s.value / total) * 100).toFixed(1) : "0.0";
               const isHovered = activeKey === s.key;
               const isDimmed = activeKey != null && !isHovered;
               return (
@@ -287,12 +297,7 @@ export default function TaxComposition({
                   onClick={() => handleClick(s.key)}
                 >
                   <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                  <div className="flex flex-col">
-                    <span className="text-[12px] font-medium text-muted/60">{s.label}</span>
-                    <span className="text-[11px] tabular-nums text-muted/40">
-                      {formatCurrencyShort(s.value)} · {pct}%
-                    </span>
-                  </div>
+                  <span className="text-[12px] font-medium text-muted/60">{s.label}</span>
                 </div>
               );
             })}
