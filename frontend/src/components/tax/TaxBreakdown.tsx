@@ -6,11 +6,11 @@ import GlassCard from "@/components/ui/GlassCard";
 // ── Shared constants ─────────────────────────────
 
 const DONUT_SEGMENTS = [
-  { key: "income_tax", label: "Income Tax", color: "#f87171" },
-  { key: "medicare_levy", label: "Medicare", color: "#60a5fa" },
-  { key: "medicare_levy_surcharge", label: "MLS", color: "#fb923c" },
-  { key: "hecs_repayment", label: "HECS Repayment", color: "#a78bfa" },
-  { key: "net_income", label: "Net Income", color: "#2dd4bf" },
+  { key: "income_tax", label: "Income Tax", legendLabel: "Income Tax", color: "#f87171" },
+  { key: "medicare_levy", label: "Medicare", legendLabel: "Medicare", color: "#60a5fa" },
+  { key: "medicare_levy_surcharge", label: "MLS", legendLabel: "Medicare Levy Surcharge", color: "#fb923c" },
+  { key: "hecs_repayment", label: "HECS Repayment", legendLabel: "HECS Repayment", color: "#a78bfa" },
+  { key: "net_income", label: "Net Income", legendLabel: "Net Income", color: "#2dd4bf" },
 ] as const;
 
 // TODO: replace with API response
@@ -226,8 +226,8 @@ export default function TaxComposition({
     setPinnedKey((prev) => (prev === key ? null : key));
   };
 
-  const allSegments = DONUT_SEGMENTS.map(({ key, label, color }) => ({
-    key, label, color,
+  const allSegments = DONUT_SEGMENTS.map(({ key, label, legendLabel, color }) => ({
+    key, label, legendLabel, color,
     value: key === "net_income" ? netIncome : (DUMMY[key] ?? 0),
   }));
 
@@ -252,7 +252,7 @@ export default function TaxComposition({
 
         <div className="flex w-full items-center">
           {/* Rate pills — left */}
-          <div className="flex flex-1 flex-col items-end gap-3">
+          <div className="flex flex-1 flex-col items-end gap-5">
             {effectiveRate != null && marginalRate != null && (
               <>
                 <div
@@ -274,7 +274,7 @@ export default function TaxComposition({
           </div>
 
           {/* Donut — centre */}
-          <div className="mx-6 shrink-0">
+          <div className="mx-10 shrink-0">
             <DonutChart segments={allSegments} totalTax={totalTax} hoveredKey={activeKey} onHover={handleHover} onClick={handleClick} activeSegment={activeSegment} />
           </div>
 
@@ -297,7 +297,7 @@ export default function TaxComposition({
                   onClick={() => handleClick(s.key)}
                 >
                   <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                  <span className="text-[12px] font-medium text-muted/60">{s.label}</span>
+                  <span className="text-[16px] font-medium text-muted/60">{s.legendLabel}</span>
                 </div>
               );
             })}
