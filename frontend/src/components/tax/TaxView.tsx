@@ -16,6 +16,25 @@ const DUMMY = {
   marginal_rate: 0.345,
 };
 
+// ── Tax Brackets Divider ────────────────────────
+
+function ProgressiveStepsDivider() {
+  return (
+    <div className="mb-8 flex justify-center">
+      <svg width="120" height="24" viewBox="0 0 120 24" fill="none">
+        <polyline
+          points="0,2 24,2 24,8 48,8 48,14 72,14 72,20 120,20"
+          stroke="var(--color-accent)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </svg>
+    </div>
+  );
+}
+
 // ── KPI Hero Strip ──────────────────────────────
 
 interface KpiHeroStripProps {
@@ -26,45 +45,45 @@ interface KpiHeroStripProps {
 
 function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
   return (
-    <div className="mb-6 flex items-start justify-center gap-12 py-7">
+    <div className="mb-1 flex items-start justify-center gap-12 py-7">
         {/* Gross Income */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-foreground)", 35) }}>
+            <span className="text-[10px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-foreground)", 35) }}>
               Gross Income
             </span>
           </div>
-          <div className="text-[50px] font-semibold tabular-nums leading-none" style={{ color: mix("var(--color-foreground)", 74) }}>
+          <div className="text-[46px] font-semibold tabular-nums leading-none" style={{ color: mix("var(--color-foreground)", 74) }}>
             {formatCurrencyShort(gross)}
           </div>
         </div>
 
         {/* Minus */}
-        <span className="text-[42px] font-light" style={{ color: "rgba(148,163,184,0.35)", marginTop: 30 }}>&minus;</span>
+        <span className="text-[42px] font-light" style={{ color: "rgba(148,163,184,0.35)", marginTop: 26 }}>&minus;</span>
 
         {/* Tax Deducted */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#f87171", 58) }}>
+            <span className="text-[10px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#f87171", 58) }}>
               Tax Deducted
             </span>
           </div>
-          <div className="text-[50px] font-semibold tabular-nums leading-none" style={{ color: "#f87171" }}>
+          <div className="text-[46px] font-semibold tabular-nums leading-none" style={{ color: "#f87171" }}>
             {formatCurrencyShort(totalTax)}
           </div>
         </div>
 
         {/* Equals */}
-        <span className="text-[42px] font-light" style={{ color: "rgba(148,163,184,0.35)", marginTop: 30 }}>=</span>
+        <span className="text-[42px] font-light" style={{ color: "rgba(148,163,184,0.35)", marginTop: 26 }}>=</span>
 
         {/* Net Income */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-accent)", 58) }}>
+            <span className="text-[10px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-accent)", 58) }}>
               Net Income
             </span>
           </div>
-          <div className="text-[50px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-accent)" }}>
+          <div className="text-[46px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-accent)" }}>
             {formatCurrencyShort(netIncome)}
           </div>
         </div>
@@ -85,9 +104,13 @@ export default function TaxView() {
       <Header />
 
       <div className="flex flex-col px-9 py-6 overflow-hidden" style={{ height: "calc(100vh - 49px)" }}>
-        <h1 className="mb-6 text-center text-[2rem] font-semibold tracking-[-0.03em] text-foreground">
-          Income Tax Calculator
-        </h1>
+        <div className="mb-6 flex flex-col items-center gap-1">
+          <h1 className="text-[42px] font-semibold tracking-[-0.04em] text-foreground">
+            Income Tax <span style={{ color: "var(--color-accent)" }}>Calculator</span>
+          </h1>
+        </div>
+
+        <ProgressiveStepsDivider />
 
         <ErrorBoundary>
           <KpiHeroStrip
@@ -96,7 +119,12 @@ export default function TaxView() {
             netIncome={DUMMY.net_income}
           />
 
-          <div className="min-h-0 grid gap-3" style={{ gridTemplateColumns: "1fr 1fr", flex: "0.7" }}>
+          <div
+            className="mx-auto mb-4 h-px w-2/3"
+            style={{ background: `linear-gradient(to right, transparent, ${mix("var(--color-accent)", 30)}, transparent)` }}
+          />
+
+          <div className="grid gap-3" style={{ gridTemplateColumns: "1fr 1fr" }}>
             {/* ── LEFT COLUMN ── */}
             <div className="flex flex-col min-h-0">
               <AdvancedColumn inputs={advanced.inputs} setters={advanced.setters} />
