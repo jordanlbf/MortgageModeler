@@ -22,95 +22,52 @@ interface KpiHeroStripProps {
   gross: number;
   totalTax: number;
   netIncome: number;
-  effectiveRate: number;
-  marginalRate: number;
 }
 
-function KpiHeroStrip({ gross, totalTax, netIncome, effectiveRate, marginalRate }: KpiHeroStripProps) {
+function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
   return (
     <div className="mb-6 flex items-start justify-center gap-12 py-7">
-      {/* Gross Income */}
-      <div className="text-center">
-        <div className="mb-[10px] flex h-5 items-start justify-center">
-          <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-foreground)", 35) }}>
-            Gross Income
-          </span>
+        {/* Gross Income */}
+        <div className="text-center">
+          <div className="mb-[10px] flex h-5 items-start justify-center">
+            <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-foreground)", 35) }}>
+              Gross Income
+            </span>
+          </div>
+          <div className="text-[50px] font-semibold tabular-nums leading-none" style={{ color: mix("var(--color-foreground)", 74) }}>
+            {formatCurrencyShort(gross)}
+          </div>
         </div>
-        <div className="text-[50px] font-semibold tabular-nums leading-none" style={{ color: mix("var(--color-foreground)", 74) }}>
-          {formatCurrencyShort(gross)}
-        </div>
-      </div>
 
-      {/* Minus */}
-      <span className="text-[42px] font-light" style={{ color: "rgba(148,163,184,0.35)", marginTop: 30 }}>&minus;</span>
+        {/* Minus */}
+        <span className="text-[42px] font-light" style={{ color: "rgba(148,163,184,0.35)", marginTop: 30 }}>&minus;</span>
 
-      {/* Tax Deducted */}
-      <div className="text-center">
-        <div className="mb-[10px] flex h-5 items-start justify-center">
-          <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#f87171", 58) }}>
-            Tax Deducted
-          </span>
+        {/* Tax Deducted */}
+        <div className="text-center">
+          <div className="mb-[10px] flex h-5 items-start justify-center">
+            <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#f87171", 58) }}>
+              Tax Deducted
+            </span>
+          </div>
+          <div className="text-[50px] font-semibold tabular-nums leading-none" style={{ color: "#f87171" }}>
+            {formatCurrencyShort(totalTax)}
+          </div>
         </div>
-        <div className="text-[50px] font-semibold tabular-nums leading-none" style={{ color: "#f87171" }}>
-          {formatCurrencyShort(totalTax)}
-        </div>
-      </div>
 
-      {/* Equals */}
-      <span className="text-[42px] font-light" style={{ color: "rgba(148,163,184,0.35)", marginTop: 30 }}>=</span>
+        {/* Equals */}
+        <span className="text-[42px] font-light" style={{ color: "rgba(148,163,184,0.35)", marginTop: 30 }}>=</span>
 
-      {/* Net Income */}
-      <div className="text-center">
-        <div className="mb-[10px] flex h-5 items-start justify-center">
-          <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-accent)", 58) }}>
-            Net Income
-          </span>
+        {/* Net Income */}
+        <div className="text-center">
+          <div className="mb-[10px] flex h-5 items-start justify-center">
+            <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-accent)", 58) }}>
+              Net Income
+            </span>
+          </div>
+          <div className="text-[50px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-accent)" }}>
+            {formatCurrencyShort(netIncome)}
+          </div>
         </div>
-        <div className="text-[50px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-accent)" }}>
-          {formatCurrencyShort(netIncome)}
-        </div>
-      </div>
-
-      {/* Divider */}
-      <div className="h-24 w-px" style={{ background: t.border.default }} />
-
-      {/* Effective Rate */}
-      <div className="text-center">
-        <div className="mb-[14px] flex h-5 items-start justify-center">
-          <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#fb923c", 58) }}>
-            Effective Rate
-          </span>
-        </div>
-        <div
-          className="rounded-full px-6 py-2 text-[36px] font-semibold tabular-nums leading-none"
-          style={{
-            color: "#fb923c",
-            background: mix("#fb923c", 10),
-            border: `1px solid ${mix("#fb923c", 25)}`,
-          }}
-        >
-          {effectiveRate.toFixed(1)}%
-        </div>
-      </div>
-
-      {/* Marginal Rate */}
-      <div className="text-center">
-        <div className="mb-[14px] flex h-5 items-start justify-center">
-          <span className="text-[14px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#a78bfa", 58) }}>
-            Marginal Rate
-          </span>
-        </div>
-        <div
-          className="rounded-full px-6 py-2 text-[36px] font-semibold tabular-nums leading-none"
-          style={{
-            color: "#a78bfa",
-            background: mix("#a78bfa", 10),
-            border: `1px solid ${mix("#a78bfa", 25)}`,
-          }}
-        >
-          {marginalRate.toFixed(1)}%
-        </div>
-      </div>
     </div>
   );
 }
@@ -137,8 +94,6 @@ export default function TaxView() {
             gross={gross}
             totalTax={DUMMY.total_tax}
             netIncome={DUMMY.net_income}
-            effectiveRate={effRate}
-            marginalRate={DUMMY.marginal_rate * 100}
           />
 
           <div className="min-h-0 grid gap-3" style={{ gridTemplateColumns: "1fr 1fr", flex: "0.7" }}>
@@ -153,6 +108,8 @@ export default function TaxView() {
                 taxableIncome={taxableIncome}
                 totalTax={DUMMY.total_tax}
                 netIncome={DUMMY.net_income}
+                effectiveRate={effRate}
+                marginalRate={DUMMY.marginal_rate * 100}
               />
             </div>
           </div>

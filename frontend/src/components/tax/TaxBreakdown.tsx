@@ -40,7 +40,7 @@ function DonutChart({ segments, totalTax }: {
   });
 
   return (
-    <svg viewBox="0 0 160 160" style={{ width: 200, height: 200, flexShrink: 0 }}>
+    <svg viewBox="0 0 160 160" style={{ width: 300, height: 300, flexShrink: 0 }}>
       <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="20" />
       {arcs.map((arc) => (
         <circle
@@ -170,10 +170,12 @@ interface TaxCompositionProps {
   taxableIncome?: number;
   totalTax: number;
   netIncome: number;
+  effectiveRate?: number;
+  marginalRate?: number;
 }
 
 export default function TaxComposition({
-  taxableIncome = 0, totalTax, netIncome,
+  taxableIncome = 0, totalTax, netIncome, effectiveRate, marginalRate,
 }: TaxCompositionProps) {
   const allSegments = DONUT_SEGMENTS.map(({ key, label, color }) => ({
     key, label, color,
@@ -193,8 +195,44 @@ export default function TaxComposition({
           Tax Composition
         </span>
 
-        <DonutChart segments={allSegments} totalTax={totalTax} />
-        <LegendDots segments={allSegments} />
+        <div className="flex w-full items-center">
+          {/* Rate pills — left */}
+          <div className="flex flex-1 flex-col items-end gap-3">
+            {effectiveRate != null && marginalRate != null && (
+              <>
+                <div
+                  className="flex flex-col items-center rounded-full px-5 py-2 text-center"
+                  style={{ background: mix("#fb923c", 10), border: `1px solid ${mix("#fb923c", 25)}` }}
+                >
+                  <span className="text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#fb923c", 58) }}>Effective Rate</span>
+                  <span className="text-[18px] font-semibold tabular-nums" style={{ color: "#fb923c" }}>{effectiveRate.toFixed(1)}%</span>
+                </div>
+                <div
+                  className="flex flex-col items-center rounded-full px-5 py-2 text-center"
+                  style={{ background: mix("#a78bfa", 10), border: `1px solid ${mix("#a78bfa", 25)}` }}
+                >
+                  <span className="text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#a78bfa", 58) }}>Marginal Rate</span>
+                  <span className="text-[18px] font-semibold tabular-nums" style={{ color: "#a78bfa" }}>{marginalRate.toFixed(1)}%</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Donut — centre */}
+          <div className="mx-6 shrink-0">
+            <DonutChart segments={allSegments} totalTax={totalTax} />
+          </div>
+
+          {/* Legend — right */}
+          <div className="flex flex-1 flex-col gap-3">
+            {allSegments.filter((s) => s.value > 0).map((s) => (
+              <div key={s.label} className="flex items-center gap-2">
+                <div className="h-2 w-2 shrink-0 rounded-full" style={{ background: s.color }} />
+                <span className="text-[12px] text-muted/50">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         <div className="w-full h-px" style={{ background: t.border.default }} />
 
