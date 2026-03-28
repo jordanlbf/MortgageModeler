@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { formatCurrencyShort } from "@/lib/formatters";
 import { t, mix } from "@/lib/theme";
 import GlassCard from "@/components/ui/GlassCard";
@@ -7,7 +8,7 @@ import GlassCard from "@/components/ui/GlassCard";
 const DONUT_SEGMENTS = [
   { key: "income_tax", label: "Income Tax", color: "#f87171" },
   { key: "medicare_levy", label: "Medicare", color: "#60a5fa" },
-  { key: "medicare_levy_surcharge", label: "Medicare Levy Surcharge", color: "#fb923c" },
+  { key: "medicare_levy_surcharge", label: "MLS", color: "#fb923c" },
   { key: "hecs_repayment", label: "HECS Repayment", color: "#a78bfa" },
   { key: "net_income", label: "Net Income", color: "#2dd4bf" },
 ] as const;
@@ -24,39 +25,62 @@ const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.accentBorder, backgrou
 
 // ── Donut chart ──────────────────────────────────
 
-function DonutChart({ segments, totalTax }: {
-  segments: { label: string; color: string; value: number }[];
+const GAP = 0.008; // ~0.8% of circumference per gap
+
+function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick }: {
+  segments: { key: string; label: string; color: string; value: number }[];
   totalTax: number;
+  hoveredKey: string | null;
+  onHover: (key: string | null) => void;
+  onClick: (key: string) => void;
 }) {
+  const visible = segments.filter((s) => s.value > 0);
   const total = segments.reduce((sum, s) => sum + s.value, 0);
   const circumference = 2 * Math.PI * 60;
+  const totalGap = GAP * circumference * visible.length;
+  const usable = circumference - totalGap;
   let offset = 0;
-  const arcs = segments.filter((s) => s.value > 0).map((s) => {
+  const arcs = visible.map((s) => {
     const pct = total > 0 ? s.value / total : 0;
-    const dash = pct * circumference;
-    const arc = { ...s, dash, offset: -offset + circumference * 0.25 };
-    offset += dash;
+    const dash = pct * usable;
+    const arc = { ...s, pct, dash, offset: -offset + circumference * 0.25 };
+    offset += dash + GAP * circumference;
     return arc;
   });
 
   return (
     <svg viewBox="0 0 160 160" style={{ width: 300, height: 300, flexShrink: 0 }}>
+      <defs>
+        {arcs.map((arc) => (
+          <linearGradient key={`grad-${arc.key}`} id={`grad-${arc.key}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={arc.color} stopOpacity="1" />
+            <stop offset="100%" stopColor={arc.color} stopOpacity="0.6" />
+          </linearGradient>
+        ))}
+      </defs>
       <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="20" />
-      {arcs.map((arc) => (
-        <circle
-          key={arc.label}
-          cx="80"
-          cy="80"
-          r="60"
-          fill="none"
-          stroke={arc.color}
-          strokeWidth="20"
-          strokeDasharray={`${arc.dash} ${circumference - arc.dash}`}
-          strokeDashoffset={arc.offset}
-          className="transition-all duration-500 ease-out"
-          style={{ transformOrigin: "center" }}
-        />
-      ))}
+      {arcs.map((arc) => {
+        const isHovered = hoveredKey === arc.key;
+        const isDimmed = hoveredKey != null && !isHovered;
+        return (
+          <circle
+            key={arc.key}
+            cx="80"
+            cy="80"
+            r="60"
+            fill="none"
+            stroke={`url(#grad-${arc.key})`}
+            strokeWidth={isHovered ? 24 : 20}
+            strokeDasharray={`${arc.dash} ${circumference - arc.dash}`}
+            strokeDashoffset={arc.offset}
+            className="transition-all duration-300 ease-out"
+            style={{ transformOrigin: "center", opacity: isDimmed ? 0.3 : 1, cursor: "pointer" }}
+            onMouseEnter={() => onHover(arc.key)}
+            onMouseLeave={() => onHover(null)}
+            onClick={() => onClick(arc.key)}
+          />
+        );
+      })}
       <text x="80" y="71" textAnchor="middle" className="fill-muted/40 text-[9px] font-semibold uppercase tracking-[0.14em]">
         Total tax
       </text>
@@ -67,28 +91,19 @@ function DonutChart({ segments, totalTax }: {
   );
 }
 
-// ── Legend dots ───────────────────────────────────
+// ── Legend ────────────────────────────────────────
 
-function LegendDots({ segments }: { segments: { label: string; color: string; value: number }[] }) {
-  const visible = segments.filter((s) => s.value > 0);
-  return (
-    <div className="flex flex-wrap justify-center gap-4">
-      {visible.map((s) => (
-        <div key={s.label} className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full" style={{ background: s.color }} />
-          <span className="text-[12px] text-muted/50">{s.label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
+/* Legend is now rendered inline in the main component */
 
 // ── Waterfall (net position) ─────────────────────
 
-function WaterfallSection({ gross, taxSegments, netIncome }: {
+function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, onClick }: {
   gross: number;
-  taxSegments: { label: string; color: string; value: number }[];
+  taxSegments: { key: string; label: string; color: string; value: number }[];
   netIncome: number;
+  hoveredKey: string | null;
+  onHover: (key: string | null) => void;
+  onClick?: (key: string) => void;
 }) {
   if (gross === 0) return null;
 
@@ -105,7 +120,7 @@ function WaterfallSection({ gross, taxSegments, netIncome }: {
   return (
     <div className="flex w-full flex-col gap-5">
       {/* Gross Income */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 transition-opacity duration-200" style={{ opacity: hoveredKey != null ? 0.3 : 1 }}>
         <span className="min-w-[120px] text-[15px] font-semibold text-foreground">Gross Income</span>
         <div className="relative flex-1 h-[22px] rounded-[4px]" style={{ background: "rgba(255,255,255,0.02)" }}>
           <div
@@ -123,36 +138,53 @@ function WaterfallSection({ gross, taxSegments, netIncome }: {
       </div>
 
       {/* Tax component deductions */}
-      {rows.map((row) => (
-        <div key={row.label} className="flex items-center gap-3">
-          <span className="min-w-[120px] text-[15px] text-muted/50">{row.label}</span>
-          <div className="relative flex-1 h-[22px] rounded-[4px]" style={{ background: "rgba(255,255,255,0.02)" }}>
-            <div
-              className="absolute inset-y-0 rounded-[4px] transition-all duration-500"
-              style={{
-                left: `${row.startPct}%`,
-                width: `${row.widthPct}%`,
-                background: mix(row.color, 25),
-                border: `1px solid ${mix(row.color, 15)}`,
-              }}
-            />
+      {rows.map((row) => {
+        const isHovered = hoveredKey === row.key;
+        const isDimmed = hoveredKey != null && !isHovered;
+        return (
+          <div
+            key={row.key}
+            className="flex items-center gap-3 transition-opacity duration-200"
+            style={{ opacity: isDimmed ? 0.3 : 1, cursor: "pointer" }}
+            onMouseEnter={() => onHover(row.key)}
+            onMouseLeave={() => onHover(null)}
+            onClick={() => onClick?.(row.key)}
+          >
+            <span className="min-w-[120px] text-[15px] text-muted/50">{row.label}</span>
+            <div className="relative flex-1 rounded-[4px] transition-all duration-300" style={{ height: isHovered ? 28 : 22, background: "rgba(255,255,255,0.02)" }}>
+              <div
+                className="absolute inset-y-0 rounded-[4px] transition-all duration-300"
+                style={{
+                  left: `${row.startPct}%`,
+                  width: `${row.widthPct}%`,
+                  background: mix(row.color, isHovered ? 40 : 25),
+                  border: `1px solid ${mix(row.color, isHovered ? 25 : 15)}`,
+                }}
+              />
+            </div>
+            <span className="min-w-[80px] text-right text-[16px] font-medium tabular-nums" style={{ color: row.color }}>
+              -{formatCurrencyShort(row.value)}
+            </span>
           </div>
-          <span className="min-w-[80px] text-right text-[16px] font-medium tabular-nums" style={{ color: row.color }}>
-            -{formatCurrencyShort(row.value)}
-          </span>
-        </div>
-      ))}
+        );
+      })}
 
       {/* Net Income */}
-      <div className="flex items-center gap-3">
+      <div
+        className="flex items-center gap-3 transition-opacity duration-200"
+        style={{ opacity: hoveredKey != null && hoveredKey !== "net_income" ? 0.3 : 1, cursor: "pointer" }}
+        onMouseEnter={() => onHover("net_income")}
+        onMouseLeave={() => onHover(null)}
+        onClick={() => onClick?.("net_income")}
+      >
         <span className="min-w-[120px] text-[15px] font-semibold" style={{ color: t.accent }}>Net Income</span>
-        <div className="relative flex-1 h-[22px] rounded-[4px]" style={{ background: "rgba(255,255,255,0.02)" }}>
+        <div className="relative flex-1 rounded-[4px] transition-all duration-300" style={{ height: hoveredKey === "net_income" ? 28 : 22, background: "rgba(255,255,255,0.02)" }}>
           <div
-            className="absolute inset-y-0 left-0 rounded-[4px] transition-all duration-500"
+            className="absolute inset-y-0 left-0 rounded-[4px] transition-all duration-300"
             style={{
               width: `${netPct}%`,
-              background: mix(t.accent, 30),
-              border: `1px solid ${mix(t.accent, 15)}`,
+              background: mix(t.accent, hoveredKey === "net_income" ? 45 : 30),
+              border: `1px solid ${mix(t.accent, hoveredKey === "net_income" ? 25 : 15)}`,
             }}
           />
         </div>
@@ -177,11 +209,23 @@ interface TaxCompositionProps {
 export default function TaxComposition({
   taxableIncome = 0, totalTax, netIncome, effectiveRate, marginalRate,
 }: TaxCompositionProps) {
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const [pinnedKey, setPinnedKey] = useState<string | null>(null);
+  const activeKey = pinnedKey ?? hoveredKey;
+
+  const handleHover = (key: string | null) => {
+    if (pinnedKey == null) setHoveredKey(key);
+  };
+  const handleClick = (key: string) => {
+    setPinnedKey((prev) => (prev === key ? null : key));
+  };
+
   const allSegments = DONUT_SEGMENTS.map(({ key, label, color }) => ({
     key, label, color,
     value: key === "net_income" ? netIncome : (DUMMY[key] ?? 0),
   }));
 
+  const total = allSegments.reduce((sum, s) => sum + s.value, 0);
   const taxSegments = allSegments.filter((s) => s.key !== "net_income");
   const gross = taxableIncome > 0 ? taxableIncome : totalTax + netIncome;
 
@@ -190,7 +234,7 @@ export default function TaxComposition({
       <div className="custom-scrollbar flex flex-col items-center gap-8 overflow-y-auto px-7 py-5">
         <span
           className="text-[20px] font-semibold uppercase tracking-[0.14em]"
-          style={{ color: mix(t.accent, 50) }}
+          style={{ color: t.accent }}
         >
           Tax Composition
         </span>
@@ -220,23 +264,44 @@ export default function TaxComposition({
 
           {/* Donut — centre */}
           <div className="mx-6 shrink-0">
-            <DonutChart segments={allSegments} totalTax={totalTax} />
+            <DonutChart segments={allSegments} totalTax={totalTax} hoveredKey={activeKey} onHover={handleHover} onClick={handleClick} />
           </div>
 
           {/* Legend — right */}
-          <div className="flex flex-1 flex-col gap-3">
-            {allSegments.filter((s) => s.value > 0).map((s) => (
-              <div key={s.label} className="flex items-center gap-2">
-                <div className="h-2 w-2 shrink-0 rounded-full" style={{ background: s.color }} />
-                <span className="text-[12px] text-muted/50">{s.label}</span>
-              </div>
-            ))}
+          <div className="flex flex-1 flex-col gap-2">
+            {allSegments.filter((s) => s.value > 0).map((s) => {
+              const pct = total > 0 ? ((s.value / total) * 100).toFixed(1) : "0.0";
+              const isHovered = activeKey === s.key;
+              const isDimmed = activeKey != null && !isHovered;
+              return (
+                <div
+                  key={s.key}
+                  className="flex items-center gap-2 rounded-md px-2 py-1 transition-all duration-200"
+                  style={{
+                    opacity: isDimmed ? 0.3 : 1,
+                    background: isHovered ? mix(s.color, 8) : "transparent",
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={() => handleHover(s.key)}
+                  onMouseLeave={() => handleHover(null)}
+                  onClick={() => handleClick(s.key)}
+                >
+                  <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
+                  <div className="flex flex-col">
+                    <span className="text-[12px] font-medium text-muted/60">{s.label}</span>
+                    <span className="text-[11px] tabular-nums text-muted/40">
+                      {formatCurrencyShort(s.value)} · {pct}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         <div className="w-full h-px" style={{ background: t.border.default }} />
 
-        <WaterfallSection gross={gross} taxSegments={taxSegments} netIncome={netIncome} />
+        <WaterfallSection gross={gross} taxSegments={taxSegments} netIncome={netIncome} hoveredKey={activeKey} onHover={handleHover} onClick={handleClick} />
       </div>
     </GlassCard>
   );

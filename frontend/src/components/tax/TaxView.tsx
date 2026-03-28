@@ -11,8 +11,8 @@ import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
 // TODO: replace with API response
 const DUMMY = {
-  total_tax: 26_967,
-  net_income: 73_033,
+  total_tax: 32_167,
+  net_income: 67_833,
   marginal_rate: 0.345,
 };
 
@@ -97,7 +97,8 @@ export default function TaxView() {
   const advanced = useAdvancedTaxState();
   const { taxableIncome, repaymentIncome, mlsIncome } = advanced.incomeMeasures;
   const gross = taxableIncome > 0 ? taxableIncome : DUMMY.total_tax + DUMMY.net_income;
-  const effRate = taxableIncome > 0 ? (DUMMY.total_tax / taxableIncome) * 100 : 0;
+  const netIncome = Math.max(0, gross - DUMMY.total_tax);
+  const effRate = gross > 0 ? (DUMMY.total_tax / gross) * 100 : 0;
 
   return (
     <>
@@ -116,7 +117,7 @@ export default function TaxView() {
           <KpiHeroStrip
             gross={gross}
             totalTax={DUMMY.total_tax}
-            netIncome={DUMMY.net_income}
+            netIncome={netIncome}
           />
 
           <div className="mb-4 flex items-center justify-center gap-2">
@@ -140,7 +141,7 @@ export default function TaxView() {
               <TaxComposition
                 taxableIncome={taxableIncome}
                 totalTax={DUMMY.total_tax}
-                netIncome={DUMMY.net_income}
+                netIncome={netIncome}
                 effectiveRate={effRate}
                 marginalRate={DUMMY.marginal_rate * 100}
               />
