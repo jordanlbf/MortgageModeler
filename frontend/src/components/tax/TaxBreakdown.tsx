@@ -16,8 +16,8 @@ const DONUT_SEGMENTS = [
 const DUMMY: Record<string, number> = {
   income_tax: 24_967,
   medicare_levy: 2_000,
-  medicare_levy_surcharge: 0,
-  hecs_repayment: 0,
+  medicare_levy_surcharge: 1_200,
+  hecs_repayment: 4_000,
 };
 
 const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated };
