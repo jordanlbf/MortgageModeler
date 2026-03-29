@@ -9,13 +9,6 @@ import AdvancedColumn from "@/components/tax/AdvancedColumn";
 import TaxComposition from "@/components/tax/TaxBreakdown";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
-// TODO: replace with API response
-const DUMMY = {
-  total_tax: 32_167,
-  net_income: 67_833,
-  marginal_rate: 0.345,
-};
-
 // ── Tax Brackets Divider ────────────────────────
 
 function ProgressiveStepsDivider() {
@@ -95,10 +88,14 @@ function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
 
 export default function TaxView() {
   const advanced = useAdvancedTaxState();
-  const { taxableIncome, repaymentIncome, mlsIncome } = advanced.incomeMeasures;
-  const gross = taxableIncome > 0 ? taxableIncome : DUMMY.total_tax + DUMMY.net_income;
-  const netIncome = Math.max(0, gross - DUMMY.total_tax);
-  const effRate = gross > 0 ? (DUMMY.total_tax / gross) * 100 : 0;
+  const { data } = advanced;
+
+  const gross = data?.assessable_income ?? 0;
+  const totalTax = data?.total_tax ?? 0;
+  const netIncome = data?.net_income ?? 0;
+  const effRate = data ? data.effective_rate * 100 : 0;
+  const marginalRate = data ? data.marginal_rate * 100 : 0;
+  const taxableIncome = data?.taxable_income ?? 0;
 
   return (
     <>
@@ -116,7 +113,7 @@ export default function TaxView() {
         <ErrorBoundary>
           <KpiHeroStrip
             gross={gross}
-            totalTax={DUMMY.total_tax}
+            totalTax={totalTax}
             netIncome={netIncome}
           />
 
@@ -140,10 +137,14 @@ export default function TaxView() {
             <div className="flex flex-col min-h-0">
               <TaxComposition
                 taxableIncome={taxableIncome}
-                totalTax={DUMMY.total_tax}
+                totalTax={totalTax}
                 netIncome={netIncome}
                 effectiveRate={effRate}
-                marginalRate={DUMMY.marginal_rate * 100}
+                marginalRate={marginalRate}
+                incomeTax={data?.income_tax ?? 0}
+                medicareLevy={data?.medicare_levy ?? 0}
+                medicareLevySurcharge={data?.medicare_levy_surcharge ?? 0}
+                hecsRepayment={data?.hecs_repayment ?? 0}
               />
             </div>
           </div>

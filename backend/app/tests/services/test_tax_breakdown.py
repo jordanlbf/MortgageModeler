@@ -1,5 +1,5 @@
 """
-Tests for tax breakdown service — build_tax_breakdown.
+Tests for tax breakdown service — build_tax_breakdown and compute_income_measures.
 """
 
 import pytest
@@ -10,8 +10,8 @@ from app.engine.tax import (
     calculate_medicare_levy,
     calculate_medicare_levy_surcharge,
 )
-from app.models.tax import TaxProfile
-from app.services.tax_breakdown import build_tax_breakdown
+from app.models.tax import TaxInputs, TaxProfile
+from app.services.tax_breakdown import build_tax_breakdown, compute_income_measures
 
 # ──────────────────────────────────────────────
 # Helpers
@@ -26,9 +26,112 @@ def _make_profile(income=100_000, **overrides) -> TaxProfile:
         mls_income=income,
         hecs_balance=0,
         has_private_health=False,
+        assessable_income=income,
     )
     defaults.update(overrides)
     return TaxProfile(**defaults)
+
+
+def _make_inputs(**overrides) -> TaxInputs:
+    """Create a TaxInputs with salary-only defaults."""
+    defaults = dict(salary=100_000)
+    defaults.update(overrides)
+    return TaxInputs(**defaults)
+
+
+# ──────────────────────────────────────────────
+# compute_income_measures
+# ──────────────────────────────────────────────
+
+
+class TestComputeIncomeMeasures:
+    """Tests for compute_income_measures service function."""
+
+    def test_salary_only(self):
+        """All measures equal salary when no other inputs."""
+        profile = compute_income_measures(_make_inputs(salary=100_000))
+        assert profile.assessable_income == 100_000
+        assert profile.total_deductions == 0
+        assert profile.taxable_income == 100_000
+        assert profile.repayment_income == 100_000
+        assert profile.mls_income == 100_000
+        assert profile.net_investment_loss == 0
+
+    def test_negative_gearing(self):
+        """Rental loss reduces taxable but not repayment income."""
+        profile = compute_income_measures(_make_inputs(
+            salary=80_000,
+            rental=20_000,
+            rental_deductions=40_000,
+        ))
+        assert profile.assessable_income == 100_000
+        assert profile.total_deductions == 40_000
+        assert profile.taxable_income == 60_000
+        assert profile.net_investment_loss == 20_000
+        assert profile.repayment_income == 80_000  # 60k + 20k loss added back
+
+    def test_salary_sacrifice_increases_hri(self):
+        """Salary sacrifice added to repayment income only."""
+        without = compute_income_measures(_make_inputs(salary=100_000))
+        with_sal_sac = compute_income_measures(_make_inputs(salary=100_000, sal_sac=10_000))
+        assert with_sal_sac.taxable_income == without.taxable_income
+        assert with_sal_sac.repayment_income == without.repayment_income + 10_000
+
+    def test_rfb_increases_hri(self):
+        """Fringe benefits added to repayment income only."""
+        without = compute_income_measures(_make_inputs(salary=100_000))
+        with_rfb = compute_income_measures(_make_inputs(salary=100_000, rfb=12_000))
+        assert with_rfb.taxable_income == without.taxable_income
+        assert with_rfb.repayment_income == without.repayment_income + 12_000
+
+    def test_short_term_cgt_full_gain(self):
+        """Short-term capital gains included at 100%."""
+        profile = compute_income_measures(_make_inputs(salary=80_000, capital_gain_short=20_000))
+        assert profile.assessable_income == 100_000
+
+    def test_long_term_cgt_50_percent_discount(self):
+        """Long-term capital gains included at 50%."""
+        profile = compute_income_measures(_make_inputs(salary=80_000, capital_gain_long=40_000))
+        assert profile.assessable_income == 100_000  # 80k + 40k * 0.5
+
+    def test_franking_credits_in_assessable(self):
+        """Franking credits added to assessable income."""
+        profile = compute_income_measures(_make_inputs(salary=90_000, franking=10_000))
+        assert profile.assessable_income == 100_000
+
+    def test_deductions_exceed_income(self):
+        """Taxable income floors at zero."""
+        profile = compute_income_measures(_make_inputs(
+            salary=10_000,
+            work_deductions=20_000,
+        ))
+        assert profile.taxable_income == 0
+
+    def test_combined_divergence(self):
+        """All measures diverge with negative gearing + sal sac + FBT."""
+        profile = compute_income_measures(_make_inputs(
+            salary=80_000,
+            rental=20_000,
+            rental_deductions=40_000,
+            sal_sac=5_000,
+            rfb=12_000,
+        ))
+        assert profile.assessable_income == 100_000
+        assert profile.taxable_income == 60_000
+        assert profile.net_investment_loss == 20_000
+        assert profile.repayment_income == 97_000  # 60k + 12k + 5k + 20k
+
+    def test_hecs_and_phi_passed_through(self):
+        """HECS balance and PHI flag forwarded to profile."""
+        profile = compute_income_measures(_make_inputs(hecs_bal=35_000, phi=True))
+        assert profile.hecs_balance == 35_000
+        assert profile.has_private_health is True
+
+    def test_rental_only(self):
+        """Works with zero salary, rental income only."""
+        profile = compute_income_measures(_make_inputs(salary=0, rental=50_000))
+        assert profile.assessable_income == 50_000
+        assert profile.taxable_income == 50_000
 
 
 # ──────────────────────────────────────────────
@@ -73,6 +176,16 @@ class TestBuildTaxBreakdown:
         result = build_tax_breakdown(_make_profile(100_000))
         assert result.net_income == pytest.approx(result.taxable_income - result.total_tax, abs=0.01)
 
+    def test_effective_rate(self):
+        """Effective rate = total_tax / assessable_income."""
+        result = build_tax_breakdown(_make_profile(100_000))
+        assert result.effective_rate == pytest.approx(result.total_tax / 100_000, abs=0.001)
+
+    def test_effective_rate_zero_income(self):
+        """Effective rate is 0 when assessable income is 0."""
+        result = build_tax_breakdown(_make_profile(0))
+        assert result.effective_rate == 0.0
+
 
 # ──────────────────────────────────────────────
 # Zero income
@@ -91,6 +204,7 @@ class TestZeroIncome:
         assert result.total_tax == 0
         assert result.net_income == 0
         assert result.marginal_rate == 0.0
+        assert result.effective_rate == 0.0
 
 
 # ──────────────────────────────────────────────

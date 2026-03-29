@@ -13,14 +13,6 @@ const DONUT_SEGMENTS = [
   { key: "net_income", label: "Net Income", legendLabel: "Net Income", color: "#2dd4bf" },
 ] as const;
 
-// TODO: replace with API response
-const DUMMY: Record<string, number> = {
-  income_tax: 24_967,
-  medicare_levy: 2_000,
-  medicare_levy_surcharge: 1_200,
-  hecs_repayment: 4_000,
-};
-
 const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated };
 
 // ── Donut chart ──────────────────────────────────
@@ -38,14 +30,14 @@ function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick, activeSe
   const visible = segments.filter((s) => s.value > 0);
   const total = segments.reduce((sum, s) => sum + s.value, 0);
   const circumference = 2 * Math.PI * 60;
-  const totalGap = GAP * circumference * visible.length;
+  const totalGap = visible.length > 1 ? GAP * circumference * visible.length : 0;
   const usable = circumference - totalGap;
   let offset = 0;
   const arcs = visible.map((s) => {
     const pct = total > 0 ? s.value / total : 0;
     const dash = pct * usable;
     const arc = { ...s, pct, dash, offset: -offset + circumference * 0.25 };
-    offset += dash + GAP * circumference;
+    offset += dash + (visible.length > 1 ? GAP * circumference : 0);
     return arc;
   });
 
@@ -210,10 +202,15 @@ interface TaxCompositionProps {
   netIncome: number;
   effectiveRate?: number;
   marginalRate?: number;
+  incomeTax?: number;
+  medicareLevy?: number;
+  medicareLevySurcharge?: number;
+  hecsRepayment?: number;
 }
 
 export default function TaxComposition({
   taxableIncome = 0, totalTax, netIncome, effectiveRate, marginalRate,
+  incomeTax = 0, medicareLevy = 0, medicareLevySurcharge = 0, hecsRepayment = 0,
 }: TaxCompositionProps) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [pinnedKey, setPinnedKey] = useState<string | null>(null);
@@ -226,9 +223,17 @@ export default function TaxComposition({
     setPinnedKey((prev) => (prev === key ? null : key));
   };
 
+  const taxValues: Record<string, number> = {
+    income_tax: incomeTax,
+    medicare_levy: medicareLevy,
+    medicare_levy_surcharge: medicareLevySurcharge,
+    hecs_repayment: hecsRepayment,
+    net_income: netIncome,
+  };
+
   const allSegments = DONUT_SEGMENTS.map(({ key, label, legendLabel, color }) => ({
     key, label, legendLabel, color,
-    value: key === "net_income" ? netIncome : (DUMMY[key] ?? 0),
+    value: taxValues[key] ?? 0,
   }));
 
   const total = allSegments.reduce((sum, s) => sum + s.value, 0);

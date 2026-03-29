@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
+import type { TaxBreakdownResponse } from "@/lib/api";
+import { fetchTaxBreakdown } from "@/lib/api";
 
 export interface AdvancedTaxInputs {
   salary: number;
@@ -34,18 +36,11 @@ export interface AdvancedTaxSetters {
   setPhi: (v: boolean) => void;
 }
 
-export interface IncomeMeasures {
-  assessableIncome: number;
-  totalDeductions: number;
-  taxableIncome: number;
-  repaymentIncome: number;
-  mlsIncome: number;
-}
-
 export interface AdvancedTaxState {
   inputs: AdvancedTaxInputs;
   setters: AdvancedTaxSetters;
-  incomeMeasures: IncomeMeasures;
+  data: TaxBreakdownResponse | null;
+  error: string | null;
 }
 
 export function useAdvancedTaxState(): AdvancedTaxState {
@@ -68,22 +63,55 @@ export function useAdvancedTaxState(): AdvancedTaxState {
   const [hecsBal, setHecsBal] = useState(35_000);
   const [phi, setPhi] = useState(false);
 
-  // ── Derived income measures ──────────────────
-  const incomeMeasures = useMemo<IncomeMeasures>(() => {
-    // TODO: move CGT split to backend when schema is updated
-    const netCapitalGain = capitalGainShort + capitalGainLong * 0.5;
-    const assessable = salary + rental + interest + dividend + franking + netCapitalGain;
-    const totalDeductions = rentalDeductions + workDeductions;
-    const taxableIncome = Math.max(0, assessable - totalDeductions);
-    const netInvestmentLoss = Math.max(0, rentalDeductions - rental);
-    const repaymentIncome = taxableIncome + rfb + salSac + netInvestmentLoss;
-    const mlsIncome = repaymentIncome;
-    return { assessableIncome: assessable, totalDeductions, taxableIncome, repaymentIncome, mlsIncome };
-  }, [salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, rfb, salSac]);
+  // ── API fetch ────────────────────────────────
+  const [data, setData] = useState<TaxBreakdownResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setError(null);
+      try {
+        const result = await fetchTaxBreakdown(
+          {
+            income: {
+              salary,
+              rental,
+              interest,
+              dividend,
+              franking,
+              capital_gain_short: capitalGainShort,
+              capital_gain_long: capitalGainLong,
+            },
+            deductions: {
+              rental_deductions: rentalDeductions,
+              work_deductions: workDeductions,
+            },
+            adjustments: {
+              sal_sac: salSac,
+              rfb,
+              hecs_bal: hecsBal,
+              phi,
+            },
+          },
+          controller.signal,
+        );
+        if (!controller.signal.aborted) setData(result);
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        setError(err instanceof Error ? err.message : "Failed to fetch breakdown");
+      }
+    }, 80);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi]);
 
   return {
     inputs: { salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi },
     setters: { setSalary, setRental, setInterest, setDividend, setFranking, setCapitalGainShort, setCapitalGainLong, setRentalDeductions, setWorkDeductions, setSalSac, setRfb, setHecsBal, setPhi },
-    incomeMeasures,
+    data,
+    error,
   };
 }
