@@ -94,6 +94,7 @@ class TaxBreakdown:
         total_tax: Sum of all tax components
         net_income: Taxable income minus total tax
         marginal_rate: Top marginal income tax rate as decimal
+        effective_rate: Total tax as proportion of assessable income
     """
 
     taxable_income: float
@@ -104,3 +105,4 @@ class TaxBreakdown:
     total_tax: float
     net_income: float
     marginal_rate: float
+    effective_rate: float
