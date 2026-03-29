@@ -65,11 +65,15 @@ class TaxBreakdownResponse(BaseModel):
         repayment_income: HECS Repayment Income (HRI)
         mls_income: Medicare Levy Surcharge income
         net_investment_loss: Rental loss added back for HRI
-        income_tax: Australian income tax
+        income_tax: Income tax after offsets applied
         medicare_levy: Medicare levy amount
         medicare_levy_surcharge: Medicare Levy Surcharge (0 if has private health)
         hecs_repayment: Annual HECS/HELP repayment
-        total_tax: Sum of all tax components
+        lito: Low Income Tax Offset amount
+        sapto_offset: Seniors and Pensioners Tax Offset amount
+        franking_offset: Franking credit offset (refundable)
+        total_offsets: Sum of all tax offsets
+        total_tax: Sum of all tax components (after offsets)
         net_income: Taxable income minus total tax
         marginal_rate: Top marginal income tax rate as decimal
         effective_rate: Total tax as proportion of assessable income
@@ -85,6 +89,10 @@ class TaxBreakdownResponse(BaseModel):
     medicare_levy: float
     medicare_levy_surcharge: float
     hecs_repayment: float
+    lito: float
+    sapto_offset: float
+    franking_offset: float
+    total_offsets: float
     total_tax: float
     net_income: float
     marginal_rate: float

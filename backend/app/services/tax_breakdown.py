@@ -62,6 +62,8 @@ def compute_income_measures(inputs: TaxInputs) -> TaxProfile:
         net_investment_loss=net_investment_loss,
         hecs_balance=inputs.hecs_bal,
         has_private_health=inputs.phi,
+        franking=inputs.franking,
+        sapto=inputs.sapto,
     )
 
 
