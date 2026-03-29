@@ -38,6 +38,7 @@ def get_tax_breakdown(req: TaxBreakdownRequest) -> TaxBreakdownResponse:
         rfb=req.adjustments.rfb,
         hecs_bal=req.adjustments.hecs_bal,
         phi=req.adjustments.phi,
+        sapto=req.adjustments.sapto,
     )
 
     profile = compute_income_measures(inputs)
@@ -54,6 +55,10 @@ def get_tax_breakdown(req: TaxBreakdownRequest) -> TaxBreakdownResponse:
         medicare_levy=breakdown.medicare_levy,
         medicare_levy_surcharge=breakdown.medicare_levy_surcharge,
         hecs_repayment=breakdown.hecs_repayment,
+        lito=breakdown.lito,
+        sapto_offset=breakdown.sapto_offset,
+        franking_offset=breakdown.franking_offset,
+        total_offsets=breakdown.total_offsets,
         total_tax=breakdown.total_tax,
         net_income=breakdown.net_income,
         marginal_rate=breakdown.marginal_rate,

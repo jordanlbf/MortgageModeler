@@ -8,9 +8,11 @@ from app.engine.amortisation import effective_periodic_rate
 from app.engine.tax import (
     calculate_hecs_repayment,
     calculate_income_tax,
+    calculate_lito,
     calculate_marginal_rate,
     calculate_medicare_levy,
     calculate_medicare_levy_surcharge,
+    calculate_sapto,
     calculate_tax_saving,
     calculate_total_tax,
 )
@@ -556,6 +558,146 @@ class TestCalculateTaxSaving:
         # RI and MLSI should be identical in both passes (loss not subtracted)
         assert adjusted.repayment_income == base_ti
         assert adjusted.mls_income == base_ti
+
+
+# ──────────────────────────────────────────────
+# LITO
+# ──────────────────────────────────────────────
+
+
+class TestCalculateLito:
+    """Tests for calculate_lito engine function."""
+
+    # ── Full offset tier (TI ≤ $37,500) ──────
+
+    def test_zero_income(self):
+        assert calculate_lito(0) == 700
+
+    def test_tax_free_threshold(self):
+        assert calculate_lito(18_200) == 700
+
+    def test_at_full_threshold(self):
+        assert calculate_lito(37_500) == 700
+
+    # ── Phase-out 1 ($37,501 – $45,000) ──────
+
+    def test_just_over_full_threshold(self):
+        """$37,501: $700 − $0.05 = $699.95"""
+        assert calculate_lito(37_501) == pytest.approx(699.95, abs=0.01)
+
+    def test_midpoint_phase_out_1(self):
+        """$41,250: $700 − ($3,750 × 0.05) = $512.50"""
+        assert calculate_lito(41_250) == pytest.approx(512.50, abs=0.01)
+
+    def test_at_phase_out_1_end(self):
+        """$45,000: $700 − ($7,500 × 0.05) = $325"""
+        assert calculate_lito(45_000) == pytest.approx(325, abs=0.01)
+
+    # ── Phase-out 2 ($45,001 – $66,667) ──────
+
+    def test_just_over_phase_out_1_end(self):
+        """$45,001: $325 − $0.015 = $324.985"""
+        assert calculate_lito(45_001) == pytest.approx(324.985, abs=0.01)
+
+    def test_midpoint_phase_out_2(self):
+        """$55,000: $325 − ($10,000 × 0.015) = $175"""
+        assert calculate_lito(55_000) == pytest.approx(175, abs=0.01)
+
+    def test_just_under_zero_threshold(self):
+        """$66,666: $325 − ($21,666 × 0.015) ≈ $0.01"""
+        assert calculate_lito(66_666) == pytest.approx(0.01, abs=0.01)
+
+    def test_at_zero_threshold(self):
+        """$66,667: offset reaches $0"""
+        assert calculate_lito(66_667) == pytest.approx(0, abs=0.01)
+
+    # ── Above zero threshold ─────────────────
+
+    def test_above_zero_threshold(self):
+        assert calculate_lito(66_668) == 0
+
+    def test_high_income(self):
+        assert calculate_lito(100_000) == 0
+
+    def test_very_high_income(self):
+        assert calculate_lito(500_000) == 0
+
+    # ── Monotonically decreasing ─────────────
+
+    def test_monotonically_decreasing(self):
+        """LITO should never increase as income increases."""
+        prev = calculate_lito(0)
+        for ti in range(1_000, 80_000, 1_000):
+            current = calculate_lito(ti)
+            assert current <= prev, f"LITO increased at TI={ti}: {prev} -> {current}"
+            prev = current
+
+    # ── Always non-negative ──────────────────
+
+    def test_never_negative(self):
+        """LITO should never be negative."""
+        for ti in range(0, 200_000, 5_000):
+            assert calculate_lito(ti) >= 0, f"LITO negative at TI={ti}"
+
+
+# ──────────────────────────────────────────────
+# SAPTO
+# ──────────────────────────────────────────────
+
+
+class TestCalculateSapto:
+    """Tests for calculate_sapto engine function."""
+
+    # ── Full offset tier (TI ≤ $33,532) ──────
+
+    def test_zero_income(self):
+        assert calculate_sapto(0) == 2_230
+
+    def test_at_lower_threshold(self):
+        assert calculate_sapto(33_532) == 2_230
+
+    # ── Phase-out ($33,533 – $51,372) ────────
+
+    def test_just_over_lower_threshold(self):
+        """$33,533: $2,230 − $0.125 = $2,229.875"""
+        assert calculate_sapto(33_533) == pytest.approx(2_229.875, abs=0.01)
+
+    def test_midpoint_phase_out(self):
+        """$42,452: $2,230 − ($8,920 × 0.125) = $1,115"""
+        assert calculate_sapto(42_452) == pytest.approx(1_115, abs=0.01)
+
+    def test_just_under_zero_threshold(self):
+        """$51,371: $2,230 − ($17,839 × 0.125) = $0.125"""
+        assert calculate_sapto(51_371) == pytest.approx(0.125, abs=0.01)
+
+    def test_at_zero_threshold(self):
+        """$51,372: offset reaches $0"""
+        assert calculate_sapto(51_372) == pytest.approx(0, abs=0.01)
+
+    # ── Above zero threshold ─────────────────
+
+    def test_above_zero_threshold(self):
+        assert calculate_sapto(51_373) == 0
+
+    def test_high_income(self):
+        assert calculate_sapto(100_000) == 0
+
+    # ── Monotonically decreasing ─────────────
+
+    def test_monotonically_decreasing(self):
+        """SAPTO should never increase as income increases."""
+        prev = calculate_sapto(0)
+        for ti in range(1_000, 70_000, 1_000):
+            current = calculate_sapto(ti)
+            assert current <= prev, f"SAPTO increased at TI={ti}: {prev} -> {current}"
+            prev = current
+
+    # ── Always non-negative ──────────────────
+
+    def test_never_negative(self):
+        """SAPTO should never be negative."""
+        for ti in range(0, 200_000, 5_000):
+            assert calculate_sapto(ti) >= 0, f"SAPTO negative at TI={ti}"
 
     def test_large_loss_pushes_into_lower_bracket(self):
         """A large rental loss can push TI into a lower tax bracket, yielding a bigger saving."""

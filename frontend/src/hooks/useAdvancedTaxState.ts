@@ -18,6 +18,7 @@ export interface AdvancedTaxInputs {
   rfb: number;
   hecsBal: number;
   phi: boolean;
+  sapto: boolean;
 }
 
 export interface AdvancedTaxSetters {
@@ -34,6 +35,7 @@ export interface AdvancedTaxSetters {
   setRfb: (v: number) => void;
   setHecsBal: (v: number) => void;
   setPhi: (v: boolean) => void;
+  setSapto: (v: boolean) => void;
 }
 
 export interface AdvancedTaxState {
@@ -62,6 +64,7 @@ export function useAdvancedTaxState(): AdvancedTaxState {
   const [rfb, setRfb] = useState(0);
   const [hecsBal, setHecsBal] = useState(35_000);
   const [phi, setPhi] = useState(false);
+  const [sapto, setSapto] = useState(false);
 
   // ── API fetch ────────────────────────────────
   const [data, setData] = useState<TaxBreakdownResponse | null>(null);
@@ -92,6 +95,7 @@ export function useAdvancedTaxState(): AdvancedTaxState {
               rfb,
               hecs_bal: hecsBal,
               phi,
+              sapto,
             },
           },
           controller.signal,
@@ -106,11 +110,11 @@ export function useAdvancedTaxState(): AdvancedTaxState {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi]);
+  }, [salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi, sapto]);
 
   return {
-    inputs: { salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi },
-    setters: { setSalary, setRental, setInterest, setDividend, setFranking, setCapitalGainShort, setCapitalGainLong, setRentalDeductions, setWorkDeductions, setSalSac, setRfb, setHecsBal, setPhi },
+    inputs: { salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi, sapto },
+    setters: { setSalary, setRental, setInterest, setDividend, setFranking, setCapitalGainShort, setCapitalGainLong, setRentalDeductions, setWorkDeductions, setSalSac, setRfb, setHecsBal, setPhi, setSapto },
     data,
     error,
   };
