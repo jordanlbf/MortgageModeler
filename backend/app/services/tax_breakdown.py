@@ -141,7 +141,7 @@ def build_tax_breakdown(profile: TaxProfile) -> TaxBreakdown:
     net_income = profile.taxable_income - total_tax
 
     marginal_rate = calculate_marginal_rate(profile.taxable_income)
-    effective_rate = total_tax / profile.assessable_income if profile.assessable_income > 0 else 0.0
+    effective_rate = max(0.0, total_tax / profile.assessable_income) if profile.assessable_income > 0 else 0.0
 
     return TaxBreakdown(
         taxable_income=profile.taxable_income,

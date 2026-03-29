@@ -78,7 +78,9 @@ function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick, activeSe
         {activeSegment ? activeSegment.label : "Total Tax"}
       </text>
       <text x="80" y={activeSegment ? 88 : 93} textAnchor="middle" className="text-[16px] font-bold tabular-nums" style={{ transition: "all 0.2s" }} fill={activeSegment ? activeSegment.color : "#f87171"}>
-        {activeSegment ? `${activeSegment.isDeduction ? "-" : ""}${formatCurrencyShort(activeSegment.value)}` : `-${formatCurrencyShort(totalTax)}`}
+        {activeSegment
+          ? `${activeSegment.isDeduction && activeSegment.value >= 0 ? "-" : ""}${formatCurrencyShort(Math.abs(activeSegment.value))}`
+          : `${totalTax >= 0 ? "-" : "+"}${formatCurrencyShort(Math.abs(totalTax))}`}
       </text>
       {activeSegment && (
         <text x="80" y="103" textAnchor="middle" className="text-[8px] font-medium tabular-nums" fill={activeSegment.color} opacity="0.6">
@@ -105,15 +107,34 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
 }) {
   if (gross === 0) return null;
 
+  // Separate refunds (negative tax, e.g. franking) from deductions (positive tax)
+  const refunds = taxSegments.filter((s) => s.value < 0);
   const deductions = taxSegments.filter((s) => s.value > 0);
-  let running = gross;
+
+  // Baseline extends beyond gross when there are refunds
+  const totalRefund = refunds.reduce((sum, s) => sum + Math.abs(s.value), 0);
+  const baseline = gross + totalRefund;
+
+  // Refund rows start from gross and extend right
+  let refundOffset = gross;
+  const refundRows = refunds.map((r) => {
+    const absVal = Math.abs(r.value);
+    const startPct = (refundOffset / baseline) * 100;
+    const widthPct = (absVal / baseline) * 100;
+    refundOffset += absVal;
+    return { ...r, startPct, widthPct, absVal };
+  });
+
+  // Deduction rows eat inward from the right of baseline
+  let running = baseline;
   const rows = deductions.map((d) => {
-    const startPct = ((running - d.value) / gross) * 100;
-    const widthPct = (d.value / gross) * 100;
+    const startPct = ((running - d.value) / baseline) * 100;
+    const widthPct = (d.value / baseline) * 100;
     running -= d.value;
     return { ...d, startPct, widthPct };
   });
-  const netPct = (netIncome / gross) * 100;
+  const netPct = (netIncome / baseline) * 100;
+  const grossPct = (gross / baseline) * 100;
 
   return (
     <div className="flex w-full flex-col gap-5">
@@ -124,7 +145,7 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
           <div
             className="absolute inset-y-0 left-0 rounded-[4px] transition-all duration-500"
             style={{
-              width: "100%",
+              width: `${grossPct}%`,
               background: mix("var(--color-foreground)", 25),
               border: `1px solid ${mix("var(--color-foreground)", 15)}`,
             }}
@@ -134,6 +155,38 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
           {formatCurrencyShort(gross)}
         </span>
       </div>
+
+      {/* Refund rows (negative tax components shown as income) */}
+      {refundRows.map((row) => {
+        const isHovered = hoveredKey === row.key;
+        const isDimmed = hoveredKey != null && !isHovered;
+        return (
+          <div
+            key={row.key}
+            className="flex items-center gap-3 transition-opacity duration-200"
+            style={{ opacity: isDimmed ? 0.3 : 1, cursor: "pointer" }}
+            onMouseEnter={() => onHover(row.key)}
+            onMouseLeave={() => onHover(null)}
+            onClick={() => onClick?.(row.key)}
+          >
+            <span className="min-w-[120px] text-[15px] text-muted/50">{row.label}</span>
+            <div className="relative flex-1 rounded-[4px] transition-all duration-300" style={{ height: isHovered ? 28 : 22, background: "rgba(255,255,255,0.02)" }}>
+              <div
+                className="absolute inset-y-0 rounded-[4px] transition-all duration-300"
+                style={{
+                  left: `${row.startPct}%`,
+                  width: `${row.widthPct}%`,
+                  background: mix(row.color, isHovered ? 40 : 25),
+                  border: `1px solid ${mix(row.color, isHovered ? 25 : 15)}`,
+                }}
+              />
+            </div>
+            <span className="min-w-[80px] text-right text-[16px] font-medium tabular-nums" style={{ color: row.color }}>
+              +{formatCurrencyShort(row.absVal)}
+            </span>
+          </div>
+        );
+      })}
 
       {/* Tax component deductions */}
       {rows.map((row) => {
@@ -223,12 +276,17 @@ export default function TaxComposition({
     setPinnedKey((prev) => (prev === key ? null : key));
   };
 
+  // When income tax is negative (franking refund), fold the refund into net income for the donut
+  const refund = incomeTax < 0 ? Math.abs(incomeTax) : 0;
+  const donutIncomeTax = incomeTax + refund;  // 0 when negative
+  const donutNetIncome = netIncome + refund;
+
   const taxValues: Record<string, number> = {
-    income_tax: incomeTax,
+    income_tax: donutIncomeTax,
     medicare_levy: medicareLevy,
     medicare_levy_surcharge: medicareLevySurcharge,
     hecs_repayment: hecsRepayment,
-    net_income: netIncome,
+    net_income: donutNetIncome,
   };
 
   const allSegments = DONUT_SEGMENTS.map(({ key, label, legendLabel, color }) => ({
@@ -239,6 +297,17 @@ export default function TaxComposition({
   const total = allSegments.reduce((sum, s) => sum + s.value, 0);
   const taxSegments = allSegments.filter((s) => s.key !== "net_income");
   const gross = taxableIncome > 0 ? taxableIncome : totalTax + netIncome;
+
+  // Waterfall uses real (non-donut-adjusted) values so refund bars render correctly
+  const realTaxValues: Record<string, number> = {
+    income_tax: incomeTax,
+    medicare_levy: medicareLevy,
+    medicare_levy_surcharge: medicareLevySurcharge,
+    hecs_repayment: hecsRepayment,
+  };
+  const waterfallSegments = DONUT_SEGMENTS
+    .filter((s) => s.key !== "net_income")
+    .map(({ key, label, color }) => ({ key, label, color, value: realTaxValues[key] ?? 0 }));
 
   const activeSegData = activeKey ? allSegments.find((s) => s.key === activeKey) : null;
   const activeSegment = activeSegData && total > 0
@@ -311,7 +380,7 @@ export default function TaxComposition({
 
         <div className="w-full h-px" style={{ background: t.border.default }} />
 
-        <WaterfallSection gross={gross} taxSegments={taxSegments} netIncome={netIncome} hoveredKey={activeKey} onHover={handleHover} onClick={handleClick} />
+        <WaterfallSection gross={gross} taxSegments={waterfallSegments} netIncome={netIncome} hoveredKey={activeKey} onHover={handleHover} onClick={handleClick} />
       </div>
     </GlassCard>
   );
