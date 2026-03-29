@@ -51,3 +51,29 @@ MLS_THRESHOLDS = [
     (158_000, 0.0125),  # 1.25% of MLSI if income between $118,000 and $158,000
     (float("inf"), 0.015),  # 1.5% of MLSI if income above $158,000
 ]
+
+# ──────────────────────────────────────────────
+# 2025-26 Low Income Tax Offset (LITO)
+# Non-refundable — cannot reduce income tax below zero
+# Three-tier phase-out:
+#   TI ≤ $37,500:              $700
+#   $37,501 – $45,000:         $700 − 5c per $1 over $37,500
+#   $45,001 – $66,667:         $325 − 1.5c per $1 over $45,000
+#   > $66,667:                 $0
+# ──────────────────────────────────────────────
+LITO_MAX_OFFSET = 700
+LITO_FULL_THRESHOLD = 37_500  # Full $700 for TI ≤ $37,500
+LITO_PHASE_OUT_1_RATE = 0.05  # 5c per $1 over $37,500
+LITO_PHASE_OUT_1_END = 45_000  # At $45,000: $700 − ($7,500 × 0.05) = $325
+LITO_PHASE_OUT_2_RATE = 0.015  # 1.5c per $1 over $45,000
+LITO_ZERO_THRESHOLD = 66_667  # At $66,667: $325 − ($21,667 × 0.015) ≈ $0
+
+# ──────────────────────────────────────────────
+# 2025-26 Seniors and Pensioners Tax Offset (SAPTO)
+# Non-refundable — cannot reduce income tax below zero
+# Singles only (couples out of scope)
+# ──────────────────────────────────────────────
+SAPTO_MAX_OFFSET = 2_230  # Maximum offset for singles
+SAPTO_LOWER_THRESHOLD = 33_532  # Full offset for rebate income ≤ $33,532
+SAPTO_PHASE_OUT_RATE = 0.125  # Reduces by 12.5c per $1 over lower threshold
+SAPTO_ZERO_THRESHOLD = 51_372  # No offset above $51,372
