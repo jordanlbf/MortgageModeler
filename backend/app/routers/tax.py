@@ -38,6 +38,7 @@ def get_tax_breakdown(req: TaxBreakdownRequest) -> TaxBreakdownResponse:
         rfb=req.adjustments.rfb,
         hecs_bal=req.adjustments.hecs_bal,
         phi=req.adjustments.phi,
+        sapto=req.adjustments.sapto,
     )
 
     profile = compute_income_measures(inputs)

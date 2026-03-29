@@ -103,6 +103,7 @@ export interface TaxBreakdownRequest {
     rfb?: number;
     hecs_bal?: number;
     phi?: boolean;
+    sapto?: boolean;
   };
 }
 

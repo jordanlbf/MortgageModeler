@@ -35,6 +35,7 @@ class AdjustmentInputs(BaseModel):
     rfb: float = Field(default=0.0, ge=0, description="Reportable fringe benefits (grossed-up)")
     hecs_bal: float = Field(default=0.0, ge=0, description="HELP/HECS debt balance")
     phi: bool = Field(default=False, description="Private health insurance (hospital cover)")
+    sapto: bool = Field(default=False, description="Seniors and Pensioners Tax Offset eligibility")
 
 
 class TaxBreakdownRequest(BaseModel):

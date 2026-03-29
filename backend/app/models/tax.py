@@ -27,6 +27,7 @@ class TaxInputs:
         rfb: Reportable fringe benefits (grossed-up)
         hecs_bal: Outstanding HELP/HECS debt balance
         phi: Whether the taxpayer holds private health insurance
+        sapto: Whether the taxpayer is eligible for Seniors and Pensioners Tax Offset
     """
 
     # Income
@@ -47,6 +48,7 @@ class TaxInputs:
     rfb: float = 0.0
     hecs_bal: float = 0.0
     phi: bool = False
+    sapto: bool = False
 
 
 @dataclass

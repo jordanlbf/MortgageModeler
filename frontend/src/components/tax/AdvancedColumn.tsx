@@ -106,6 +106,7 @@ const SECTIONS: SectionDef[] = [
         fields: [
           { type: "currency", label: "HELP/HECS Debt Balance", field: "hecsBal", setter: "setHecsBal", min: 0, max: 200_000 },
           { type: "toggle", label: "Private Health Insurance (Hospital Cover)", field: "phi", setter: "setPhi" },
+          { type: "toggle", label: "Seniors Tax Offset (SAPTO)", field: "sapto", setter: "setSapto" },
         ],
       },
     ],
