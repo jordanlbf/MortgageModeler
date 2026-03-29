@@ -438,7 +438,8 @@ class TestLitoInBreakdown:
     def test_lito_in_total_offsets(self):
         """LITO included in total_offsets."""
         result = build_tax_breakdown(_make_profile(30_000))
-        assert result.total_offsets == pytest.approx(result.lito + result.sapto_offset + result.franking_offset, abs=0.01)
+        expected = result.lito + result.sapto_offset + result.franking_offset
+        assert result.total_offsets == pytest.approx(expected, abs=0.01)
 
 
 # ──────────────────────────────────────────────
@@ -519,7 +520,8 @@ class TestFrankingInBreakdown:
 
     def test_franking_in_total_offsets(self):
         result = build_tax_breakdown(_make_profile(100_000, franking=3_000))
-        assert result.total_offsets == pytest.approx(result.lito + result.sapto_offset + result.franking_offset, abs=0.01)
+        expected = result.lito + result.sapto_offset + result.franking_offset
+        assert result.total_offsets == pytest.approx(expected, abs=0.01)
 
 
 # ──────────────────────────────────────────────
