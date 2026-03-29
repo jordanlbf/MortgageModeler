@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TOOLS } from "@/lib/constants";
+import { TOOLS, TOOL_COLORS } from "@/lib/constants";
 import type { Tool } from "@/lib/constants";
 import { t, mix } from "@/lib/theme";
 import Header from "@/components/layout/Header";
@@ -78,8 +78,13 @@ const icons: Record<string, React.ReactNode> = {
 
 /* ── ToolCard ─────────────────────────────────────── */
 function ToolCard({ tool }: { tool: Tool }) {
+  const color = TOOL_COLORS[tool.id] ?? { primary: "#94a3b8", glow: "rgba(148,163,184,0.08)" };
+
   const inner = (
-    <div className={`home-card ${tool.active ? "home-card--active" : "home-card--inactive"}`}>
+    <div
+      className={`home-card ${tool.active ? "home-card--active" : "home-card--inactive"}`}
+      style={{ "--tool-color": color.primary } as React.CSSProperties}
+    >
       <div className="home-card-strip" />
       <div className="home-card-shine" />
 

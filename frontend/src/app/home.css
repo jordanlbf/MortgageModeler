@@ -117,7 +117,7 @@
   max-width: 1300px;
   margin-bottom: 36px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 24px;
 }
 
@@ -167,7 +167,7 @@
 
 .home-card-link:focus-visible > .home-card {
   box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--color-accent) 30%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--tool-color) 30%, transparent),
     0 4px 24px -4px rgba(0,0,0,0.4);
 }
 
@@ -194,26 +194,22 @@
 /* ── Active card ──────────────────────────────────── */
 .home-card--active {
   cursor: pointer;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, color-mix(in srgb, var(--color-accent) 5%, transparent) 0%, transparent 60%),
-    rgba(42,42,46,0.55);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  background: color-mix(in srgb, var(--tool-color) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tool-color) 28%, transparent);
   box-shadow:
     0 2px 16px rgba(0,0,0,0.4),
-    0 0 0 0.5px color-mix(in srgb, var(--color-accent) 6%, transparent),
+    0 0 0 0.5px color-mix(in srgb, var(--tool-color) 6%, transparent),
     inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
 .home-card--active:hover {
   transform: translateY(-4px) scale(1.015);
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, color-mix(in srgb, var(--color-accent) 8%, transparent) 0%, transparent 60%),
-    rgba(48,48,52,0.62);
-  border-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
+  background: color-mix(in srgb, var(--tool-color) 6.5%, transparent);
+  border-color: color-mix(in srgb, var(--tool-color) 35%, transparent);
   box-shadow:
     0 20px 50px -12px rgba(0,0,0,0.6),
-    0 0 0 0.5px color-mix(in srgb, var(--color-accent) 12%, transparent),
-    0 0 30px -8px color-mix(in srgb, var(--color-accent) 6%, transparent),
+    0 0 0 0.5px color-mix(in srgb, var(--tool-color) 12%, transparent),
+    0 0 30px -8px color-mix(in srgb, var(--tool-color) 6%, transparent),
     inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
@@ -256,7 +252,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 30%, transparent));
+  background: linear-gradient(90deg, var(--tool-color), color-mix(in srgb, var(--tool-color) 15%, transparent));
   transform: scaleX(0);
   transform-origin: left center;
   transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
@@ -273,9 +269,9 @@
   background: linear-gradient(
     105deg,
     transparent 40%,
-    color-mix(in srgb, var(--color-accent) 4%, transparent) 45%,
-    color-mix(in srgb, var(--color-accent) 8%, transparent) 50%,
-    color-mix(in srgb, var(--color-accent) 4%, transparent) 55%,
+    color-mix(in srgb, var(--tool-color) 4%, transparent) 45%,
+    color-mix(in srgb, var(--tool-color) 8%, transparent) 50%,
+    color-mix(in srgb, var(--tool-color) 4%, transparent) 55%,
     transparent 60%
   );
   transition: all 0.6s cubic-bezier(0.16,1,0.3,1);
@@ -303,51 +299,9 @@
 }
 
 .home-card--active .home-card-icon {
-  background: color-mix(in srgb, var(--color-accent) 4%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
-}
-
-/* Beta-badged active card gets purple icon tint */
-.home-card--active:has(.home-card-badge--beta) .home-card-icon {
-  background: rgba(168,139,250,0.04);
-  border-color: rgba(168,139,250,0.08);
-}
-
-.home-card--active:has(.home-card-badge--beta) .home-card-arrow {
-  background: rgba(168,139,250,0.06);
-  border-color: rgba(168,139,250,0.1);
-  color: rgba(168,139,250,0.4);
-}
-
-.home-card--active:has(.home-card-badge--beta):hover .home-card-arrow:hover {
-  background: rgba(168,139,250,0.12);
-}
-
-.home-card--active:has(.home-card-badge--beta) .home-card-strip {
-  background: linear-gradient(90deg, #a78bfa, rgba(168,139,250,0.3));
-}
-
-.home-card--active:has(.home-card-badge--beta) {
-  border-color: rgba(168,139,250,0.15);
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168,139,250,0.05) 0%, transparent 60%),
-    rgba(42,42,46,0.55);
-  box-shadow:
-    0 2px 16px rgba(0,0,0,0.4),
-    0 0 0 0.5px rgba(168,139,250,0.06),
-    inset 0 1px 0 rgba(255,255,255,0.03);
-}
-
-.home-card--active:has(.home-card-badge--beta):hover {
-  border-color: rgba(168,139,250,0.28);
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168,139,250,0.08) 0%, transparent 60%),
-    rgba(48,48,52,0.62);
-  box-shadow:
-    0 20px 50px -12px rgba(0,0,0,0.6),
-    0 0 0 0.5px rgba(168,139,250,0.12),
-    0 0 30px -8px rgba(168,139,250,0.06),
-    inset 0 1px 0 rgba(255,255,255,0.04);
+  background: color-mix(in srgb, var(--tool-color) 6%, transparent);
+  border-color: color-mix(in srgb, var(--tool-color) 42%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--tool-color) 18%, transparent);
 }
 
 /* ── Title ────────────────────────────────────────── */
@@ -385,9 +339,9 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
-  color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--tool-color) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tool-color) 18%, transparent);
+  color: color-mix(in srgb, var(--tool-color) 65%, transparent);
   opacity: 0;
   transition:
     opacity 0.25s cubic-bezier(0.16,1,0.3,1),
@@ -401,7 +355,7 @@
 }
 
 .home-card--active:hover .home-card-arrow:hover {
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  background: color-mix(in srgb, var(--tool-color) 12%, transparent);
 }
 
 /* ── Badge ────────────────────────────────────────── */
@@ -419,8 +373,8 @@
 }
 
 .home-card-badge--live {
-  color: var(--color-accent-contrast);
-  background: var(--color-accent);
+  background: linear-gradient(135deg, var(--tool-color), color-mix(in srgb, var(--tool-color) 70%, #fff));
+  color: #111;
 }
 
 .home-card-badge--beta {
@@ -482,17 +436,13 @@
 }
 
 [data-theme="indigo"] .home-card--active {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.10) 0%, transparent 60%),
-    rgba(80,88,135,0.18);
-  border-color: rgba(99,102,241,0.18);
+  background: color-mix(in srgb, var(--tool-color) 6%, transparent);
+  border-color: color-mix(in srgb, var(--tool-color) 18%, transparent);
 }
 
 [data-theme="indigo"] .home-card--active:hover {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.14) 0%, transparent 60%),
-    rgba(90,98,145,0.24);
-  border-color: rgba(99,102,241,0.30);
+  background: color-mix(in srgb, var(--tool-color) 9%, transparent);
+  border-color: color-mix(in srgb, var(--tool-color) 30%, transparent);
 }
 
 [data-theme="indigo"] .home-card--inactive {
@@ -505,8 +455,8 @@
 }
 
 [data-theme="indigo"] .home-card-badge--live {
-  background: #6366f1;
-  color: #fff;
+  background: linear-gradient(135deg, var(--tool-color), color-mix(in srgb, var(--tool-color) 70%, #fff));
+  color: #111;
 }
 
 [data-theme="indigo"] .home-card-badge--beta {

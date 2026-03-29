@@ -51,3 +51,15 @@ export const TOOLS: Tool[] = [
   { id: "equity-growth", title: "Equity Growth", desc: "Track property value over time", icon: "🏠", active: false },
   { id: "tax-deductions", title: "Tax & Deductions", desc: "Investment property tax benefits", icon: "🧾", active: false },
 ];
+
+/** Per-tool brand colours — used on the homepage card grid. */
+export const TOOL_COLORS: Record<string, { primary: string; glow: string }> = {
+  amortisation:     { primary: "#2dd4bf", glow: "rgba(45,212,191,0.08)" },
+  tax:              { primary: "#60a5fa", glow: "rgba(96,165,250,0.08)" },
+  "ppor-vs-rent":   { primary: "#a78bfa", glow: "rgba(167,139,250,0.08)" },
+  grants:           { primary: "#34d399", glow: "rgba(52,211,153,0.08)" },
+  "offset-impact":  { primary: "#fb923c", glow: "rgba(251,146,60,0.08)" },
+  "rate-changes":   { primary: "#f87171", glow: "rgba(248,113,113,0.08)" },
+  "equity-growth":  { primary: "#38bdf8", glow: "rgba(56,189,248,0.08)" },
+  "tax-deductions": { primary: "#facc15", glow: "rgba(250,204,21,0.08)" },
+};
