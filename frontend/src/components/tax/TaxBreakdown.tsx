@@ -30,14 +30,14 @@ function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick, activeSe
   const visible = segments.filter((s) => s.value > 0);
   const total = segments.reduce((sum, s) => sum + s.value, 0);
   const circumference = 2 * Math.PI * 60;
-  const totalGap = GAP * circumference * visible.length;
+  const totalGap = visible.length > 1 ? GAP * circumference * visible.length : 0;
   const usable = circumference - totalGap;
   let offset = 0;
   const arcs = visible.map((s) => {
     const pct = total > 0 ? s.value / total : 0;
     const dash = pct * usable;
     const arc = { ...s, pct, dash, offset: -offset + circumference * 0.25 };
-    offset += dash + GAP * circumference;
+    offset += dash + (visible.length > 1 ? GAP * circumference : 0);
     return arc;
   });
 
