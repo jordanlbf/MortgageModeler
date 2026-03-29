@@ -65,6 +65,7 @@ LITO_MAX_OFFSET = 700
 LITO_FULL_THRESHOLD = 37_500  # Full $700 for TI ≤ $37,500
 LITO_PHASE_OUT_1_RATE = 0.05  # 5c per $1 over $37,500
 LITO_PHASE_OUT_1_END = 45_000  # At $45,000: $700 − ($7,500 × 0.05) = $325
+LITO_MID_OFFSET = 325  # Offset at exactly $45,000 (start of second phase-out)
 LITO_PHASE_OUT_2_RATE = 0.015  # 1.5c per $1 over $45,000
 LITO_ZERO_THRESHOLD = 66_667  # At $66,667: $325 − ($21,667 × 0.015) ≈ $0
 

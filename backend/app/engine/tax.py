@@ -7,11 +7,22 @@ All functions are pure — no side effects or external dependencies.
 from app.config.tax import (
     HECS_THRESHOLDS,
     HECS_TOP_THRESHOLD,
+    LITO_FULL_THRESHOLD,
+    LITO_MAX_OFFSET,
+    LITO_MID_OFFSET,
+    LITO_PHASE_OUT_1_END,
+    LITO_PHASE_OUT_1_RATE,
+    LITO_PHASE_OUT_2_RATE,
+    LITO_ZERO_THRESHOLD,
     MEDICARE_HIGH_THRESHOLD,
     MEDICARE_LEVY_RATE,
     MEDICARE_LOWER_THRESHOLD,
     MEDICARE_PHASE_IN_RATE,
     MLS_THRESHOLDS,
+    SAPTO_LOWER_THRESHOLD,
+    SAPTO_MAX_OFFSET,
+    SAPTO_PHASE_OUT_RATE,
+    SAPTO_ZERO_THRESHOLD,
     TAX_BRACKETS,
 )
 from app.models.tax import TaxProfile
@@ -145,6 +156,58 @@ def calculate_marginal_rate(taxable_income: float) -> float:
             return rate
 
     return TAX_BRACKETS[-1][1]
+
+
+def calculate_lito(taxable_income: float) -> float:
+    """Calculate the Low Income Tax Offset (LITO).
+
+    Three-tier phase-out:
+      - TI ≤ $37,500:         $700
+      - $37,501 – $45,000:    $700 − 5c per $1 over $37,500
+      - $45,001 – $66,667:    $325 − 1.5c per $1 over $45,000
+      - > $66,667:            $0
+
+    Non-refundable — applied against income tax only, cannot create a refund.
+
+    Args:
+        taxable_income: Assessable income minus allowable deductions.
+
+    Returns:
+        LITO amount (always ≥ 0).
+    """
+    if taxable_income <= LITO_FULL_THRESHOLD:
+        return LITO_MAX_OFFSET
+    elif taxable_income <= LITO_PHASE_OUT_1_END:
+        return max(0, LITO_MAX_OFFSET - (taxable_income - LITO_FULL_THRESHOLD) * LITO_PHASE_OUT_1_RATE)
+    elif taxable_income <= LITO_ZERO_THRESHOLD:
+        return max(0, LITO_MID_OFFSET - (taxable_income - LITO_PHASE_OUT_1_END) * LITO_PHASE_OUT_2_RATE)
+    else:
+        return 0
+
+
+def calculate_sapto(taxable_income: float) -> float:
+    """Calculate the Seniors and Pensioners Tax Offset (SAPTO).
+
+    For eligible singles (Age Pension age, 67+):
+      - TI ≤ $33,532:         $2,230
+      - $33,533 – $51,372:    $2,230 − 12.5c per $1 over $33,532
+      - > $51,372:            $0
+
+    Non-refundable — applied against income tax only, cannot create a refund.
+    The service layer is responsible for checking eligibility before calling.
+
+    Args:
+        taxable_income: Assessable income minus allowable deductions.
+
+    Returns:
+        SAPTO amount (always ≥ 0).
+    """
+    if taxable_income <= SAPTO_LOWER_THRESHOLD:
+        return SAPTO_MAX_OFFSET
+    elif taxable_income <= SAPTO_ZERO_THRESHOLD:
+        return max(0, SAPTO_MAX_OFFSET - (taxable_income - SAPTO_LOWER_THRESHOLD) * SAPTO_PHASE_OUT_RATE)
+    else:
+        return 0
 
 
 def calculate_total_tax(tax_profile: TaxProfile) -> float:
