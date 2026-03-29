@@ -49,6 +49,10 @@ class TestTaxBreakdownEndpoint:
             "medicare_levy",
             "medicare_levy_surcharge",
             "hecs_repayment",
+            "lito",
+            "sapto_offset",
+            "franking_offset",
+            "total_offsets",
             "net_income",
             "total_tax",
             "marginal_rate",
@@ -210,7 +214,9 @@ class TestTaxBreakdownEndpoint:
         assert data["taxable_income"] == 60_000
         assert data["net_investment_loss"] == 20_000
         assert data["repayment_income"] == 80_000
-        assert data["income_tax"] == pytest.approx(8_788, abs=1)
+        # Raw IT $8,788 − LITO $100 (at $60k: $325 − $15k × 0.015) = $8,688
+        assert data["income_tax"] == pytest.approx(8_688, abs=1)
+        assert data["lito"] == pytest.approx(100, abs=1)
         assert data["medicare_levy"] == pytest.approx(1_200, abs=1)
 
     # ── Income measures in response ───────────
@@ -262,3 +268,44 @@ class TestTaxBreakdownEndpoint:
         assert data["total_deductions"] == 0
         assert data["net_investment_loss"] == 0
         assert data["hecs_repayment"] == 0
+
+    # ── Tax offsets ───────────────────────────
+
+    def test_lito_applied_at_low_income(self):
+        """$30k salary: LITO $700 reduces income tax."""
+        data = self._post_salary(30_000).json()
+        assert data["lito"] == 700
+        assert data["income_tax"] == pytest.approx(1_888 - 700, abs=1)
+
+    def test_lito_zero_at_high_income(self):
+        data = self._post_salary(100_000).json()
+        assert data["lito"] == 0
+
+    def test_sapto_not_applied_by_default(self):
+        data = self._post_salary(30_000).json()
+        assert data["sapto_offset"] == 0
+
+    def test_sapto_applied_when_eligible(self):
+        data = self._post_salary(30_000, sapto=True).json()
+        assert data["sapto_offset"] == 2_230
+
+    def test_franking_offset_applied(self):
+        """$100k salary + $3k franking: assessable $103k, TI $103k, raw IT $21,688 − franking $3k = $18,688."""
+        data = self._post(income={"salary": 100_000, "franking": 3_000}).json()
+        assert data["assessable_income"] == 103_000
+        assert data["franking_offset"] == 3_000
+        # Raw IT at $103k: 4,288 + (103,000 - 45,000) * 0.30 = $21,688, no LITO (>$66,667)
+        assert data["income_tax"] == pytest.approx(21_688 - 3_000, abs=1)
+
+    def test_franking_refund_via_api(self):
+        """$20k salary + $5k franking: produces negative income tax (refund)."""
+        data = self._post(income={"salary": 20_000, "franking": 5_000}).json()
+        assert data["income_tax"] < 0
+        assert data["total_tax"] < 0
+
+    def test_offsets_in_response(self):
+        """All offset fields present and sum correctly."""
+        data = self._post_salary(40_000, sapto=True).json()
+        assert data["total_offsets"] == pytest.approx(
+            data["lito"] + data["sapto_offset"] + data["franking_offset"], abs=0.01
+        )
