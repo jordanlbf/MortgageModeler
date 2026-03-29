@@ -210,10 +210,15 @@ interface TaxCompositionProps {
   netIncome: number;
   effectiveRate?: number;
   marginalRate?: number;
+  incomeTax?: number;
+  medicareLevy?: number;
+  medicareLevySurcharge?: number;
+  hecsRepayment?: number;
 }
 
 export default function TaxComposition({
   taxableIncome = 0, totalTax, netIncome, effectiveRate, marginalRate,
+  incomeTax = 0, medicareLevy = 0, medicareLevySurcharge = 0, hecsRepayment = 0,
 }: TaxCompositionProps) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [pinnedKey, setPinnedKey] = useState<string | null>(null);
@@ -226,9 +231,17 @@ export default function TaxComposition({
     setPinnedKey((prev) => (prev === key ? null : key));
   };
 
+  const taxValues: Record<string, number> = {
+    income_tax: incomeTax,
+    medicare_levy: medicareLevy,
+    medicare_levy_surcharge: medicareLevySurcharge,
+    hecs_repayment: hecsRepayment,
+    net_income: netIncome,
+  };
+
   const allSegments = DONUT_SEGMENTS.map(({ key, label, legendLabel, color }) => ({
     key, label, legendLabel, color,
-    value: key === "net_income" ? netIncome : (DUMMY[key] ?? 0),
+    value: taxValues[key] ?? 0,
   }));
 
   const total = allSegments.reduce((sum, s) => sum + s.value, 0);
