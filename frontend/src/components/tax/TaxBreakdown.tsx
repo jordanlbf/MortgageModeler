@@ -13,14 +13,6 @@ const DONUT_SEGMENTS = [
   { key: "net_income", label: "Net Income", legendLabel: "Net Income", color: "#2dd4bf" },
 ] as const;
 
-// TODO: replace with API response
-const DUMMY: Record<string, number> = {
-  income_tax: 24_967,
-  medicare_levy: 2_000,
-  medicare_levy_surcharge: 1_200,
-  hecs_repayment: 4_000,
-};
-
 const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated };
 
 // ── Donut chart ──────────────────────────────────

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import type { TaxBreakdownResponse } from "@/lib/api";
 import { fetchTaxBreakdown } from "@/lib/api";
 
@@ -36,18 +36,9 @@ export interface AdvancedTaxSetters {
   setPhi: (v: boolean) => void;
 }
 
-export interface IncomeMeasures {
-  assessableIncome: number;
-  totalDeductions: number;
-  taxableIncome: number;
-  repaymentIncome: number;
-  mlsIncome: number;
-}
-
 export interface AdvancedTaxState {
   inputs: AdvancedTaxInputs;
   setters: AdvancedTaxSetters;
-  incomeMeasures: IncomeMeasures;
   data: TaxBreakdownResponse | null;
   error: string | null;
 }
@@ -117,23 +108,9 @@ export function useAdvancedTaxState(): AdvancedTaxState {
     };
   }, [salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi]);
 
-  // ── Derived income measures (client-side, for immediate UI feedback) ──
-  const incomeMeasures = useMemo<IncomeMeasures>(() => {
-    // TODO: remove once UI reads exclusively from data
-    const netCapitalGain = capitalGainShort + capitalGainLong * 0.5;
-    const assessable = salary + rental + interest + dividend + franking + netCapitalGain;
-    const totalDeductions = rentalDeductions + workDeductions;
-    const taxableIncome = Math.max(0, assessable - totalDeductions);
-    const netInvestmentLoss = Math.max(0, rentalDeductions - rental);
-    const repaymentIncome = taxableIncome + rfb + salSac + netInvestmentLoss;
-    const mlsIncome = repaymentIncome;
-    return { assessableIncome: assessable, totalDeductions, taxableIncome, repaymentIncome, mlsIncome };
-  }, [salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, rfb, salSac]);
-
   return {
     inputs: { salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi },
     setters: { setSalary, setRental, setInterest, setDividend, setFranking, setCapitalGainShort, setCapitalGainLong, setRentalDeductions, setWorkDeductions, setSalSac, setRfb, setHecsBal, setPhi },
-    incomeMeasures,
     data,
     error,
   };

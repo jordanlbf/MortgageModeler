@@ -9,13 +9,6 @@ import AdvancedColumn from "@/components/tax/AdvancedColumn";
 import TaxComposition from "@/components/tax/TaxBreakdown";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
-// TODO: remove once all components read from API data
-const DUMMY = {
-  total_tax: 32_167,
-  net_income: 67_833,
-  marginal_rate: 0.345,
-};
-
 // ── Tax Brackets Divider ────────────────────────
 
 function ProgressiveStepsDivider() {
