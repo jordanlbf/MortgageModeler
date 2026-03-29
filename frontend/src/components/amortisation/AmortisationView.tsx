@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { t } from "@/lib/theme";
+import Link from "next/link";
+import { t, mix } from "@/lib/theme";
 import { useAmortisationState } from "@/hooks/useAmortisationState";
 import { useFillHeight } from "@/hooks/useFillHeight";
 import { useFocusMode } from "@/hooks/useFocusMode";
@@ -128,10 +129,10 @@ export default function AmortisationView() {
                   onClick={() => setView("chart")}
                   className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-bold tracking-wide transition-all duration-200 cursor-pointer"
                   style={view === "chart" ? {
-                    background: "rgba(45,212,191,0.12)",
-                    color: "var(--color-accent)",
-                    border: "1px solid rgba(45,212,191,0.4)",
-                    boxShadow: "0 0 12px rgba(45,212,191,0.15)",
+                    background: mix(t.accent, 12),
+                    color: t.accent,
+                    border: `1px solid ${mix(t.accent, 40)}`,
+                    boxShadow: `0 0 12px ${mix(t.accent, 15)}`,
                   } : {
                     background: "rgba(255,255,255,0.04)",
                     color: "rgba(255,255,255,0.35)",
@@ -149,10 +150,10 @@ export default function AmortisationView() {
                   onClick={() => setView("table")}
                   className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-bold tracking-wide transition-all duration-200 cursor-pointer"
                   style={view === "table" ? {
-                    background: "rgba(45,212,191,0.12)",
-                    color: "var(--color-accent)",
-                    border: "1px solid rgba(45,212,191,0.4)",
-                    boxShadow: "0 0 12px rgba(45,212,191,0.15)",
+                    background: mix(t.accent, 12),
+                    color: t.accent,
+                    border: `1px solid ${mix(t.accent, 40)}`,
+                    boxShadow: `0 0 12px ${mix(t.accent, 15)}`,
                   } : {
                     background: "rgba(255,255,255,0.04)",
                     color: "rgba(255,255,255,0.35)",
@@ -237,9 +238,13 @@ export default function AmortisationView() {
           }}
         >
           <div className="overflow-hidden min-h-0">
-            <div className="py-3 text-center text-[10px] text-muted/15">
-              MortgageModeler v0.1 · Daily compounding · AUD
-            </div>
+            <Link
+              href="/"
+              className="group flex items-center justify-center gap-2 py-3 text-[12px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
+            >
+              <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
+              Return to Dashboard
+            </Link>
           </div>
         </div>
       </div>

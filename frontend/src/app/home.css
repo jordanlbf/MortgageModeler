@@ -12,23 +12,13 @@
   overflow: hidden;
 }
 
-/* Layered ambient gradients */
 .home-wrap::before {
   content: '';
   position: fixed;
   inset: 0;
   background:
-    /* Primary hero wash — warm neutral with a hint of teal */
-    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(15,23,30,0.95) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 35% at 50% 5%, rgba(20,70,80,0.18) 0%, transparent 65%),
-    /* Subtle side accents */
-    radial-gradient(ellipse 30% 40% at 8% 20%, rgba(15,60,75,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 25% 35% at 92% 25%, rgba(15,60,75,0.06) 0%, transparent 55%),
-    /* Bottom vignette */
-    radial-gradient(ellipse 80% 40% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 70%),
-    /* Fine grid — deep grey lines */
-    repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,0.018) 59px, rgba(255,255,255,0.018) 60px),
-    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(255,255,255,0.018) 59px, rgba(255,255,255,0.018) 60px);
+    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(45,212,191,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 35% at 50% 5%, rgba(45,212,191,0.10) 0%, transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
@@ -70,8 +60,7 @@
   width: 70%;
   height: 50%;
   background:
-    radial-gradient(ellipse 45% 40% at 50% 40%, color-mix(in srgb, var(--color-accent) 4%, transparent) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 50% 20%, rgba(15,50,60,0.2) 0%, transparent 65%);
+    radial-gradient(ellipse 45% 40% at 50% 40%, color-mix(in srgb, var(--color-accent) 2%, transparent) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -128,16 +117,12 @@
   max-width: 1300px;
   margin-bottom: 36px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
 .home-featured .home-card-link {
   width: 100%;
-}
-
-.home-featured > :first-child {
-  grid-column: 2;
 }
 
 /* ── Section divider ──────────────────────────────── */
@@ -211,7 +196,7 @@
   cursor: pointer;
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%, color-mix(in srgb, var(--color-accent) 5%, transparent) 0%, transparent 60%),
-    rgba(16,18,20,0.85);
+    rgba(42,42,46,0.55);
   border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
   box-shadow:
     0 2px 16px rgba(0,0,0,0.4),
@@ -223,7 +208,7 @@
   transform: translateY(-4px) scale(1.015);
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%, color-mix(in srgb, var(--color-accent) 8%, transparent) 0%, transparent 60%),
-    rgba(20,22,25,0.92);
+    rgba(48,48,52,0.62);
   border-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
   box-shadow:
     0 20px 50px -12px rgba(0,0,0,0.6),
@@ -252,7 +237,7 @@
 /* ── Inactive card ────────────────────────────────── */
 .home-card--inactive {
   cursor: default;
-  background: rgba(14,16,18,0.7);
+  background: rgba(30,30,34,0.45);
   border: 1px solid rgba(255,255,255,0.04);
   box-shadow:
     0 2px 8px rgba(0,0,0,0.3),
@@ -346,7 +331,7 @@
   border-color: rgba(168,139,250,0.15);
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168,139,250,0.05) 0%, transparent 60%),
-    rgba(16,18,20,0.85);
+    rgba(42,42,46,0.55);
   box-shadow:
     0 2px 16px rgba(0,0,0,0.4),
     0 0 0 0.5px rgba(168,139,250,0.06),
@@ -357,7 +342,7 @@
   border-color: rgba(168,139,250,0.28);
   background:
     radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168,139,250,0.08) 0%, transparent 60%),
-    rgba(20,22,25,0.92);
+    rgba(48,48,52,0.62);
   box-shadow:
     0 20px 50px -12px rgba(0,0,0,0.6),
     0 0 0 0.5px rgba(168,139,250,0.12),
@@ -441,6 +426,8 @@
 .home-card-badge--beta {
   color: rgba(168,139,250,0.95);
   background: rgba(168,139,250,0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .home-card-badge--soon {
@@ -473,82 +460,75 @@
   color: rgba(148,163,184,0.12);
 }
 
-/* ── Coral Reef theme — homepage background ─────── */
-[data-theme="coral"] .home-wrap {
-  background: #081620;
+/* ── Midnight Indigo theme — homepage background ─────── */
+[data-theme="indigo"] .home-wrap {
+  background: #0a0e1a;
 }
 
-[data-theme="coral"] .home-wrap::before {
+[data-theme="indigo"] .home-wrap::before {
   background:
-    /* Bottom coral glow */
-    linear-gradient(0deg, rgba(255,110,97,0.08) 0%, transparent 60%),
-    /* Teal orb — top right */
-    radial-gradient(circle 400px at 90% 30%, rgba(0,200,180,0.1) 0%, transparent 70%),
-    /* Subtle coral orb — bottom left */
-    radial-gradient(circle 300px at 10% 80%, rgba(255,110,97,0.06) 0%, transparent 70%),
-    /* Deep ocean gradient */
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(8,22,32,0.95) 0%, transparent 70%);
+    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(99,102,241,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 35% at 50% 5%, rgba(99,102,241,0.10) 0%, transparent 65%);
 }
 
-[data-theme="coral"] .home-wrap::after {
+[data-theme="indigo"] .home-wrap::after {
   opacity: 0.015;
 }
 
-[data-theme="coral"] .home-pill {
-  background: rgba(0,200,180,0.1);
-  border-color: rgba(0,200,180,0.2);
-  color: #00c8b4;
+[data-theme="indigo"] .home-pill {
+  background: rgba(99,102,241,0.06);
+  border-color: rgba(99,102,241,0.15);
+  color: rgba(99,102,241,0.7);
 }
 
-[data-theme="coral"] .home-card--active {
+[data-theme="indigo"] .home-card--active {
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,200,180,0.08) 0%, transparent 60%),
-    rgba(8,22,32,0.85);
-  border-color: rgba(0,200,180,0.15);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.10) 0%, transparent 60%),
+    rgba(80,88,135,0.18);
+  border-color: rgba(99,102,241,0.18);
 }
 
-[data-theme="coral"] .home-card--active:hover {
+[data-theme="indigo"] .home-card--active:hover {
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,200,180,0.12) 0%, transparent 60%),
-    rgba(10,26,38,0.92);
-  border-color: rgba(0,200,180,0.28);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99,102,241,0.14) 0%, transparent 60%),
+    rgba(90,98,145,0.24);
+  border-color: rgba(99,102,241,0.30);
 }
 
-[data-theme="coral"] .home-card--inactive {
-  background: rgba(8,22,32,0.7);
-  border-color: rgba(0,200,180,0.08);
+[data-theme="indigo"] .home-card--inactive {
+  background: rgba(70,78,125,0.12);
+  border-color: rgba(99,102,241,0.08);
 }
 
-[data-theme="coral"] .home-card-desc {
-  color: rgba(224,240,240,0.35);
+[data-theme="indigo"] .home-card-desc {
+  color: rgba(196,204,223,0.35);
 }
 
-[data-theme="coral"] .home-card-badge--live {
-  background: #00c8b4;
-  color: #0a1e2e;
+[data-theme="indigo"] .home-card-badge--live {
+  background: #6366f1;
+  color: #fff;
 }
 
-[data-theme="coral"] .home-card-badge--beta {
-  background: rgba(255,110,97,0.15);
-  color: #ff6e61;
+[data-theme="indigo"] .home-card-badge--beta {
+  background: rgba(236,72,153,0.12);
+  color: #ec4899;
 }
 
-[data-theme="coral"] .home-glow {
+[data-theme="indigo"] .home-glow {
   background:
-    radial-gradient(ellipse 45% 40% at 50% 40%, rgba(0,200,180,0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 35% 30% at 50% 20%, rgba(255,110,97,0.04) 0%, transparent 65%);
+    radial-gradient(ellipse 45% 40% at 50% 40%, rgba(99,102,241,0.03) 0%, transparent 70%);
 }
 
-[data-theme="coral"] .home-footer {
-  border-top-color: rgba(0,200,180,0.08);
+[data-theme="indigo"] .home-footer {
+  border-top-color: rgba(99,102,241,0.08);
 }
 
-[data-theme="coral"] .home-divider-line {
-  background: linear-gradient(90deg, transparent, rgba(0,200,180,0.15), transparent);
+[data-theme="indigo"] .home-divider-line {
+  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.15), transparent);
 }
 
-[data-theme="coral"] .home-divider-text {
-  color: rgba(0,200,180,0.25);
+[data-theme="indigo"] .home-divider-text {
+  color: rgba(99,102,241,0.25);
 }
 
 /* ── Responsive ──────────────────────────────────── */
@@ -566,9 +546,6 @@
     gap: 14px;
   }
 
-  .home-featured > :first-child {
-    grid-column: auto;
-  }
 }
 
 /* Small tablet — ≤ 680px */

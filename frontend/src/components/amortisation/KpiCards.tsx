@@ -3,7 +3,7 @@ import type { ScheduleResponse } from "@/lib/api";
 import { PERIODS_PER_YEAR, FREQ_OPTIONS, FREQ_LABELS, parseCurrency } from "@/lib/constants";
 import { formatCurrency, formatCurrencyShort } from "@/lib/formatters";
 import { loanAmountFromPayment } from "@/lib/calculations";
-import { t } from "@/lib/theme";
+import { t, mix } from "@/lib/theme";
 import { useAnimatedValue } from "@/hooks/useAnimatedValue";
 import GlassCard from "@/components/ui/GlassCard";
 import EditableValue from "@/components/ui/EditableValue";
@@ -80,11 +80,11 @@ export default function KpiCards({
                 className="flex-1 rounded-full text-[11px] tracking-[0.5px] transition-all duration-200 cursor-pointer"
                 style={{
                   padding: "14px 4px",
-                  background: isActive ? "rgba(45,212,191,0.15)" : "transparent",
-                  border: isActive ? "1px solid var(--color-accent)" : "1px solid rgba(255,255,255,0.12)",
-                  color: isActive ? "var(--color-accent)" : "rgba(255,255,255,0.4)",
+                  background: isActive ? mix(t.accent, 15) : "transparent",
+                  border: isActive ? `1px solid ${t.accent}` : "1px solid rgba(255,255,255,0.12)",
+                  color: isActive ? t.accent : "rgba(255,255,255,0.4)",
                   fontWeight: isActive ? 700 : 400,
-                  boxShadow: isActive ? "0 0 10px rgba(45,212,191,0.2)" : "none",
+                  boxShadow: isActive ? `0 0 10px ${mix(t.accent, 20)}` : "none",
                 }}
               >
                 {opt.label}

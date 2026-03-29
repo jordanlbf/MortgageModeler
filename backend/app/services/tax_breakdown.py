@@ -8,6 +8,7 @@ using the TaxProfile model for accurate multi-component results.
 from app.engine.tax import (
     calculate_hecs_repayment,
     calculate_income_tax,
+    calculate_marginal_rate,
     calculate_medicare_levy,
     calculate_medicare_levy_surcharge,
 )
@@ -37,6 +38,8 @@ def build_tax_breakdown(profile: TaxProfile) -> TaxBreakdownResponse:
     total_tax = income_tax + medicare_levy + medicare_levy_surcharge + hecs_repayment
     net_income = profile.taxable_income - total_tax
 
+    marginal_rate = calculate_marginal_rate(profile.taxable_income)
+
     return TaxBreakdownResponse(
         taxable_income=profile.taxable_income,
         income_tax=income_tax,
@@ -45,4 +48,5 @@ def build_tax_breakdown(profile: TaxProfile) -> TaxBreakdownResponse:
         hecs_repayment=hecs_repayment,
         total_tax=total_tax,
         net_income=net_income,
+        marginal_rate=marginal_rate,
     )

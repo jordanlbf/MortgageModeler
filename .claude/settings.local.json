@@ -24,7 +24,8 @@
       "WebFetch(domain:www.krg.com.au)",
       "WebFetch(domain:eng.quicklaw.com.au)",
       "WebFetch(domain:www.qlsproctor.com.au)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(wc:*)"
     ]
   }
 }

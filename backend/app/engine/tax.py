@@ -125,6 +125,28 @@ def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> fl
     return min(repayment_owing, hecs_balance)
 
 
+def calculate_marginal_rate(taxable_income: float) -> float:
+    """
+    Determine the marginal income tax rate for a given taxable income.
+
+    Returns the rate of the bracket the income falls into.
+
+    Args:
+        taxable_income: Assessable income minus allowable deductions.
+
+    Returns:
+        Marginal tax rate as decimal (e.g. 0.30 for 30%).
+    """
+    if taxable_income <= 0:
+        return 0.0
+
+    for threshold, rate in TAX_BRACKETS:
+        if taxable_income <= threshold:
+            return rate
+
+    return TAX_BRACKETS[-1][1]
+
+
 def calculate_total_tax(tax_profile: TaxProfile) -> float:
     """
     Calculate total tax owing.
