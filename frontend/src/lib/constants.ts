@@ -45,6 +45,7 @@ export const TOOLS: Tool[] = [
   { id: "amortisation", title: "Amortisation", desc: "Repayments & interest over time", icon: "📊", active: true },
   { id: "tax", title: "Tax Calculator", desc: "Income tax & take-home pay", icon: "🧮", active: true },
   { id: "ppor-vs-rent", title: "PPOR vs Rent", desc: "Buy or keep renting?", icon: "⚖️", active: true, badge: "Beta" },
+  { id: "grants", title: "Government Grants", desc: "First home buyer schemes & eligibility", icon: "🏛️", active: true },
   { id: "offset-impact", title: "Offset Impact", desc: "See how offsets save interest", icon: "🏦", active: false },
   { id: "rate-changes", title: "Rate Changes", desc: "Model variable rate shifts", icon: "📈", active: false },
   { id: "equity-growth", title: "Equity Growth", desc: "Track property value over time", icon: "🏠", active: false },
