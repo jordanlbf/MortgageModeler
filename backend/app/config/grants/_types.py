@@ -36,7 +36,7 @@ class EligibilityPredicates:
     max_price: float | None = None
     max_income_single: float | None = None
     max_income_couple: float | None = None
-    property_type: str | None = None  # "new" | "existing" | None
+    property_type: str | None = None  # "new" | "existing" | "land" | None
     individual_only: bool = False
     off_the_plan_only: bool = False
 

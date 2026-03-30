@@ -142,6 +142,7 @@ FHB_LAND_NSW = GrantScheme(
         first_home_buyer=True,
         owner_occupier=True,
         max_price=450_000,
+        property_type="land",
     ),
 )
 

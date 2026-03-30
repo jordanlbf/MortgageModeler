@@ -175,6 +175,7 @@ FHB_LAND_QLD = GrantScheme(
     predicates=EligibilityPredicates(
         first_home_buyer=True,
         owner_occupier=True,
+        property_type="land",
     ),
 )
 
