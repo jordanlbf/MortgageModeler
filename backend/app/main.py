@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config.settings import settings
-from app.routers import amortisation, cashflow, comparison, ongoing_costs, tax, upfront_costs
+from app.routers import amortisation, cashflow, comparison, grants, ongoing_costs, tax, upfront_costs
 
 app = FastAPI(
     title=settings.APP_TITLE,
@@ -28,6 +28,7 @@ app.include_router(upfront_costs.router, prefix="/api")
 app.include_router(ongoing_costs.router, prefix="/api")
 app.include_router(cashflow.router, prefix="/api")
 app.include_router(comparison.router, prefix="/api")
+app.include_router(grants.router, prefix="/api")
 
 
 @app.get("/health")

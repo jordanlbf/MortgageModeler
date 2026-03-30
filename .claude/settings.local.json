@@ -27,7 +27,8 @@
       "Bash(find:*)",
       "Bash(wc:*)",
       "Bash(npm install:*)",
-      "WebFetch(domain:www.ato.gov.au)"
+      "WebFetch(domain:www.ato.gov.au)",
+      "Bash(ruff check:*)"
     ]
   }
 }

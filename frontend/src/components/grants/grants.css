@@ -230,9 +230,6 @@
   font-weight: 600;
 }
 
-.grants-results-bar .grants-near {
-  color: rgba(251, 191, 36, 0.55);
-}
 
 /* ── Card grid ───────────────────────────────────── */
 .grants-card-grid {
@@ -272,14 +269,6 @@
   border-top: 3px solid color-mix(in srgb, var(--scheme-color) 55%, transparent);
 }
 
-.dense-grant-card--near {
-  opacity: 0.68;
-  border-top: 3px solid rgba(251, 191, 36, 0.34);
-}
-
-.dense-grant-card--ineligible {
-  opacity: 0.4;
-}
 
 .dense-grant-card__inner {
   padding: 14px 14px 14px;
@@ -575,10 +564,6 @@
   color: color-mix(in srgb, var(--scheme-color) 75%, transparent);
 }
 
-.dense-grant-card__footer.is-ineligible {
-  background: rgba(248, 113, 113, 0.03);
-  color: rgba(248, 113, 113, 0.62);
-}
 
 .dense-grant-card__footerIcon {
   flex-shrink: 0;

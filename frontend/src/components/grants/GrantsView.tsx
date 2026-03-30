@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Check, Maximize2, Minimize2, House, BadgeCheck } from "lucide-react";
+import { fetchGrantsEligibility } from "@/lib/api";
+import type { GrantSchemeWithEligibility } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import "./grants.css";
 
@@ -12,50 +14,10 @@ const ALL_REGIONS = ["Federal", "NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "
 type Region = (typeof ALL_REGIONS)[number];
 type TriValue = "yes" | "no" | "any";
 
-interface Inputs {
-  regions: Set<string>;
-  price: number;
-  income: number;
-  propertyType: "new" | "existing" | "";
-  buyerType: "individual" | "couple" | "";
-  firstHomeBuyer: TriValue;
-  ownerOccupier: TriValue;
-}
-
-interface CheckResult {
-  eligible: boolean;
-  reasons: string[];
-}
-
-interface SchemeMeta {
-  deposit: string;
-  lmi: string;
-  buyer: string;
-}
-
-interface Scheme {
-  id: string;
-  name: string;
-  level: "Federal" | "State";
-  state?: string;
-  benefitPill: string;
-  meta: SchemeMeta;
-  theme: string;
-  benefits: string[];
-  eligibility: string[];
-  summary: string;
-  details?: string;
-  rules?: string[];
-  check: (inputs: Inputs) => CheckResult;
-}
+type Scheme = import("@/lib/api").GrantScheme;
+type CheckResult = import("@/lib/api").GrantEligibilityResult;
 
 // ── Helpers ─────────────────────────────────────
-
-function triMatch(input: TriValue, required: boolean): { pass: boolean; reason?: string } {
-  if (input === "any") return { pass: true };
-  const val = input === "yes";
-  return val === required ? { pass: true } : { pass: false, reason: required ? "Must be yes" : "Must be no" };
-}
 
 function parseCurrency(s: string): number {
   return Number(s.replace(/[^0-9.]/g, "")) || 0;
@@ -65,223 +27,6 @@ function formatCurrency(n: number): string {
   if (n === 0) return "";
   return "$" + n.toLocaleString("en-AU", { maximumFractionDigits: 0 });
 }
-
-// ── Scheme definitions ──────────────────────────
-
-const SCHEMES: Scheme[] = [
-  {
-    id: "fhbg",
-    name: "First Home Guarantee",
-    level: "Federal",
-    benefitPill: "No LMI with 5% deposit",
-    meta: { deposit: "5%", lmi: "Waived", buyer: "Individual / Joint" },
-    theme: "Purchase with as little as 5% deposit without paying Lenders Mortgage Insurance.",
-    benefits: [
-      "No LMI required with 5% deposit",
-      "No property price caps (from Oct 2025)",
-      "No income caps (from Oct 2025)",
-    ],
-    eligibility: [
-      "Australian citizen or permanent resident",
-      "First home buyer",
-      "Owner-occupier",
-      "Individual or joint application",
-    ],
-    summary: "You can purchase with 5% deposit and avoid LMI.",
-    details: "The First Home Guarantee allows eligible first home buyers to purchase a property with a deposit as low as 5% without needing to pay Lenders Mortgage Insurance. The government guarantees the remaining deposit gap up to 15%. From October 2025 property price caps and income caps are removed, broadening access significantly.",
-    rules: [
-      "Limited places released each financial year",
-      "Must use a participating lender",
-      "Property must be owner-occupied within 12 months",
-      "Cannot currently own property in Australia",
-    ],
-    check: (i) => {
-      const reasons: string[] = [];
-      const fhb = triMatch(i.firstHomeBuyer, true);
-      if (!fhb.pass) reasons.push("Must be a first home buyer");
-      const occ = triMatch(i.ownerOccupier, true);
-      if (!occ.pass) reasons.push("Must be owner-occupier");
-      return { eligible: reasons.length === 0, reasons };
-    },
-  },
-  {
-    id: "fhog-qld",
-    name: "First Home Owner Grant",
-    level: "State",
-    state: "QLD",
-    benefitPill: "$30,000 grant",
-    meta: { deposit: "Any", lmi: "N/A", buyer: "Individual / Joint" },
-    theme: "A $30,000 grant for first home buyers purchasing or building a new home in Queensland.",
-    benefits: [
-      "$30,000 cash grant",
-      "Applied at settlement or on completion",
-    ],
-    eligibility: [
-      "First home buyer",
-      "New or substantially renovated home",
-      "Property value up to $750,000",
-      "Australian citizen or permanent resident",
-      "Owner-occupier (must live in for 1 year)",
-    ],
-    summary: "You qualify for a $30,000 grant towards your new home.",
-    details: "The Queensland First Home Owner Grant provides a one-off $30,000 payment to eligible first home buyers purchasing or building a brand new home valued at up to $750,000. The grant is applied at settlement for purchases or on completion for builds, reducing the upfront cash needed.",
-    rules: [
-      "Must be a new or substantially renovated home",
-      "Contract must be dated on or after 20 November 2023 for the $30,000 amount",
-      "Must move in within 1 year and live there for at least 1 continuous year",
-      "Cannot have previously received a first home owner grant in any state",
-    ],
-    check: (i) => {
-      const reasons: string[] = [];
-      const fhb = triMatch(i.firstHomeBuyer, true);
-      if (!fhb.pass) reasons.push("Must be a first home buyer");
-      if (i.propertyType && i.propertyType !== "new") reasons.push("Must be a new build");
-      if (i.price > 750_000 && i.price > 0) reasons.push("Property value must be $750,000 or less");
-      const occ = triMatch(i.ownerOccupier, true);
-      if (!occ.pass) reasons.push("Must be owner-occupier");
-      return { eligible: reasons.length === 0, reasons };
-    },
-  },
-  {
-    id: "fhb-stamp-qld",
-    name: "First Home Stamp Duty Concession",
-    level: "State",
-    state: "QLD",
-    benefitPill: "Up to $17,350 saved",
-    meta: { deposit: "Any", lmi: "N/A", buyer: "Individual / Joint" },
-    theme: "Reduced or zero stamp duty for first home buyers in Queensland on properties up to $800,000.",
-    benefits: [
-      "Full exemption for properties up to $700,000",
-      "Partial concession $700,001 - $799,999",
-      "Savings up to $17,350",
-    ],
-    eligibility: [
-      "First home buyer",
-      "Property value under $800,000",
-      "Australian citizen or permanent resident",
-      "Owner-occupier",
-    ],
-    summary: "You may pay reduced or zero stamp duty on your purchase.",
-    details: "Queensland offers stamp duty concessions for first home buyers. Properties valued up to $700,000 receive a full exemption from transfer duty. Properties between $700,001 and $799,999 receive a sliding scale concession, with savings up to $17,350.",
-    rules: [
-      "Full exemption applies to properties up to $700,000",
-      "Partial concession tapers between $700,001 and $799,999",
-      "No concession for properties at $800,000 or above",
-      "Must be a home (not vacant land) for the concession",
-    ],
-    check: (i) => {
-      const reasons: string[] = [];
-      const fhb = triMatch(i.firstHomeBuyer, true);
-      if (!fhb.pass) reasons.push("Must be a first home buyer");
-      if (i.price >= 800_000 && i.price > 0) reasons.push("Property value must be under $800,000");
-      const occ = triMatch(i.ownerOccupier, true);
-      if (!occ.pass) reasons.push("Must be owner-occupier");
-      return { eligible: reasons.length === 0, reasons };
-    },
-  },
-  {
-    id: "help-to-buy",
-    name: "Help to Buy",
-    level: "Federal",
-    benefitPill: "Up to 40% equity",
-    meta: { deposit: "2%", lmi: "Waived", buyer: "Individual / Joint" },
-    theme: "The government contributes up to 40% of a new home's price as an equity partner, reducing your loan.",
-    benefits: [
-      "Up to 40% equity for new builds, 30% for existing",
-      "As little as 2% deposit required",
-      "Lower loan repayments",
-    ],
-    eligibility: [
-      "Australian citizen (18+)",
-      "Income cap: $100,000 (single) / $160,000 (couple)",
-      "Owner-occupier",
-      "Must not currently own property",
-    ],
-    summary: "The government co-owns up to 40%, reducing your loan and repayments.",
-    details: "Help to Buy is a shared equity scheme where the government contributes up to 40% of a new home's purchase price (or 30% for existing homes) as an equity partner. This reduces the size of your home loan and repayments. You can buy back the government's share over time or when you sell.",
-    rules: [
-      "Income cap: $100,000 individual / $160,000 couple",
-      "Must not currently own property",
-      "Government equity must be repaid on sale or can be bought back progressively",
-      "Limited places available each year",
-    ],
-    check: (i) => {
-      const reasons: string[] = [];
-      const occ = triMatch(i.ownerOccupier, true);
-      if (!occ.pass) reasons.push("Must be owner-occupier");
-      const incomeCap = i.buyerType === "couple" ? 160_000 : 100_000; // default to single cap if unset
-      if (i.income > incomeCap && i.income > 0) reasons.push(`Income must be $${incomeCap.toLocaleString()} or less`);
-      return { eligible: reasons.length === 0, reasons };
-    },
-  },
-  {
-    id: "fhss",
-    name: "First Home Super Saver (FHSS)",
-    level: "Federal",
-    benefitPill: "Up to $50k from super",
-    meta: { deposit: "N/A", lmi: "N/A", buyer: "Individual" },
-    theme: "Withdraw voluntary super contributions for a home deposit, taxed at a lower rate than saving outside super.",
-    benefits: [
-      "Withdraw up to $50,000 in voluntary contributions",
-      "Tax advantage: contributions taxed at 15% vs marginal rate",
-      "Withdrawal tax: marginal rate minus 30% offset",
-    ],
-    eligibility: [
-      "First home buyer",
-      "Australian citizen or permanent resident",
-      "Must have made voluntary super contributions",
-      "Must not have previously owned property",
-    ],
-    summary: "You can withdraw voluntary super contributions at a tax advantage for your deposit.",
-    details: "The First Home Super Saver scheme lets you withdraw voluntary super contributions (up to $50,000) to put towards a home deposit. Contributions are taxed at 15% going in (vs your marginal rate), and withdrawals are taxed at your marginal rate minus a 30% offset, making it more tax-efficient than saving outside super.",
-    rules: [
-      "Maximum $15,000 in voluntary contributions per financial year count towards FHSS",
-      "Total withdrawable amount capped at $50,000",
-      "Must request a determination from the ATO before signing a contract",
-      "Must sign a contract within 12 months of requesting withdrawal (or 24 months with extension)",
-    ],
-    check: (i) => {
-      const reasons: string[] = [];
-      const fhb = triMatch(i.firstHomeBuyer, true);
-      if (!fhb.pass) reasons.push("Must be a first home buyer");
-      return { eligible: reasons.length === 0, reasons };
-    },
-  },
-  {
-    id: "family-home-guarantee",
-    name: "Family Home Guarantee",
-    level: "Federal",
-    benefitPill: "2% deposit, no LMI",
-    meta: { deposit: "2%", lmi: "Waived", buyer: "Individual only" },
-    theme: "Single parents or eligible single guardians can purchase with as little as 2% deposit without LMI.",
-    benefits: [
-      "Purchase with 2% deposit",
-      "No LMI required",
-      "Available for new and existing homes",
-    ],
-    eligibility: [
-      "Single parent or legal guardian of a dependent",
-      "Australian citizen or permanent resident",
-      "Owner-occupier",
-      "Individual application only",
-    ],
-    summary: "As a single parent, you can purchase with just 2% deposit and no LMI.",
-    details: "The Family Home Guarantee supports eligible single parents or single legal guardians to buy a home with as little as 2% deposit without paying LMI. The government guarantees up to 18% of the property value. Available for both new and existing homes.",
-    rules: [
-      "Must be a single parent or legal guardian with at least one dependent",
-      "Individual application only — not available for joint applications",
-      "Limited places each financial year",
-      "Must use a participating lender",
-    ],
-    check: (i) => {
-      const reasons: string[] = [];
-      if (i.buyerType && i.buyerType !== "individual") reasons.push("Individual application only");
-      const occ = triMatch(i.ownerOccupier, true);
-      if (!occ.pass) reasons.push("Must be owner-occupier");
-      return { eligible: reasons.length === 0, reasons };
-    },
-  },
-];
 
 // ── State colours ───────────────────────────────
 
@@ -407,7 +152,7 @@ function CardFooter({ scheme, result }: { scheme: Scheme; result: CheckResult })
   );
 }
 
-function DenseSchemeCard({ scheme, result, nearMiss, isExpanded, onToggleExpand }: { scheme: Scheme; result: CheckResult; nearMiss: boolean; isExpanded: boolean; onToggleExpand: () => void }) {
+function DenseSchemeCard({ scheme, result, isExpanded, onToggleExpand }: { scheme: Scheme; result: CheckResult; isExpanded: boolean; onToggleExpand: () => void }) {
   const schemeColor =
     scheme.level === "Federal"
       ? FEDERAL_COLOR
@@ -415,7 +160,7 @@ function DenseSchemeCard({ scheme, result, nearMiss, isExpanded, onToggleExpand 
         ? STATE_COLORS[scheme.state]
         : FEDERAL_COLOR;
 
-  const cardState = result.eligible ? "eligible" : nearMiss ? "near" : "ineligible";
+  const cardState = "eligible";
   const overlayRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape or click outside
@@ -507,8 +252,7 @@ export default function GrantsView() {
   const [firstHomeBuyer, setFirstHomeBuyer] = useState<TriValue>("any");
   const [ownerOccupier, setOwnerOccupier] = useState<TriValue>("any");
   const [expandedSchemeId, setExpandedSchemeId] = useState<string | null>(null);
-
-  const allSelected = regions.size === ALL_REGIONS.length;
+  const [results, setResults] = useState<GrantSchemeWithEligibility[]>([]);
 
   const toggleRegion = (r: Region) => {
     setRegions((prev) => {
@@ -518,52 +262,46 @@ export default function GrantsView() {
     });
   };
 
-  const toggleAll = () => {
-    setRegions(allSelected ? new Set() : new Set(ALL_REGIONS));
-  };
+  const price = parseCurrency(priceStr);
+  const income = parseCurrency(incomeStr);
 
-  const inputs: Inputs = {
-    regions,
-    price: parseCurrency(priceStr),
-    income: parseCurrency(incomeStr),
-    propertyType,
-    buyerType,
-    firstHomeBuyer,
-    ownerOccupier,
-  };
+  // Fetch eligibility from API whenever inputs change (debounced)
+  useEffect(() => {
+    const states = Array.from(regions);
+    if (states.length === 0) {
+      setResults([]);
+      return;
+    }
 
-  // Has the user actively set any eligibility-relevant filter?
-  const hasEligibilityFilters = [
-    inputs.price > 0,
-    inputs.income > 0,
-    propertyType !== "",
-    buyerType !== "",
-    firstHomeBuyer !== "any",
-    ownerOccupier !== "any",
-  ].some(Boolean);
+    const timer = setTimeout(() => {
+      const controller = new AbortController();
 
-  const results = useMemo(() => {
-    const filtered = SCHEMES.filter((s) => {
-      if (s.level === "Federal" && !regions.has("Federal")) return false;
-      if (s.level === "State" && s.state && !regions.has(s.state)) return false;
-      return true;
-    });
-    // Only run eligibility checks when user has actively set filters
-    const neutral: CheckResult = { eligible: false, reasons: [] };
-    const checked = filtered.map((s) => ({
-      scheme: s,
-      result: hasEligibilityFilters ? s.check(inputs) : neutral,
-    }));
-    // Sort: eligible first, then by fewest ineligibility reasons (closest to qualifying)
-    return checked.sort((a, b) => {
-      if (a.result.eligible !== b.result.eligible) return a.result.eligible ? -1 : 1;
-      if (!a.result.eligible && !b.result.eligible) return a.result.reasons.length - b.result.reasons.length;
-      return a.scheme.name.localeCompare(b.scheme.name);
-    });
-  }, [regions, inputs, hasEligibilityFilters]);
+      fetchGrantsEligibility(
+        {
+          states,
+          price,
+          income,
+          partner_income: 0,
+          property_type: propertyType,
+          buyer_type: buyerType,
+          first_home_buyer: firstHomeBuyer,
+          owner_occupier: ownerOccupier,
+          off_the_plan: false,
+        },
+        controller.signal,
+      )
+        .then((data) => setResults(data.schemes))
+        .catch((err) => {
+          if (err.name !== "AbortError") console.error("Grants API error:", err);
+        });
+
+      return () => controller.abort();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [regions, price, income, propertyType, buyerType, firstHomeBuyer, ownerOccupier]);
 
   const eligibleCount = results.filter((r) => r.result.eligible).length;
-  const nearMissCount = results.filter((r) => !r.result.eligible && r.result.reasons.length === 1).length;
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
@@ -675,20 +413,16 @@ export default function GrantsView() {
         <div className="grants-results-bar">
           <span>
             <strong>{eligibleCount}</strong> {eligibleCount === 1 ? "scheme" : "schemes"} matched
-            {nearMissCount > 0 && (
-              <span className="grants-near"> &middot; {nearMissCount} close</span>
-            )}
           </span>
         </div>
 
-        {/* Card grid */}
+        {/* Card grid — only show eligible schemes */}
         <div className="grants-card-grid flex-1 min-h-0 custom-scrollbar">
-          {results.map(({ scheme, result }) => (
+          {results.filter((r) => r.result.eligible).map(({ scheme, result }) => (
             <DenseSchemeCard
               key={scheme.id}
               scheme={scheme}
               result={result}
-              nearMiss={!result.eligible && result.reasons.length === 1}
               isExpanded={expandedSchemeId === scheme.id}
               onToggleExpand={() => setExpandedSchemeId((prev) => (prev === scheme.id ? null : scheme.id))}
             />

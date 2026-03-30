@@ -125,6 +125,82 @@ export async function fetchTaxBreakdown(
   return res.json();
 }
 
+// ── Grants eligibility ─────────────────────
+
+export interface GrantSchemeMeta {
+  deposit: string;
+  lmi: string;
+  buyer: string;
+}
+
+export interface GrantScheme {
+  id: string;
+  name: string;
+  level: string;
+  state: string | null;
+  category: string;
+  benefit_pill: string;
+  meta: GrantSchemeMeta;
+  theme: string;
+  benefits: string[];
+  eligibility: string[];
+  summary: string;
+  details: string | null;
+  rules: string[] | null;
+}
+
+export interface GrantEligibilityResult {
+  eligible: boolean;
+  reasons: string[];
+}
+
+export interface GrantSchemeWithEligibility {
+  scheme: GrantScheme;
+  result: GrantEligibilityResult;
+}
+
+export interface GrantsEligibilityRequest {
+  states: string[];
+  price: number;
+  income: number;
+  partner_income: number;
+  property_type: string;
+  buyer_type: string;
+  first_home_buyer: string;
+  owner_occupier: string;
+  off_the_plan: boolean;
+}
+
+export async function fetchGrantSchemes(
+  signal?: AbortSignal,
+): Promise<{ schemes: GrantScheme[] }> {
+  const res = await fetch(`${API_BASE}/api/grants/schemes`, { signal });
+
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+export async function fetchGrantsEligibility(
+  params: GrantsEligibilityRequest,
+  signal?: AbortSignal,
+): Promise<{ schemes: GrantSchemeWithEligibility[] }> {
+  const res = await fetch(`${API_BASE}/api/grants/eligibility`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+    signal,
+  });
+
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status}`);
+  }
+
+  return res.json();
+}
+
 // ── Amortisation schedule ───────────────────
 
 export async function fetchSchedule(params: ScheduleRequest, signal?: AbortSignal): Promise<ScheduleResponse> {
