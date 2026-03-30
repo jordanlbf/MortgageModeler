@@ -63,8 +63,8 @@ class TestCheckEligibility:
             "partner_income": 0,
             "property_type": "new",
             "buyer_type": "individual",
-            "first_home_buyer": "yes",
-            "owner_occupier": "yes",
+            "first_home_buyer": True,
+            "owner_occupier": True,
             "off_the_plan": False,
         }
         payload.update(overrides)
@@ -122,7 +122,7 @@ class TestCheckEligibility:
 
     def test_not_fhb_reduces_eligibility(self):
         """Non-FHB should fail FHB-required schemes."""
-        data = self._post(first_home_buyer="no").json()
+        data = self._post(first_home_buyer=False).json()
         fhbg = next(s for s in data["schemes"] if s["scheme"]["id"] == "fhbg")
         assert not fhbg["result"]["eligible"]
         assert "Must be a first home buyer" in fhbg["result"]["reasons"]
@@ -167,7 +167,7 @@ class TestCheckEligibility:
     # ── Sorting ──────────────────────────────
 
     def test_eligible_sorted_first(self):
-        data = self._post(first_home_buyer="no").json()
+        data = self._post(first_home_buyer=False).json()
         found_ineligible = False
         for item in data["schemes"]:
             if not item["result"]["eligible"]:

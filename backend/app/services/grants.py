@@ -31,9 +31,8 @@ def _check_eligibility(scheme: GrantScheme, inputs: GrantsInputs) -> Eligibility
     """Check a single scheme's predicates against user inputs.
 
     Predicates set to ``None`` are skipped (scheme has no requirement).
-    User inputs set to ``"any"`` or ``""`` are also skipped (user
-    hasn't specified). A reason string is appended for each failing
-    predicate.
+    User inputs set to ``None`` are also skipped (user hasn't specified).
+    A reason string is appended for each failing predicate.
 
     Args:
         scheme: Grant scheme with declarative predicates.
@@ -46,23 +45,21 @@ def _check_eligibility(scheme: GrantScheme, inputs: GrantsInputs) -> Eligibility
     p = scheme.predicates
 
     # First home buyer
-    if p.first_home_buyer is not None and inputs.first_home_buyer != "any":
-        user_is_fhb = inputs.first_home_buyer == "yes"
-        if user_is_fhb != p.first_home_buyer:
+    if p.first_home_buyer is not None and inputs.first_home_buyer is not None:
+        if inputs.first_home_buyer != p.first_home_buyer:
             if p.first_home_buyer:
                 reasons.append("Must be a first home buyer")
             else:
                 reasons.append("Not available to first home buyers")
 
     # Owner-occupier
-    if p.owner_occupier is not None and inputs.owner_occupier != "any":
-        user_is_occ = inputs.owner_occupier == "yes"
-        if user_is_occ != p.owner_occupier:
+    if p.owner_occupier is not None and inputs.owner_occupier is not None:
+        if inputs.owner_occupier != p.owner_occupier:
             reasons.append("Must be owner-occupier")
 
     # Single parent required
-    if p.single_parent_required and inputs.single_parent != "any":
-        if inputs.single_parent != "yes":
+    if p.single_parent_required and inputs.single_parent is not None:
+        if not inputs.single_parent:
             reasons.append("Must be a single parent or legal guardian")
 
     # Property price cap
@@ -85,19 +82,20 @@ def _check_eligibility(scheme: GrantScheme, inputs: GrantsInputs) -> Eligibility
                 )
 
     # Property types (list-based — user's type must be in allowed list)
-    if p.property_types is not None and inputs.property_type != "":
+    if p.property_types is not None and inputs.property_type is not None:
         if inputs.property_type not in p.property_types:
             allowed = ", ".join(p.property_types)
             reasons.append(f"Property type must be: {allowed}")
 
     # Individual only
-    if p.individual_only and inputs.buyer_type != "":
+    if p.individual_only and inputs.buyer_type is not None:
         if inputs.buyer_type != "individual":
             reasons.append("Individual application only")
 
     # Off-the-plan only
-    if p.off_the_plan_only and not inputs.off_the_plan:
-        reasons.append("Off-the-plan purchase only")
+    if p.off_the_plan_only and inputs.off_the_plan is not None:
+        if not inputs.off_the_plan:
+            reasons.append("Off-the-plan purchase only")
 
     return EligibilityResult(eligible=len(reasons) == 0, reasons=reasons)
 

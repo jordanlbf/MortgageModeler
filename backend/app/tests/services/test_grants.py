@@ -27,9 +27,9 @@ def _make_inputs(**overrides) -> GrantsInputs:
         partner_income=0,
         property_type="new",
         buyer_type="individual",
-        first_home_buyer="yes",
-        owner_occupier="yes",
-        single_parent="any",
+        first_home_buyer=True,
+        owner_occupier=True,
+        single_parent=None,
         off_the_plan=False,
     )
     defaults.update(overrides)
@@ -75,32 +75,32 @@ class TestCheckEligibility:
 
     def test_fhb_required_and_user_is_fhb(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(first_home_buyer=True))
-        result = _check_eligibility(scheme, _make_inputs(first_home_buyer="yes"))
+        result = _check_eligibility(scheme, _make_inputs(first_home_buyer=True))
         assert result.eligible
 
     def test_fhb_required_and_user_is_not_fhb(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(first_home_buyer=True))
-        result = _check_eligibility(scheme, _make_inputs(first_home_buyer="no"))
+        result = _check_eligibility(scheme, _make_inputs(first_home_buyer=False))
         assert not result.eligible
         assert "Must be a first home buyer" in result.reasons
 
     def test_fhb_required_and_user_is_any(self):
         """User hasn't specified — predicate should be skipped."""
         scheme = _make_scheme(predicates=EligibilityPredicates(first_home_buyer=True))
-        result = _check_eligibility(scheme, _make_inputs(first_home_buyer="any"))
+        result = _check_eligibility(scheme, _make_inputs(first_home_buyer=None))
         assert result.eligible
 
     def test_fhb_false_and_user_is_fhb(self):
         """Scheme explicitly for non-FHB (e.g. FreshStart NT)."""
         scheme = _make_scheme(predicates=EligibilityPredicates(first_home_buyer=False))
-        result = _check_eligibility(scheme, _make_inputs(first_home_buyer="yes"))
+        result = _check_eligibility(scheme, _make_inputs(first_home_buyer=True))
         assert not result.eligible
         assert "Not available to first home buyers" in result.reasons
 
     def test_fhb_none_is_always_skipped(self):
         """Scheme has no FHB requirement — any value passes."""
         scheme = _make_scheme(predicates=EligibilityPredicates(first_home_buyer=None))
-        for val in ["yes", "no", "any"]:
+        for val in [True, False, None]:
             result = _check_eligibility(scheme, _make_inputs(first_home_buyer=val))
             assert result.eligible
 
@@ -108,13 +108,13 @@ class TestCheckEligibility:
 
     def test_owner_occupier_required_and_user_is_not(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(owner_occupier=True))
-        result = _check_eligibility(scheme, _make_inputs(owner_occupier="no"))
+        result = _check_eligibility(scheme, _make_inputs(owner_occupier=False))
         assert not result.eligible
         assert "Must be owner-occupier" in result.reasons
 
     def test_owner_occupier_skipped_when_any(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(owner_occupier=True))
-        result = _check_eligibility(scheme, _make_inputs(owner_occupier="any"))
+        result = _check_eligibility(scheme, _make_inputs(owner_occupier=None))
         assert result.eligible
 
     # ── max_price ────────────────────────────
@@ -190,7 +190,7 @@ class TestCheckEligibility:
 
     def test_property_types_unset_skips_check(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(property_types=["new"]))
-        result = _check_eligibility(scheme, _make_inputs(property_type=""))
+        result = _check_eligibility(scheme, _make_inputs(property_type=None))
         assert result.eligible
 
     def test_property_types_none_skips_check(self):
@@ -210,23 +210,23 @@ class TestCheckEligibility:
 
     def test_single_parent_required_and_is_single_parent(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(single_parent_required=True))
-        result = _check_eligibility(scheme, _make_inputs(single_parent="yes"))
+        result = _check_eligibility(scheme, _make_inputs(single_parent=True))
         assert result.eligible
 
     def test_single_parent_required_and_is_not(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(single_parent_required=True))
-        result = _check_eligibility(scheme, _make_inputs(single_parent="no"))
+        result = _check_eligibility(scheme, _make_inputs(single_parent=False))
         assert not result.eligible
         assert "Must be a single parent or legal guardian" in result.reasons
 
     def test_single_parent_required_and_any_skips(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(single_parent_required=True))
-        result = _check_eligibility(scheme, _make_inputs(single_parent="any"))
+        result = _check_eligibility(scheme, _make_inputs(single_parent=None))
         assert result.eligible
 
     def test_single_parent_not_required_always_passes(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(single_parent_required=False))
-        result = _check_eligibility(scheme, _make_inputs(single_parent="no"))
+        result = _check_eligibility(scheme, _make_inputs(single_parent=False))
         assert result.eligible
 
     # ── individual_only ──────────────────────
@@ -244,7 +244,7 @@ class TestCheckEligibility:
 
     def test_individual_only_unset_skips(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(individual_only=True))
-        result = _check_eligibility(scheme, _make_inputs(buyer_type=""))
+        result = _check_eligibility(scheme, _make_inputs(buyer_type=None))
         assert result.eligible
 
     # ── off_the_plan_only ────────────────────
@@ -270,7 +270,7 @@ class TestCheckEligibility:
             property_types=["new"],
         ))
         result = _check_eligibility(scheme, _make_inputs(
-            first_home_buyer="no",
+            first_home_buyer=False,
             price=900_000,
             property_type="existing",
         ))
@@ -308,7 +308,7 @@ class TestEvaluateSchemes:
         """Eligible schemes appear before ineligible ones."""
         results = evaluate_schemes(_make_inputs(
             states=["Federal", "QLD"],
-            first_home_buyer="no",
+            first_home_buyer=False,
         ))
         found_ineligible = False
         for r in results:
@@ -323,8 +323,8 @@ class TestEvaluateSchemes:
             states=["QLD"],
             price=600_000,
             property_type="new",
-            first_home_buyer="yes",
-            owner_occupier="yes",
+            first_home_buyer=True,
+            owner_occupier=True,
         ))
         fhog = next((r for r in results if r.scheme.id == "fhog-qld"), None)
         assert fhog is not None
@@ -335,8 +335,8 @@ class TestEvaluateSchemes:
             states=["QLD"],
             price=800_000,
             property_type="new",
-            first_home_buyer="yes",
-            owner_occupier="yes",
+            first_home_buyer=True,
+            owner_occupier=True,
         ))
         fhog = next((r for r in results if r.scheme.id == "fhog-qld"), None)
         assert fhog is not None
@@ -347,8 +347,8 @@ class TestEvaluateSchemes:
             states=["QLD"],
             price=600_000,
             property_type="existing",
-            first_home_buyer="yes",
-            owner_occupier="yes",
+            first_home_buyer=True,
+            owner_occupier=True,
         ))
         fhog = next((r for r in results if r.scheme.id == "fhog-qld"), None)
         assert fhog is not None
@@ -361,7 +361,7 @@ class TestEvaluateSchemes:
             income=90_000,
             partner_income=80_000,
             buyer_type="couple",
-            owner_occupier="yes",
+            owner_occupier=True,
         ))
         htb = next((r for r in results if r.scheme.id == "help-to-buy"), None)
         assert htb is not None
@@ -372,7 +372,7 @@ class TestEvaluateSchemes:
         results = evaluate_schemes(_make_inputs(
             states=["Federal"],
             buyer_type="couple",
-            owner_occupier="yes",
+            owner_occupier=True,
         ))
         fhg = next((r for r in results if r.scheme.id == "fhg"), None)
         assert fhg is not None
@@ -401,9 +401,9 @@ class TestEvaluateSchemes:
         """FreshStart NT is for existing homeowners, not first home buyers."""
         results = evaluate_schemes(_make_inputs(
             states=["NT"],
-            first_home_buyer="yes",
+            first_home_buyer=True,
             property_type="new",
-            owner_occupier="yes",
+            owner_occupier=True,
         ))
         fs = next((r for r in results if r.scheme.id == "freshstart-nt"), None)
         assert fs is not None
@@ -417,14 +417,14 @@ class TestEvaluateSchemes:
         """SA stamp duty should pass for new and land, fail for existing."""
         for pt in ["new", "land"]:
             results = evaluate_schemes(_make_inputs(
-                states=["SA"], property_type=pt, first_home_buyer="yes", owner_occupier="yes",
+                states=["SA"], property_type=pt, first_home_buyer=True, owner_occupier=True,
             ))
             sa_stamp = next((r for r in results if r.scheme.id == "fhb-stamp-sa"), None)
             assert sa_stamp is not None
             assert sa_stamp.result.eligible, f"SA stamp duty should be eligible for {pt}"
 
         results = evaluate_schemes(_make_inputs(
-            states=["SA"], property_type="existing", first_home_buyer="yes", owner_occupier="yes",
+            states=["SA"], property_type="existing", first_home_buyer=True, owner_occupier=True,
         ))
         sa_stamp = next((r for r in results if r.scheme.id == "fhb-stamp-sa"), None)
         assert sa_stamp is not None
@@ -433,7 +433,7 @@ class TestEvaluateSchemes:
     def test_fhg_requires_single_parent(self):
         """FHG should fail when single_parent is 'no'."""
         results = evaluate_schemes(_make_inputs(
-            states=["Federal"], single_parent="no", owner_occupier="yes", buyer_type="individual",
+            states=["Federal"], single_parent=False, owner_occupier=True, buyer_type="individual",
         ))
         fhg = next((r for r in results if r.scheme.id == "fhg"), None)
         assert fhg is not None

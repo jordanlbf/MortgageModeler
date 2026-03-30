@@ -31,7 +31,8 @@
       "Bash(ruff check:*)",
       "Bash(sed -i 's/property_type=\"\"new\"\"/property_types=[\"\"new\"\"]/g' app/config/grants/nsw.py app/config/grants/sa.py app/config/grants/nt.py app/config/grants/qld.py app/config/grants/tas.py app/config/grants/vic.py app/config/grants/wa.py)",
       "Bash(sed -i 's/property_type=\"\"land\"\"/property_types=[\"\"land\"\"]/g' app/config/grants/nsw.py app/config/grants/qld.py app/config/grants/wa.py)",
-      "Bash(sed -i 's/property_type=\"\"existing\"\"/property_types=[\"\"existing\"\"]/g' app/config/grants/nt.py)"
+      "Bash(sed -i 's/property_type=\"\"existing\"\"/property_types=[\"\"existing\"\"]/g' app/config/grants/nt.py)",
+      "Bash(cd:*)"
     ]
   }
 }
