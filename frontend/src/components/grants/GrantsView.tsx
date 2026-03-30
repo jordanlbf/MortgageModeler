@@ -392,14 +392,14 @@ export default function GrantsView() {
           <div className="grants-bar">
           <div className="grants-field grants-field--grow">
             <label className="grants-field-label">Purchase Price</label>
-            <input className="grants-bar-input" type="text" inputMode="numeric" placeholder="$750,000" value={priceStr} onChange={handlePriceChange} />
+            <input className="grants-bar-input" type="text" inputMode="numeric" placeholder="$0" value={priceStr} onChange={handlePriceChange} />
           </div>
 
           <div className="grants-bar-divider" />
 
           <div className="grants-field grants-field--grow">
             <label className="grants-field-label">Annual Income</label>
-            <input className="grants-bar-input" type="text" inputMode="numeric" placeholder="$100,000" value={incomeStr} onChange={handleIncomeChange} />
+            <input className="grants-bar-input" type="text" inputMode="numeric" placeholder="$0" value={incomeStr} onChange={handleIncomeChange} />
           </div>
 
           <div className="grants-bar-divider" />
