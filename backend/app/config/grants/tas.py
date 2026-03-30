@@ -7,6 +7,8 @@ Sources:
 Verified: March 2026
 """
 
+from datetime import date
+
 from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
 
 # ── First Home Owner Grant (TAS) ─────────────────────
@@ -44,11 +46,13 @@ FHOG_TAS = GrantScheme(
         "No property value cap",
         "Cannot have previously received FHOG in any state",
     ],
+    valid_from=date(2025, 7, 1),
+    valid_to=date(2026, 6, 30),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
-        property_type="new",
+        property_types=["new"],
     ),
 )
 
@@ -89,6 +93,8 @@ FHB_STAMP_TAS = GrantScheme(
         "Applies to settlements 18 Feb 2024 – 30 Jun 2026",
         "Replaces the previous 50% discount scheme",
     ],
+    valid_from=date(2024, 2, 18),
+    valid_to=date(2026, 6, 30),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -177,6 +183,7 @@ OTP_TAS = GrantScheme(
         "Property value up to $750,000",
         "Contracts must settle by 30 June 2026",
     ],
+    valid_to=date(2026, 6, 30),
     predicates=EligibilityPredicates(
         first_home_buyer=None,
         owner_occupier=None,

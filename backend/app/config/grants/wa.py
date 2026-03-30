@@ -7,6 +7,8 @@ Sources:
 Verified: March 2026
 """
 
+from datetime import date
+
 from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
 
 # ── First Home Owner Grant (WA) ──────────────────────
@@ -47,7 +49,7 @@ FHOG_WA = GrantScheme(
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,  # $1M north of 26th parallel — not modelled regionally
-        property_type="new",
+        property_types=["new"],
     ),
 )
 
@@ -129,7 +131,7 @@ FHB_LAND_WA = GrantScheme(
         first_home_buyer=True,
         owner_occupier=True,
         max_price=450_000,
-        property_type="land",
+        property_types=["land"],
     ),
 )
 
@@ -169,6 +171,7 @@ OTP_WA = GrantScheme(
         "Contracts must be signed by 30 June 2026",
         "Expanded to survey-strata dwellings from March 2026",
     ],
+    valid_to=date(2026, 6, 30),
     predicates=EligibilityPredicates(
         first_home_buyer=None,  # available to all buyers
         owner_occupier=None,  # not restricted to owner-occupiers

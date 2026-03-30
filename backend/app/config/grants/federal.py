@@ -104,6 +104,7 @@ FHG = GrantScheme(
         citizen_required=True,
         owner_occupier=True,
         individual_only=True,
+        single_parent_required=True,
     ),
 )
 

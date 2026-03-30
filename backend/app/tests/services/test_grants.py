@@ -29,6 +29,7 @@ def _make_inputs(**overrides) -> GrantsInputs:
         buyer_type="individual",
         first_home_buyer="yes",
         owner_occupier="yes",
+        single_parent="any",
         off_the_plan=False,
     )
     defaults.update(overrides)
@@ -174,22 +175,58 @@ class TestCheckEligibility:
         result = _check_eligibility(scheme, _make_inputs(income=0))
         assert result.eligible
 
-    # ── property_type ────────────────────────
+    # ── property_types ───────────────────────
 
-    def test_property_type_matches(self):
-        scheme = _make_scheme(predicates=EligibilityPredicates(property_type="new"))
+    def test_property_types_matches(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(property_types=["new"]))
         result = _check_eligibility(scheme, _make_inputs(property_type="new"))
         assert result.eligible
 
-    def test_property_type_mismatch(self):
-        scheme = _make_scheme(predicates=EligibilityPredicates(property_type="new"))
+    def test_property_types_mismatch(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(property_types=["new"]))
         result = _check_eligibility(scheme, _make_inputs(property_type="existing"))
         assert not result.eligible
-        assert "Must be a new property" in result.reasons
+        assert "Property type must be: new" in result.reasons
 
-    def test_property_type_unset_skips_check(self):
-        scheme = _make_scheme(predicates=EligibilityPredicates(property_type="new"))
+    def test_property_types_unset_skips_check(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(property_types=["new"]))
         result = _check_eligibility(scheme, _make_inputs(property_type=""))
+        assert result.eligible
+
+    def test_property_types_none_skips_check(self):
+        """Scheme with no property type restriction passes any input."""
+        scheme = _make_scheme(predicates=EligibilityPredicates(property_types=None))
+        result = _check_eligibility(scheme, _make_inputs(property_type="existing"))
+        assert result.eligible
+
+    def test_property_types_multi_allows_any_in_list(self):
+        """SA stamp duty: accepts new OR land."""
+        scheme = _make_scheme(predicates=EligibilityPredicates(property_types=["new", "land"]))
+        assert _check_eligibility(scheme, _make_inputs(property_type="new")).eligible
+        assert _check_eligibility(scheme, _make_inputs(property_type="land")).eligible
+        assert not _check_eligibility(scheme, _make_inputs(property_type="existing")).eligible
+
+    # ── single_parent_required ───────────────
+
+    def test_single_parent_required_and_is_single_parent(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(single_parent_required=True))
+        result = _check_eligibility(scheme, _make_inputs(single_parent="yes"))
+        assert result.eligible
+
+    def test_single_parent_required_and_is_not(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(single_parent_required=True))
+        result = _check_eligibility(scheme, _make_inputs(single_parent="no"))
+        assert not result.eligible
+        assert "Must be a single parent or legal guardian" in result.reasons
+
+    def test_single_parent_required_and_any_skips(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(single_parent_required=True))
+        result = _check_eligibility(scheme, _make_inputs(single_parent="any"))
+        assert result.eligible
+
+    def test_single_parent_not_required_always_passes(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(single_parent_required=False))
+        result = _check_eligibility(scheme, _make_inputs(single_parent="no"))
         assert result.eligible
 
     # ── individual_only ──────────────────────
@@ -230,7 +267,7 @@ class TestCheckEligibility:
         scheme = _make_scheme(predicates=EligibilityPredicates(
             first_home_buyer=True,
             max_price=750_000,
-            property_type="new",
+            property_types=["new"],
         ))
         result = _check_eligibility(scheme, _make_inputs(
             first_home_buyer="no",
@@ -376,6 +413,33 @@ class TestEvaluateSchemes:
         results = evaluate_schemes(_make_inputs(states=[]))
         assert len(results) == 0
 
+    def test_sa_stamp_duty_accepts_new_and_land(self):
+        """SA stamp duty should pass for new and land, fail for existing."""
+        for pt in ["new", "land"]:
+            results = evaluate_schemes(_make_inputs(
+                states=["SA"], property_type=pt, first_home_buyer="yes", owner_occupier="yes",
+            ))
+            sa_stamp = next((r for r in results if r.scheme.id == "fhb-stamp-sa"), None)
+            assert sa_stamp is not None
+            assert sa_stamp.result.eligible, f"SA stamp duty should be eligible for {pt}"
+
+        results = evaluate_schemes(_make_inputs(
+            states=["SA"], property_type="existing", first_home_buyer="yes", owner_occupier="yes",
+        ))
+        sa_stamp = next((r for r in results if r.scheme.id == "fhb-stamp-sa"), None)
+        assert sa_stamp is not None
+        assert not sa_stamp.result.eligible
+
+    def test_fhg_requires_single_parent(self):
+        """FHG should fail when single_parent is 'no'."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], single_parent="no", owner_occupier="yes", buyer_type="individual",
+        ))
+        fhg = next((r for r in results if r.scheme.id == "fhg"), None)
+        assert fhg is not None
+        assert not fhg.result.eligible
+        assert any("single parent" in r.lower() for r in fhg.result.reasons)
+
 
 # ──────────────────────────────────────────────
 # Registry sanity checks
@@ -400,3 +464,18 @@ class TestRegistry:
 
     def test_unknown_scheme_returns_none(self):
         assert get_scheme("nonexistent") is None
+
+    def test_time_limited_schemes_have_dates(self):
+        """Schemes with known expiry should have valid_to set."""
+        dated_ids = {
+            "fhog-qld", "fhb-stamp-new-qld", "fhb-land-qld", "otp-qld",
+            "otp-vic", "otp-wa",
+            "fhog-tas", "fhb-stamp-tas", "otp-tas",
+            "fhog-new-nt", "fhog-established-nt", "freshstart-nt",
+        }
+        for scheme_id in dated_ids:
+            scheme = get_scheme(scheme_id)
+            assert scheme is not None, f"{scheme_id} not found"
+            assert scheme.valid_from is not None or scheme.valid_to is not None, (
+                f"{scheme_id} should have at least one date set"
+            )

@@ -22,6 +22,7 @@ class GrantsEligibilityRequest(BaseModel):
     buyer_type: str = Field(default="", description="'individual', 'couple', or '' (unset)")
     first_home_buyer: str = Field(default="any", description="'yes', 'no', or 'any'")
     owner_occupier: str = Field(default="any", description="'yes', 'no', or 'any'")
+    single_parent: str = Field(default="any", description="'yes', 'no', or 'any'")
     off_the_plan: bool = Field(default=False, description="Off-the-plan purchase")
 
 
@@ -50,6 +51,8 @@ class SchemeResponse(BaseModel):
     summary: str
     details: str | None
     rules: list[str] | None
+    valid_from: str | None
+    valid_to: str | None
 
 
 class EligibilityResult(BaseModel):

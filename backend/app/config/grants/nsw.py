@@ -54,7 +54,7 @@ FHOG_NSW = GrantScheme(
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,
-        property_type="new",
+        property_types=["new"],
     ),
 )
 
@@ -142,7 +142,7 @@ FHB_LAND_NSW = GrantScheme(
         first_home_buyer=True,
         owner_occupier=True,
         max_price=450_000,
-        property_type="land",
+        property_types=["land"],
     ),
 )
 

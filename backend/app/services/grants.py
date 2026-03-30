@@ -6,9 +6,25 @@ Returns domain results — no per-scheme logic, all behaviour
 is driven by declarative predicates.
 """
 
+from datetime import date
+
 from app.config.grants._types import GrantScheme
 from app.config.grants.registry import get_all_schemes, get_schemes_for_states
 from app.models.grants import EligibilityResult, GrantsInputs, SchemeEligibility
+
+
+def _is_expired(scheme: GrantScheme) -> bool:
+    """Check if a scheme has passed its valid_to date.
+
+    Args:
+        scheme: Grant scheme with optional validity dates.
+
+    Returns:
+        True if the scheme has a valid_to date that is in the past.
+    """
+    if scheme.valid_to is None:
+        return False
+    return date.today() > scheme.valid_to
 
 
 def _check_eligibility(scheme: GrantScheme, inputs: GrantsInputs) -> EligibilityResult:
@@ -44,6 +60,11 @@ def _check_eligibility(scheme: GrantScheme, inputs: GrantsInputs) -> Eligibility
         if user_is_occ != p.owner_occupier:
             reasons.append("Must be owner-occupier")
 
+    # Single parent required
+    if p.single_parent_required and inputs.single_parent != "any":
+        if inputs.single_parent != "yes":
+            reasons.append("Must be a single parent or legal guardian")
+
     # Property price cap
     if p.max_price is not None and inputs.price > 0:
         if inputs.price > p.max_price:
@@ -54,15 +75,20 @@ def _check_eligibility(scheme: GrantScheme, inputs: GrantsInputs) -> Eligibility
     if household_income > 0:
         if inputs.buyer_type == "couple" and p.max_income_couple is not None:
             if household_income > p.max_income_couple:
-                reasons.append(f"Household income must be ${p.max_income_couple:,.0f} or less")
+                reasons.append(
+                    f"Household income must be ${p.max_income_couple:,.0f} or less"
+                )
         elif p.max_income_single is not None:
             if inputs.income > p.max_income_single:
-                reasons.append(f"Income must be ${p.max_income_single:,.0f} or less")
+                reasons.append(
+                    f"Income must be ${p.max_income_single:,.0f} or less"
+                )
 
-    # Property type
-    if p.property_type is not None and inputs.property_type != "":
-        if inputs.property_type != p.property_type:
-            reasons.append(f"Must be a {p.property_type} property")
+    # Property types (list-based — user's type must be in allowed list)
+    if p.property_types is not None and inputs.property_type != "":
+        if inputs.property_type not in p.property_types:
+            allowed = ", ".join(p.property_types)
+            reasons.append(f"Property type must be: {allowed}")
 
     # Individual only
     if p.individual_only and inputs.buyer_type != "":
@@ -80,8 +106,8 @@ def evaluate_schemes(inputs: GrantsInputs) -> list[SchemeEligibility]:
     """Get schemes for the requested states and evaluate eligibility.
 
     Retrieves federal schemes plus schemes for each requested state,
-    checks each against the user's inputs, and sorts results with
-    eligible schemes first.
+    filters out expired schemes, checks each against the user's inputs,
+    and sorts results with eligible schemes first.
 
     Args:
         inputs: Domain inputs including selected states.
@@ -92,9 +118,12 @@ def evaluate_schemes(inputs: GrantsInputs) -> list[SchemeEligibility]:
     """
     schemes = get_schemes_for_states(inputs.states)
 
+    # Filter out expired schemes
+    active = [s for s in schemes if not _is_expired(s)]
+
     results = [
         SchemeEligibility(scheme=s, result=_check_eligibility(s, inputs))
-        for s in schemes
+        for s in active
     ]
 
     results.sort(key=lambda x: (not x.result.eligible, len(x.result.reasons)))
@@ -102,9 +131,11 @@ def evaluate_schemes(inputs: GrantsInputs) -> list[SchemeEligibility]:
 
 
 def get_scheme_catalogue() -> list[GrantScheme]:
-    """Return all schemes across all jurisdictions without eligibility checking.
+    """Return all active schemes across all jurisdictions without eligibility checking.
+
+    Filters out schemes that have passed their valid_to date.
 
     Returns:
-        List of all registered GrantScheme instances.
+        List of active registered GrantScheme instances.
     """
-    return get_all_schemes()
+    return [s for s in get_all_schemes() if not _is_expired(s)]

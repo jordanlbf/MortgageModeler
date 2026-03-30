@@ -7,6 +7,7 @@ by the eligibility service.
 """
 
 from dataclasses import dataclass, field
+from datetime import date
 from enum import StrEnum
 
 
@@ -33,10 +34,11 @@ class EligibilityPredicates:
     first_home_buyer: bool | None = None
     owner_occupier: bool | None = None
     citizen_required: bool = False  # default False — only set True where explicitly required
+    single_parent_required: bool = False
     max_price: float | None = None
     max_income_single: float | None = None
     max_income_couple: float | None = None
-    property_type: str | None = None  # "new" | "existing" | "land" | None
+    property_types: list[str] | None = None  # e.g. ["new"], ["new", "land"], ["existing"] — None = any
     individual_only: bool = False
     off_the_plan_only: bool = False
 
@@ -73,4 +75,6 @@ class GrantScheme:
     summary: str = ""
     details: str | None = None
     rules: list[str] | None = None
+    valid_from: date | None = None  # scheme start date — None = no known start
+    valid_to: date | None = None  # scheme expiry date — None = no known expiry
     predicates: EligibilityPredicates = field(default_factory=EligibilityPredicates)

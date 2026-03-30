@@ -6,6 +6,8 @@ Sources:
 Verified: March 2026
 """
 
+from datetime import date
+
 from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
 
 # ── First Home Owner Grant (QLD) ─────────────────────
@@ -45,12 +47,14 @@ FHOG_QLD = GrantScheme(
         "Must move in within 1 year and live there for 6 continuous months",
         "Cannot have previously received FHOG in any state",
     ],
+    valid_from=date(2023, 11, 20),
+    valid_to=date(2026, 6, 30),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,
-        property_type="new",
+        property_types=["new"],
     ),
 )
 
@@ -133,10 +137,11 @@ FHB_STAMP_NEW_QLD = GrantScheme(
         "Must be a new or substantially renovated home",
         "Applies to the residential land portion of the transfer",
     ],
+    valid_from=date(2025, 5, 1),
     predicates=EligibilityPredicates(
         first_home_buyer=True,
         owner_occupier=True,
-        property_type="new",
+        property_types=["new"],
     ),
 )
 
@@ -172,10 +177,11 @@ FHB_LAND_QLD = GrantScheme(
         "Must build, move in, and live there within 2 years of settlement",
         "Applies to residential vacant land only",
     ],
+    valid_from=date(2025, 5, 1),
     predicates=EligibilityPredicates(
         first_home_buyer=True,
         owner_occupier=True,
-        property_type="land",
+        property_types=["land"],
     ),
 )
 
@@ -295,6 +301,7 @@ OTP_QLD = GrantScheme(
         "Available to all buyers including investors",
         "Contract must be signed by 21 October 2026",
     ],
+    valid_to=date(2026, 10, 21),
     predicates=EligibilityPredicates(
         first_home_buyer=None,
         owner_occupier=None,

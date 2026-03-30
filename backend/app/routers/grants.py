@@ -52,6 +52,8 @@ def _scheme_to_response(scheme: GrantScheme) -> SchemeResponse:
         summary=scheme.summary,
         details=scheme.details,
         rules=list(scheme.rules) if scheme.rules else None,
+        valid_from=scheme.valid_from.isoformat() if scheme.valid_from else None,
+        valid_to=scheme.valid_to.isoformat() if scheme.valid_to else None,
     )
 
 
@@ -110,6 +112,7 @@ def check_eligibility(req: GrantsEligibilityRequest) -> GrantsEligibilityRespons
         buyer_type=req.buyer_type,
         first_home_buyer=req.first_home_buyer,
         owner_occupier=req.owner_occupier,
+        single_parent=req.single_parent,
         off_the_plan=req.off_the_plan,
     )
 

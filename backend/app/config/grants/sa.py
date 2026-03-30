@@ -47,7 +47,7 @@ FHOG_SA = GrantScheme(
         citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
-        property_type="new",
+        property_types=["new"],
     ),
 )
 
@@ -92,8 +92,7 @@ FHB_STAMP_SA = GrantScheme(
         citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
-        # property_type not set — covers new homes AND vacant land to build
-        # (but NOT established homes; this nuance is display-only for now)
+        property_types=["new", "land"],
     ),
 )
 

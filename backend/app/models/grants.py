@@ -24,6 +24,7 @@ class GrantsInputs:
         buyer_type: ``"individual"``, ``"couple"``, or ``""`` if unset.
         first_home_buyer: ``"yes"``, ``"no"``, or ``"any"`` if unset.
         owner_occupier: ``"yes"``, ``"no"``, or ``"any"`` if unset.
+        single_parent: ``"yes"``, ``"no"``, or ``"any"`` if unset.
         off_the_plan: Whether the purchase is off-the-plan.
     """
 
@@ -35,6 +36,7 @@ class GrantsInputs:
     buyer_type: str = ""
     first_home_buyer: str = "any"
     owner_occupier: str = "any"
+    single_parent: str = "any"
     off_the_plan: bool = False
 
 
