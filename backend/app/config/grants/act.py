@@ -50,11 +50,12 @@ HBCS_ACT = GrantScheme(
         "Full exemption up to $1,020,000 (2025-26)",
         "Concessional rates $1,020,001 – $1,455,000",
         "Must not have owned property in Australia in the last 2 years",
-        "Household income threshold: $250,000 + $4,600 per dependent child",
+        "Household income threshold: $250,000 (+ $4,600 per dependent child — not checked here)",
         "Must live in the property for at least 1 year",
     ],
     predicates=EligibilityPredicates(
-        first_home_buyer=None,  # not restricted to FHB
+        citizen_required=True,
+        first_home_buyer=None,  # not restricted to FHB — must not have owned in last 2 years
         owner_occupier=True,
         max_price=1_455_000,
         max_income_single=250_000,

@@ -32,12 +32,13 @@ class EligibilityPredicates:
 
     first_home_buyer: bool | None = None
     owner_occupier: bool | None = None
-    citizen_required: bool = True
+    citizen_required: bool = False  # default False — only set True where explicitly required
     max_price: float | None = None
     max_income_single: float | None = None
     max_income_couple: float | None = None
     property_type: str | None = None  # "new" | "existing" | None
     individual_only: bool = False
+    off_the_plan_only: bool = False
 
 
 @dataclass(frozen=True)

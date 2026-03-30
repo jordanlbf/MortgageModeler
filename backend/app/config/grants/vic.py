@@ -44,6 +44,7 @@ FHOG_VIC = GrantScheme(
         "Cannot have previously received FHOG in any state",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,
@@ -88,6 +89,7 @@ FHB_STAMP_VIC = GrantScheme(
         "Thresholds effective from 1 July 2017",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,
@@ -104,34 +106,37 @@ OTP_VIC = GrantScheme(
     level="State",
     state=State.VIC,
     category="concession",
-    benefit_pill="Up to ~$28k saved",
+    benefit_pill="Reduced OTP duty",
     meta=SchemeMeta(deposit="Any", lmi="N/A", buyer="Individual / Joint"),
-    theme="Stamp duty reduction on off-the-plan purchases — construction costs deducted from dutiable value.",
+    theme="Stamp duty reduced by excluding construction costs incurred after contract date on off-the-plan strata purchases.",
     benefits=[
-        "100% of outstanding construction costs deducted from dutiable value",
-        "Savings of up to ~$28,000 on a typical apartment",
-        "Available to all buyers (not FHB-restricted)",
+        "Construction costs after contract date excluded from dutiable value",
+        "Applies to off-the-plan strata apartments and townhouses",
+        "Available to all buyers — no value cap",
     ],
     eligibility=[
-        "Any buyer (including investors)",
-        "Off-the-plan purchase",
-        "Extended to October 2026",
+        "Any buyer (including investors, companies, trusts)",
+        "Off-the-plan strata apartment or townhouse",
+        "Contracts signed 21 Oct 2024 – 20 Oct 2026",
     ],
-    summary="You pay reduced stamp duty on your off-the-plan purchase.",
+    summary="You pay stamp duty on a reduced value excluding post-contract construction costs.",
     details=(
-        "Victoria's off-the-plan duty concession deducts 100% of outstanding "
-        "construction costs from the dutiable value. Can save approximately $28,000 "
-        "on a $620,000 apartment. Available to all buyers including investors, "
-        "companies, and trusts. Extended to October 2026."
+        "Victoria's temporary off-the-plan concession reduces the dutiable value by "
+        "excluding construction costs incurred after the contract date. Applies to "
+        "off-the-plan strata apartments and townhouses. No property value cap. "
+        "Available to all buyers. Contracts must be signed between 21 October 2024 "
+        "and 20 October 2026."
     ),
     rules=[
-        "100% of outstanding construction costs deducted",
-        "Available to all buyers including investors",
-        "Extended to October 2026",
+        "Post-contract construction costs excluded from dutiable value",
+        "Off-the-plan strata dwellings only (apartments, townhouses)",
+        "No property value cap",
+        "Contracts signed 21 Oct 2024 – 20 Oct 2026",
     ],
     predicates=EligibilityPredicates(
         first_home_buyer=None,
         owner_occupier=None,
+        off_the_plan_only=True,
     ),
 )
 

@@ -54,9 +54,10 @@ FHBG = GrantScheme(
         "Must use a participating lender",
         "Property must be owner-occupied within 12 months",
         "Cannot currently own property in Australia",
-        "Property price caps vary by region (raised Oct 2025, not removed)",
+        "Property price caps vary by region (raised Oct 2025, not removed — not checked here)",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
     ),
@@ -79,11 +80,12 @@ FHG = GrantScheme(
         "Available for new and existing homes",
     ],
     eligibility=[
-        "Single parent or legal guardian of a dependent",
+        "Single parent or legal guardian of at least one dependent",
         "Australian citizen or permanent resident",
         "Owner-occupier",
         "Individual application only",
         "Not restricted to first home buyers",
+        "Note: single parent status not verified by this tool",
     ],
     summary="As a single parent, you can purchase with just 2% deposit and no LMI.",
     details=(
@@ -95,10 +97,11 @@ FHG = GrantScheme(
     rules=[
         "Must be a single parent or legal guardian with at least one dependent",
         "Individual application only — not available for joint applications",
-        "5,000 places per financial year (2025-26)",
+        "Limited places per financial year",
         "Must use a participating lender",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         owner_occupier=True,
         individual_only=True,
     ),
@@ -144,6 +147,7 @@ HELP_TO_BUY = GrantScheme(
         "Property price caps apply (vary by state/region)",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         owner_occupier=True,
         max_income_single=100_000,
         max_income_couple=160_000,
@@ -189,6 +193,7 @@ FHSS = GrantScheme(
         "12 months to sign a contract after requesting release, with automatic 12-month extension",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
     ),
 )

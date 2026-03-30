@@ -23,7 +23,7 @@ FHOG_WA = GrantScheme(
     theme="A $10,000 grant for first home buyers purchasing or building a new home in WA.",
     benefits=[
         "$10,000 cash grant",
-        "Regional price caps: Perth $850k, regional $600k, north $1M",
+        "Property value cap: $750,000 (or $1,000,000 north of 26th parallel)",
     ],
     eligibility=[
         "First home buyer",
@@ -34,20 +34,19 @@ FHOG_WA = GrantScheme(
     summary="You qualify for a $10,000 grant towards your new home.",
     details=(
         "The WA First Home Owner Grant provides $10,000 to eligible first home buyers "
-        "purchasing or building a new home. Property value caps vary by region: $850,000 "
-        "in Perth metro, $600,000 in regional WA, and $1,000,000 north of the 26th parallel."
+        "purchasing or building a new home valued up to $750,000 (or $1,000,000 north "
+        "of the 26th parallel)."
     ),
     rules=[
         "Must be a new home",
-        "Perth metro cap: $850,000",
-        "Regional WA cap: $600,000",
-        "North of 26th parallel cap: $1,000,000",
+        "Property value cap: $750,000 ($1,000,000 north of 26th parallel)",
         "Must live in the property for 6 continuous months within the first year",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
-        max_price=1_000_000,  # highest regional cap
+        max_price=750_000,  # $1M north of 26th parallel — not modelled regionally
         property_type="new",
     ),
 )
@@ -87,6 +86,7 @@ FHB_STAMP_WA = GrantScheme(
         "Thresholds updated 21 March 2025",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,  # highest regional threshold
@@ -125,6 +125,7 @@ FHB_LAND_WA = GrantScheme(
         "No concession above $450,000",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=450_000,
@@ -170,6 +171,7 @@ OTP_WA = GrantScheme(
     predicates=EligibilityPredicates(
         first_home_buyer=None,  # available to all buyers
         owner_occupier=None,  # not restricted to owner-occupiers
+        off_the_plan_only=True,
     ),
 )
 
@@ -209,7 +211,8 @@ KEYSTART_WA = GrantScheme(
         "Income cap: $148,000 single / $218,000 couple/family",
         "Property price cap: $800,000",
         "Deposit must be genuine savings, gifts, or FHOG (not borrowed)",
-        "Income caps updated August 2025 (statewide, no metro/regional split)",
+        "Income caps updated August 2025 (mainstream product, statewide)",
+        "Kimberley/Pilbara may have higher income limits — check with Keystart",
     ],
     predicates=EligibilityPredicates(
         owner_occupier=True,

@@ -4,6 +4,13 @@ NEW SOUTH WALES HOME BUYER SCHEMES
 Sources:
 - Revenue NSW: revenue.nsw.gov.au
 Verified: March 2026
+
+Notes:
+- NSW First Home Buyer Choice (annual property tax option) abolished 1 Jul 2023.
+- NSW Shared Equity Home Buyer Helper closed 30 Sep 2024.
+- NSW does not have a general off-the-plan duty concession like VIC/WA;
+  off-the-plan in NSW relates to deferral of when duty is paid, not a
+  separate concession reducing the dutiable value.
 """
 
 from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
@@ -28,7 +35,7 @@ FHOG_NSW = GrantScheme(
         "New home (never occupied or sold as residence)",
         "Property value up to $600,000 (or $750,000 house-and-land)",
         "Australian citizen or permanent resident",
-        "Owner-occupier (live in for 6 continuous months within 12 months)",
+        "Owner-occupier (live in for 12 continuous months within 12 months)",
     ],
     summary="You qualify for a $10,000 grant towards your new home.",
     details=(
@@ -39,10 +46,11 @@ FHOG_NSW = GrantScheme(
     rules=[
         "Must be a new home never previously occupied or sold as a residence",
         "$600,000 cap for completed homes, $750,000 for house-and-land",
-        "Must live in the property for 6 continuous months within 12 months",
+        "Must move in within 12 months and live there for 12 continuous months",
         "Cannot have previously received FHOG in any state",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,
@@ -53,6 +61,7 @@ FHOG_NSW = GrantScheme(
 # ── First Home Buyer Stamp Duty Exemption (NSW) ─────
 # Full exemption up to $800k, concession $800k–$1M.
 # Thresholds from 1 July 2023.
+# Residence requirement: 12 continuous months.
 
 FHB_STAMP_NSW = GrantScheme(
     id="fhb-stamp-nsw",
@@ -72,7 +81,7 @@ FHB_STAMP_NSW = GrantScheme(
         "First home buyer",
         "Property value up to $1,000,000 for any concession",
         "Australian citizen or permanent resident",
-        "Owner-occupier (move in within 12 months, live there 6 months)",
+        "Owner-occupier (move in within 12 months, live there 12 continuous months)",
     ],
     summary="You pay zero stamp duty on your home purchase.",
     details=(
@@ -84,9 +93,11 @@ FHB_STAMP_NSW = GrantScheme(
         "Full exemption up to $800,000",
         "Concessional rate from $800,001 to $1,000,000",
         "No concession above $1,000,000",
+        "Must move in within 12 months, live there 12 continuous months",
         "Thresholds effective from 1 July 2023",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=1_000_000,
@@ -112,7 +123,7 @@ FHB_LAND_NSW = GrantScheme(
         "First home buyer",
         "Vacant residential land",
         "Land value up to $450,000 for any concession",
-        "Must build and move in",
+        "Must build and occupy as principal residence",
     ],
     summary="You pay zero stamp duty on vacant land to build your first home.",
     details=(
@@ -124,56 +135,16 @@ FHB_LAND_NSW = GrantScheme(
         "Full exemption up to $350,000",
         "Concession tapers from $350,001 to $450,000",
         "No concession above $450,000",
+        "Build and occupation timing rules apply — check Revenue NSW for details",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=450_000,
     ),
 )
 
-# ── Off-the-Plan Duty Concession (NSW) ──────────────
-# Duty assessed on land-value component only.
-# Extended to October 2026. All buyers.
-
-OTP_NSW = GrantScheme(
-    id="otp-nsw",
-    name="Off-the-Plan Duty Concession",
-    level="State",
-    state=State.NSW,
-    category="concession",
-    benefit_pill="Up to ~$40k saved",
-    meta=SchemeMeta(deposit="Any", lmi="N/A", buyer="Individual / Joint"),
-    theme="Stamp duty assessed on land value only for off-the-plan purchases — significant savings.",
-    benefits=[
-        "Duty assessed on land-value component, not full completed price",
-        "Pre-construction: full exemption up to $750,000",
-        "Savings of $27,000–$40,000 on typical apartments",
-    ],
-    eligibility=[
-        "Any buyer (not limited to first home buyers)",
-        "Off-the-plan purchase",
-        "Extended to October 2026",
-    ],
-    summary="You pay stamp duty on the land value only, not the full purchase price.",
-    details=(
-        "NSW's off-the-plan duty concession assesses stamp duty on the land-value "
-        "component rather than the full completed price. For pre-construction contracts, "
-        "full exemption applies up to $750,000. Savings can be $27,000–$40,000 on "
-        "typical apartments. Available to all buyers. Extended to October 2026."
-    ),
-    rules=[
-        "Duty on land-value component only",
-        "Pre-construction: full exemption up to $750,000",
-        "Available to all buyers including investors",
-        "Extended to October 2026",
-    ],
-    predicates=EligibilityPredicates(
-        first_home_buyer=None,
-        owner_occupier=None,
-    ),
-)
-
 # ── All NSW schemes ──────────────────────────────────
 
-NSW_SCHEMES: list[GrantScheme] = [FHOG_NSW, FHB_STAMP_NSW, FHB_LAND_NSW, OTP_NSW]
+NSW_SCHEMES: list[GrantScheme] = [FHOG_NSW, FHB_STAMP_NSW, FHB_LAND_NSW]

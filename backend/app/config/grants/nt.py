@@ -1,19 +1,28 @@
 """
 NORTHERN TERRITORY HOME BUYER SCHEMES
 
-NT has the "HomeGrown Territory" branding for its FHOG.
-No property value caps on grants.
+NT uses the "HomeGrown Territory" branding for its grants.
+No property value caps on any grant.
 
 Sources:
 - NT Treasury: treasury.nt.gov.au
 - nt.gov.au
 Verified: March 2026
+
+Notes:
+- Territory Home Owner Discount (THOD) appears to be a historical measure
+  that has been superseded by the HomeGrown Territory program. Not included.
+- NT official sources are internally inconsistent on grant end dates.
+  Some pages show 30 Sep 2027, others show 30 Sep 2026. The established-home
+  grant may have a shorter window (originally to 30 Sep 2025). Dates here
+  reflect the most recent extensions found, but should be re-verified
+  before relying on them for hard eligibility decisions.
 """
 
 from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
 
-# ── First Home Owner Grant — New Homes (NT) ──────────
-# $50,000 for new homes (contracts 1 Oct 2024 – 30 Sep 2027).
+# ── HomeGrown Territory Grant — New Homes (NT) ──────
+# $50,000 for new homes. Contracts 1 Oct 2024 – 30 Sep 2027.
 # No property value cap. 12 months continuous residency.
 
 FHOG_NEW_NT = GrantScheme(
@@ -46,19 +55,63 @@ FHOG_NEW_NT = GrantScheme(
     rules=[
         "Contracts 1 Oct 2024 – 30 Sep 2027",
         "No property value cap",
-        "Must live in for 12 continuous months (increased from 6 months)",
+        "Must live in for 12 continuous months",
         "Cannot have previously received FHOG in any state",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         property_type="new",
     ),
 )
 
+# ── HomeGrown Territory Grant — Established Homes (NT)
+# $10,000 for established homes. Same contract window.
+
+FHOG_ESTABLISHED_NT = GrantScheme(
+    id="fhog-established-nt",
+    name="HomeGrown Territory Grant (Established Homes)",
+    level="State",
+    state=State.NT,
+    category="grant",
+    benefit_pill="$10,000 grant",
+    meta=SchemeMeta(deposit="Any", lmi="N/A", buyer="Individual / Joint"),
+    theme="A $10,000 grant for first home buyers purchasing an established home in the NT.",
+    benefits=[
+        "$10,000 cash grant",
+        "No property value cap",
+        "Established (existing) homes eligible",
+    ],
+    eligibility=[
+        "First home buyer",
+        "Established home",
+        "Australian citizen or permanent resident",
+        "Owner-occupier (live in for 12 continuous months)",
+    ],
+    summary="You qualify for a $10,000 grant towards your established home.",
+    details=(
+        "The NT HomeGrown Territory grant also provides $10,000 to first home buyers "
+        "purchasing an established (existing) home. No property value cap applies. "
+        "You must live in the home for 12 continuous months."
+    ),
+    rules=[
+        "Contracts 1 Oct 2024 – 30 Sep 2027",
+        "No property value cap",
+        "Must live in for 12 continuous months",
+        "Cannot have previously received FHOG in any state",
+    ],
+    predicates=EligibilityPredicates(
+        citizen_required=True,
+        first_home_buyer=True,
+        owner_occupier=True,
+        property_type="existing",
+    ),
+)
+
 # ── FreshStart Grant — Existing Homeowners (NT) ─────
 # $30,000 for existing homeowners buying/building new.
-# Not a first home buyer scheme.
+# Extended to 30 Sep 2027. Applications by 31 Dec 2027.
 
 FRESHSTART_NT = GrantScheme(
     id="freshstart-nt",
@@ -84,59 +137,22 @@ FRESHSTART_NT = GrantScheme(
     details=(
         "The FreshStart grant provides $30,000 to existing homeowners (not first home "
         "buyers) who purchase or build a new home in the NT. Contracts must be signed "
-        "from 1 October 2024 to 30 September 2026, with applications by 31 December 2026."
+        "from 1 October 2024 to 30 September 2027, with applications by 31 December 2027."
     ),
     rules=[
-        "Contracts 1 Oct 2024 – 30 Sep 2026",
-        "Applications by 31 December 2026",
+        "Contracts 1 Oct 2024 – 30 Sep 2027",
+        "Applications by 31 December 2027",
         "Must live in for 12 continuous months within 12 months of completion",
         "Cannot be combined with the HomeGrown Territory FHOG",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=False,  # explicitly for NON-first-home-buyers
         owner_occupier=True,
         property_type="new",
     ),
 )
 
-# ── Territory Home Owner Discount (THOD) ────────────
-# Up to $18,601 off stamp duty (2025-26).
-
-THOD_NT = GrantScheme(
-    id="thod-nt",
-    name="Territory Home Owner Discount",
-    level="State",
-    state=State.NT,
-    category="concession",
-    benefit_pill="Up to $18,601 saved",
-    meta=SchemeMeta(deposit="Any", lmi="N/A", buyer="Individual / Joint"),
-    theme="Stamp duty discount of up to $18,601 for first home buyers in the NT.",
-    benefits=[
-        "Up to $18,601 off stamp duty (2025-26)",
-        "Applies to new homes, established homes, and vacant land",
-    ],
-    eligibility=[
-        "First home buyer",
-        "Australian citizen or permanent resident",
-        "Owner-occupier",
-    ],
-    summary="You receive up to $18,601 off stamp duty on your home purchase.",
-    details=(
-        "The Territory Home Owner Discount provides a stamp duty reduction of up to "
-        "$18,601 (2025-26 figure) for first home buyers in the NT. Applies to "
-        "established homes, new homes, and vacant land."
-    ),
-    rules=[
-        "Maximum discount $18,601 (2025-26)",
-        "Must not have previously owned residential property in Australia",
-        "Applies to all property types (new, existing, vacant land)",
-    ],
-    predicates=EligibilityPredicates(
-        first_home_buyer=True,
-        owner_occupier=True,
-    ),
-)
-
 # ── All NT schemes ───────────────────────────────────
 
-NT_SCHEMES: list[GrantScheme] = [FHOG_NEW_NT, FRESHSTART_NT, THOD_NT]
+NT_SCHEMES: list[GrantScheme] = [FHOG_NEW_NT, FHOG_ESTABLISHED_NT, FRESHSTART_NT]

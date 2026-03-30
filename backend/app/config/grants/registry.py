@@ -52,17 +52,36 @@ assert len(_BY_ID) == len(_ALL_SCHEMES), (
 # ── Public helpers ───────────────────────────────────
 
 def get_scheme(scheme_id: str) -> GrantScheme | None:
-    """Look up a single scheme by ID."""
+    """Look up a single scheme by ID.
+
+    Args:
+        scheme_id: Unique scheme identifier (e.g. ``"fhog-qld"``).
+
+    Returns:
+        The matching GrantScheme, or None if not found.
+    """
     return _BY_ID.get(scheme_id)
 
 
 def get_federal_schemes() -> list[GrantScheme]:
-    """Return all federal schemes."""
+    """Return all federal schemes.
+
+    Returns:
+        List of federal GrantScheme instances.
+    """
     return list(FEDERAL_SCHEMES)
 
 
 def get_schemes_for_state(state: str) -> list[GrantScheme]:
-    """Return all schemes for a given state/territory."""
+    """Return all schemes for a given state or territory.
+
+    Args:
+        state: State code (e.g. ``"QLD"``, ``"NSW"``).
+
+    Returns:
+        List of GrantScheme instances for that state, or empty list
+        if the state code is not recognised.
+    """
     try:
         key = State(state)
     except ValueError:
@@ -71,7 +90,17 @@ def get_schemes_for_state(state: str) -> list[GrantScheme]:
 
 
 def get_schemes_for_states(states: list[str]) -> list[GrantScheme]:
-    """Return federal schemes plus schemes for all specified states."""
+    """Return federal schemes plus schemes for all specified states.
+
+    Includes federal schemes if ``"Federal"`` is in the list.
+    Deduplicates by scheme ID.
+
+    Args:
+        states: List of region codes (e.g. ``["Federal", "QLD", "NSW"]``).
+
+    Returns:
+        Combined list of GrantScheme instances, deduplicated.
+    """
     result: list[GrantScheme] = []
     seen_ids: set[str] = set()
 
@@ -92,5 +121,9 @@ def get_schemes_for_states(states: list[str]) -> list[GrantScheme]:
 
 
 def get_all_schemes() -> list[GrantScheme]:
-    """Return every scheme across all jurisdictions."""
+    """Return every scheme across all jurisdictions.
+
+    Returns:
+        List of all registered GrantScheme instances.
+    """
     return list(_ALL_SCHEMES)

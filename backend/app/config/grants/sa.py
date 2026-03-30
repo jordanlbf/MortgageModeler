@@ -44,6 +44,7 @@ FHOG_SA = GrantScheme(
         "Cannot have previously received FHOG in any state",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         property_type="new",
@@ -60,36 +61,39 @@ FHB_STAMP_SA = GrantScheme(
     level="State",
     state=State.SA,
     category="concession",
-    benefit_pill="Full exemption (new homes)",
+    benefit_pill="Full exemption (new homes/land)",
     meta=SchemeMeta(deposit="Any", lmi="N/A", buyer="Individual / Joint"),
-    theme="Full stamp duty exemption for first home buyers purchasing a new home — no price cap.",
+    theme="Full stamp duty exemption for first home buyers purchasing a new home or vacant land to build — no price cap.",
     benefits=[
         "Full transfer duty exemption",
-        "No property value cap",
-        "New homes only (no relief for established homes)",
+        "No property value cap (from 6 June 2024)",
+        "Applies to new homes and vacant land to build",
+        "No relief for established homes",
     ],
     eligibility=[
         "First home buyer",
-        "New home (established homes not eligible)",
+        "New home or vacant land to build (established homes not eligible)",
         "Australian citizen or permanent resident",
         "Owner-occupier",
     ],
-    summary="You pay zero stamp duty on your new home purchase.",
+    summary="You pay zero stamp duty on your new home or land purchase.",
     details=(
         "South Australia provides a full stamp duty exemption for first home buyers "
-        "purchasing a new home, with no property value cap (from 6 June 2024). "
-        "There is no stamp duty concession for established homes — the exemption "
-        "applies only to new builds."
+        "purchasing a new home or vacant land to build on. The scheme began 15 June 2023 "
+        "with property value caps, which were removed from 6 June 2024. There is no "
+        "stamp duty concession for established homes."
     ),
     rules=[
-        "New homes only — no relief for established/existing homes",
-        "No property value cap",
-        "Effective from 6 June 2024",
+        "New homes and vacant land to build — no relief for established homes",
+        "No property value cap (caps removed 6 June 2024)",
+        "Scheme began 15 June 2023",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
-        property_type="new",
+        # property_type not set — covers new homes AND vacant land to build
+        # (but NOT established homes; this nuance is display-only for now)
     ),
 )
 

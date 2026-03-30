@@ -46,6 +46,7 @@ FHOG_QLD = GrantScheme(
         "Cannot have previously received FHOG in any state",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,
@@ -75,7 +76,6 @@ FHB_STAMP_EXISTING_QLD = GrantScheme(
         "First home buyer",
         "Existing home (not new build)",
         "Property value under $800,000",
-        "Australian citizen or permanent resident",
         "Owner-occupier",
     ],
     summary="You may pay reduced or zero stamp duty on your existing home purchase.",
@@ -120,7 +120,6 @@ FHB_STAMP_NEW_QLD = GrantScheme(
         "First home buyer",
         "New or substantially renovated home",
         "No price cap",
-        "Australian citizen or permanent resident",
         "Owner-occupier",
     ],
     summary="You pay zero transfer duty on your new home purchase.",
@@ -161,7 +160,6 @@ FHB_LAND_QLD = GrantScheme(
         "First home buyer",
         "Vacant residential land",
         "Must build and move in within 2 years",
-        "Australian citizen or permanent resident",
     ],
     summary="You pay zero transfer duty on vacant land to build your first home.",
     details=(
@@ -299,6 +297,7 @@ OTP_QLD = GrantScheme(
     predicates=EligibilityPredicates(
         first_home_buyer=None,
         owner_occupier=None,
+        off_the_plan_only=True,
     ),
 )
 

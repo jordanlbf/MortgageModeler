@@ -45,6 +45,7 @@ FHOG_TAS = GrantScheme(
         "Cannot have previously received FHOG in any state",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         property_type="new",
@@ -89,6 +90,7 @@ FHB_STAMP_TAS = GrantScheme(
         "Replaces the previous 50% discount scheme",
     ],
     predicates=EligibilityPredicates(
+        citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,
@@ -178,6 +180,7 @@ OTP_TAS = GrantScheme(
     predicates=EligibilityPredicates(
         first_home_buyer=None,
         owner_occupier=None,
+        off_the_plan_only=True,
         max_price=750_000,
     ),
 )
