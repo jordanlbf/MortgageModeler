@@ -68,7 +68,12 @@ export interface ScheduleRequest {
 // ── Tax breakdown ───────────────────────────
 
 export interface TaxBreakdownResponse {
+  assessable_income: number;
+  total_deductions: number;
   taxable_income: number;
+  repayment_income: number;
+  mls_income: number;
+  net_investment_loss: number;
   income_tax: number;
   medicare_levy: number;
   medicare_levy_surcharge: number;
@@ -76,16 +81,34 @@ export interface TaxBreakdownResponse {
   total_tax: number;
   net_income: number;
   marginal_rate: number;
+  effective_rate: number;
+}
+
+export interface TaxBreakdownRequest {
+  income: {
+    salary: number;
+    rental?: number;
+    interest?: number;
+    dividend?: number;
+    franking?: number;
+    capital_gain_short?: number;
+    capital_gain_long?: number;
+  };
+  deductions?: {
+    rental_deductions?: number;
+    work_deductions?: number;
+  };
+  adjustments?: {
+    sal_sac?: number;
+    rfb?: number;
+    hecs_bal?: number;
+    phi?: boolean;
+    sapto?: boolean;
+  };
 }
 
 export async function fetchTaxBreakdown(
-  params: {
-    taxable_income: number;
-    repayment_income: number;
-    mls_income: number;
-    hecs_balance: number;
-    has_private_health: boolean;
-  },
+  params: TaxBreakdownRequest,
   signal?: AbortSignal,
 ): Promise<TaxBreakdownResponse> {
   const res = await fetch(`${API_BASE}/api/tax/breakdown`, {

@@ -18,6 +18,7 @@ AI-powered code review workflows. Each agent scans specific parts of the codebas
 | **Audit Docstrings** | `docstrings` | Checks Python (Google style) and TypeScript (JSDoc) documentation coverage |
 | **Lean Frontend** | `frontend` | Flags thick components with too much logic and suggests hook/utility extractions |
 | **Architecture Guard** | `architecture` | Checks for layer violations across the backend and frontend stack |
+| **Tax Compliance** | `tax` | Validates tax engine against documented ATO rules, thresholds, and test coverage |
 
 ## Usage
 
@@ -73,11 +74,13 @@ agents/
 │   ├── audit_readme.toml
 │   ├── audit_docstrings.toml
 │   ├── lean_frontend.toml
-│   └── architecture_guard.toml
+│   ├── architecture_guard.toml
+│   └── tax_compliance.toml
 ├── prompts/               # System prompts (one MD per agent)
 │   ├── audit_readme.md
 │   ├── audit_docstrings.md
 │   ├── lean_frontend.md
-│   └── architecture_guard.md
+│   ├── architecture_guard.md
+│   └── tax_compliance.md
 └── reports/               # Generated reports via --save (gitignored)
 ```
