@@ -215,299 +215,391 @@
   box-shadow: none;
 }
 
-/* ── Results summary ─────────────────────────────── */
+/* ── Results bar ─────────────────────────────────── */
 .grants-results-bar {
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
-  padding: 0 4px;
-}
-
-.grants-results-count {
+  align-items: center;
+  padding: 18px 4px 16px;
+  color: rgba(244, 244, 245, 0.4);
   font-size: 16px;
-  font-weight: 500;
-  color: rgba(244,244,245,0.35);
 }
 
-.grants-results-count strong {
+.grants-results-bar strong {
   color: var(--color-accent);
   font-weight: 600;
 }
 
-.grants-results-near {
-  color: rgba(251,191,36,0.55);
+.grants-results-bar .grants-near {
+  color: rgba(251, 191, 36, 0.55);
 }
 
 /* ── Card grid ───────────────────────────────────── */
-.grants-grid--3col {
+.grants-card-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: min-content;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   overflow-y: auto;
   padding-bottom: 8px;
 }
 
-/* ── Card ────────────────────────────────────────── */
-.grants-card {
-  position: relative;
+/* ── Dense card ──────────────────────────────────── */
+.dense-grant-card {
   display: flex;
   flex-direction: column;
-  border-radius: 14px;
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  padding: 0;
-  overflow: hidden;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   transition:
-    transform 0.25s cubic-bezier(0.16,1,0.3,1),
-    box-shadow 0.25s cubic-bezier(0.16,1,0.3,1),
-    border-color 0.25s ease,
-    opacity 0.3s ease;
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.25s ease;
   box-shadow:
-    0 1px 4px rgba(0,0,0,0.20),
-    0 0 0 0.5px rgba(255,255,255,0.02),
-    inset 0 1px 0 rgba(255,255,255,0.02);
+    0 1px 4px rgba(0, 0, 0, 0.2),
+    0 0 0 0.5px rgba(255, 255, 255, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
-.grants-card:hover {
+.dense-grant-card:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 8px 28px rgba(0,0,0,0.30),
-    0 0 0 0.5px rgba(255,255,255,0.03),
-    inset 0 1px 0 rgba(255,255,255,0.03);
+    0 8px 28px rgba(0, 0, 0, 0.3),
+    0 0 0 0.5px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.grants-card--eligible {
-  border-top: 3px solid color-mix(in srgb, var(--scheme-color) 50%, transparent);
+.dense-grant-card--eligible {
+  border-top: 3px solid color-mix(in srgb, var(--scheme-color) 55%, transparent);
 }
 
-.grants-card--eligible:hover {
-  border-color: color-mix(in srgb, var(--scheme-color) 18%, transparent);
-  border-top-color: color-mix(in srgb, var(--scheme-color) 60%, transparent);
+.dense-grant-card--near {
+  opacity: 0.68;
+  border-top: 3px solid rgba(251, 191, 36, 0.34);
 }
 
-.grants-card--near-miss {
-  opacity: 0.65;
-  border-top: 3px solid rgba(251,191,36,0.30);
+.dense-grant-card--ineligible {
+  opacity: 0.4;
 }
 
-.grants-card--near-miss:hover {
-  opacity: 0.78;
-  border-color: rgba(251,191,36,0.18);
-  border-top-color: rgba(251,191,36,0.40);
+.dense-grant-card__inner {
+  padding: 14px 14px 14px;
+  min-height: 0;
+  flex: 1;
 }
 
-.grants-card--near-miss .grants-card-summary {
-  background: rgba(251,191,36,0.03);
-}
-
-.grants-card--near-miss .grants-card-summary-icon {
-  color: rgba(251,191,36,0.60);
-}
-
-.grants-card--near-miss .grants-card-summary-text {
-  color: rgba(251,191,36,0.50);
-}
-
-.grants-card--ineligible {
-  opacity: 0.35;
-}
-
-.grants-card--ineligible:hover {
-  opacity: 0.48;
-  transform: translateY(-1px);
-}
-
-/* ── Card top bar ────────────────────────────────── */
-.grants-card-topbar {
+.dense-grant-card__header {
   position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px 0;
   gap: 10px;
+  margin-bottom: 8px;
 }
 
-.grants-card-level-pill {
-  font-size: 11px;
+.dense-grant-card__tagRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dense-grant-card__tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 12px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 3px 8px;
-  border-radius: 4px;
-  line-height: 1;
-  transition: background 0.2s ease, color 0.2s ease;
-  background: color-mix(in srgb, var(--scheme-color) 10%, transparent);
+  letter-spacing: 0.09em;
   color: var(--scheme-color);
+  background: color-mix(in srgb, var(--scheme-color) 10%, transparent);
 }
 
-.grants-card:hover .grants-card-level-pill {
-  background: color-mix(in srgb, var(--scheme-color) 15%, transparent);
+.dense-grant-card__subheader {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-.grants-card-benefit-pill {
+.dense-grant-card__benefitPill {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 3px 8px;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 4px 11px;
-  border-radius: 100px;
-  background: color-mix(in srgb, var(--scheme-color) 8%, transparent);
-  color: var(--scheme-color);
-  white-space: nowrap;
   line-height: 1;
-  transition: background 0.2s ease;
+  color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.03);
+  white-space: nowrap;
+  margin-top: 2px;
 }
 
-.grants-card:hover .grants-card-benefit-pill {
-  background: color-mix(in srgb, var(--scheme-color) 12%, transparent);
-}
-
-/* ── Card name + theme ───────────────────────────── */
-.grants-card-name {
+.dense-grant-card__title {
   position: absolute;
   left: 0;
   right: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-foreground);
-  line-height: 1.25;
-  letter-spacing: -0.01em;
   margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   text-align: center;
   pointer-events: none;
 }
 
-.grants-card-theme {
-  font-size: 15px;
-  color: rgba(244,244,245,0.70);
-  line-height: 1.55;
-  margin: 14px 20px 0;
+.dense-grant-card__theme {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.62);
 }
 
-/* ── Card body (benefits + eligibility) ──────────── */
-.grants-card-body {
+.dense-grant-card__iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--scheme-color) 24%, transparent);
+  background: color-mix(in srgb, var(--scheme-color) 12%, transparent);
+  color: var(--scheme-color);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  outline: none;
+}
+
+.dense-grant-card__iconButton:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--scheme-color) 18%, transparent);
+  border-color: color-mix(in srgb, var(--scheme-color) 32%, transparent);
+}
+
+.dense-grant-card__iconButton:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--scheme-color) 25%, transparent);
+}
+
+/* ── Facts row ───────────────────────────────────── */
+.dense-grant-card__facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dense-fact {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.045);
+  padding: 11px 12px;
+}
+
+.dense-fact__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.dense-fact__top svg {
+  color: var(--scheme-color);
+}
+
+.dense-fact__value {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* ── Sections (Benefits + Eligibility) ───────────── */
+.dense-grant-card__sections {
   display: flex;
   flex-direction: column;
-  padding: 16px 20px 0;
-  flex: 1;
+  gap: 10px;
+  margin-top: 12px;
 }
 
-.grants-card-section + .grants-card-section {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,0.04);
+.dense-grant-card__panel {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 11px 12px;
 }
 
-.grants-card-section-label {
+.grant-section-title {
+  margin-bottom: 8px;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(244,244,245,0.70);
-  margin-bottom: 8px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.42);
 }
 
-.grants-card--eligible .grants-card-section-label:first-child {
-  color: color-mix(in srgb, var(--scheme-color) 55%, transparent);
-}
-
-.grants-card-list {
+.grant-bullets {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px 12px;
+  grid-template-columns: 1fr;
+  gap: 6px;
 }
 
-.grants-card-list li {
-  font-size: 15px;
-  color: rgba(244,244,245,0.70);
-  line-height: 1.5;
-  padding-left: 14px;
+.grant-bullets li {
   position: relative;
+  padding-left: 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.62);
 }
 
-.grants-card-list li::before {
+.grant-bullets li::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 9px;
+  top: 8px;
   width: 4px;
   height: 4px;
-  border-radius: 50%;
-  background: rgba(244,244,245,0.15);
-}
-
-.grants-card--eligible .grants-card-list li::before {
+  border-radius: 999px;
   background: color-mix(in srgb, var(--scheme-color) 35%, transparent);
 }
 
-.grants-card-list--eligibility li {
-  color: rgba(244,244,245,0.70);
+/* ── Hidden card (placeholder in grid while overlay shows) ── */
+.dense-grant-card--hidden {
+  visibility: hidden;
+}
+
+/* ── Overlay ─────────────────────────────────────── */
+.grant-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  animation: grant-overlay-in 0.3s ease-out both;
+}
+
+.grant-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  animation: grant-fade-in 0.25s ease-out both;
+}
+
+.grant-overlay__card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 720px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  animation: grant-card-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Expanded content sections ───────────────────── */
+.dense-grant-card__expanded {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dense-grant-card__expandedSection {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 11px 12px;
+}
+
+.dense-grant-card__expandedText {
+  margin: 0;
   font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.68);
 }
 
-.grants-card-list--eligibility li::before {
-  width: 3px;
-  height: 3px;
-  top: 8px;
-  background: rgba(244,244,245,0.10);
+/* ── Overlay animations ──────────────────────────── */
+@keyframes grant-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* ── Card summary footer ─────────────────────────── */
-.grants-card-summary {
+@keyframes grant-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes grant-card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Card footer ─────────────────────────────────── */
+.dense-grant-card__footer {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin: 16px 0 0;
-  padding: 14px 20px;
-  border-top: 1px solid rgba(255,255,255,0.04);
+  margin-top: auto;
+  padding: 10px 14px;
+  border-radius: 0 0 18px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.4;
   font-weight: 500;
-  transition: background 0.2s ease;
 }
 
-.grants-card-summary--eligible {
+.dense-grant-card__footer.is-eligible {
   background: color-mix(in srgb, var(--scheme-color) 4%, transparent);
-}
-
-.grants-card--eligible:hover .grants-card-summary--eligible {
-  background: color-mix(in srgb, var(--scheme-color) 6%, transparent);
-}
-
-.grants-card-summary--eligible .grants-card-summary-icon {
-  color: var(--scheme-color);
-  font-size: 16px;
-  line-height: 1.3;
-  flex-shrink: 0;
-}
-
-.grants-card-summary--eligible .grants-card-summary-text {
   color: color-mix(in srgb, var(--scheme-color) 75%, transparent);
 }
 
-.grants-card-summary--ineligible .grants-card-summary-icon {
-  color: rgba(248,113,113,0.50);
-  font-size: 16px;
-  line-height: 1.3;
-  flex-shrink: 0;
+.dense-grant-card__footer.is-ineligible {
+  background: rgba(248, 113, 113, 0.03);
+  color: rgba(248, 113, 113, 0.62);
 }
 
-.grants-card-summary--ineligible .grants-card-summary-text {
-  color: rgba(248,113,113,0.45);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 13.5px;
+.dense-grant-card__footerIcon {
+  flex-shrink: 0;
+  font-size: 18px;
+  line-height: 1.3;
 }
 
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 1100px) {
-  .grants-grid--3col {
-    grid-template-columns: repeat(2, 1fr);
+  .grants-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .dense-grant-card__facts {
+    grid-template-columns: 1fr;
+  }
+
+  .grant-overlay {
+    padding: 24px 16px;
   }
 }
 
@@ -518,7 +610,7 @@
   .grants-bar-divider {
     margin: 0 8px;
   }
-  .grants-grid--3col {
+  .grants-card-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -547,24 +639,21 @@
   animation: grants-fade-up 0.4s ease-out 0.2s both;
 }
 
-.grants-grid--3col {
+.grants-card-grid {
   animation: grants-fade-up 0.5s ease-out 0.25s both;
 }
 
 /* ── Reduced motion ──────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .grants-card,
-  .grants-pill,
-  .grants-card-benefit-pill,
-  .grants-card-level-pill,
-  .grants-card-summary {
+  .dense-grant-card,
+  .grants-pill {
     transition: none !important;
   }
 
   .grants-hero,
   .grants-bar,
   .grants-results-bar,
-  .grants-grid--3col {
+  .grants-card-grid {
     animation: none !important;
   }
 }

@@ -25,7 +25,8 @@
       "WebFetch(domain:eng.quicklaw.com.au)",
       "WebFetch(domain:www.qlsproctor.com.au)",
       "Bash(find:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { Check, Maximize2, Minimize2, House, BadgeCheck } from "lucide-react";
 import Header from "@/components/layout/Header";
 import "./grants.css";
 
@@ -26,16 +27,25 @@ interface CheckResult {
   reasons: string[];
 }
 
+interface SchemeMeta {
+  deposit: string;
+  lmi: string;
+  buyer: string;
+}
+
 interface Scheme {
   id: string;
   name: string;
   level: "Federal" | "State";
   state?: string;
   benefitPill: string;
+  meta: SchemeMeta;
   theme: string;
   benefits: string[];
   eligibility: string[];
   summary: string;
+  details?: string;
+  rules?: string[];
   check: (inputs: Inputs) => CheckResult;
 }
 
@@ -64,6 +74,7 @@ const SCHEMES: Scheme[] = [
     name: "First Home Guarantee",
     level: "Federal",
     benefitPill: "No LMI with 5% deposit",
+    meta: { deposit: "5%", lmi: "Waived", buyer: "Individual / Joint" },
     theme: "Purchase with as little as 5% deposit without paying Lenders Mortgage Insurance.",
     benefits: [
       "No LMI required with 5% deposit",
@@ -77,6 +88,13 @@ const SCHEMES: Scheme[] = [
       "Individual or joint application",
     ],
     summary: "You can purchase with 5% deposit and avoid LMI.",
+    details: "The First Home Guarantee allows eligible first home buyers to purchase a property with a deposit as low as 5% without needing to pay Lenders Mortgage Insurance. The government guarantees the remaining deposit gap up to 15%. From October 2025 property price caps and income caps are removed, broadening access significantly.",
+    rules: [
+      "Limited places released each financial year",
+      "Must use a participating lender",
+      "Property must be owner-occupied within 12 months",
+      "Cannot currently own property in Australia",
+    ],
     check: (i) => {
       const reasons: string[] = [];
       const fhb = triMatch(i.firstHomeBuyer, true);
@@ -92,6 +110,7 @@ const SCHEMES: Scheme[] = [
     level: "State",
     state: "QLD",
     benefitPill: "$30,000 grant",
+    meta: { deposit: "Any", lmi: "N/A", buyer: "Individual / Joint" },
     theme: "A $30,000 grant for first home buyers purchasing or building a new home in Queensland.",
     benefits: [
       "$30,000 cash grant",
@@ -105,6 +124,13 @@ const SCHEMES: Scheme[] = [
       "Owner-occupier (must live in for 1 year)",
     ],
     summary: "You qualify for a $30,000 grant towards your new home.",
+    details: "The Queensland First Home Owner Grant provides a one-off $30,000 payment to eligible first home buyers purchasing or building a brand new home valued at up to $750,000. The grant is applied at settlement for purchases or on completion for builds, reducing the upfront cash needed.",
+    rules: [
+      "Must be a new or substantially renovated home",
+      "Contract must be dated on or after 20 November 2023 for the $30,000 amount",
+      "Must move in within 1 year and live there for at least 1 continuous year",
+      "Cannot have previously received a first home owner grant in any state",
+    ],
     check: (i) => {
       const reasons: string[] = [];
       const fhb = triMatch(i.firstHomeBuyer, true);
@@ -122,6 +148,7 @@ const SCHEMES: Scheme[] = [
     level: "State",
     state: "QLD",
     benefitPill: "Up to $17,350 saved",
+    meta: { deposit: "Any", lmi: "N/A", buyer: "Individual / Joint" },
     theme: "Reduced or zero stamp duty for first home buyers in Queensland on properties up to $800,000.",
     benefits: [
       "Full exemption for properties up to $700,000",
@@ -135,6 +162,13 @@ const SCHEMES: Scheme[] = [
       "Owner-occupier",
     ],
     summary: "You may pay reduced or zero stamp duty on your purchase.",
+    details: "Queensland offers stamp duty concessions for first home buyers. Properties valued up to $700,000 receive a full exemption from transfer duty. Properties between $700,001 and $799,999 receive a sliding scale concession, with savings up to $17,350.",
+    rules: [
+      "Full exemption applies to properties up to $700,000",
+      "Partial concession tapers between $700,001 and $799,999",
+      "No concession for properties at $800,000 or above",
+      "Must be a home (not vacant land) for the concession",
+    ],
     check: (i) => {
       const reasons: string[] = [];
       const fhb = triMatch(i.firstHomeBuyer, true);
@@ -149,7 +183,8 @@ const SCHEMES: Scheme[] = [
     id: "help-to-buy",
     name: "Help to Buy",
     level: "Federal",
-    benefitPill: "Up to 40% equity contribution",
+    benefitPill: "Up to 40% equity",
+    meta: { deposit: "2%", lmi: "Waived", buyer: "Individual / Joint" },
     theme: "The government contributes up to 40% of a new home's price as an equity partner, reducing your loan.",
     benefits: [
       "Up to 40% equity for new builds, 30% for existing",
@@ -163,6 +198,13 @@ const SCHEMES: Scheme[] = [
       "Must not currently own property",
     ],
     summary: "The government co-owns up to 40%, reducing your loan and repayments.",
+    details: "Help to Buy is a shared equity scheme where the government contributes up to 40% of a new home's purchase price (or 30% for existing homes) as an equity partner. This reduces the size of your home loan and repayments. You can buy back the government's share over time or when you sell.",
+    rules: [
+      "Income cap: $100,000 individual / $160,000 couple",
+      "Must not currently own property",
+      "Government equity must be repaid on sale or can be bought back progressively",
+      "Limited places available each year",
+    ],
     check: (i) => {
       const reasons: string[] = [];
       const occ = triMatch(i.ownerOccupier, true);
@@ -176,7 +218,8 @@ const SCHEMES: Scheme[] = [
     id: "fhss",
     name: "First Home Super Saver (FHSS)",
     level: "Federal",
-    benefitPill: "Withdraw up to $50,000 from super",
+    benefitPill: "Up to $50k from super",
+    meta: { deposit: "N/A", lmi: "N/A", buyer: "Individual" },
     theme: "Withdraw voluntary super contributions for a home deposit, taxed at a lower rate than saving outside super.",
     benefits: [
       "Withdraw up to $50,000 in voluntary contributions",
@@ -190,6 +233,13 @@ const SCHEMES: Scheme[] = [
       "Must not have previously owned property",
     ],
     summary: "You can withdraw voluntary super contributions at a tax advantage for your deposit.",
+    details: "The First Home Super Saver scheme lets you withdraw voluntary super contributions (up to $50,000) to put towards a home deposit. Contributions are taxed at 15% going in (vs your marginal rate), and withdrawals are taxed at your marginal rate minus a 30% offset, making it more tax-efficient than saving outside super.",
+    rules: [
+      "Maximum $15,000 in voluntary contributions per financial year count towards FHSS",
+      "Total withdrawable amount capped at $50,000",
+      "Must request a determination from the ATO before signing a contract",
+      "Must sign a contract within 12 months of requesting withdrawal (or 24 months with extension)",
+    ],
     check: (i) => {
       const reasons: string[] = [];
       const fhb = triMatch(i.firstHomeBuyer, true);
@@ -202,6 +252,7 @@ const SCHEMES: Scheme[] = [
     name: "Family Home Guarantee",
     level: "Federal",
     benefitPill: "2% deposit, no LMI",
+    meta: { deposit: "2%", lmi: "Waived", buyer: "Individual only" },
     theme: "Single parents or eligible single guardians can purchase with as little as 2% deposit without LMI.",
     benefits: [
       "Purchase with 2% deposit",
@@ -215,6 +266,13 @@ const SCHEMES: Scheme[] = [
       "Individual application only",
     ],
     summary: "As a single parent, you can purchase with just 2% deposit and no LMI.",
+    details: "The Family Home Guarantee supports eligible single parents or single legal guardians to buy a home with as little as 2% deposit without paying LMI. The government guarantees up to 18% of the property value. Available for both new and existing homes.",
+    rules: [
+      "Must be a single parent or legal guardian with at least one dependent",
+      "Individual application only — not available for joint applications",
+      "Limited places each financial year",
+      "Must use a participating lender",
+    ],
     check: (i) => {
       const reasons: string[] = [];
       if (i.buyerType && i.buyerType !== "individual") reasons.push("Individual application only");
@@ -240,60 +298,201 @@ const STATE_COLORS: Record<string, string> = {
   NT:  "#D87A58",   // ochre
 };
 
-// ── Scheme card ─────────────────────────────────
+// ── Dense card helpers ──────────────────────────
 
-function SchemeCard({ scheme, result, nearMiss }: { scheme: Scheme; result: CheckResult; nearMiss: boolean }) {
-  const cardClass = result.eligible
-    ? "grants-card--eligible"
-    : nearMiss
-      ? "grants-card--near-miss"
-      : "grants-card--ineligible";
-  const schemeColor = scheme.level === "Federal" ? FEDERAL_COLOR : (scheme.state ? STATE_COLORS[scheme.state] : FEDERAL_COLOR);
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <div className="grant-section-title">{children}</div>;
+}
+
+function BulletList({ items }: { items: string[] }) {
   return (
-    <div
-      className={`grants-card ${cardClass}`}
-      style={{ "--scheme-color": schemeColor } as React.CSSProperties}
-    >
-      {/* Top bar: level pill + title */}
-      <div className="grants-card-topbar">
-        <span className="grants-card-level-pill">
-          {scheme.level === "Federal" ? "Federal" : scheme.state}
-        </span>
-        <h3 className="grants-card-name">{scheme.name}</h3>
+    <ul className="grant-bullets">
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
+// ── Dense scheme card ───────────────────────────
+
+function CardContent({ scheme, result }: { scheme: Scheme; result: CheckResult }) {
+  return (
+    <>
+      <div className="dense-grant-card__facts">
+        <div className="dense-fact">
+          <div className="dense-fact__top">
+            <span>Deposit</span>
+            <House className="h-4 w-4" />
+          </div>
+          <div className="dense-fact__value">{scheme.meta.deposit}</div>
+        </div>
+        <div className="dense-fact">
+          <div className="dense-fact__top">
+            <span>LMI</span>
+            <Check className="h-4 w-4" />
+          </div>
+          <div className="dense-fact__value">{scheme.meta.lmi}</div>
+        </div>
+        <div className="dense-fact">
+          <div className="dense-fact__top">
+            <span>Buyer type</span>
+            <BadgeCheck className="h-4 w-4" />
+          </div>
+          <div className="dense-fact__value">{scheme.meta.buyer}</div>
+        </div>
       </div>
-      <p className="grants-card-theme">{scheme.theme}</p>
 
-      {/* Body sections */}
-      <div className="grants-card-body">
-        <div className="grants-card-section">
-          <div className="grants-card-section-label">Benefits</div>
-          <ul className="grants-card-list">
-            {scheme.benefits.map((b) => <li key={b}>{b}</li>)}
-          </ul>
+      <div className="dense-grant-card__sections">
+        <div className="dense-grant-card__panel">
+          <SectionTitle>Benefits</SectionTitle>
+          <BulletList items={scheme.benefits} />
         </div>
-
-        <div className="grants-card-section">
-          <div className="grants-card-section-label">Eligibility</div>
-          <ul className="grants-card-list grants-card-list--eligibility">
-            {scheme.eligibility.map((e) => <li key={e}>{e}</li>)}
-          </ul>
+        <div className="dense-grant-card__panel">
+          <SectionTitle>Eligibility</SectionTitle>
+          <BulletList items={scheme.eligibility} />
         </div>
       </div>
+    </>
+  );
+}
 
-      {/* Summary footer */}
-      <div className={`grants-card-summary ${result.eligible ? "grants-card-summary--eligible" : "grants-card-summary--ineligible"}`}>
-        <div className="grants-card-summary-icon">
-          {result.eligible ? "\u2713" : "\u2717"}
+function ExpandedContent({ scheme, result }: { scheme: Scheme; result: CheckResult }) {
+  return (
+    <div className="dense-grant-card__expanded">
+      <div className="dense-grant-card__expandedSection">
+        <SectionTitle>Overview</SectionTitle>
+        <p className="dense-grant-card__expandedText">
+          {scheme.details ?? scheme.theme}
+        </p>
+      </div>
+
+      {!!scheme.rules?.length && (
+        <div className="dense-grant-card__expandedSection">
+          <SectionTitle>Key Rules</SectionTitle>
+          <BulletList items={scheme.rules} />
         </div>
-        <div className="grants-card-summary-text">
-          {result.eligible ? (
-            scheme.summary
-          ) : (
-            result.reasons.map((r) => <span key={r}>{r}</span>)
-          )}
-        </div>
+      )}
+
+      <div className="dense-grant-card__expandedSection">
+        <SectionTitle>Current Match Status</SectionTitle>
+        {result.eligible ? (
+          <p className="dense-grant-card__expandedText">
+            This scheme currently matches your selected filters.
+          </p>
+        ) : result.reasons.length ? (
+          <BulletList items={result.reasons} />
+        ) : (
+          <p className="dense-grant-card__expandedText">
+            Set more filters to evaluate this scheme.
+          </p>
+        )}
       </div>
     </div>
+  );
+}
+
+function CardFooter({ scheme, result }: { scheme: Scheme; result: CheckResult }) {
+  return (
+    <div className={`dense-grant-card__footer ${result.eligible ? "is-eligible" : "is-ineligible"}`}>
+      <span className="dense-grant-card__footerIcon">{result.eligible ? "✓" : "✕"}</span>
+      <div className="dense-grant-card__footerText">
+        {result.eligible
+          ? scheme.summary
+          : result.reasons.length
+            ? result.reasons.join(" · ")
+            : "Set filters to evaluate eligibility."}
+      </div>
+    </div>
+  );
+}
+
+function DenseSchemeCard({ scheme, result, nearMiss, isExpanded, onToggleExpand }: { scheme: Scheme; result: CheckResult; nearMiss: boolean; isExpanded: boolean; onToggleExpand: () => void }) {
+  const schemeColor =
+    scheme.level === "Federal"
+      ? FEDERAL_COLOR
+      : scheme.state
+        ? STATE_COLORS[scheme.state]
+        : FEDERAL_COLOR;
+
+  const cardState = result.eligible ? "eligible" : nearMiss ? "near" : "ineligible";
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Close on Escape or click outside
+  useEffect(() => {
+    if (!isExpanded) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onToggleExpand(); };
+    const onClick = (e: MouseEvent) => {
+      if (overlayRef.current && !overlayRef.current.contains(e.target as Node)) onToggleExpand();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("mousedown", onClick);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("mousedown", onClick); };
+  }, [isExpanded, onToggleExpand]);
+
+  const cardStyle = { ["--scheme-color" as string]: schemeColor } as React.CSSProperties;
+
+  const header = (
+    <div className="dense-grant-card__header">
+      <div className="dense-grant-card__tagRow">
+        <div className="dense-grant-card__tag">
+          {scheme.level === "Federal" ? "Federal" : scheme.state}
+        </div>
+        <h3 className="dense-grant-card__title">{scheme.name}</h3>
+      </div>
+      <button
+        type="button"
+        className="dense-grant-card__iconButton"
+        aria-expanded={isExpanded}
+        aria-controls={`grant-details-${scheme.id}`}
+        aria-label={isExpanded ? "Close grant details" : "View grant details"}
+        onClick={onToggleExpand}
+      >
+        {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+
+  const subheader = (
+    <p className="dense-grant-card__theme">{scheme.theme}</p>
+  );
+
+  return (
+    <>
+      {/* Compact card (always in grid) */}
+      <div
+        className={`dense-grant-card dense-grant-card--${cardState} ${isExpanded ? "dense-grant-card--hidden" : ""}`}
+        style={cardStyle}
+      >
+        <div className="dense-grant-card__inner">
+          {header}
+          {subheader}
+          <CardContent scheme={scheme} result={result} />
+        </div>
+        <CardFooter scheme={scheme} result={result} />
+      </div>
+
+      {/* Expanded overlay */}
+      {isExpanded && (
+        <div className="grant-overlay">
+          <div className="grant-overlay__backdrop" />
+          <div
+            ref={overlayRef}
+            id={`grant-details-${scheme.id}`}
+            className={`dense-grant-card dense-grant-card--${cardState} grant-overlay__card`}
+            style={cardStyle}
+          >
+            <div className="dense-grant-card__inner">
+              {header}
+              {subheader}
+              <CardContent scheme={scheme} result={result} />
+              <ExpandedContent scheme={scheme} result={result} />
+            </div>
+            <CardFooter scheme={scheme} result={result} />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -307,6 +506,7 @@ export default function GrantsView() {
   const [buyerType, setBuyerType] = useState<"individual" | "couple" | "">("");
   const [firstHomeBuyer, setFirstHomeBuyer] = useState<TriValue>("any");
   const [ownerOccupier, setOwnerOccupier] = useState<TriValue>("any");
+  const [expandedSchemeId, setExpandedSchemeId] = useState<string | null>(null);
 
   const allSelected = regions.size === ALL_REGIONS.length;
 
@@ -473,22 +673,24 @@ export default function GrantsView() {
 
         {/* Results bar */}
         <div className="grants-results-bar">
-          <span className="grants-results-count">
+          <span>
             <strong>{eligibleCount}</strong> {eligibleCount === 1 ? "scheme" : "schemes"} matched
             {nearMissCount > 0 && (
-              <span className="grants-results-near"> &middot; {nearMissCount} close</span>
+              <span className="grants-near"> &middot; {nearMissCount} close</span>
             )}
           </span>
         </div>
 
         {/* Card grid */}
-        <div className="grants-grid--3col flex-1 min-h-0 custom-scrollbar">
+        <div className="grants-card-grid flex-1 min-h-0 custom-scrollbar">
           {results.map(({ scheme, result }) => (
-            <SchemeCard
+            <DenseSchemeCard
               key={scheme.id}
               scheme={scheme}
               result={result}
               nearMiss={!result.eligible && result.reasons.length === 1}
+              isExpanded={expandedSchemeId === scheme.id}
+              onToggleExpand={() => setExpandedSchemeId((prev) => (prev === scheme.id ? null : scheme.id))}
             />
           ))}
         </div>
