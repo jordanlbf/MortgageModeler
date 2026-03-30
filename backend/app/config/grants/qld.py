@@ -273,7 +273,7 @@ OTP_QLD = GrantScheme(
     category="concession",
     benefit_pill="Reduced duty on OTP",
     meta=SchemeMeta(deposit="Any", lmi="N/A", buyer="Individual / Joint"),
-    theme="Stamp duty reduction on off-the-plan purchases — post-contract construction costs deducted from dutiable value.",
+    theme="Stamp duty reduction on off-the-plan purchases — construction costs deducted from dutiable value.",
     benefits=[
         "Post-contract construction costs deducted from dutiable value",
         "Available to all buyers (not FHB-restricted)",

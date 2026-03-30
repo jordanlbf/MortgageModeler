@@ -63,7 +63,7 @@ FHB_STAMP_SA = GrantScheme(
     category="concession",
     benefit_pill="Full exemption (new homes/land)",
     meta=SchemeMeta(deposit="Any", lmi="N/A", buyer="Individual / Joint"),
-    theme="Full stamp duty exemption for first home buyers purchasing a new home or vacant land to build — no price cap.",
+    theme="Full stamp duty exemption for first home buyers purchasing a new home or vacant land — no price cap.",
     benefits=[
         "Full transfer duty exemption",
         "No property value cap (from 6 June 2024)",

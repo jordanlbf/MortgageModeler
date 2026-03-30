@@ -7,10 +7,10 @@ by the eligibility service.
 """
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 
 
-class State(str, Enum):
+class State(StrEnum):
     NSW = "NSW"
     VIC = "VIC"
     QLD = "QLD"

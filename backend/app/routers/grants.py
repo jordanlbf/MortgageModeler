@@ -11,6 +11,8 @@ from app.config.grants._types import GrantScheme
 from app.models.grants import GrantsInputs, SchemeEligibility
 from app.schemas.grants import (
     EligibilityResult as EligibilityResultSchema,
+)
+from app.schemas.grants import (
     GrantsEligibilityRequest,
     GrantsEligibilityResponse,
     GrantsSchemesResponse,

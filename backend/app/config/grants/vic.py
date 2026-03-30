@@ -108,7 +108,7 @@ OTP_VIC = GrantScheme(
     category="concession",
     benefit_pill="Reduced OTP duty",
     meta=SchemeMeta(deposit="Any", lmi="N/A", buyer="Individual / Joint"),
-    theme="Stamp duty reduced by excluding construction costs incurred after contract date on off-the-plan strata purchases.",
+    theme="Stamp duty reduced by excluding post-contract construction costs on off-the-plan strata purchases.",
     benefits=[
         "Construction costs after contract date excluded from dutiable value",
         "Applies to off-the-plan strata apartments and townhouses",

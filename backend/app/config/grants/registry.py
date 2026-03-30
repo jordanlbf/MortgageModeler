@@ -6,15 +6,15 @@ Import helpers from here rather than individual state modules.
 """
 
 from app.config.grants._types import GrantScheme, State
+from app.config.grants.act import ACT_SCHEMES
 from app.config.grants.federal import FEDERAL_SCHEMES
 from app.config.grants.nsw import NSW_SCHEMES
-from app.config.grants.vic import VIC_SCHEMES
+from app.config.grants.nt import NT_SCHEMES
 from app.config.grants.qld import QLD_SCHEMES
-from app.config.grants.wa import WA_SCHEMES
 from app.config.grants.sa import SA_SCHEMES
 from app.config.grants.tas import TAS_SCHEMES
-from app.config.grants.act import ACT_SCHEMES
-from app.config.grants.nt import NT_SCHEMES
+from app.config.grants.vic import VIC_SCHEMES
+from app.config.grants.wa import WA_SCHEMES
 
 # ── Build lookup structures at import time ───────────
 
