@@ -113,6 +113,7 @@ def check_eligibility(req: GrantsEligibilityRequest) -> GrantsEligibilityRespons
         first_home_buyer=req.first_home_buyer,
         owner_occupier=req.owner_occupier,
         single_parent=req.single_parent,
+        owned_property_in_last_2_years=req.owned_property_in_last_2_years,
         off_the_plan=req.off_the_plan,
     )
 

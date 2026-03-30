@@ -62,6 +62,11 @@ def _check_eligibility(scheme: GrantScheme, inputs: GrantsInputs) -> Eligibility
         if not inputs.single_parent:
             reasons.append("Must be a single parent or legal guardian")
 
+    # Must not have owned property in last 2 years (ACT)
+    if p.requires_no_property_in_last_2_years and inputs.owned_property_in_last_2_years is not None:
+        if inputs.owned_property_in_last_2_years:
+            reasons.append("Must not have owned property in Australia in the last 2 years")
+
     # Property price cap
     if p.max_price is not None and inputs.price > 0:
         if inputs.price > p.max_price:

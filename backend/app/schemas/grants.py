@@ -23,6 +23,9 @@ class GrantsEligibilityRequest(BaseModel):
     first_home_buyer: bool | None = Field(default=None, description="true, false, or null")
     owner_occupier: bool | None = Field(default=None, description="true, false, or null")
     single_parent: bool | None = Field(default=None, description="true, false, or null")
+    owned_property_in_last_2_years: bool | None = Field(
+        default=None, description="true, false, or null (ACT HBCS requirement)"
+    )
     off_the_plan: bool | None = Field(default=None, description="true, false, or null")
 
 

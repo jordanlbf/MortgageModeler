@@ -35,6 +35,7 @@ class EligibilityPredicates:
     owner_occupier: bool | None = None
     citizen_required: bool = False  # default False — only set True where explicitly required
     single_parent_required: bool = False
+    requires_no_property_in_last_2_years: bool = False
     max_price: float | None = None
     max_income_single: float | None = None
     max_income_couple: float | None = None

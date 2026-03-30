@@ -25,6 +25,7 @@ class GrantsInputs:
         first_home_buyer: True, False, or None if unset.
         owner_occupier: True, False, or None if unset.
         single_parent: True, False, or None if unset.
+        owned_property_in_last_2_years: True, False, or None if unset.
         off_the_plan: Whether the purchase is off-the-plan, or None if unset.
     """
 
@@ -37,6 +38,7 @@ class GrantsInputs:
     first_home_buyer: bool | None = None
     owner_occupier: bool | None = None
     single_parent: bool | None = None
+    owned_property_in_last_2_years: bool | None = None
     off_the_plan: bool | None = None
 
 

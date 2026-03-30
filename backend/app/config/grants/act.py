@@ -55,7 +55,8 @@ HBCS_ACT = GrantScheme(
     ],
     predicates=EligibilityPredicates(
         citizen_required=True,
-        first_home_buyer=None,  # not restricted to FHB — must not have owned in last 2 years
+        first_home_buyer=None,  # not restricted to FHB
+        requires_no_property_in_last_2_years=True,
         owner_occupier=True,
         max_price=1_455_000,
         max_income_single=250_000,

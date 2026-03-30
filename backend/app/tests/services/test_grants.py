@@ -229,6 +229,29 @@ class TestCheckEligibility:
         result = _check_eligibility(scheme, _make_inputs(single_parent=False))
         assert result.eligible
 
+    # ── requires_no_property_in_last_2_years ─
+
+    def test_ownership_lookback_fails_when_owned(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(requires_no_property_in_last_2_years=True))
+        result = _check_eligibility(scheme, _make_inputs(owned_property_in_last_2_years=True))
+        assert not result.eligible
+        assert "Must not have owned property in Australia in the last 2 years" in result.reasons
+
+    def test_ownership_lookback_passes_when_not_owned(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(requires_no_property_in_last_2_years=True))
+        result = _check_eligibility(scheme, _make_inputs(owned_property_in_last_2_years=False))
+        assert result.eligible
+
+    def test_ownership_lookback_skips_when_none(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(requires_no_property_in_last_2_years=True))
+        result = _check_eligibility(scheme, _make_inputs(owned_property_in_last_2_years=None))
+        assert result.eligible
+
+    def test_ownership_lookback_false_always_passes(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(requires_no_property_in_last_2_years=False))
+        result = _check_eligibility(scheme, _make_inputs(owned_property_in_last_2_years=True))
+        assert result.eligible
+
     # ── individual_only ──────────────────────
 
     def test_individual_only_with_couple(self):
@@ -431,7 +454,7 @@ class TestEvaluateSchemes:
         assert not sa_stamp.result.eligible
 
     def test_fhg_requires_single_parent(self):
-        """FHG should fail when single_parent is 'no'."""
+        """FHG should fail when single_parent is False."""
         results = evaluate_schemes(_make_inputs(
             states=["Federal"], single_parent=False, owner_occupier=True, buyer_type="individual",
         ))
@@ -439,6 +462,48 @@ class TestEvaluateSchemes:
         assert fhg is not None
         assert not fhg.result.eligible
         assert any("single parent" in r.lower() for r in fhg.result.reasons)
+
+    # ── ACT ownership lookback ───────────────
+
+    def test_act_hbcs_eligible_when_not_owned_recently(self):
+        """ACT HBCS should be eligible if user hasn't owned in last 2 years."""
+        results = evaluate_schemes(_make_inputs(
+            states=["ACT"],
+            owned_property_in_last_2_years=False,
+            owner_occupier=True,
+            price=800_000,
+            income=200_000,
+        ))
+        hbcs = next((r for r in results if r.scheme.id == "hbcs-act"), None)
+        assert hbcs is not None
+        assert hbcs.result.eligible
+
+    def test_act_hbcs_ineligible_when_owned_recently(self):
+        """ACT HBCS should fail if user owned property in last 2 years."""
+        results = evaluate_schemes(_make_inputs(
+            states=["ACT"],
+            owned_property_in_last_2_years=True,
+            owner_occupier=True,
+            price=800_000,
+            income=200_000,
+        ))
+        hbcs = next((r for r in results if r.scheme.id == "hbcs-act"), None)
+        assert hbcs is not None
+        assert not hbcs.result.eligible
+        assert any("2 years" in r for r in hbcs.result.reasons)
+
+    def test_act_hbcs_skips_when_unset(self):
+        """ACT HBCS should skip ownership check when input is None."""
+        results = evaluate_schemes(_make_inputs(
+            states=["ACT"],
+            owned_property_in_last_2_years=None,
+            owner_occupier=True,
+            price=800_000,
+            income=200_000,
+        ))
+        hbcs = next((r for r in results if r.scheme.id == "hbcs-act"), None)
+        assert hbcs is not None
+        assert hbcs.result.eligible
 
 
 # ──────────────────────────────────────────────
