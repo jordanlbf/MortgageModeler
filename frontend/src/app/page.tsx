@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TOOLS } from "@/lib/constants";
+import { TOOLS, TOOL_COLORS } from "@/lib/constants";
 import type { Tool } from "@/lib/constants";
 import { t, mix } from "@/lib/theme";
 import Header from "@/components/layout/Header";
@@ -31,6 +31,16 @@ const icons: Record<string, React.ReactNode> = {
       <path d="M24 8V40" stroke="rgba(168,139,250,0.12)" strokeWidth="1" />
       <path d="M16 14L16 34" stroke="rgba(168,139,250,0.55)" strokeWidth="6" strokeLinecap="round" />
       <path d="M32 18L32 30" stroke="rgba(168,139,250,0.8)" strokeWidth="6" strokeLinecap="round" />
+    </svg>
+  ),
+  grants: (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+      <path d="M10 18L24 10L38 18" stroke={mix(t.accent, 60)} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 18V36" stroke={mix(t.accent, 40)} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M20 18V36" stroke={mix(t.accent, 55)} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M28 18V36" stroke={mix(t.accent, 55)} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M36 18V36" stroke={mix(t.accent, 40)} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M8 36H40" stroke={mix(t.accent, 70)} strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
   "offset-impact": (
@@ -68,8 +78,13 @@ const icons: Record<string, React.ReactNode> = {
 
 /* ── ToolCard ─────────────────────────────────────── */
 function ToolCard({ tool }: { tool: Tool }) {
+  const color = TOOL_COLORS[tool.id] ?? { primary: "#94a3b8", glow: "rgba(148,163,184,0.08)" };
+
   const inner = (
-    <div className={`home-card ${tool.active ? "home-card--active" : "home-card--inactive"}`}>
+    <div
+      className={`home-card ${tool.active ? "home-card--active" : "home-card--inactive"}`}
+      style={{ "--tool-color": color.primary } as React.CSSProperties}
+    >
       <div className="home-card-strip" />
       <div className="home-card-shine" />
 

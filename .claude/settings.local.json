@@ -26,6 +26,7 @@
       "WebFetch(domain:www.qlsproctor.com.au)",
       "Bash(find:*)",
       "Bash(wc:*)",
+      "Bash(npm install:*)",
       "WebFetch(domain:www.ato.gov.au)"
     ]
   }

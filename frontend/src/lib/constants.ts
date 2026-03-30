@@ -45,8 +45,21 @@ export const TOOLS: Tool[] = [
   { id: "amortisation", title: "Amortisation", desc: "Repayments & interest over time", icon: "📊", active: true },
   { id: "tax", title: "Tax Calculator", desc: "Income tax & take-home pay", icon: "🧮", active: true },
   { id: "ppor-vs-rent", title: "PPOR vs Rent", desc: "Buy or keep renting?", icon: "⚖️", active: true, badge: "Beta" },
+  { id: "grants", title: "Government Grants", desc: "First home buyer schemes & eligibility", icon: "🏛️", active: true },
   { id: "offset-impact", title: "Offset Impact", desc: "See how offsets save interest", icon: "🏦", active: false },
   { id: "rate-changes", title: "Rate Changes", desc: "Model variable rate shifts", icon: "📈", active: false },
   { id: "equity-growth", title: "Equity Growth", desc: "Track property value over time", icon: "🏠", active: false },
   { id: "tax-deductions", title: "Tax & Deductions", desc: "Investment property tax benefits", icon: "🧾", active: false },
 ];
+
+/** Per-tool brand colours — used on the homepage card grid. */
+export const TOOL_COLORS: Record<string, { primary: string; glow: string }> = {
+  amortisation:     { primary: "#2dd4bf", glow: "rgba(45,212,191,0.08)" },
+  tax:              { primary: "#60a5fa", glow: "rgba(96,165,250,0.08)" },
+  "ppor-vs-rent":   { primary: "#a78bfa", glow: "rgba(167,139,250,0.08)" },
+  grants:           { primary: "#34d399", glow: "rgba(52,211,153,0.08)" },
+  "offset-impact":  { primary: "#fb923c", glow: "rgba(251,146,60,0.08)" },
+  "rate-changes":   { primary: "#f87171", glow: "rgba(248,113,113,0.08)" },
+  "equity-growth":  { primary: "#38bdf8", glow: "rgba(56,189,248,0.08)" },
+  "tax-deductions": { primary: "#facc15", glow: "rgba(250,204,21,0.08)" },
+};
