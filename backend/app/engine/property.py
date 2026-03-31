@@ -19,53 +19,24 @@ from app.config.property import (
     QLD_REGISTRATION_FEE_BASE,
     QLD_REGISTRATION_FEE_PER_10K,
     QLD_REGISTRATION_FEE_THRESHOLD,
-    QLD_STAMP_DUTY_BASE_BRACKETS,
-    QLD_STAMP_DUTY_CONCESSION_BRACKETS,
 )
-
-
-def calculate_qld_stamp_duty_with_bracket(purchase_price: float, bracket: list[tuple[float, float, float]]) -> float:
-    """
-    Calculate QLD stamp duty amount from the given bracket.
-
-    Args:
-        purchase_price: Property purchase price
-        bracket: Which stamp duty bracket to use (concession or standard)
-
-    Returns:
-        Estimated stamp duty base amount (before concessions)
-
-    Raises:
-        ValueError: If bracket config is missing a catch-all (float('inf')) entry
-    """
-    # QLD Stamp Duty rates apply to units of $100 or part thereof,
-    # so we round up to the next $100
-    purchase_price = math.ceil(purchase_price / 100) * 100
-
-    prev_threshold = 0
-    for threshold, rate, base in bracket:
-        if purchase_price <= threshold:
-            return base + (purchase_price - prev_threshold) * (rate / 100)
-        prev_threshold = threshold
-    raise ValueError("Stamp duty bracket config missing catch-all bracket (e.g. float('inf'))")
+from app.engine.stamp_duty import calculate_stamp_duty
 
 
 def estimate_qld_stamp_duty(purchase_price: float, is_investment: bool = True) -> float:
-    """
-    Estimate QLD stamp duty (transfer duty).
+    """Estimate QLD stamp duty (transfer duty).
+
+    Delegates to the multi-state stamp duty engine.
 
     Args:
-        purchase_price: Property purchase price
+        purchase_price: Property purchase price.
         is_investment: Whether the property is an investment (standard rates)
-                       or PPOR (home concession rates)
+            or PPOR (home concession rates).
 
     Returns:
-        Estimated stamp duty amount
+        Estimated stamp duty amount.
     """
-    if is_investment:
-        return calculate_qld_stamp_duty_with_bracket(purchase_price, QLD_STAMP_DUTY_BASE_BRACKETS)
-    else:
-        return calculate_qld_stamp_duty_with_bracket(purchase_price, QLD_STAMP_DUTY_CONCESSION_BRACKETS)
+    return calculate_stamp_duty(purchase_price, "QLD", is_ppor=not is_investment)
 
 
 def estimate_lmi(loan_amount: float, lvr: float, is_investment: bool) -> float:

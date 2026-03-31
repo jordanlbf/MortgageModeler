@@ -16,6 +16,8 @@ Verified: March 2026
 
 from app.config.stamp_duty._types import StampDutyBracket, StampDutySchedule
 
+VIC_PPOR_CAP = 550_000  # PPOR concession only applies up to this value
+
 VIC_SCHEDULE = StampDutySchedule(
     state="VIC",
     round_to_100=False,
