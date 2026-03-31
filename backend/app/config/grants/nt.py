@@ -21,7 +21,13 @@ Notes:
 
 from datetime import date
 
-from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
+from app.config.grants._types import (
+    EligibilityPredicates,
+    FinancialEffect,
+    GrantScheme,
+    SchemeMeta,
+    State,
+)
 
 # ── HomeGrown Territory Grant — New Homes (NT) ──────
 # $50,000 for new homes. Contracts 1 Oct 2024 – 30 Sep 2027.
@@ -62,6 +68,7 @@ FHOG_NEW_NT = GrantScheme(
     ],
     valid_from=date(2024, 10, 1),
     valid_to=date(2027, 9, 30),
+    financial_effect=FinancialEffect(cash_grant=50_000),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -107,6 +114,7 @@ FHOG_ESTABLISHED_NT = GrantScheme(
     ],
     valid_from=date(2024, 10, 1),
     valid_to=date(2027, 9, 30),
+    financial_effect=FinancialEffect(cash_grant=10_000),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -153,6 +161,7 @@ FRESHSTART_NT = GrantScheme(
     ],
     valid_from=date(2024, 10, 1),
     valid_to=date(2027, 9, 30),
+    financial_effect=FinancialEffect(cash_grant=30_000),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=False,  # explicitly for NON-first-home-buyers

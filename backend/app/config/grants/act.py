@@ -9,7 +9,13 @@ Sources:
 Verified: March 2026
 """
 
-from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
+from app.config.grants._types import (
+    EligibilityPredicates,
+    FinancialEffect,
+    GrantScheme,
+    SchemeMeta,
+    State,
+)
 
 # ── Home Buyer Concession Scheme (ACT) ──────────────
 # Not restricted to first home buyers — just must not
@@ -53,6 +59,7 @@ HBCS_ACT = GrantScheme(
         "Household income threshold: $250,000 (+ $4,600 per dependent child — not checked here)",
         "Must live in the property for at least 1 year",
     ],
+    financial_effect=FinancialEffect(stamp_duty_concession_fn="act_hbcs"),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=None,  # not restricted to FHB

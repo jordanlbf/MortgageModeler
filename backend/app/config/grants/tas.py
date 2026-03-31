@@ -9,7 +9,13 @@ Verified: March 2026
 
 from datetime import date
 
-from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
+from app.config.grants._types import (
+    EligibilityPredicates,
+    FinancialEffect,
+    GrantScheme,
+    SchemeMeta,
+    State,
+)
 
 # ── First Home Owner Grant (TAS) ─────────────────────
 # $30,000 from 1 July 2025 to 30 June 2026. No price cap.
@@ -48,6 +54,7 @@ FHOG_TAS = GrantScheme(
     ],
     valid_from=date(2025, 7, 1),
     valid_to=date(2026, 6, 30),
+    financial_effect=FinancialEffect(cash_grant=30_000),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -95,6 +102,7 @@ FHB_STAMP_TAS = GrantScheme(
     ],
     valid_from=date(2024, 2, 18),
     valid_to=date(2026, 6, 30),
+    financial_effect=FinancialEffect(stamp_duty_exemption=True),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -139,6 +147,10 @@ MYHOME_TAS = GrantScheme(
         "Only available through Bank of us (not mortgage brokers)",
         "Equity contribution up to $300,000 or 40% (whichever is less)",
     ],
+    financial_effect=FinancialEffect(
+        equity_share_new=0.40, equity_share_existing=0.40,
+        min_deposit_percent=0.02, lmi_waiver=True,
+    ),
     predicates=EligibilityPredicates(
         owner_occupier=True,
         max_income_single=116_934,

@@ -45,6 +45,33 @@ class EligibilityPredicates:
 
 
 @dataclass(frozen=True)
+class FinancialEffect:
+    """Machine-readable financial impact of a scheme on purchase costs.
+
+    Used by the purchase costs service to calculate dollar savings.
+    Schemes with no direct cost impact leave all fields at defaults.
+
+    Attributes:
+        cash_grant: Direct cash payment (e.g. FHOG $30,000).
+        stamp_duty_exemption: Full stamp duty waiver (duty set to $0).
+        stamp_duty_concession_fn: Named function for sliding-scale concession
+            (e.g. ``"qld_fhb_existing"``). Resolved by the service layer.
+        lmi_waiver: LMI set to $0 when a guarantee scheme is selected.
+        min_deposit_percent: Minimum deposit as decimal (e.g. 0.05 for 5%).
+        equity_share_new: Government equity share for new builds (e.g. 0.40).
+        equity_share_existing: Government equity share for existing homes.
+    """
+
+    cash_grant: float = 0.0
+    stamp_duty_exemption: bool = False
+    stamp_duty_concession_fn: str | None = None
+    lmi_waiver: bool = False
+    min_deposit_percent: float | None = None
+    equity_share_new: float | None = None
+    equity_share_existing: float | None = None
+
+
+@dataclass(frozen=True)
 class SchemeMeta:
     """Quick-reference facts displayed in card metadata boxes."""
 
@@ -78,4 +105,5 @@ class GrantScheme:
     rules: list[str] | None = None
     valid_from: date | None = None  # scheme start date — None = no known start
     valid_to: date | None = None  # scheme expiry date — None = no known expiry
+    financial_effect: FinancialEffect = field(default_factory=FinancialEffect)
     predicates: EligibilityPredicates = field(default_factory=EligibilityPredicates)

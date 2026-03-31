@@ -8,7 +8,13 @@ Verified: March 2026
 
 from datetime import date
 
-from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
+from app.config.grants._types import (
+    EligibilityPredicates,
+    FinancialEffect,
+    GrantScheme,
+    SchemeMeta,
+    State,
+)
 
 # ── First Home Owner Grant (VIC) ─────────────────────
 
@@ -45,6 +51,7 @@ FHOG_VIC = GrantScheme(
         "Must live in the property for 12 continuous months within the first year",
         "Cannot have previously received FHOG in any state",
     ],
+    financial_effect=FinancialEffect(cash_grant=10_000),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -90,6 +97,7 @@ FHB_STAMP_VIC = GrantScheme(
         "No concession above $750,000",
         "Thresholds effective from 1 July 2017",
     ],
+    financial_effect=FinancialEffect(stamp_duty_concession_fn="vic_fhb_home"),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
