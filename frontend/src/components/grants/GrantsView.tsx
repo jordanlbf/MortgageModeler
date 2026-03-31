@@ -12,7 +12,6 @@ import "./grants.css";
 
 const ALL_REGIONS = ["Federal", "NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
 type Region = (typeof ALL_REGIONS)[number];
-type TriValue = "yes" | "no" | "any";
 
 type Scheme = import("@/lib/api").GrantScheme;
 type CheckResult = import("@/lib/api").GrantEligibilityResult;
@@ -247,10 +246,10 @@ export default function GrantsView() {
   const [regions, setRegions] = useState<Set<string>>(() => new Set(["Federal"]));
   const [priceStr, setPriceStr] = useState("");
   const [incomeStr, setIncomeStr] = useState("");
-  const [propertyType, setPropertyType] = useState<"new" | "existing" | "">("");
-  const [buyerType, setBuyerType] = useState<"individual" | "couple" | "">("");
-  const [firstHomeBuyer, setFirstHomeBuyer] = useState<TriValue>("any");
-  const [ownerOccupier, setOwnerOccupier] = useState<TriValue>("any");
+  const [propertyType, setPropertyType] = useState<"new" | "existing" | null>(null);
+  const [buyerType, setBuyerType] = useState<"individual" | "couple" | null>(null);
+  const [firstHomeBuyer, setFirstHomeBuyer] = useState<boolean | null>(null);
+  const [ownerOccupier, setOwnerOccupier] = useState<boolean | null>(null);
   const [expandedSchemeId, setExpandedSchemeId] = useState<string | null>(null);
   const [results, setResults] = useState<GrantSchemeWithEligibility[]>([]);
 
@@ -286,7 +285,8 @@ export default function GrantsView() {
           buyer_type: buyerType,
           first_home_buyer: firstHomeBuyer,
           owner_occupier: ownerOccupier,
-          off_the_plan: false,
+          single_parent: null,
+          off_the_plan: null,
         },
         controller.signal,
       )
@@ -364,7 +364,7 @@ export default function GrantsView() {
               <label className="grants-field-label">Property</label>
               <div className="grants-bar-pills">
                 {([{ value: "new" as const, label: "New" }, { value: "existing" as const, label: "Existing" }]).map((o) => (
-                  <button key={o.value} className="grants-pill grants-pill--uniform" data-active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? "" : o.value)}>{o.label}</button>
+                  <button key={o.value} className="grants-pill grants-pill--uniform" data-active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)}>{o.label}</button>
                 ))}
               </div>
             </div>
@@ -375,7 +375,7 @@ export default function GrantsView() {
               <label className="grants-field-label">Buyer</label>
               <div className="grants-bar-pills">
                 {([{ value: "individual" as const, label: "Individual" }, { value: "couple" as const, label: "Couple" }]).map((o) => (
-                  <button key={o.value} className="grants-pill grants-pill--uniform" data-active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? "" : o.value)}>{o.label}</button>
+                  <button key={o.value} className="grants-pill grants-pill--uniform" data-active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)}>{o.label}</button>
                 ))}
               </div>
             </div>
@@ -385,9 +385,9 @@ export default function GrantsView() {
             <div className="grants-field grants-field--toggle">
               <label className="grants-field-label">First Home</label>
               <div className="grants-bar-pills">
-                {(["yes", "no"] as const).map((v) => (
-                  <button key={v} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={firstHomeBuyer === v} data-value={v} onClick={() => setFirstHomeBuyer(firstHomeBuyer === v ? "any" : v)}>
-                    {v === "yes" ? "Yes" : "No"}
+                {([true, false] as const).map((v) => (
+                  <button key={String(v)} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={firstHomeBuyer === v} data-value={String(v)} onClick={() => setFirstHomeBuyer(firstHomeBuyer === v ? null : v)}>
+                    {v ? "Yes" : "No"}
                   </button>
                 ))}
               </div>
@@ -398,9 +398,9 @@ export default function GrantsView() {
             <div className="grants-field grants-field--toggle">
               <label className="grants-field-label">Owner Occupied</label>
               <div className="grants-bar-pills">
-                {(["yes", "no"] as const).map((v) => (
-                  <button key={v} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={ownerOccupier === v} data-value={v} onClick={() => setOwnerOccupier(ownerOccupier === v ? "any" : v)}>
-                    {v === "yes" ? "Yes" : "No"}
+                {([true, false] as const).map((v) => (
+                  <button key={String(v)} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={ownerOccupier === v} data-value={String(v)} onClick={() => setOwnerOccupier(ownerOccupier === v ? null : v)}>
+                    {v ? "Yes" : "No"}
                   </button>
                 ))}
               </div>

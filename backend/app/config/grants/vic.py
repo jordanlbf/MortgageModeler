@@ -6,6 +6,8 @@ Sources:
 Verified: March 2026
 """
 
+from datetime import date
+
 from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
 
 # ── First Home Owner Grant (VIC) ─────────────────────
@@ -48,7 +50,7 @@ FHOG_VIC = GrantScheme(
         first_home_buyer=True,
         owner_occupier=True,
         max_price=750_000,
-        property_type="new",
+        property_types=["new"],
     ),
 )
 
@@ -133,6 +135,8 @@ OTP_VIC = GrantScheme(
         "No property value cap",
         "Contracts signed 21 Oct 2024 – 20 Oct 2026",
     ],
+    valid_from=date(2024, 10, 21),
+    valid_to=date(2026, 10, 20),
     predicates=EligibilityPredicates(
         first_home_buyer=None,
         owner_occupier=None,

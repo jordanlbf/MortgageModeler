@@ -19,6 +19,8 @@ Notes:
   before relying on them for hard eligibility decisions.
 """
 
+from datetime import date
+
 from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
 
 # ── HomeGrown Territory Grant — New Homes (NT) ──────
@@ -58,11 +60,13 @@ FHOG_NEW_NT = GrantScheme(
         "Must live in for 12 continuous months",
         "Cannot have previously received FHOG in any state",
     ],
+    valid_from=date(2024, 10, 1),
+    valid_to=date(2027, 9, 30),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
-        property_type="new",
+        property_types=["new"],
     ),
 )
 
@@ -101,11 +105,13 @@ FHOG_ESTABLISHED_NT = GrantScheme(
         "Must live in for 12 continuous months",
         "Cannot have previously received FHOG in any state",
     ],
+    valid_from=date(2024, 10, 1),
+    valid_to=date(2027, 9, 30),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
-        property_type="existing",
+        property_types=["existing"],
     ),
 )
 
@@ -145,11 +151,13 @@ FRESHSTART_NT = GrantScheme(
         "Must live in for 12 continuous months within 12 months of completion",
         "Cannot be combined with the HomeGrown Territory FHOG",
     ],
+    valid_from=date(2024, 10, 1),
+    valid_to=date(2027, 9, 30),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=False,  # explicitly for NON-first-home-buyers
         owner_occupier=True,
-        property_type="new",
+        property_types=["new"],
     ),
 )
 

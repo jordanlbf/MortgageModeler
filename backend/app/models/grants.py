@@ -20,22 +20,26 @@ class GrantsInputs:
         price: Property purchase price (0 if unset).
         income: Primary applicant annual income (0 if unset).
         partner_income: Partner annual income for couples (0 if unset).
-        property_type: ``"new"``, ``"existing"``, or ``""`` if unset.
-        buyer_type: ``"individual"``, ``"couple"``, or ``""`` if unset.
-        first_home_buyer: ``"yes"``, ``"no"``, or ``"any"`` if unset.
-        owner_occupier: ``"yes"``, ``"no"``, or ``"any"`` if unset.
-        off_the_plan: Whether the purchase is off-the-plan.
+        property_type: ``"new"``, ``"existing"``, ``"land"``, or None if unset.
+        buyer_type: ``"individual"``, ``"couple"``, or None if unset.
+        first_home_buyer: True, False, or None if unset.
+        owner_occupier: True, False, or None if unset.
+        single_parent: True, False, or None if unset.
+        owned_property_in_last_2_years: True, False, or None if unset.
+        off_the_plan: Whether the purchase is off-the-plan, or None if unset.
     """
 
     states: list[str] = field(default_factory=list)
     price: float = 0.0
     income: float = 0.0
     partner_income: float = 0.0
-    property_type: str = ""
-    buyer_type: str = ""
-    first_home_buyer: str = "any"
-    owner_occupier: str = "any"
-    off_the_plan: bool = False
+    property_type: str | None = None
+    buyer_type: str | None = None
+    first_home_buyer: bool | None = None
+    owner_occupier: bool | None = None
+    single_parent: bool | None = None
+    owned_property_in_last_2_years: bool | None = None
+    off_the_plan: bool | None = None
 
 
 @dataclass

@@ -18,11 +18,15 @@ class GrantsEligibilityRequest(BaseModel):
     price: float = Field(default=0, ge=0, description="Purchase price")
     income: float = Field(default=0, ge=0, description="Primary applicant annual income")
     partner_income: float = Field(default=0, ge=0, description="Partner annual income (couples only)")
-    property_type: str = Field(default="", description="'new', 'existing', or '' (unset)")
-    buyer_type: str = Field(default="", description="'individual', 'couple', or '' (unset)")
-    first_home_buyer: str = Field(default="any", description="'yes', 'no', or 'any'")
-    owner_occupier: str = Field(default="any", description="'yes', 'no', or 'any'")
-    off_the_plan: bool = Field(default=False, description="Off-the-plan purchase")
+    property_type: str | None = Field(default=None, description="'new', 'existing', 'land', or null")
+    buyer_type: str | None = Field(default=None, description="'individual', 'couple', or null")
+    first_home_buyer: bool | None = Field(default=None, description="true, false, or null")
+    owner_occupier: bool | None = Field(default=None, description="true, false, or null")
+    single_parent: bool | None = Field(default=None, description="true, false, or null")
+    owned_property_in_last_2_years: bool | None = Field(
+        default=None, description="true, false, or null (ACT HBCS requirement)"
+    )
+    off_the_plan: bool | None = Field(default=None, description="true, false, or null")
 
 
 # ── Response ──────────────────────────────────
@@ -50,6 +54,8 @@ class SchemeResponse(BaseModel):
     summary: str
     details: str | None
     rules: list[str] | None
+    valid_from: str | None
+    valid_to: str | None
 
 
 class EligibilityResult(BaseModel):

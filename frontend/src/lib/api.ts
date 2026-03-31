@@ -164,11 +164,12 @@ export interface GrantsEligibilityRequest {
   price: number;
   income: number;
   partner_income: number;
-  property_type: string;
-  buyer_type: string;
-  first_home_buyer: string;
-  owner_occupier: string;
-  off_the_plan: boolean;
+  property_type: string | null;
+  buyer_type: string | null;
+  first_home_buyer: boolean | null;
+  owner_occupier: boolean | null;
+  single_parent: boolean | null;
+  off_the_plan: boolean | null;
 }
 
 export async function fetchGrantSchemes(
