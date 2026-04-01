@@ -6,6 +6,7 @@ formula-based duty (NT). All functions are pure — no side effects.
 """
 
 import math
+from collections.abc import Callable
 
 from app.config.stamp_duty._types import StampDutyBracket
 from app.config.stamp_duty.nt import (
@@ -116,6 +117,117 @@ def calculate_stamp_duty(price: float, state: str, is_ppor: bool = False) -> flo
     if state == "VIC" and is_ppor and price > VIC_PPOR_CAP:
         is_ppor = False
 
+    # ACT PPOR brackets only cover up to $1,455k
+    if state == "ACT" and is_ppor and price > 1_455_000:
+        is_ppor = False
+
     brackets = schedule.ppor_brackets if (is_ppor and schedule.ppor_brackets) else schedule.brackets
 
     return _calculate_bracket_duty(price, brackets, schedule.round_to_100)
+
+
+# ── FHB stamp duty concession functions ──────────────
+#
+# Each takes (price, base_duty) and returns the concession amount.
+# Referenced by name in GrantScheme.financial_effect.stamp_duty_concession_fn.
+
+
+def _sliding_concession(
+    price: float,
+    base_duty: float,
+    exempt_cap: float,
+    taper_cap: float,
+) -> float:
+    """Generic sliding-scale concession.
+
+    Full exemption below exempt_cap, linear taper between exempt_cap
+    and taper_cap, no concession at or above taper_cap.
+
+    Args:
+        price: Property purchase price.
+        base_duty: Duty before concession.
+        exempt_cap: Price below which full exemption applies.
+        taper_cap: Price at or above which no concession applies.
+
+    Returns:
+        Concession amount (to subtract from base duty).
+    """
+    if price <= exempt_cap:
+        return base_duty
+    if price >= taper_cap:
+        return 0.0
+    fraction = (taper_cap - price) / (taper_cap - exempt_cap)
+    return base_duty * fraction
+
+
+def _qld_fhb_existing(price: float, base_duty: float) -> float:
+    """QLD first home concession on existing homes.
+
+    Full exemption up to $700k, taper $700k–$800k.
+    """
+    return _sliding_concession(price, base_duty, 700_000, 800_000)
+
+
+def _nsw_fhb_home(price: float, base_duty: float) -> float:
+    """NSW first home buyer assistance — homes.
+
+    Full exemption up to $800k, taper $800k–$1M.
+    """
+    return _sliding_concession(price, base_duty, 800_000, 1_000_000)
+
+
+def _nsw_fhb_land(price: float, base_duty: float) -> float:
+    """NSW first home buyer assistance — vacant land.
+
+    Full exemption up to $350k, taper $350k–$450k.
+    """
+    return _sliding_concession(price, base_duty, 350_000, 450_000)
+
+
+def _vic_fhb_home(price: float, base_duty: float) -> float:
+    """VIC first home buyer duty exemption/concession.
+
+    Full exemption up to $600k, taper $600k–$750k.
+    """
+    return _sliding_concession(price, base_duty, 600_000, 750_000)
+
+
+def _wa_fhb_home(price: float, base_duty: float) -> float:
+    """WA first home owner rate — established homes.
+
+    Full exemption up to $500k, taper $500k–$700k.
+    """
+    return _sliding_concession(price, base_duty, 500_000, 700_000)
+
+
+def _wa_fhb_land(price: float, base_duty: float) -> float:
+    """WA first home owner rate — vacant land.
+
+    Full exemption up to $350k, taper $350k–$450k.
+    """
+    return _sliding_concession(price, base_duty, 350_000, 450_000)
+
+
+def _act_hbcs(price: float, base_duty: float) -> float:
+    """ACT Home Buyer Concession Scheme.
+
+    Full exemption up to $1,020k. Taper $1,020k–$1,455k with
+    max concession capped at $35,238.
+    """
+    if price <= 1_020_000:
+        return base_duty
+    if price >= 1_455_000:
+        return 0.0
+    fraction = (1_455_000 - price) / (1_455_000 - 1_020_000)
+    return min(base_duty * fraction, 35_238)
+
+
+CONCESSION_FNS: dict[str, Callable[[float, float], float]] = {
+    "qld_fhb_existing": _qld_fhb_existing,
+    "nsw_fhb_home": _nsw_fhb_home,
+    "nsw_fhb_land": _nsw_fhb_land,
+    "vic_fhb_home": _vic_fhb_home,
+    "wa_fhb_home": _wa_fhb_home,
+    "wa_fhb_land": _wa_fhb_land,
+    "act_hbcs": _act_hbcs,
+}
