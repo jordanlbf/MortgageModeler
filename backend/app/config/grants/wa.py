@@ -9,7 +9,13 @@ Verified: March 2026
 
 from datetime import date
 
-from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
+from app.config.grants._types import (
+    EligibilityPredicates,
+    FinancialEffect,
+    GrantScheme,
+    SchemeMeta,
+    State,
+)
 
 # ── First Home Owner Grant (WA) ──────────────────────
 # Price caps vary by region (updated Oct 2025).
@@ -44,11 +50,16 @@ FHOG_WA = GrantScheme(
         "Property value cap: $750,000 ($1,000,000 north of 26th parallel)",
         "Must live in the property for 6 continuous months within the first year",
     ],
+    financial_effect=FinancialEffect(cash_grant=10_000),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
-        max_price=750_000,  # $1M north of 26th parallel — not modelled regionally
+        max_price=750_000,
+        max_price_by_region={
+            "Kimberley": 1_000_000,
+            "Pilbara": 1_000_000,
+        },
         property_types=["new"],
     ),
 )
@@ -87,6 +98,7 @@ FHB_STAMP_WA = GrantScheme(
         "Concession to $700,000 (Perth/Peel) or $750,000 (other regions)",
         "Thresholds updated 21 March 2025",
     ],
+    financial_effect=FinancialEffect(stamp_duty_concession_fn="wa_fhb_home"),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -126,6 +138,7 @@ FHB_LAND_WA = GrantScheme(
         "Concession tapers from $350,001 to $450,000",
         "No concession above $450,000",
     ],
+    financial_effect=FinancialEffect(stamp_duty_concession_fn="wa_fhb_land"),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -216,12 +229,17 @@ KEYSTART_WA = GrantScheme(
         "Property price cap: $800,000",
         "Deposit must be genuine savings, gifts, or FHOG (not borrowed)",
         "Income caps updated August 2025 (mainstream product, statewide)",
-        "Kimberley/Pilbara may have higher income limits — check with Keystart",
+        "Kimberley/Pilbara: $225,000 single / $285,000 couple",
     ],
+    financial_effect=FinancialEffect(lmi_waiver=True, min_deposit_percent=0.02),
     predicates=EligibilityPredicates(
         owner_occupier=True,
         max_income_single=148_000,
         max_income_couple=218_000,
+        max_income_by_region={
+            "Kimberley": (225_000, 285_000),
+            "Pilbara": (225_000, 285_000),
+        },
         max_price=800_000,
     ),
 )

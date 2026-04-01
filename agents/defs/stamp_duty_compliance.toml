@@ -1,0 +1,18 @@
+name = "stamp_duty_compliance"
+short_name = "stamp_duty"
+description = "Validates multi-state stamp duty brackets, engine logic, and test coverage against documented rules"
+file_patterns = [
+    "backend/app/config/stamp_duty/_types.py",
+    "backend/app/config/stamp_duty/qld.py",
+    "backend/app/config/stamp_duty/nsw.py",
+    "backend/app/config/stamp_duty/vic.py",
+    "backend/app/config/stamp_duty/wa.py",
+    "backend/app/config/stamp_duty/sa.py",
+    "backend/app/config/stamp_duty/tas.py",
+    "backend/app/config/stamp_duty/act.py",
+    "backend/app/config/stamp_duty/nt.py",
+    "backend/app/config/stamp_duty/registry.py",
+    "backend/app/engine/stamp_duty.py",
+    "backend/app/tests/engine/test_stamp_duty.py",
+    "backend/docs/stamp-duty-rules.md",
+]

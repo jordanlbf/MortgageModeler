@@ -13,7 +13,13 @@ Notes:
   separate concession reducing the dutiable value.
 """
 
-from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
+from app.config.grants._types import (
+    EligibilityPredicates,
+    FinancialEffect,
+    GrantScheme,
+    SchemeMeta,
+    State,
+)
 
 # ── First Home Owner Grant (NSW) ─────────────────────
 
@@ -49,6 +55,7 @@ FHOG_NSW = GrantScheme(
         "Must move in within 12 months and live there for 12 continuous months",
         "Cannot have previously received FHOG in any state",
     ],
+    financial_effect=FinancialEffect(cash_grant=10_000),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -96,6 +103,7 @@ FHB_STAMP_NSW = GrantScheme(
         "Must move in within 12 months, live there 12 continuous months",
         "Thresholds effective from 1 July 2023",
     ],
+    financial_effect=FinancialEffect(stamp_duty_concession_fn="nsw_fhb_home"),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -137,6 +145,7 @@ FHB_LAND_NSW = GrantScheme(
         "No concession above $450,000",
         "Build and occupation timing rules apply — check Revenue NSW for details",
     ],
+    financial_effect=FinancialEffect(stamp_duty_concession_fn="nsw_fhb_land"),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,

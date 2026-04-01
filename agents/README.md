@@ -19,6 +19,8 @@ AI-powered code review workflows. Each agent scans specific parts of the codebas
 | **Lean Frontend** | `frontend` | Flags thick components with too much logic and suggests hook/utility extractions |
 | **Architecture Guard** | `architecture` | Checks for layer violations across the backend and frontend stack |
 | **Tax Compliance** | `tax` | Validates tax engine against documented ATO rules, thresholds, and test coverage |
+| **Stamp Duty Compliance** | `stamp_duty` | Validates multi-state stamp duty brackets, engine logic, and test coverage |
+| **Grants Compliance** | `grants` | Validates grant scheme config, eligibility predicates, and financial effects |
 
 ## Usage
 
@@ -75,12 +77,16 @@ agents/
 │   ├── audit_docstrings.toml
 │   ├── lean_frontend.toml
 │   ├── architecture_guard.toml
-│   └── tax_compliance.toml
+│   ├── tax_compliance.toml
+│   ├── stamp_duty_compliance.toml
+│   └── grants_compliance.toml
 ├── prompts/               # System prompts (one MD per agent)
 │   ├── audit_readme.md
 │   ├── audit_docstrings.md
 │   ├── lean_frontend.md
 │   ├── architecture_guard.md
-│   └── tax_compliance.md
+│   ├── tax_compliance.md
+│   ├── stamp_duty_compliance.md
+│   └── grants_compliance.md
 └── reports/               # Generated reports via --save (gitignored)
 ```

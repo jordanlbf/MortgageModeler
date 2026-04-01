@@ -12,8 +12,6 @@ from app.config.property import (
     QLD_MORTGAGE_REGISTRATION_FEE,
     QLD_REGISTRATION_FEE_BASE,
     QLD_REGISTRATION_FEE_PER_10K,
-    QLD_STAMP_DUTY_BASE_BRACKETS,
-    QLD_STAMP_DUTY_CONCESSION_BRACKETS,
 )
 from app.engine.property import (
     calculate_building_insurance,
@@ -27,7 +25,6 @@ from app.engine.property import (
     calculate_management_fee,
     calculate_mortgage_registration_fee,
     calculate_property_value,
-    calculate_qld_stamp_duty_with_bracket,
     calculate_registration_fee,
     calculate_rental_income,
     calculate_strata_fees,
@@ -36,6 +33,7 @@ from app.engine.property import (
     estimate_lmi,
     estimate_qld_stamp_duty,
 )
+from app.engine.stamp_duty import calculate_stamp_duty
 
 
 class TestQldStampDutyBase:
@@ -195,20 +193,20 @@ class TestStampDutyConcessionVsBase:
         assert gap_at_1m == pytest.approx(gap_at_2m, abs=0.1)
 
 
-class TestCalculateWithBracketDirect:
-    """Tests for calculate_qld_stamp_duty_with_bracket called directly."""
+class TestCalculateStampDutyDirect:
+    """Tests for calculate_stamp_duty called directly."""
 
     def test_base_bracket_direct(self):
-        """Direct call with base brackets matches estimate_qld_stamp_duty."""
-        assert calculate_qld_stamp_duty_with_bracket(500_000, QLD_STAMP_DUTY_BASE_BRACKETS) == estimate_qld_stamp_duty(
+        """Direct call with general brackets matches estimate_qld_stamp_duty."""
+        assert calculate_stamp_duty(500_000, "QLD", is_ppor=False) == estimate_qld_stamp_duty(
             500_000, is_investment=True
         )
 
     def test_concession_bracket_direct(self):
-        """Direct call with concession brackets matches estimate_qld_stamp_duty."""
-        assert calculate_qld_stamp_duty_with_bracket(
-            500_000, QLD_STAMP_DUTY_CONCESSION_BRACKETS
-        ) == estimate_qld_stamp_duty(500_000, is_investment=False)
+        """Direct call with PPOR brackets matches estimate_qld_stamp_duty."""
+        assert calculate_stamp_duty(500_000, "QLD", is_ppor=True) == estimate_qld_stamp_duty(
+            500_000, is_investment=False
+        )
 
 
 class TestEstimateLmi:
@@ -749,11 +747,10 @@ class TestInputValidation:
         with pytest.raises(ValueError, match="year must be >= 0"):
             compound_annual_cost(-1, 2_000, 0.025)
 
-    def test_stamp_duty_missing_catch_all_bracket(self):
-        """Truncated bracket config (no inf) should raise ValueError."""
-        bad_bracket = [(100_000, 1.5, 0)]
-        with pytest.raises(ValueError, match="Stamp duty bracket config missing catch-all"):
-            calculate_qld_stamp_duty_with_bracket(200_000, bad_bracket)
+    def test_stamp_duty_unknown_state(self):
+        """Unknown state should raise ValueError."""
+        with pytest.raises(ValueError, match="Unknown state"):
+            calculate_stamp_duty(200_000, "XX")
 
     def test_council_rates_negative_year(self):
         """Delegates to compound_annual_cost, so the guard should propagate."""
