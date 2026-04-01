@@ -11,7 +11,12 @@ Sources:
 Verified: March 2026
 """
 
-from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta
+from app.config.grants._types import (
+    EligibilityPredicates,
+    FinancialEffect,
+    GrantScheme,
+    SchemeMeta,
+)
 
 # ── First Home Guarantee (FHBG) ─────────────────────
 # From Oct 2025: unlimited places, income caps removed,
@@ -54,12 +59,38 @@ FHBG = GrantScheme(
         "Must use a participating lender",
         "Property must be owner-occupied within 12 months",
         "Cannot currently own property in Australia",
-        "Property price caps vary by region (raised Oct 2025, not removed — not checked here)",
+        "Property price caps vary by region (raised Oct 2025)",
     ],
+    financial_effect=FinancialEffect(lmi_waiver=True, min_deposit_percent=0.05),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
+        max_price_by_region={
+            # Capital cities + regional centres
+            "Sydney": 1_500_000,
+            "Illawarra": 1_500_000,
+            "Newcastle": 1_500_000,
+            "Lake Macquarie": 1_500_000,
+            "Melbourne": 950_000,
+            "Geelong": 950_000,
+            "Brisbane": 1_000_000,
+            "Gold Coast": 1_000_000,
+            "Sunshine Coast": 1_000_000,
+            "Perth": 850_000,
+            "Adelaide": 900_000,
+            "Hobart": 700_000,
+            "Canberra": 1_000_000,
+            "Darwin": 600_000,
+            # Rest of state
+            "Regional NSW": 800_000,
+            "Regional VIC": 650_000,
+            "Regional QLD": 700_000,
+            "Regional WA": 600_000,
+            "Regional SA": 500_000,
+            "Regional TAS": 550_000,
+            "Regional NT": 600_000,
+        },
     ),
 )
 
@@ -100,6 +131,7 @@ FHG = GrantScheme(
         "Limited places per financial year",
         "Must use a participating lender",
     ],
+    financial_effect=FinancialEffect(lmi_waiver=True, min_deposit_percent=0.02),
     predicates=EligibilityPredicates(
         citizen_required=True,
         owner_occupier=True,
@@ -147,6 +179,12 @@ HELP_TO_BUY = GrantScheme(
         "10,000 places per year",
         "Property price caps apply (vary by state/region)",
     ],
+    financial_effect=FinancialEffect(
+        lmi_waiver=True,
+        min_deposit_percent=0.02,
+        equity_share_new=0.40,
+        equity_share_existing=0.30,
+    ),
     predicates=EligibilityPredicates(
         citizen_required=True,
         owner_occupier=True,

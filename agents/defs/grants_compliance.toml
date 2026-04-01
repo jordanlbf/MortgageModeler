@@ -1,0 +1,20 @@
+name = "grants_compliance"
+short_name = "grants"
+description = "Validates grant scheme config, eligibility predicates, and financial effects against documented rules"
+file_patterns = [
+    "backend/app/config/grants/_types.py",
+    "backend/app/config/grants/federal.py",
+    "backend/app/config/grants/qld.py",
+    "backend/app/config/grants/nsw.py",
+    "backend/app/config/grants/vic.py",
+    "backend/app/config/grants/wa.py",
+    "backend/app/config/grants/sa.py",
+    "backend/app/config/grants/tas.py",
+    "backend/app/config/grants/act.py",
+    "backend/app/config/grants/nt.py",
+    "backend/app/config/grants/registry.py",
+    "backend/app/services/grants.py",
+    "backend/app/tests/services/test_grants.py",
+    "backend/app/tests/api/test_grants.py",
+    "backend/docs/grants-schemes.md",
+]

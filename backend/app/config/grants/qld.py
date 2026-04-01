@@ -8,7 +8,13 @@ Verified: March 2026
 
 from datetime import date
 
-from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta, State
+from app.config.grants._types import (
+    EligibilityPredicates,
+    FinancialEffect,
+    GrantScheme,
+    SchemeMeta,
+    State,
+)
 
 # ── First Home Owner Grant (QLD) ─────────────────────
 # $30,000 extended to 30 June 2026 (reverts to $15,000 after).
@@ -49,6 +55,7 @@ FHOG_QLD = GrantScheme(
     ],
     valid_from=date(2023, 11, 20),
     valid_to=date(2026, 6, 30),
+    financial_effect=FinancialEffect(cash_grant=30_000),
     predicates=EligibilityPredicates(
         citizen_required=True,
         first_home_buyer=True,
@@ -95,6 +102,7 @@ FHB_STAMP_EXISTING_QLD = GrantScheme(
         "No concession for properties at $800,000 or above",
         "Applies to contracts from 9 June 2024",
     ],
+    financial_effect=FinancialEffect(stamp_duty_concession_fn="qld_fhb_existing"),
     predicates=EligibilityPredicates(
         first_home_buyer=True,
         owner_occupier=True,
@@ -138,6 +146,7 @@ FHB_STAMP_NEW_QLD = GrantScheme(
         "Applies to the residential land portion of the transfer",
     ],
     valid_from=date(2025, 5, 1),
+    financial_effect=FinancialEffect(stamp_duty_exemption=True),
     predicates=EligibilityPredicates(
         first_home_buyer=True,
         owner_occupier=True,
@@ -178,6 +187,7 @@ FHB_LAND_QLD = GrantScheme(
         "Applies to residential vacant land only",
     ],
     valid_from=date(2025, 5, 1),
+    financial_effect=FinancialEffect(stamp_duty_exemption=True),
     predicates=EligibilityPredicates(
         first_home_buyer=True,
         owner_occupier=True,
@@ -260,6 +270,10 @@ BOOST_TO_BUY_QLD = GrantScheme(
         "Government equity must be repaid on sale or bought back over time",
         "~2,000 places available",
     ],
+    financial_effect=FinancialEffect(
+        equity_share_new=0.30, equity_share_existing=0.25,
+        min_deposit_percent=0.02, lmi_waiver=True,
+    ),
     predicates=EligibilityPredicates(
         owner_occupier=True,
         max_price=1_000_000,

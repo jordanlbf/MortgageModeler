@@ -15,6 +15,7 @@ class GrantsEligibilityRequest(BaseModel):
     states: list[str] = Field(
         description="Region codes to include: 'Federal', 'NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'ACT', 'NT'"
     )
+    region: str | None = Field(default=None, description="Region/city (e.g. 'Sydney', 'Regional QLD')")
     price: float = Field(default=0, ge=0, description="Purchase price")
     income: float = Field(default=0, ge=0, description="Primary applicant annual income")
     partner_income: float = Field(default=0, ge=0, description="Partner annual income (couples only)")

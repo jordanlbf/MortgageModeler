@@ -105,6 +105,7 @@ def check_eligibility(req: GrantsEligibilityRequest) -> GrantsEligibilityRespons
     """
     inputs = GrantsInputs(
         states=req.states,
+        region=req.region,
         price=req.price,
         income=req.income,
         partner_income=req.partner_income,

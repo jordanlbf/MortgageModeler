@@ -141,6 +141,72 @@ class TestCheckEligibility:
         result = _check_eligibility(scheme, _make_inputs(price=0))
         assert result.eligible
 
+    # ── max_price_by_region ──────────────────
+
+    def test_regional_price_under_cap(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_price_by_region={"Sydney": 1_500_000},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(region="Sydney", price=1_400_000))
+        assert result.eligible
+
+    def test_regional_price_over_cap(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_price_by_region={"Sydney": 1_500_000},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(region="Sydney", price=1_600_000))
+        assert not result.eligible
+        assert any("1,500,000" in r and "Sydney" in r for r in result.reasons)
+
+    def test_regional_price_at_exact_cap(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_price_by_region={"Sydney": 1_500_000},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(region="Sydney", price=1_500_000))
+        assert result.eligible
+
+    def test_regional_price_unknown_region_falls_to_general(self):
+        """Unknown region falls back to max_price."""
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_price=750_000,
+            max_price_by_region={"Sydney": 1_500_000},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(region="Unknown", price=800_000))
+        assert not result.eligible
+        assert any("750,000" in r for r in result.reasons)
+
+    def test_regional_price_unknown_region_no_general_cap(self):
+        """Unknown region + no max_price → no cap enforced."""
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_price_by_region={"Sydney": 1_500_000},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(region="Unknown", price=5_000_000))
+        assert result.eligible
+
+    def test_regional_price_no_region_no_general_cap(self):
+        """No region + no max_price → no cap enforced."""
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_price_by_region={"Sydney": 1_500_000},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(region=None, price=5_000_000))
+        assert result.eligible
+
+    def test_regional_price_no_region_falls_to_general(self):
+        """No region specified → falls back to max_price."""
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_price=750_000,
+            max_price_by_region={"Sydney": 1_500_000},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(region=None, price=800_000))
+        assert not result.eligible
+
+    def test_regional_price_zero_price_skips(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_price_by_region={"Sydney": 1_500_000},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(region="Sydney", price=0))
+        assert result.eligible
+
     # ── income caps ──────────────────────────
 
     def test_single_income_under_cap(self):
@@ -173,6 +239,82 @@ class TestCheckEligibility:
     def test_income_zero_skips_check(self):
         scheme = _make_scheme(predicates=EligibilityPredicates(max_income_single=100_000))
         result = _check_eligibility(scheme, _make_inputs(income=0))
+        assert result.eligible
+
+    # ── max_income_by_region ─────────────────
+
+    def test_regional_income_single_under_cap(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_income_single=148_000,
+            max_income_by_region={"Kimberley": (225_000, 285_000)},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(
+            region="Kimberley", income=200_000,
+        ))
+        assert result.eligible
+
+    def test_regional_income_single_over_cap(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_income_single=148_000,
+            max_income_by_region={"Kimberley": (225_000, 285_000)},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(
+            region="Kimberley", income=230_000,
+        ))
+        assert not result.eligible
+
+    def test_regional_income_couple_under_cap(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_income_couple=218_000,
+            max_income_by_region={"Kimberley": (225_000, 285_000)},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(
+            region="Kimberley", income=150_000, partner_income=120_000,
+            buyer_type="couple",
+        ))
+        assert result.eligible
+
+    def test_regional_income_couple_over_cap(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_income_couple=218_000,
+            max_income_by_region={"Kimberley": (225_000, 285_000)},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(
+            region="Kimberley", income=160_000, partner_income=140_000,
+            buyer_type="couple",
+        ))
+        assert not result.eligible
+
+    def test_regional_income_unknown_region_falls_to_general(self):
+        """Unknown region → statewide cap."""
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_income_single=148_000,
+            max_income_by_region={"Kimberley": (225_000, 285_000)},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(
+            region="Perth", income=160_000,
+        ))
+        assert not result.eligible
+
+    def test_regional_income_no_region_falls_to_general(self):
+        """No region → statewide cap."""
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_income_single=148_000,
+            max_income_by_region={"Kimberley": (225_000, 285_000)},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(
+            region=None, income=160_000,
+        ))
+        assert not result.eligible
+
+    def test_regional_income_at_exact_cap(self):
+        scheme = _make_scheme(predicates=EligibilityPredicates(
+            max_income_single=148_000,
+            max_income_by_region={"Kimberley": (225_000, 285_000)},
+        ))
+        result = _check_eligibility(scheme, _make_inputs(
+            region="Kimberley", income=225_000,
+        ))
         assert result.eligible
 
     # ── property_types ───────────────────────
@@ -504,6 +646,409 @@ class TestEvaluateSchemes:
         hbcs = next((r for r in results if r.scheme.id == "hbcs-act"), None)
         assert hbcs is not None
         assert hbcs.result.eligible
+
+    # ── Regional price caps ──────────────────
+
+    def test_fhbg_sydney_under_cap_eligible(self):
+        """FHBG: $1.4M in Sydney (cap $1.5M) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Sydney",
+            price=1_400_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg is not None
+        assert fhbg.result.eligible
+
+    def test_fhbg_sydney_over_cap_ineligible(self):
+        """FHBG: $1.6M in Sydney (cap $1.5M) → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Sydney",
+            price=1_600_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg is not None
+        assert not fhbg.result.eligible
+        assert any("1,500,000" in r for r in fhbg.result.reasons)
+
+    def test_fhbg_regional_nsw_lower_cap(self):
+        """FHBG: $850k in Regional NSW (cap $800k) → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Regional NSW",
+            price=850_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg is not None
+        assert not fhbg.result.eligible
+
+    def test_fhbg_brisbane_at_cap(self):
+        """FHBG: $1M in Brisbane (cap $1M) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Brisbane",
+            price=1_000_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg is not None
+        assert fhbg.result.eligible
+
+    def test_fhbg_melbourne_under_cap(self):
+        """FHBG: $900k in Melbourne (cap $950k) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Melbourne",
+            price=900_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_melbourne_over_cap(self):
+        """FHBG: $1M in Melbourne (cap $950k) → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Melbourne",
+            price=1_000_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert not fhbg.result.eligible
+
+    def test_fhbg_perth_under_cap(self):
+        """FHBG: $800k in Perth (cap $850k) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Perth",
+            price=800_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_perth_over_cap(self):
+        """FHBG: $900k in Perth (cap $850k) → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Perth",
+            price=900_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert not fhbg.result.eligible
+
+    def test_fhbg_adelaide(self):
+        """FHBG: $900k in Adelaide (cap $900k) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Adelaide",
+            price=900_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_hobart(self):
+        """FHBG: $700k in Hobart (cap $700k) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Hobart",
+            price=700_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_hobart_over_cap(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Hobart",
+            price=750_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert not fhbg.result.eligible
+
+    def test_fhbg_canberra(self):
+        """FHBG: $1M in Canberra (cap $1M) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Canberra",
+            price=1_000_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_darwin(self):
+        """FHBG: $600k in Darwin (cap $600k) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Darwin",
+            price=600_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_darwin_over_cap(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Darwin",
+            price=650_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert not fhbg.result.eligible
+
+    def test_fhbg_geelong_shares_melbourne_cap(self):
+        """Geelong uses Melbourne cap ($950k)."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Geelong",
+            price=950_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_gold_coast_shares_brisbane_cap(self):
+        """Gold Coast uses Brisbane cap ($1M)."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Gold Coast",
+            price=1_000_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_sunshine_coast_shares_brisbane_cap(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Sunshine Coast",
+            price=1_000_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_illawarra_shares_sydney_cap(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Illawarra",
+            price=1_500_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_newcastle_shares_sydney_cap(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Newcastle",
+            price=1_400_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_regional_vic(self):
+        """Regional VIC: cap $650k."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Regional VIC",
+            price=650_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_regional_vic_over_cap(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Regional VIC",
+            price=700_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert not fhbg.result.eligible
+
+    def test_fhbg_regional_qld(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Regional QLD",
+            price=700_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_regional_wa(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Regional WA",
+            price=600_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_regional_sa(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Regional SA",
+            price=500_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_regional_tas(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Regional TAS",
+            price=550_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_regional_nt(self):
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Regional NT",
+            price=600_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg.result.eligible
+
+    def test_fhbg_no_region_no_price_cap(self):
+        """FHBG: no region specified → no price cap enforced (falls back to max_price=None)."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region=None,
+            price=2_000_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg is not None
+        assert fhbg.result.eligible
+
+    def test_fhbg_unknown_region_no_price_cap(self):
+        """FHBG: unknown region → falls back to max_price (None) → no cap."""
+        results = evaluate_schemes(_make_inputs(
+            states=["Federal"], region="Unknown Place",
+            price=2_000_000, first_home_buyer=True, owner_occupier=True,
+        ))
+        fhbg = next((r for r in results if r.scheme.id == "fhbg"), None)
+        assert fhbg is not None
+        assert fhbg.result.eligible
+
+    def test_wa_fhog_kimberley_higher_cap(self):
+        """WA FHOG: $900k in Kimberley (cap $1M) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Kimberley",
+            price=900_000, property_type="new",
+            first_home_buyer=True, owner_occupier=True,
+        ))
+        fhog = next((r for r in results if r.scheme.id == "fhog-wa"), None)
+        assert fhog is not None
+        assert fhog.result.eligible
+
+    def test_wa_fhog_perth_general_cap(self):
+        """WA FHOG: $800k in Perth (no regional override → general $750k cap) → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Perth",
+            price=800_000, property_type="new",
+            first_home_buyer=True, owner_occupier=True,
+        ))
+        fhog = next((r for r in results if r.scheme.id == "fhog-wa"), None)
+        assert fhog is not None
+        assert not fhog.result.eligible
+
+    def test_wa_fhog_pilbara_higher_cap(self):
+        """WA FHOG: $900k in Pilbara (cap $1M) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Pilbara",
+            price=900_000, property_type="new",
+            first_home_buyer=True, owner_occupier=True,
+        ))
+        fhog = next((r for r in results if r.scheme.id == "fhog-wa"), None)
+        assert fhog.result.eligible
+
+    def test_wa_fhog_kimberley_at_exact_cap(self):
+        """WA FHOG: $1M in Kimberley (cap $1M) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Kimberley",
+            price=1_000_000, property_type="new",
+            first_home_buyer=True, owner_occupier=True,
+        ))
+        fhog = next((r for r in results if r.scheme.id == "fhog-wa"), None)
+        assert fhog.result.eligible
+
+    def test_wa_fhog_kimberley_over_cap(self):
+        """WA FHOG: $1.1M in Kimberley (cap $1M) → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Kimberley",
+            price=1_100_000, property_type="new",
+            first_home_buyer=True, owner_occupier=True,
+        ))
+        fhog = next((r for r in results if r.scheme.id == "fhog-wa"), None)
+        assert not fhog.result.eligible
+
+    def test_wa_fhog_no_region_uses_general(self):
+        """WA FHOG: no region → general $750k cap."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region=None,
+            price=800_000, property_type="new",
+            first_home_buyer=True, owner_occupier=True,
+        ))
+        fhog = next((r for r in results if r.scheme.id == "fhog-wa"), None)
+        assert not fhog.result.eligible
+
+    # ── Regional income caps
+
+    def test_keystart_pilbara_higher_income(self):
+        """Keystart: $200k income in Pilbara (cap $225k) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Pilbara",
+            income=200_000, owner_occupier=True,
+        ))
+        ks = next((r for r in results if r.scheme.id == "keystart-wa"), None)
+        assert ks.result.eligible
+
+    def test_keystart_kimberley_higher_income(self):
+        """Keystart: $200k income in Kimberley (cap $225k) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Kimberley",
+            income=200_000, owner_occupier=True,
+        ))
+        ks = next((r for r in results if r.scheme.id == "keystart-wa"), None)
+        assert ks is not None
+        assert ks.result.eligible
+
+    def test_keystart_kimberley_over_regional_cap(self):
+        """Keystart: $230k income in Kimberley (cap $225k) → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Kimberley",
+            income=230_000, owner_occupier=True,
+        ))
+        ks = next((r for r in results if r.scheme.id == "keystart-wa"), None)
+        assert ks is not None
+        assert not ks.result.eligible
+
+    def test_keystart_perth_statewide_cap(self):
+        """Keystart: $160k income in Perth (statewide cap $148k) → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Perth",
+            income=160_000, owner_occupier=True,
+        ))
+        ks = next((r for r in results if r.scheme.id == "keystart-wa"), None)
+        assert ks is not None
+        assert not ks.result.eligible
+
+    def test_keystart_couple_kimberley(self):
+        """Keystart: couple $270k household in Kimberley (cap $285k) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Kimberley",
+            income=150_000, partner_income=120_000,
+            buyer_type="couple", owner_occupier=True,
+        ))
+        ks = next((r for r in results if r.scheme.id == "keystart-wa"), None)
+        assert ks is not None
+        assert ks.result.eligible
+
+    def test_keystart_couple_kimberley_over_cap(self):
+        """Keystart: couple $300k household in Kimberley (cap $285k) → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Kimberley",
+            income=160_000, partner_income=140_000,
+            buyer_type="couple", owner_occupier=True,
+        ))
+        ks = next((r for r in results if r.scheme.id == "keystart-wa"), None)
+        assert ks is not None
+        assert not ks.result.eligible
+
+    def test_keystart_no_region_statewide_cap(self):
+        """Keystart: no region → statewide $148k cap."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region=None,
+            income=160_000, owner_occupier=True,
+        ))
+        ks = next((r for r in results if r.scheme.id == "keystart-wa"), None)
+        assert not ks.result.eligible
+
+    def test_keystart_pilbara_at_exact_cap(self):
+        """Keystart: $225k in Pilbara (cap $225k) → eligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Pilbara",
+            income=225_000, owner_occupier=True,
+        ))
+        ks = next((r for r in results if r.scheme.id == "keystart-wa"), None)
+        assert ks.result.eligible
+
+    def test_keystart_couple_perth_statewide_cap(self):
+        """Keystart: couple $230k in Perth → statewide $218k cap → ineligible."""
+        results = evaluate_schemes(_make_inputs(
+            states=["WA"], region="Perth",
+            income=120_000, partner_income=110_000,
+            buyer_type="couple", owner_occupier=True,
+        ))
+        ks = next((r for r in results if r.scheme.id == "keystart-wa"), None)
+        assert not ks.result.eligible
 
 
 # ──────────────────────────────────────────────
