@@ -55,7 +55,11 @@ FHOG_WA = GrantScheme(
         citizen_required=True,
         first_home_buyer=True,
         owner_occupier=True,
-        max_price=750_000,  # $1M north of 26th parallel — not modelled regionally
+        max_price=750_000,
+        max_price_by_region={
+            "Kimberley": 1_000_000,
+            "Pilbara": 1_000_000,
+        },
         property_types=["new"],
     ),
 )
@@ -225,13 +229,17 @@ KEYSTART_WA = GrantScheme(
         "Property price cap: $800,000",
         "Deposit must be genuine savings, gifts, or FHOG (not borrowed)",
         "Income caps updated August 2025 (mainstream product, statewide)",
-        "Kimberley/Pilbara may have higher income limits — check with Keystart",
+        "Kimberley/Pilbara: $225,000 single / $285,000 couple",
     ],
     financial_effect=FinancialEffect(lmi_waiver=True, min_deposit_percent=0.02),
     predicates=EligibilityPredicates(
         owner_occupier=True,
         max_income_single=148_000,
         max_income_couple=218_000,
+        max_income_by_region={
+            "Kimberley": (225_000, 285_000),
+            "Pilbara": (225_000, 285_000),
+        },
         max_price=800_000,
     ),
 )

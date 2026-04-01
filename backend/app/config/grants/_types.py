@@ -37,8 +37,10 @@ class EligibilityPredicates:
     single_parent_required: bool = False
     requires_no_property_in_last_2_years: bool = False
     max_price: float | None = None
+    max_price_by_region: dict[str, float] | None = None
     max_income_single: float | None = None
     max_income_couple: float | None = None
+    max_income_by_region: dict[str, tuple[float, float]] | None = None  # region → (single, couple)
     property_types: list[str] | None = None  # e.g. ["new"], ["new", "land"], ["existing"] — None = any
     individual_only: bool = False
     off_the_plan_only: bool = False

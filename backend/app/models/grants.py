@@ -30,6 +30,7 @@ class GrantsInputs:
     """
 
     states: list[str] = field(default_factory=list)
+    region: str | None = None
     price: float = 0.0
     income: float = 0.0
     partner_income: float = 0.0

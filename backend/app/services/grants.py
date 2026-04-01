@@ -67,23 +67,35 @@ def _check_eligibility(scheme: GrantScheme, inputs: GrantsInputs) -> Eligibility
         if inputs.owned_property_in_last_2_years:
             reasons.append("Must not have owned property in Australia in the last 2 years")
 
-    # Property price cap
-    if p.max_price is not None and inputs.price > 0:
-        if inputs.price > p.max_price:
-            reasons.append(f"Property value must be ${p.max_price:,.0f} or less")
+    # Property price cap (regional if available, else general)
+    if inputs.price > 0:
+        price_cap = None
+        if inputs.region and p.max_price_by_region:
+            price_cap = p.max_price_by_region.get(inputs.region)
+        if price_cap is None:
+            price_cap = p.max_price
+        if price_cap is not None and inputs.price > price_cap:
+            region_label = f" ({inputs.region})" if inputs.region and p.max_price_by_region else ""
+            reasons.append(f"Property value must be ${price_cap:,.0f} or less{region_label}")
 
-    # Income cap (uses buyer_type to pick single vs couple threshold)
+    # Income cap (regional if available, else general)
     household_income = inputs.income + inputs.partner_income
     if household_income > 0:
-        if inputs.buyer_type == "couple" and p.max_income_couple is not None:
-            if household_income > p.max_income_couple:
+        income_single = p.max_income_single
+        income_couple = p.max_income_couple
+        if inputs.region and p.max_income_by_region:
+            regional = p.max_income_by_region.get(inputs.region)
+            if regional is not None:
+                income_single, income_couple = regional
+        if inputs.buyer_type == "couple" and income_couple is not None:
+            if household_income > income_couple:
                 reasons.append(
-                    f"Household income must be ${p.max_income_couple:,.0f} or less"
+                    f"Household income must be ${income_couple:,.0f} or less"
                 )
-        elif p.max_income_single is not None:
-            if inputs.income > p.max_income_single:
+        elif income_single is not None:
+            if inputs.income > income_single:
                 reasons.append(
-                    f"Income must be ${p.max_income_single:,.0f} or less"
+                    f"Income must be ${income_single:,.0f} or less"
                 )
 
     # Property types (list-based — user's type must be in allowed list)

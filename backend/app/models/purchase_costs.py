@@ -52,6 +52,7 @@ class PurchaseCostsInputs:
     """
 
     state: State | str = ""
+    region: str | None = None
     price: float = 0.0
     deposit_percent: float = 0.0
     property_type: PropertyType | None = None

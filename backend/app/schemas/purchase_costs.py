@@ -26,6 +26,7 @@ class PurchaseCostsRequest(BaseModel):
     """
 
     state: str = Field(description="State code: NSW, VIC, QLD, WA, SA, TAS, ACT, NT")
+    region: str | None = Field(default=None, description="Region/city (e.g. 'Sydney', 'Regional QLD', 'Kimberley')")
     price: float = Field(ge=0, description="Property purchase price")
     deposit_percent: float = Field(ge=0, le=1, description="Deposit as decimal (e.g. 0.10)")
     property_type: str | None = Field(default=None, description="'new', 'existing', 'land', or null")

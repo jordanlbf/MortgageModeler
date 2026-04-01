@@ -34,6 +34,7 @@ def get_purchase_costs(req: PurchaseCostsRequest) -> PurchaseCostsResponse:
     """
     inputs = PurchaseCostsInputs(
         state=req.state,
+        region=req.region,
         price=req.price,
         deposit_percent=req.deposit_percent,
         property_type=PropertyType(req.property_type) if req.property_type else None,
