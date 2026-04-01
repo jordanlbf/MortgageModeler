@@ -43,6 +43,16 @@ const icons: Record<string, React.ReactNode> = {
       <path d="M8 36H40" stroke={mix(t.accent, 70)} strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
+  "purchase-costs": (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+      <rect x="8" y="10" width="32" height="28" rx="4" stroke={mix(t.accent, 40)} strokeWidth="1.5" />
+      <path d="M8 18H40" stroke={mix(t.accent, 25)} strokeWidth="1.5" />
+      <path d="M16 24H28" stroke={mix(t.accent, 50)} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M16 30H24" stroke={mix(t.accent, 35)} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M16 36H20" stroke={mix(t.accent, 25)} strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M32 24L34 26L38 22" stroke={mix(t.accent, 60)} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
   "offset-impact": (
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
       <rect x="8" y="12" width="32" height="24" rx="4" stroke="rgba(148,163,184,0.25)" strokeWidth="1.5" />
