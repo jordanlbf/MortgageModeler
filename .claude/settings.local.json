@@ -33,7 +33,11 @@
       "Bash(sed -i 's/property_type=\"\"land\"\"/property_types=[\"\"land\"\"]/g' app/config/grants/nsw.py app/config/grants/qld.py app/config/grants/wa.py)",
       "Bash(sed -i 's/property_type=\"\"existing\"\"/property_types=[\"\"existing\"\"]/g' app/config/grants/nt.py)",
       "Bash(cd:*)",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "WebFetch(domain:thinkthroo.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:next-colocation-template.vercel.app)",
+      "WebFetch(domain:dev.to)"
     ]
   }
 }

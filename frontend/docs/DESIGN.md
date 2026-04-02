@@ -1,41 +1,158 @@
-## How I Design
- 
-Design process framework for MortgageModeler. Decisions are made in a deliberate order: structure before style, hierarchy before colour, restraint before decoration. Informed by *Refactoring UI* (Wathan & Schoger).
- 
-Engineering and process come more naturally to me than visual design, so I engineer my design process too. The steps below enforce a strict order that prevents me from jumping ahead to aesthetics before the foundations are solid.
- 
-### 1. Start with content
- 
-Write out what the screen needs before touching layout: what data is shown, what actions are available, what the user came here to do. Plain text only. 
- 
-### 2. Establish hierarchy
- 
-Decide what's primary, secondary, and tertiary. Every screen has one focal point: the thing the user's eye should land on first. Everything else supports it or stays out of the way. Make this decision explicitly before starting layout.
- 
-### 3. Layout in greyscale
- 
-Build the layout using only black, white, and shades of grey. This forces reliance on size, weight, spacing, and contrast to create hierarchy. If the design doesn't work in greyscale, colour won't fix it.
- 
-### 4. Start with too much whitespace
- 
-Give every element more room than it needs, then tighten. It's much easier to spot "that's too much space" than to notice "that needs a bit more." Cramped layouts are the fastest way to make something feel undesigned. Space can always be pulled back.
- 
-### 5. Apply the design system
- 
-Before reaching for any value (font size, spacing, colour, shadow, border), check the defined scales in this document. No arbitrary pixel values. No new colours. If the system doesn't have what's needed, add to the system deliberately, not to the component ad hoc.
- 
-### 6. Add colour from the palette
- 
-Colour comes last, pulled only from the defined ramps. Use colour to reinforce hierarchy that's already working, not to create it. Every use of colour to communicate meaning gets a redundant signal (icon, label, pattern) so the design works without colour too.
- 
-### 7. Check light and elevation
- 
-Every raised element gets a light top edge and bottom shadow. Every inset element inverts this. Check that the light source direction is consistent across the entire screen. Cards, buttons, sliders, and inputs should all feel lit from the same place.
- 
-### 8. Review
- 
-Before considering a design done, run three checks:
- 
-- **Squint test.** Blur eyes or step back from the screen. Can the primary focal point be identified instantly? If everything competes equally, the hierarchy has failed.
-- **Greyscale test.** Screenshot the design and desaturate it. Does every element still communicate its meaning and importance? If something disappears or becomes ambiguous, the design is relying too heavily on colour.
-- **System audit.** Check every value against the scales defined in this document. 
+# MortgageModeler Design System
+
+## Personality
+
+A sharp, dark instrument for modelling property decisions with precision.
+
+**Visual reference:** dark dashboards, warm dark grey backgrounds, barely-raised cards with subtle borders, teal accent used surgically, generous internal padding, typography-driven hierarchy. Not Bloomberg dense, not consumer playful. Clean, calm, precise.
+
+**Target users:** First home buyers through to multi-property investors. Approachable for someone modelling their first purchase, capable enough for someone comparing five scenarios.
+
+## Principles
+
+1. **Numbers are the product.** Dollar amounts, percentages, and rates get the best typography and the most visual weight. Every number uses tabular-nums. Alignment matters.
+2. **Show the answer first.** Hero the result. Let the user drill into detail on demand.
+3. **Quiet until needed.** Controls are muted until interacted with. Detail is hidden until expanded. Labels are small and low-contrast. The interface recedes; the data advances.
+4. **Precision over decoration.** No rounded or approximate displays. No decorative gradients. No colour used purely for aesthetics.
+5. **Structure before style.** Layout and hierarchy are established in greyscale. Colour reinforces hierarchy that already works without it.
+6. **Restraint before decoration.** Start with too much whitespace, then tighten. Start with fewer elements, then add.
+
+## Visual DNA
+
+### Backgrounds
+- Page: warm dark grey (#111215). Not pure black.
+- Cards: 1-2 steps lighter (~#1a1e23 to #2a2a2e at low opacity). Boundary from subtle border (1px, low-opacity), not dramatic shadows.
+
+### Accent
+- Teal (#2dd4bf) used surgically: hero numbers, active toggle states, section labels, active pills.
+- Never for large fills, card backgrounds, or decorative areas.
+- Indigo theme (#6366f1) follows the same restraint — same placements, different hue.
+
+### Typography
+- Sora — geometric, modern, good tabular-nums.
+- Two weights: `font-normal` (400) and `font-semibold` (600).
+- `font-bold` (700) reserved for hero numbers only.
+- Hierarchy built entirely with size + weight. Colour reinforces, doesn't create.
+
+### Cards
+- Barely raised. Transparent overlay on page, not opaque surface.
+- Border: 1px, low-opacity (~8% white or accent-tinted).
+- Internal padding: `p-6` (24px) to `p-8` (32px). Density from multiple cards, not packed content.
+- Border-radius: `rounded-xl` (12px) to `rounded-2xl` (16px).
+
+### Spacing
+- Generous by default. `gap-5` to `gap-7` (20-28px) between sections. `gap-3` to `gap-4` (12-16px) between rows.
+- Adjacent values differ by ~25% minimum.
+
+### Interaction
+- Hover: translateY -1 to -2px with deeper shadow.
+- Active toggles: accent glow (low-opacity box-shadow).
+- Transitions: `duration-150` to `duration-200` ease for colour/opacity. `duration-300` cubic-bezier for transform.
+- Focus rings: ring-2 to ring-3, accent at 10-25% opacity.
+
+### Shadows
+- Rest: `shadow-sm` — `0 1px 4px rgba(0,0,0,0.20)`.
+- Hover: `shadow-md` — `0 4px 16px rgba(0,0,0,0.35)`.
+- No dramatic drop shadows. Mostly flat, depth from layering.
+
+---
+
+## Scales
+
+All values use Tailwind's native scales. No custom overrides. The design system defines *which* values to use, not new values.
+
+### Type Scale
+
+| Role | Tailwind | Size | Weight |
+|---|---|---|---|
+| Tiny labels (section headers, field labels) | `text-xs` | 12px | `font-semibold` |
+| Detail text, descriptions, bullet items | `text-sm` | 14px | `font-normal` |
+| Body text, inputs, values | `text-base` | 16px | `font-normal` or `font-semibold` |
+| Section headers, card titles | `text-lg` | 18px | `font-semibold` |
+| KPI values, large labels | `text-xl` | 20px | `font-semibold` |
+| Prominent values | `text-2xl` | 24px | `font-semibold` |
+| Page titles | `text-4xl` | 36px | `font-semibold` |
+| Hero numbers | `text-[56px]` | 56px | `font-bold` |
+
+Hero number is the only arbitrary value — 56px has no Tailwind equivalent. Use `text-[56px]` or define as `--text-hero` in `@theme`.
+
+### Spacing Scale
+
+Use Tailwind's native spacing directly. No custom tokens needed.
+
+| Tailwind | Value | Common use |
+|---|---|---|
+| `1` | 4px | Tight gaps (pill internal, toggle thumb offset) |
+| `1.5` | 6px | Label-to-input gap |
+| `2` | 8px | Row gaps, small padding |
+| `3` | 12px | Row gaps within cards, divider margins |
+| `4` | 16px | Standard gap between elements |
+| `5` | 20px | Section gaps within cards |
+| `6` | 24px | Card internal padding (small) |
+| `7` | 28px | Card horizontal padding |
+| `8` | 32px | Card internal padding (large), section gaps |
+| `9` | 36px | Page horizontal padding |
+| `10` | 40px | Large section gaps |
+| `12` | 48px | Hero spacing |
+| `16` | 64px | Loan summary metric gaps |
+
+### Border Radius
+
+| Tailwind | Value | Use |
+|---|---|---|
+| `rounded-lg` | 8px | Inputs, selects, small pills |
+| `rounded-xl` | 12px | Inner panels, fact boxes |
+| `rounded-2xl` | 16px | Cards, main containers |
+| `rounded-full` | 9999px | Round pills, toggle tracks |
+
+### Shadows
+
+Defined as CSS custom properties (Tailwind's defaults don't match our dark theme needs).
+
+| Token | Value | Use |
+|---|---|---|
+| Card rest | `0 1px 4px rgba(0,0,0,0.20)` | Default card shadow |
+| Card hover | `0 4px 16px rgba(0,0,0,0.35)` | Hovered/lifted card |
+| Glow (accent) | `0 0 8px color-mix(in srgb, var(--color-accent) 40%, transparent)` | Active toggle thumb |
+
+### Colour Tokens
+
+Defined as CSS custom properties in `globals.css` via `@theme`. Two themes remap the same semantic tokens.
+
+**Semantic tokens (used in code):**
+
+| Token | Graphite Teal | Midnight Indigo |
+|---|---|---|
+| `--color-background` | #111215 | #0a0e1a |
+| `--color-foreground` | #f0fdfa | #e2e8f4 |
+| `--color-accent` | #2dd4bf | #6366f1 |
+| `--color-accent-contrast` | #18181b | #fff |
+| `--color-muted` | #f4f4f5 | #c4ccdf |
+| `--color-subtle` | #a1a1aa | #7c8db5 |
+| `--color-card` | rgba(42,42,46,0.72) | rgba(16,22,42,0.55) |
+| `--color-card-elevated` | rgba(44,44,48,0.82) | rgba(20,26,50,0.65) |
+| `--color-border` | rgba(113,113,122,0.08) | rgba(99,102,241,0.12) |
+| `--color-accent-border` | rgba(45,212,191,0.35) | rgba(99,102,241,0.35) |
+
+**Accent usage (surgical — same placements both themes):**
+- Hero numbers: `color: var(--color-accent)`
+- Section labels: `color-mix(in srgb, var(--color-accent) 60%, transparent)`
+- Active toggles: `background: color-mix(in srgb, var(--color-accent) 35%, transparent)`
+- Active pills: `background: color-mix(in srgb, var(--color-accent) 14%, transparent)`
+- Focus rings: `box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent)`
+- Card borders (accent-tinted): `border-color: color-mix(in srgb, var(--color-accent) 15%, transparent)`
+
+**Series colours (charts only):**
+
+| Series | Colour |
+|---|---|
+| Balance | #2dd4bf |
+| Interest | #f87171 |
+| Equity | #60a5fa |
+| Total Paid | #a78bfa |
+| LVR | #fb923c |
+| Offset | #facc15 |
+
+---
+
+See [DESIGN-PROCESS.md](DESIGN-PROCESS.md) for the step-by-step design workflow.
