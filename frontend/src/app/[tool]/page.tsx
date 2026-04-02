@@ -50,7 +50,7 @@ export default async function ToolPlaceholder({ params }: Props) {
             {meta.desc}
           </p>
           <span
-            className="inline-block rounded-[3px] text-[8px] font-bold uppercase tracking-[0.12em] leading-none"
+            className="inline-block rounded-[3px] text-[8px] font-semibold uppercase tracking-[0.12em] leading-none"
             style={{
               padding: "3px 8px",
               color: "rgba(148,163,184,0.35)",

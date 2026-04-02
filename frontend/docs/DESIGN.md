@@ -26,7 +26,7 @@ A sharp, dark instrument for modelling property decisions with precision.
 ### Accent
 - Teal (#2dd4bf) used surgically: hero numbers, active toggle states, section labels, active pills.
 - Never for large fills, card backgrounds, or decorative areas.
-- Indigo theme (#6366f1) follows the same restraint — same placements, different hue.
+- Arctic theme (#38bdf8) follows the same restraint — same placements, different hue.
 
 ### Typography
 - Sora — geometric, modern, good tabular-nums.
@@ -121,18 +121,19 @@ Defined as CSS custom properties in `globals.css` via `@theme`. Two themes remap
 
 **Semantic tokens (used in code):**
 
-| Token | Graphite Teal | Midnight Indigo |
+| Token | Graphite Teal | Slate Arctic |
 |---|---|---|
-| `--color-background` | #111215 | #0a0e1a |
-| `--color-foreground` | #f0fdfa | #e2e8f4 |
-| `--color-accent` | #2dd4bf | #6366f1 |
-| `--color-accent-contrast` | #18181b | #fff |
-| `--color-muted` | #f4f4f5 | #c4ccdf |
-| `--color-subtle` | #a1a1aa | #7c8db5 |
-| `--color-card` | rgba(42,42,46,0.72) | rgba(16,22,42,0.55) |
-| `--color-card-elevated` | rgba(44,44,48,0.82) | rgba(20,26,50,0.65) |
-| `--color-border` | rgba(113,113,122,0.08) | rgba(99,102,241,0.12) |
-| `--color-accent-border` | rgba(45,212,191,0.35) | rgba(99,102,241,0.35) |
+| `--color-background` | #111215 | #0e1117 |
+| `--color-foreground` | #f0fdfa | #f0f9ff |
+| `--color-accent` | #2dd4bf | #38bdf8 |
+| `--color-accent-contrast` | #18181b | #0c1825 |
+| `--color-accent-border` | rgba(45,212,191,0.35) | rgba(56,189,248,0.30) |
+| `--color-muted` | #f4f4f5 | *(shared)* |
+| `--color-subtle` | #a1a1aa | *(shared)* |
+| `--color-faint` | #71717a | *(shared)* |
+| `--color-card` | rgba(42,42,46,0.72) | *(shared)* |
+| `--color-card-elevated` | rgba(44,44,48,0.82) | *(shared)* |
+| `--color-border` | rgba(113,113,122,0.08) | *(shared)* |
 
 **Accent usage (surgical — same placements both themes):**
 - Hero numbers: `color: var(--color-accent)`

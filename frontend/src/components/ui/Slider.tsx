@@ -76,7 +76,7 @@ export default function Slider({
       </div>
 
       <div className="relative flex h-4 items-center">
-        <div className="absolute inset-x-0 h-[2px] rounded-full" style={{ background: t.border.default }} />
+        <div className="absolute inset-x-0 h-[2px] rounded-full" style={{ background: t.border.default, boxShadow: "inset 0 1px 2px rgba(0,0,0,0.25)" }} />
         <div
           className="absolute left-0 h-[2px] rounded-full"
           style={{ width: `${pct}%`, background: mix(accent, 50) }}

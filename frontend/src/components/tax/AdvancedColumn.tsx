@@ -263,7 +263,7 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
                   {s.shortTitle}
                 </span>
                 <span
-                  className="mt-[2px] text-[17px] font-bold tabular-nums"
+                  className="mt-[2px] text-[17px] font-semibold tabular-nums"
                   style={{
                     color: isActive
                       ? "#111215"

@@ -81,14 +81,22 @@ function BreakdownRow({
   amount,
   isSavings,
   details,
+  waterfall,
+  note,
 }: {
   name: string;
   amount: number;
   isSavings?: boolean;
   details?: { label: string; value: string }[];
+  waterfall?: boolean;
+  note?: string;
 }) {
   const [open, setOpen] = useState(false);
   const hasDetails = details && details.length > 0;
+
+  const maxDetail = waterfall && details
+    ? Math.max(...details.map(d => parseCurrency(d.value)))
+    : 0;
 
   return (
     <>
@@ -99,6 +107,7 @@ function BreakdownRow({
           )}
           {!hasDetails && <span style={{ width: 14 }} />}
           <span className="pc-row-name">{name}</span>
+          {note && <span className="pc-row-note">{note}</span>}
         </div>
         <span className={`pc-row-amount ${isSavings ? "pc-row-amount--savings" : ""}`}>
           {formatDollars(amount)}
@@ -106,12 +115,21 @@ function BreakdownRow({
       </div>
       {open && details && (
         <div className="pc-detail">
-          {details.map((d) => (
-            <div key={d.label} className="pc-detail-line">
-              <span>{d.label}</span>
-              <span className="pc-detail-line-value">{d.value}</span>
-            </div>
-          ))}
+          {details.map((d) => {
+            const val = parseCurrency(d.value);
+            const pct = waterfall && maxDetail > 0 ? (val / maxDetail) * 100 : 0;
+            return (
+              <div key={d.label} className={`pc-detail-line ${waterfall ? "pc-detail-line--waterfall" : ""}`}>
+                <span className="pc-detail-line-label">{d.label}</span>
+                {waterfall && (
+                  <div className="pc-waterfall-track">
+                    <div className="pc-waterfall-bar" style={{ width: `${pct}%` }} />
+                  </div>
+                )}
+                <span className="pc-detail-line-value">{d.value}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </>
@@ -258,9 +276,27 @@ export default function PurchaseCostsView() {
         {data && (
           <>
             <div className="pc-hero">
-              <div className="pc-section-label">Total Upfront Cost</div>
+              <div className="pc-section-label">Total Cash to Purchase</div>
               <div className="pc-hero-amount">{formatDollars(data.total_upfront_cost)}</div>
               <div className="pc-hero-subtitle">Total cash needed to purchase (including deposit)</div>
+
+              {/* Deposit / costs split */}
+              <div className="pc-hero-split">
+                <div className="pc-hero-split-item">
+                  <div className="pc-hero-split-value">{formatDollars(data.deposit_amount)}</div>
+                  <div className="pc-hero-split-label">Deposit ({(depositPct * 100).toFixed(0)}%)</div>
+                </div>
+                <div className="pc-hero-split-divider" />
+                <div className="pc-hero-split-item">
+                  <div className="pc-hero-split-value">{formatDollars(data.stamp_duty_payable + data.lmi_payable + data.total_fees - data.total_grant_savings)}</div>
+                  <div className="pc-hero-split-label">Purchase Costs</div>
+                </div>
+              </div>
+
+              {/* Loan metadata */}
+              <div className="pc-hero-meta">
+                Loan amount <span className="pc-hero-meta-value">{formatDollars(data.effective_loan_amount)}</span> · LVR <span className="pc-hero-meta-value">{(data.lvr * 100).toFixed(0)}%</span>
+              </div>
             </div>
 
             {/* Cost breakdown */}
@@ -269,25 +305,18 @@ export default function PurchaseCostsView() {
                 <div className="pc-section-label" style={{ textAlign: "left" }}>Cost Breakdown</div>
               </div>
 
-              <BreakdownRow name="Deposit" amount={data.deposit_amount} />
               <BreakdownRow name="Stamp Duty" amount={data.stamp_duty_payable} details={stampDutyDetails} />
               {(data.lmi_payable > 0 || data.lmi_base > 0) && (
                 <BreakdownRow name="Lenders Mortgage Insurance" amount={data.lmi_payable} details={lmiDetails} />
               )}
-              <BreakdownRow name="Fees" amount={data.total_fees} details={feeDetails} />
-              {data.total_grant_savings > 0 && (
-                <BreakdownRow
-                  name="Grant Savings"
-                  amount={-data.total_grant_savings}
-                  isSavings
-                  details={grantDetails}
-                />
-              )}
-
-              {/* Total row */}
-              <div className="pc-total-row">
-                <span className="pc-total-amount">{formatDollars(data.total_upfront_cost)}</span>
-              </div>
+              <BreakdownRow name="Fees" amount={data.total_fees} details={feeDetails} waterfall />
+              <BreakdownRow
+                name="Grant Savings"
+                amount={data.total_grant_savings > 0 ? -data.total_grant_savings : 0}
+                isSavings={data.total_grant_savings > 0}
+                details={grantDetails}
+                note={data.grants_applied.length > 0 ? data.grants_applied.map(g => g.scheme_name.split(" ").map(w => w[0]).join("")).join(", ") : undefined}
+              />
             </div>
 
             {/* Loan summary */}

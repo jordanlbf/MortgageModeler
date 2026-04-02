@@ -23,7 +23,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{let t=localStorage.getItem("theme");if(t==="indigo")document.documentElement.setAttribute("data-theme","indigo")}catch(e){}`,
+            __html: `try{let t=localStorage.getItem("theme");if(t==="arctic")document.documentElement.setAttribute("data-theme","arctic")}catch(e){}`,
           }}
         />
       </head>

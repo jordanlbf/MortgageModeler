@@ -77,7 +77,7 @@ function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick, activeSe
       <text x="80" y={activeSegment ? 68 : 71} textAnchor="middle" className="text-[9px] font-medium uppercase tracking-widest" style={{ transition: "all 0.2s" }} fill={activeSegment ? activeSegment.color : "rgba(161,161,170,0.4)"}>
         {activeSegment ? activeSegment.label : "Total Tax"}
       </text>
-      <text x="80" y={activeSegment ? 88 : 93} textAnchor="middle" className="text-[16px] font-bold tabular-nums" style={{ transition: "all 0.2s" }} fill={activeSegment ? activeSegment.color : "#f87171"}>
+      <text x="80" y={activeSegment ? 88 : 93} textAnchor="middle" className="text-[16px] font-semibold tabular-nums" style={{ transition: "all 0.2s" }} fill={activeSegment ? activeSegment.color : "#f87171"}>
         {activeSegment
           ? `${activeSegment.isDeduction && activeSegment.value >= 0 ? "-" : ""}${formatCurrencyShort(Math.abs(activeSegment.value))}`
           : `${totalTax >= 0 ? "-" : "+"}${formatCurrencyShort(Math.abs(totalTax))}`}

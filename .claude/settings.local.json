@@ -37,7 +37,12 @@
       "WebFetch(domain:thinkthroo.com)",
       "WebFetch(domain:medium.com)",
       "WebFetch(domain:next-colocation-template.vercel.app)",
-      "WebFetch(domain:dev.to)"
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(npm test:*)",
+      "Bash(ls */package.json)",
+      "Bash(npm run:*)",
+      "Bash(ls backend/*/requirements*.txt backend/pyproject.toml)"
     ]
   }
 }

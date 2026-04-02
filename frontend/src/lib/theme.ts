@@ -23,6 +23,12 @@ export const t = {
     sliderThumb: "var(--color-slider-thumb)",
   },
 
+  // ── Text ──────────────────────────────────────────
+  fg: "var(--color-foreground)",
+  muted: "var(--color-muted)",
+  subtle: "var(--color-subtle)",
+  faint: "var(--color-faint)",
+
   // ── Accent ───────────────────────────────────────
   accent: "var(--color-accent)",
   accentBorder: "var(--color-accent-border)",
@@ -30,6 +36,7 @@ export const t = {
   // ── Borders ──────────────────────────────────────
   border: {
     default: "var(--color-border)",
+    hover: "var(--color-border-hover)",
   },
 
   // ── Chart chrome ─────────────────────────────────

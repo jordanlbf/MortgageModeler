@@ -127,7 +127,7 @@ export default function AmortisationView() {
               <div className="flex gap-1">
                 <button
                   onClick={() => setView("chart")}
-                  className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-bold tracking-wide transition-all duration-200 cursor-pointer"
+                  className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
                   style={view === "chart" ? {
                     background: mix(t.accent, 12),
                     color: t.accent,
@@ -148,7 +148,7 @@ export default function AmortisationView() {
                 </button>
                 <button
                   onClick={() => setView("table")}
-                  className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-bold tracking-wide transition-all duration-200 cursor-pointer"
+                  className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
                   style={view === "table" ? {
                     background: mix(t.accent, 12),
                     color: t.accent,

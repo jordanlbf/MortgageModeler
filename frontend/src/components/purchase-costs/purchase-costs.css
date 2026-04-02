@@ -216,16 +216,65 @@
   font-size: 56px;
   font-weight: 700;
   letter-spacing: -0.04em;
-  color: var(--color-accent);
+  color: var(--color-foreground);
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 40px color-mix(in srgb, var(--color-accent) 25%, transparent);
 }
 
 .pc-hero-subtitle {
   font-size: 14px;
   color: color-mix(in srgb, var(--color-subtle) 60%, transparent);
   margin-top: 4px;
+}
+
+/* ── Hero split (Deposit / Purchase Costs) ────── */
+.pc-hero-split {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin-top: 20px;
+}
+
+.pc-hero-split-item {
+  text-align: center;
+}
+
+.pc-hero-split-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-hero-split-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-subtle);
+  margin-top: 4px;
+}
+
+.pc-hero-split-divider {
+  width: 1px;
+  height: 36px;
+  background: var(--color-border);
+}
+
+/* ── Hero loan metadata ─────────────────────────── */
+.pc-hero-meta {
+  font-size: 13px;
+  color: var(--color-subtle);
+  margin-top: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 8px;
+}
+
+.pc-hero-meta-value {
+  font-weight: 600;
+  color: var(--color-foreground);
 }
 
 /* ── Cost breakdown card ────────────────────────── */
@@ -286,6 +335,13 @@
   color: color-mix(in srgb, var(--color-foreground) 85%, transparent);
 }
 
+.pc-row-note {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-faint);
+  margin-left: 6px;
+}
+
 .pc-row-amount {
   font-size: 15px;
   font-weight: 600;
@@ -295,23 +351,6 @@
 
 .pc-row-amount--savings {
   color: var(--color-accent);
-}
-
-/* ── Total row ──────────────────────────────────── */
-.pc-total-row {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 16px 28px;
-  border-top: 1px solid color-mix(in srgb, var(--color-accent) 8%, transparent);
-}
-
-.pc-total-amount {
-  font-size: 18px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-foreground);
-  letter-spacing: -0.02em;
 }
 
 /* ── Breakdown detail (expanded) ────────────────── */
@@ -327,13 +366,43 @@
 .pc-detail-line {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 13px;
   color: color-mix(in srgb, var(--color-muted) 50%, transparent);
+}
+
+.pc-detail-line-label {
+  flex-shrink: 0;
+}
+
+.pc-detail-line--waterfall {
+  gap: 12px;
+}
+
+.pc-detail-line--waterfall .pc-detail-line-label {
+  width: 170px;
 }
 
 .pc-detail-line-value {
   font-variant-numeric: tabular-nums;
   font-weight: 500;
+  flex-shrink: 0;
+}
+
+/* ── Waterfall bars ─────────────────────────────── */
+.pc-waterfall-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.pc-waterfall-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  transition: width 0.3s ease;
 }
 
 /* ── Loan summary ───────────────────────────────── */
@@ -362,7 +431,7 @@
 
 .pc-loan-label {
   font-size: 12px;
-  color: color-mix(in srgb, var(--color-accent) 70%, transparent);
+  color: var(--color-faint);
   margin-top: 2px;
   font-weight: 500;
   text-transform: uppercase;
@@ -419,29 +488,7 @@
   }
 }
 
-/* ── Midnight Indigo theme overrides ────────────── */
-[data-theme="indigo"] .pc-section-label {
-  color: color-mix(in srgb, var(--color-accent) 80%, transparent);
-}
-
-[data-theme="indigo"] .pc-inputs-card,
-[data-theme="indigo"] .pc-breakdown-card {
-  border-color: color-mix(in srgb, var(--color-accent) 20%, transparent);
-  box-shadow:
-    0 1px 6px rgba(0, 0, 0, 0.30),
-    0 0 0 0.5px color-mix(in srgb, var(--color-accent) 10%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--color-accent) 4%, transparent);
-}
-
-[data-theme="indigo"] .pc-hero-amount {
-  text-shadow: 0 0 50px color-mix(in srgb, var(--color-accent) 35%, transparent);
-}
-
-[data-theme="indigo"] .pc-loan-summary {
-  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
-  border-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
-}
-
-[data-theme="indigo"] .pc-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(99,102,241,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+/* ── Slate Arctic theme overrides ────────────────── */
+[data-theme="arctic"] .pc-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(56,189,248,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
 }

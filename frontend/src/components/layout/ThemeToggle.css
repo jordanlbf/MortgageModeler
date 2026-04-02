@@ -7,7 +7,7 @@
 
 .theme-label {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.08em;
   color: var(--color-subtle);
   opacity: 0.35;
@@ -51,9 +51,9 @@
   transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease;
 }
 
-.theme-switch--indigo .theme-knob {
+.theme-switch--arctic .theme-knob {
   transform: translateX(18px);
-  background: #6366f1;
+  background: #38bdf8;
   opacity: 0.85;
 }
 
@@ -61,6 +61,6 @@
   opacity: 0.7;
 }
 
-.theme-switch--indigo:hover .theme-knob {
+.theme-switch--arctic:hover .theme-knob {
   opacity: 1;
 }
