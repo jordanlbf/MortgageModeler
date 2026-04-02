@@ -42,7 +42,7 @@ function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
         {/* Gross Income */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-foreground)", 35) }}>
+            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-foreground)", 35) }}>
               Gross Income
             </span>
           </div>
@@ -57,7 +57,7 @@ function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
         {/* Tax Deducted */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#f87171", 58) }}>
+            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("#f87171", 58) }}>
               Tax Deducted
             </span>
           </div>
@@ -72,7 +72,7 @@ function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
         {/* Net Income */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("var(--color-accent)", 58) }}>
+            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-accent)", 58) }}>
               Net Income
             </span>
           </div>

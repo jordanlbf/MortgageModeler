@@ -236,7 +236,7 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
   return (
     <GlassCard className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar overflow-y-auto px-8 py-6">
-        <span className="mb-8 block text-center text-[20px] font-semibold uppercase tracking-[0.14em]" style={{ color: t.accent }}>
+        <span className="mb-8 block text-center text-[20px] font-semibold uppercase tracking-widest" style={{ color: t.accent }}>
           Income &amp; Deductions
         </span>
 
@@ -320,7 +320,7 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
               }}
             >
               <div
-                className="mb-1 px-3 text-[12px] font-semibold uppercase tracking-[0.14em]"
+                className="mb-1 px-3 text-[12px] font-semibold uppercase tracking-widest"
                 style={{ color: section.color }}
               >
                 {group.label}

@@ -318,7 +318,7 @@ export default function TaxComposition({
     <GlassCard className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar flex flex-col items-center gap-8 overflow-y-auto px-7 py-5">
         <span
-          className="text-[20px] font-semibold uppercase tracking-[0.14em]"
+          className="text-[20px] font-semibold uppercase tracking-widest"
           style={{ color: t.accent }}
         >
           Tax Composition
@@ -333,14 +333,14 @@ export default function TaxComposition({
                   className="flex flex-col items-center rounded-full px-5 py-2 text-center"
                   style={{ background: mix("#fb923c", 10), border: `1px solid ${mix("#fb923c", 25)}` }}
                 >
-                  <span className="text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#fb923c", 58) }}>Effective Rate</span>
+                  <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: mix("#fb923c", 58) }}>Effective Rate</span>
                   <span className="text-[18px] font-semibold tabular-nums" style={{ color: "#fb923c" }}>{effectiveRate.toFixed(1)}%</span>
                 </div>
                 <div
                   className="flex flex-col items-center rounded-full px-5 py-2 text-center"
                   style={{ background: mix("#a78bfa", 10), border: `1px solid ${mix("#a78bfa", 25)}` }}
                 >
-                  <span className="text-[11px] font-medium uppercase tracking-[0.16em]" style={{ color: mix("#a78bfa", 58) }}>Marginal Rate</span>
+                  <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: mix("#a78bfa", 58) }}>Marginal Rate</span>
                   <span className="text-[18px] font-semibold tabular-nums" style={{ color: "#a78bfa" }}>{marginalRate.toFixed(1)}%</span>
                 </div>
               </>

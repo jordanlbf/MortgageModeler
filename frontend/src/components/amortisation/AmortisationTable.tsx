@@ -19,7 +19,7 @@ export default function AmortisationTable({ rows, height }: AmortisationTablePro
         {COLUMNS.map((h, i) => (
           <div
             key={h}
-            className={`text-[10px] font-semibold uppercase tracking-[0.14em] text-muted/25 ${
+            className={`text-[10px] font-semibold uppercase tracking-widest text-muted/25 ${
               i === 0 ? "text-left" : "text-right"
             }`}
           >

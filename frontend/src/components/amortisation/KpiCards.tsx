@@ -47,7 +47,7 @@ export default function KpiCards({
     <div className="mb-4 grid gap-4 grid-cols-[1fr_1fr_1fr]">
       {/* Repayment — editable */}
       <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
-        <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-accent/40">
+        <div className="text-[18px] font-medium uppercase tracking-widest text-accent/40">
           Repayment
         </div>
         <div className="mt-1.5 flex items-center h-[38px] text-[34px] font-normal leading-none tracking-[-0.02em] text-foreground tabular-nums">
@@ -60,14 +60,14 @@ export default function KpiCards({
             />
           ) : <Skeleton width="160px" height="34px" />}
         </div>
-        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-[0.12em] text-muted/30">
+        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-muted/30">
           {data ? `per ${FREQ_LABELS[frequency]}` : <Skeleton width="80px" height="11px" />}
         </div>
       </GlassCard>
 
       {/* Frequency */}
       <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
-        <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-accent/40">
+        <div className="text-[18px] font-medium uppercase tracking-widest text-accent/40">
           Frequency
         </div>
         <div className="mt-auto mb-auto flex gap-1.5 px-4 w-full">
@@ -96,13 +96,13 @@ export default function KpiCards({
 
       {/* Loan Amount */}
       <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
-        <div className="text-[18px] font-medium uppercase tracking-[0.14em] text-accent/40">
+        <div className="text-[18px] font-medium uppercase tracking-widest text-accent/40">
           Loan Amount
         </div>
         <div className="mt-1.5 flex items-center h-[38px] text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums text-foreground">
           {data ? formatCurrencyShort(animLoan) : <Skeleton width="160px" height="34px" />}
         </div>
-        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-[0.12em] text-muted/30">
+        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-muted/30">
           {data ? `${lvrPct}% LVR` : <Skeleton width="60px" height="11px" />}
         </div>
       </GlassCard>

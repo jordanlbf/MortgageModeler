@@ -40,7 +40,7 @@ export default function Slider({
   return (
     <div>
       <div
-        className="mb-1.5 text-[14px] font-medium uppercase tracking-[0.14em] text-center"
+        className="mb-1.5 text-[14px] font-medium uppercase tracking-widest text-center"
         style={{ color: mix(accent, 50) }}
       >
         {label}

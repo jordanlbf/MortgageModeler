@@ -24,7 +24,7 @@ export default async function ToolPlaceholder({ params }: Props) {
       <Header>
         <Link
           href="/"
-          className="text-[10px] font-semibold uppercase tracking-[0.1em] no-underline transition-colors"
+          className="text-[10px] font-semibold uppercase tracking-widest no-underline transition-colors"
           style={{ color: "rgba(148,163,184,0.4)" }}
         >
           ← Back
@@ -50,7 +50,7 @@ export default async function ToolPlaceholder({ params }: Props) {
             {meta.desc}
           </p>
           <span
-            className="inline-block rounded-[3px] text-[8px] font-semibold uppercase tracking-[0.12em] leading-none"
+            className="inline-block rounded-[3px] text-[8px] font-semibold uppercase tracking-widest leading-none"
             style={{
               padding: "3px 8px",
               color: "rgba(148,163,184,0.35)",
