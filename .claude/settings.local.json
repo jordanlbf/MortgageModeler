@@ -42,7 +42,8 @@
       "Bash(npm test:*)",
       "Bash(ls */package.json)",
       "Bash(npm run:*)",
-      "Bash(ls backend/*/requirements*.txt backend/pyproject.toml)"
+      "Bash(ls backend/*/requirements*.txt backend/pyproject.toml)",
+      "Bash(ls:*)"
     ]
   }
 }
