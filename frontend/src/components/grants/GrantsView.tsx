@@ -246,10 +246,13 @@ export default function GrantsView() {
   const [regions, setRegions] = useState<Set<string>>(() => new Set(["Federal"]));
   const [priceStr, setPriceStr] = useState("");
   const [incomeStr, setIncomeStr] = useState("");
-  const [propertyType, setPropertyType] = useState<"new" | "existing" | null>(null);
+  const [propertyType, setPropertyType] = useState<"new" | "existing" | "land" | "off-the-plan" | null>(null);
   const [buyerType, setBuyerType] = useState<"individual" | "couple" | null>(null);
   const [firstHomeBuyer, setFirstHomeBuyer] = useState<boolean | null>(null);
   const [ownerOccupier, setOwnerOccupier] = useState<boolean | null>(null);
+  const [singleParent, setSingleParent] = useState<boolean | null>(null);
+  const [partnerIncomeStr, setPartnerIncomeStr] = useState("");
+  const [ownedPropertyRecently, setOwnedPropertyRecently] = useState<boolean | null>(null);
   const [expandedSchemeId, setExpandedSchemeId] = useState<string | null>(null);
   const [results, setResults] = useState<GrantSchemeWithEligibility[]>([]);
 
@@ -263,6 +266,9 @@ export default function GrantsView() {
 
   const price = parseCurrency(priceStr);
   const income = parseCurrency(incomeStr);
+  const partnerIncome = parseCurrency(partnerIncomeStr);
+  const showPartnerIncome = buyerType === "couple";
+  const showOwnedRecently = regions.has("ACT");
 
   // Fetch eligibility from API whenever inputs change (debounced)
   useEffect(() => {
@@ -280,13 +286,14 @@ export default function GrantsView() {
           states,
           price,
           income,
-          partner_income: 0,
-          property_type: propertyType,
+          partner_income: showPartnerIncome ? partnerIncome : 0,
+          property_type: propertyType === "off-the-plan" ? "new" : propertyType,
           buyer_type: buyerType,
           first_home_buyer: firstHomeBuyer,
           owner_occupier: ownerOccupier,
-          single_parent: null,
-          off_the_plan: null,
+          single_parent: singleParent,
+          off_the_plan: propertyType === "off-the-plan" ? true : null,
+          owned_property_in_last_2_years: showOwnedRecently ? ownedPropertyRecently : null,
         },
         controller.signal,
       )
@@ -299,7 +306,7 @@ export default function GrantsView() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [regions, price, income, propertyType, buyerType, firstHomeBuyer, ownerOccupier]);
+  }, [regions, price, income, partnerIncome, propertyType, buyerType, firstHomeBuyer, ownerOccupier, singleParent, ownedPropertyRecently, showPartnerIncome, showOwnedRecently]);
 
   const eligibleCount = results.filter((r) => r.result.eligible).length;
 
@@ -311,6 +318,11 @@ export default function GrantsView() {
   const handleIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
     setIncomeStr(raw ? formatCurrency(Number(raw)) : "");
+  };
+
+  const handlePartnerIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9]/g, "");
+    setPartnerIncomeStr(raw ? formatCurrency(Number(raw)) : "");
   };
 
   return (
@@ -340,6 +352,16 @@ export default function GrantsView() {
             <input className="grants-bar-input" type="text" inputMode="numeric" placeholder="$0" value={incomeStr} onChange={handleIncomeChange} />
           </div>
 
+          {showPartnerIncome && (
+            <>
+              <div className="grants-bar-divider" />
+              <div className="grants-field grants-field--grow">
+                <label className="grants-field-label">Partner Income</label>
+                <input className="grants-bar-input" type="text" inputMode="numeric" placeholder="$0" value={partnerIncomeStr} onChange={handlePartnerIncomeChange} />
+              </div>
+            </>
+          )}
+
           <div className="grants-bar-divider" />
 
           <div className="grants-field grants-field--regions">
@@ -360,10 +382,15 @@ export default function GrantsView() {
           <div className="grants-bar-divider" />
 
           <div className="grants-toggles">
-            <div className="grants-field grants-field--toggle">
+            <div className="grants-field grants-field--toggle-wide">
               <label className="grants-field-label">Property</label>
               <div className="grants-bar-pills">
-                {([{ value: "new" as const, label: "New" }, { value: "existing" as const, label: "Existing" }]).map((o) => (
+                {([
+                  { value: "new" as const, label: "New" },
+                  { value: "existing" as const, label: "Existing" },
+                  { value: "land" as const, label: "Land" },
+                  { value: "off-the-plan" as const, label: "OTP" },
+                ]).map((o) => (
                   <button key={o.value} className="grants-pill grants-pill--uniform" data-active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)}>{o.label}</button>
                 ))}
               </div>
@@ -371,7 +398,7 @@ export default function GrantsView() {
 
             <div className="grants-bar-divider grants-bar-divider--tight" />
 
-            <div className="grants-field grants-field--toggle">
+            <div className="grants-field grants-field--toggle-wide">
               <label className="grants-field-label">Buyer</label>
               <div className="grants-bar-pills">
                 {([{ value: "individual" as const, label: "Individual" }, { value: "couple" as const, label: "Couple" }]).map((o) => (
@@ -405,6 +432,36 @@ export default function GrantsView() {
                 ))}
               </div>
             </div>
+
+            <div className="grants-bar-divider grants-bar-divider--tight" />
+
+            <div className="grants-field grants-field--toggle">
+              <label className="grants-field-label">Single Parent</label>
+              <div className="grants-bar-pills">
+                {([true, false] as const).map((v) => (
+                  <button key={String(v)} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={singleParent === v} data-value={String(v)} onClick={() => setSingleParent(singleParent === v ? null : v)}>
+                    {v ? "Yes" : "No"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {showOwnedRecently && (
+              <>
+                <div className="grants-bar-divider grants-bar-divider--tight" />
+
+                <div className="grants-field grants-field--toggle">
+                  <label className="grants-field-label">Owned in 2yr</label>
+                  <div className="grants-bar-pills">
+                    {([true, false] as const).map((v) => (
+                      <button key={String(v)} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={ownedPropertyRecently === v} data-value={String(v)} onClick={() => setOwnedPropertyRecently(ownedPropertyRecently === v ? null : v)}>
+                        {v ? "Yes" : "No"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           </div>
         </div>
