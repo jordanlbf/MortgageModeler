@@ -169,6 +169,7 @@ export interface GrantsEligibilityRequest {
   first_home_buyer: boolean | null;
   owner_occupier: boolean | null;
   single_parent: boolean | null;
+  owned_property_in_last_2_years: boolean | null;
   off_the_plan: boolean | null;
 }
 

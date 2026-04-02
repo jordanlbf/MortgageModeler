@@ -45,7 +45,7 @@
 }
 
 .grants-bar-divider--tight {
-  margin: 0 12px;
+  margin: 0 8px;
 }
 
 /* ── Field ──────────────────────────────────────── */
@@ -72,6 +72,10 @@
 }
 
 .grants-field--toggle {
+  width: 140px;
+}
+
+.grants-field--toggle-wide {
   width: 220px;
 }
 
