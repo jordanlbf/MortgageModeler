@@ -203,6 +203,201 @@ export async function fetchGrantsEligibility(
   return res.json();
 }
 
+// ── Cashflow projection ─────────────────────
+
+export interface CashflowTaxProfileRequest {
+  taxable_income: number;
+  repayment_income: number;
+  mls_income: number;
+  hecs_balance: number;
+  has_private_health: boolean;
+  income_growth_rate: number;
+}
+
+export interface CashflowPurchaseCostsRequest {
+  stamp_duty?: number | null;
+  legal_fees?: number | null;
+  building_pest_inspection?: number | null;
+  registration_fee?: number | null;
+  other_costs: number;
+}
+
+export interface CashflowBorrowingCostsRequest {
+  lmi?: number | null;
+  mortgage_registration_fee?: number | null;
+  loan_establishment_fee?: number | null;
+  capitalise_lmi: boolean;
+  capitalise_mortgage_registration_fee: boolean;
+  capitalise_loan_establishment_fee: boolean;
+}
+
+export interface CashflowRentalConfigRequest {
+  weekly_rent: number;
+  annual_growth_rate: number;
+  vacancy_weeks: number;
+}
+
+export interface CashflowPropertyRequest {
+  purchase_price: number;
+  purchase_date: string;
+  is_new_property: boolean;
+  is_ppor: boolean;
+  annual_appreciation: number;
+  purchase_costs: CashflowPurchaseCostsRequest;
+  rental: CashflowRentalConfigRequest;
+  depreciable_buildings: [];
+  depreciable_assets: [];
+}
+
+export interface CashflowLoanRequest {
+  deposit: number;
+  annual_rate: number;
+  loan_term_years: number;
+  frequency: "monthly";
+  offset_balance: number;
+  offset_contribution: number;
+  extra_repayment: number;
+  rate_changes: [];
+  borrowing_costs: CashflowBorrowingCostsRequest;
+}
+
+export interface CashflowOngoingCostsRequest {
+  council_rates: number;
+  water_rates: number;
+  building_insurance: number;
+  strata_fees: number;
+  maintenance_rate: number;
+  landlord_insurance: number;
+  management_rate: number;
+  annual_cost_growth_rate: number;
+}
+
+export interface CashflowPPORRequest {
+  tax_profile: CashflowTaxProfileRequest;
+  property: CashflowPropertyRequest;
+  loan: CashflowLoanRequest;
+  ongoing_costs: CashflowOngoingCostsRequest;
+  projection_years: number;
+}
+
+export interface CashflowRentvestRequest extends CashflowPPORRequest {
+  weekly_rent_paid: number;
+  annual_rent_paid_growth: number;
+}
+
+// Response types
+
+export interface CashflowYearRow {
+  year: number;
+  net_income: number;
+  total_inflows: number;
+  mortgage_repayment: number;
+  mortgage_interest: number;
+  mortgage_principal: number;
+  property_costs: number;
+  offset_contributions: number;
+  rent_paid: number;
+  rental_income: number;
+  tax_saving: number;
+  total_outflows: number;
+  net_position: number;
+  cumulative_position: number;
+  property_value: number;
+  loan_balance: number;
+  equity: number;
+  offset_balance: number;
+}
+
+export interface CashflowSummary {
+  total_income: number;
+  total_outflows: number;
+  total_interest_paid: number;
+  total_rent_paid: number;
+  total_rental_income: number;
+  total_tax_saving: number;
+  final_property_value: number;
+  final_loan_balance: number;
+  final_equity: number;
+  average_annual_net: number;
+  net_wealth: number;
+}
+
+export interface CashflowCGT {
+  cost_base: number;
+  capital_gain: number;
+  cgt_discount: number;
+  discounted_gain: number;
+  cgt_payable: number;
+  net_proceeds: number;
+}
+
+export interface CashflowUpfrontCosts {
+  purchase_costs: {
+    stamp_duty: number;
+    legal_fees: number;
+    building_pest_inspection: number;
+    registration_fee: number;
+    other_costs: number;
+    total: number;
+  };
+  borrowing_costs: {
+    lmi: number;
+    mortgage_registration_fee: number;
+    loan_establishment_fee: number;
+    total: number;
+  };
+  total: number;
+}
+
+export interface CashflowPPORResponse {
+  scenario: "ppor";
+  projection_years: number;
+  upfront_costs: CashflowUpfrontCosts;
+  years: CashflowYearRow[];
+  summary: CashflowSummary;
+}
+
+export interface CashflowRentvestResponse {
+  scenario: "rentvesting";
+  projection_years: number;
+  upfront_costs: CashflowUpfrontCosts;
+  years: CashflowYearRow[];
+  cgt: CashflowCGT;
+  summary: CashflowSummary;
+}
+
+export type CashflowResponse = CashflowPPORResponse | CashflowRentvestResponse;
+
+export async function fetchCashflowPPOR(
+  params: CashflowPPORRequest,
+  signal?: AbortSignal,
+): Promise<CashflowPPORResponse> {
+  const res = await fetch(`${API_BASE}/api/cashflow/ppor`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+    signal,
+  });
+
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchCashflowRentvest(
+  params: CashflowRentvestRequest,
+  signal?: AbortSignal,
+): Promise<CashflowRentvestResponse> {
+  const res = await fetch(`${API_BASE}/api/cashflow/rentvest`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+    signal,
+  });
+
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
 // ── Amortisation schedule ───────────────────
 
 export async function fetchSchedule(params: ScheduleRequest, signal?: AbortSignal): Promise<ScheduleResponse> {

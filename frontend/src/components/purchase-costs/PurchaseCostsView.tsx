@@ -146,6 +146,7 @@ export default function PurchaseCostsView() {
   const [firstHome, setFirstHome] = useState(true);
   const [ownerOcc, setOwnerOcc] = useState(true);
   const [couple, setCouple] = useState(false);
+  const [lmiExempt, setLmiExempt] = useState(false);
   const [data, setData] = useState<CostsData | null>(null);
 
   const price = parseCurrency(priceStr);
@@ -206,10 +207,14 @@ export default function PurchaseCostsView() {
       ]
     : [];
 
+  const effectiveLmi = data ? (lmiExempt ? 0 : data.lmi_payable) : 0;
+  const lmiSaving = data ? data.lmi_payable - effectiveLmi : 0;
+
   const lmiDetails = data
     ? [
         { label: "Base LMI", value: formatDollars(data.lmi_base) },
-        { label: "Waived", value: data.lmi_waived ? "Yes" : "No" },
+        { label: "Waived", value: (data.lmi_waived || lmiExempt) ? "Yes" : "No" },
+        ...(lmiExempt && data.lmi_payable > 0 ? [{ label: "Professional exemption", value: `-${formatDollars(data.lmi_payable)}` }] : []),
       ]
     : [];
 
@@ -269,6 +274,7 @@ export default function PurchaseCostsView() {
             <Toggle label="First Home" active={firstHome} onToggle={() => setFirstHome(!firstHome)} />
             <Toggle label="Owner Occupied" active={ownerOcc} onToggle={() => setOwnerOcc(!ownerOcc)} />
             <Toggle label="Couple" active={couple} onToggle={() => setCouple(!couple)} />
+            <Toggle label="LMI Exempt" active={lmiExempt} onToggle={() => setLmiExempt(!lmiExempt)} />
           </div>
         </div>
 
@@ -277,7 +283,7 @@ export default function PurchaseCostsView() {
           <>
             <div className="pc-hero">
               <div className="pc-section-label">Total Cash to Purchase</div>
-              <div className="pc-hero-amount">{formatDollars(data.total_upfront_cost)}</div>
+              <div className="pc-hero-amount">{formatDollars(data.total_upfront_cost - lmiSaving)}</div>
               <div className="pc-hero-subtitle">Total cash needed to purchase (including deposit)</div>
 
               {/* Deposit / costs split */}
@@ -288,7 +294,7 @@ export default function PurchaseCostsView() {
                 </div>
                 <div className="pc-hero-split-divider" />
                 <div className="pc-hero-split-item">
-                  <div className="pc-hero-split-value">{formatDollars(data.stamp_duty_payable + data.lmi_payable + data.total_fees - data.total_grant_savings)}</div>
+                  <div className="pc-hero-split-value">{formatDollars(data.stamp_duty_payable + effectiveLmi + data.total_fees - data.total_grant_savings)}</div>
                   <div className="pc-hero-split-label">Purchase Costs</div>
                 </div>
               </div>
@@ -307,7 +313,7 @@ export default function PurchaseCostsView() {
 
               <BreakdownRow name="Stamp Duty" amount={data.stamp_duty_payable} details={stampDutyDetails} />
               {(data.lmi_payable > 0 || data.lmi_base > 0) && (
-                <BreakdownRow name="Lenders Mortgage Insurance" amount={data.lmi_payable} details={lmiDetails} />
+                <BreakdownRow name="Lenders Mortgage Insurance" amount={effectiveLmi} details={lmiDetails} />
               )}
               <BreakdownRow name="Fees" amount={data.total_fees} details={feeDetails} waterfall />
               <BreakdownRow
