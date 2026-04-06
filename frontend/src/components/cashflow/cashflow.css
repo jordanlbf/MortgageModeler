@@ -2,18 +2,23 @@
    CASHFLOW CALCULATOR - SIDEBAR LAYOUT
    ============================================================================ */
 
-/* CSS Variables */
+/* CSS Variables — Graphite Teal design system */
 :root {
-  --cf-bg: #111111;
-  --cf-card: #1a1a1a;
-  --cf-border: rgba(255, 255, 255, 0.1);
-  --cf-text: #e5e5e5;
-  --cf-text-muted: #737373;
-  --cf-text-dim: rgba(255, 255, 255, 0.4);
-  --cf-white: #ffffff;
-  --cf-input-bg: rgba(255, 255, 255, 0.05);
-  --cf-hover: rgba(255, 255, 255, 0.1);
-  --cf-accent: rgba(255, 255, 255, 0.02);
+  --cf-bg: var(--color-background, #111215);
+  --cf-card: var(--color-card, rgba(42,42,46,0.72));
+  --cf-card-elevated: var(--color-card-elevated, rgba(44,44,48,0.82));
+  --cf-border: var(--color-border, rgba(113,113,122,0.08));
+  --cf-border-hover: var(--color-border-hover, rgba(113,113,122,0.15));
+  --cf-text: var(--color-foreground, #f0fdfa);
+  --cf-text-muted: var(--color-subtle, #a1a1aa);
+  --cf-text-dim: var(--color-faint, #71717a);
+  --cf-white: var(--color-muted, #f4f4f5);
+  --cf-accent: var(--color-accent, #2dd4bf);
+  --cf-accent-contrast: var(--color-accent-contrast, #18181b);
+  --cf-accent-border: var(--color-accent-border, rgba(45,212,191,0.35));
+  --cf-input-bg: var(--color-control, rgba(24,24,27,0.60));
+  --cf-hover: var(--color-border-hover, rgba(113,113,122,0.15));
+  --cf-surface-subtle: rgba(255, 255, 255, 0.02);
   --cf-sidebar-width: 380px;
 }
 
@@ -26,7 +31,7 @@
   min-height: 100vh;
   background: var(--cf-bg);
   color: var(--cf-text);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-sans, "Sora", system-ui, sans-serif);
 }
 
 /* LEFT SIDEBAR */
@@ -164,7 +169,7 @@
 }
 
 .cf-input:focus {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--cf-accent-border);
 }
 
 .cf-input-display {
@@ -203,9 +208,9 @@
 }
 
 .cf-button-option.active {
-  background: var(--cf-white);
-  border-color: var(--cf-white);
-  color: var(--cf-bg);
+  background: var(--cf-accent);
+  border-color: var(--cf-accent);
+  color: var(--cf-accent-contrast);
 }
 
 /* Toggle */
@@ -250,13 +255,13 @@
 }
 
 .cf-toggle input:checked + .cf-toggle-slider {
-  background: var(--cf-white);
-  border-color: var(--cf-white);
+  background: var(--cf-accent);
+  border-color: var(--cf-accent);
 }
 
 .cf-toggle input:checked + .cf-toggle-slider::before {
   transform: translateX(16px);
-  background: var(--cf-bg);
+  background: var(--cf-accent-contrast);
 }
 
 .cf-toggle-label {
@@ -268,10 +273,10 @@
 .cf-continue {
   width: 100%;
   padding: 12px;
-  background: var(--cf-white);
+  background: var(--cf-accent);
   border: none;
   border-radius: 6px;
-  color: var(--cf-bg);
+  color: var(--cf-accent-contrast);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -440,8 +445,8 @@
 }
 
 .cf-year-button.active {
-  background: var(--cf-white);
-  color: var(--cf-bg);
+  background: var(--cf-accent);
+  color: var(--cf-accent-contrast);
 }
 
 /* Focal KPI */
@@ -450,7 +455,7 @@
   align-items: flex-end;
   justify-content: space-between;
   padding: 24px 20px;
-  background: var(--cf-accent);
+  background: var(--cf-surface-subtle);
   border-bottom: 1px solid var(--cf-border);
 }
 
@@ -564,7 +569,7 @@
 
 /* Subtotal Row */
 .cf-table-subtotal {
-  background: var(--cf-accent);
+  background: var(--cf-surface-subtle);
 }
 
 .cf-table-subtotal td {

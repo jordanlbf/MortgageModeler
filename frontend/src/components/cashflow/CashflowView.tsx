@@ -192,7 +192,7 @@ export default function CashflowCalculator() {
   const [cashflowView, setCashflowView] = useState<CashflowView>(1);
 
   // Collapsible sections
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["property"]));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["propertyUse"]));
 
   // Derived values
   const isInvestment = propertyUse === "investment";
@@ -383,9 +383,30 @@ export default function CashflowCalculator() {
     });
   };
 
+  // Whether each mode step is "complete"
+  const propertyUseComplete = propertyUse !== null;
+  const purchaseModeComplete = purchaseMode !== null;
+
   // Reset to edit a completed section
   const resetSection = (section: string) => {
     switch (section) {
+      case "propertyUse":
+        setPropertyUse(null);
+        setPurchaseMode(null);
+        setPropertyComplete(false);
+        setLoanComplete(false);
+        setCostsComplete(false);
+        setRentalComplete(false);
+        setTaxComplete(false);
+        break;
+      case "purchaseMode":
+        setPurchaseMode(null);
+        setPropertyComplete(false);
+        setLoanComplete(false);
+        setCostsComplete(false);
+        setRentalComplete(false);
+        setTaxComplete(false);
+        break;
       case "property":
         setPropertyComplete(false);
         setLoanComplete(false);
@@ -426,54 +447,98 @@ export default function CashflowCalculator() {
       {/* LEFT SIDEBAR - INPUTS */}
       <aside className="cf-sidebar">
         <div className="cf-sidebar-inner">
-          {/* Mode Selection */}
+          {/* Property Use */}
           <div className="cf-section">
-            <div className="cf-section-content" style={{ paddingTop: 16 }}>
-              <p className="cf-section-label">Property Use</p>
-              <div className="cf-button-group">
+            <button
+              className="cf-section-header"
+              onClick={() => toggleSection("propertyUse")}
+            >
+              <span>{propertyUseComplete ? (propertyUse === "investment" ? "Investment" : "PPOR") : "Property Use"}</span>
+              {propertyUseComplete && (
                 <button
-                  className={`cf-button-option ${propertyUse === "investment" ? "active" : ""}`}
-                  onClick={() => {
-                    setPropertyUse("investment");
-                    setPurchaseMode(null);
-                    setPropertyComplete(false);
-                    setLoanComplete(false);
-                    setCostsComplete(false);
-                    setRentalComplete(false);
-                    setTaxComplete(false);
-                  }}
+                  className="cf-edit-link"
+                  onClick={(e) => { e.stopPropagation(); resetSection("propertyUse"); }}
                 >
-                  Investment
+                  Edit
                 </button>
-                <button
-                  className={`cf-button-option ${propertyUse === "ppor" ? "active" : ""}`}
-                  onClick={() => {
-                    setPropertyUse("ppor");
-                    setPurchaseMode(null);
-                    setPropertyComplete(false);
-                    setLoanComplete(false);
-                    setCostsComplete(false);
-                    setRentalComplete(false);
-                    setTaxComplete(false);
-                  }}
-                >
-                  PPOR
-                </button>
-              </div>
+              )}
+              {!propertyUseComplete && (
+                expandedSections.has("propertyUse") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+              )}
+            </button>
 
-              {propertyUse && (
-                <>
-                  <p className="cf-section-label" style={{ marginTop: 8 }}>Purchase Mode</p>
+            {!propertyUseComplete && expandedSections.has("propertyUse") && (
+              <div className="cf-section-content">
+                <div className="cf-button-group">
+                  <button
+                    className={`cf-button-option ${propertyUse === "investment" ? "active" : ""}`}
+                    onClick={() => {
+                      setPropertyUse("investment");
+                      setPurchaseMode(null);
+                      setExpandedSections(prev => {
+                        const next = new Set(prev);
+                        next.delete("propertyUse");
+                        next.add("purchaseMode");
+                        return next;
+                      });
+                    }}
+                  >
+                    Investment
+                  </button>
+                  <button
+                    className={`cf-button-option ${propertyUse === "ppor" ? "active" : ""}`}
+                    onClick={() => {
+                      setPropertyUse("ppor");
+                      setPurchaseMode(null);
+                      setExpandedSections(prev => {
+                        const next = new Set(prev);
+                        next.delete("propertyUse");
+                        next.add("purchaseMode");
+                        return next;
+                      });
+                    }}
+                  >
+                    PPOR
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Purchase Mode */}
+          {propertyUseComplete && (
+            <div className="cf-section">
+              <button
+                className="cf-section-header"
+                onClick={() => toggleSection("purchaseMode")}
+              >
+                <span>{purchaseModeComplete ? (purchaseMode === "new" ? "New Purchase" : "Existing Property") : "Purchase Mode"}</span>
+                {purchaseModeComplete && (
+                  <button
+                    className="cf-edit-link"
+                    onClick={(e) => { e.stopPropagation(); resetSection("purchaseMode"); }}
+                  >
+                    Edit
+                  </button>
+                )}
+                {!purchaseModeComplete && (
+                  expandedSections.has("purchaseMode") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+                )}
+              </button>
+
+              {!purchaseModeComplete && expandedSections.has("purchaseMode") && (
+                <div className="cf-section-content">
                   <div className="cf-button-group">
                     <button
                       className={`cf-button-option ${purchaseMode === "new" ? "active" : ""}`}
                       onClick={() => {
                         setPurchaseMode("new");
-                        setPropertyComplete(false);
-                        setLoanComplete(false);
-                        setCostsComplete(false);
-                        setRentalComplete(false);
-                        setTaxComplete(false);
+                        setExpandedSections(prev => {
+                          const next = new Set(prev);
+                          next.delete("purchaseMode");
+                          next.add("property");
+                          return next;
+                        });
                       }}
                     >
                       New Purchase
@@ -482,20 +547,21 @@ export default function CashflowCalculator() {
                       className={`cf-button-option ${purchaseMode === "existing" ? "active" : ""}`}
                       onClick={() => {
                         setPurchaseMode("existing");
-                        setPropertyComplete(false);
-                        setLoanComplete(false);
-                        setCostsComplete(false);
-                        setRentalComplete(false);
-                        setTaxComplete(false);
+                        setExpandedSections(prev => {
+                          const next = new Set(prev);
+                          next.delete("purchaseMode");
+                          next.add("property");
+                          return next;
+                        });
                       }}
                     >
                       Existing Property
                     </button>
                   </div>
-                </>
+                </div>
               )}
             </div>
-          </div>
+          )}
 
           {/* Property Details */}
           {purchaseMode && (
