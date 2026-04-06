@@ -465,3 +465,447 @@ class TestPporVsRentvest:
         rentvest = client.post("/api/cashflow/rentvest", json=_rentvest_payload()).json()
         assert "net_wealth" in ppor["summary"]
         assert "net_wealth" in rentvest["summary"]
+
+
+# ───────────────────────────────────��──────────
+# POST /api/cashflow/single — Helpers
+# ──────────────────────────────────────────────
+
+
+def _single_new_ppor(**overrides):
+    payload = {
+        "mode": "new",
+        "property_use": "ppor",
+        "projection_years": 5,
+        "tax_profile": {
+            "taxable_income": 100_000,
+            "repayment_income": 100_000,
+            "mls_income": 100_000,
+            "hecs_balance": 0,
+            "has_private_health": True,
+            "income_growth_rate": 0.03,
+        },
+        "property": {
+            "purchase_price": 500_000,
+            "purchase_date": "2020-01-15",
+            "is_new_property": False,
+            "annual_appreciation": 0.05,
+        },
+        "loan": {
+            "deposit": 100_000,
+            "annual_rate": 0.06,
+            "loan_term_years": 30,
+        },
+        "ongoing_costs": {
+            "council_rates": 2_000,
+            "water_rates": 1_200,
+            "building_insurance": 1_500,
+        },
+    }
+    payload.update(overrides)
+    return payload
+
+
+def _single_new_investment(**overrides):
+    payload = _single_new_ppor()
+    payload["property_use"] = "investment"
+    payload["property"]["annual_appreciation"] = 0.05
+    payload["rental"] = {
+        "weekly_rent": 450,
+        "annual_growth_rate": 0.03,
+        "vacancy_weeks": 2,
+    }
+    payload["property"]["depreciable_buildings"] = [
+        {
+            "name": "Main building",
+            "construction_cost": 250_000,
+            "purchase_date": "2020-01-15",
+            "construction_start_date": "2019-01-01",
+        }
+    ]
+    payload["ongoing_costs"]["landlord_insurance"] = 1_000
+    payload["ongoing_costs"]["management_rate"] = 0.08
+    payload.update(overrides)
+    return payload
+
+
+def _single_existing_ppor(**overrides):
+    payload = {
+        "mode": "existing",
+        "property_use": "ppor",
+        "projection_years": 5,
+        "tax_profile": {
+            "taxable_income": 100_000,
+            "repayment_income": 100_000,
+            "mls_income": 100_000,
+            "hecs_balance": 0,
+            "has_private_health": True,
+            "income_growth_rate": 0.03,
+        },
+        "existing_property": {
+            "purchase_price": 500_000,
+            "purchase_date": "2020-01-15",
+            "current_value": 600_000,
+            "annual_appreciation": 0.05,
+        },
+        "existing_loan": {
+            "current_balance": 350_000,
+            "remaining_term_years": 25,
+            "annual_rate": 0.06,
+        },
+        "ongoing_costs": {
+            "council_rates": 2_000,
+            "water_rates": 1_200,
+            "building_insurance": 1_500,
+        },
+    }
+    payload.update(overrides)
+    return payload
+
+
+def _single_existing_investment(**overrides):
+    payload = _single_existing_ppor()
+    payload["property_use"] = "investment"
+    payload["rental"] = {
+        "weekly_rent": 500,
+        "annual_growth_rate": 0.03,
+        "vacancy_weeks": 2,
+    }
+    payload["existing_property"]["depreciable_buildings"] = [
+        {
+            "name": "Main building",
+            "construction_cost": 250_000,
+            "purchase_date": "2020-01-15",
+            "construction_start_date": "2019-01-01",
+        }
+    ]
+    payload["ongoing_costs"]["landlord_insurance"] = 1_000
+    payload["ongoing_costs"]["management_rate"] = 0.08
+    payload.update(overrides)
+    return payload
+
+
+# ──────────────────────────────────────────────
+# POST /api/cashflow/single — Structure
+# ──────────────────────────────────────────────
+
+
+class TestSingleEndpointStructure:
+    """Tests for single endpoint response structure across all 4 combos."""
+
+    def test_new_ppor_returns_200(self):
+        assert client.post("/api/cashflow/single", json=_single_new_ppor()).status_code == 200
+
+    def test_new_investment_returns_200(self):
+        assert client.post("/api/cashflow/single", json=_single_new_investment()).status_code == 200
+
+    def test_existing_ppor_returns_200(self):
+        assert client.post("/api/cashflow/single", json=_single_existing_ppor()).status_code == 200
+
+    def test_existing_investment_returns_200(self):
+        assert client.post("/api/cashflow/single", json=_single_existing_investment()).status_code == 200
+
+    def test_mode_echoed(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        assert data["mode"] == "new"
+        data = client.post("/api/cashflow/single", json=_single_existing_ppor()).json()
+        assert data["mode"] == "existing"
+
+    def test_property_use_echoed(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        assert data["property_use"] == "ppor"
+        data = client.post("/api/cashflow/single", json=_single_new_investment()).json()
+        assert data["property_use"] == "investment"
+
+    def test_projection_years_echoed(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor(projection_years=10)).json()
+        assert data["projection_years"] == 10
+
+    def test_years_count_matches(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor(projection_years=7)).json()
+        assert len(data["years"]) == 7
+
+    def test_years_are_sequential(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor(projection_years=5)).json()
+        assert [y["year"] for y in data["years"]] == [0, 1, 2, 3, 4]
+
+    def test_has_summary(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        assert "summary" in data
+        expected = {
+            "total_income", "total_outflows", "total_interest_paid",
+            "total_rent_paid", "total_rental_income", "total_tax_saving",
+            "final_property_value", "final_loan_balance", "final_equity",
+            "average_annual_net", "net_wealth",
+        }
+        assert set(data["summary"].keys()) == expected
+
+    def test_year_has_all_fields(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        expected = {
+            "year", "net_income", "total_inflows", "mortgage_repayment",
+            "mortgage_interest", "mortgage_principal", "property_costs",
+            "offset_contributions", "rent_paid", "rental_income", "tax_saving",
+            "total_outflows", "net_position", "cumulative_position",
+            "property_value", "loan_balance", "equity", "offset_balance",
+        }
+        assert set(data["years"][0].keys()) == expected
+
+
+# ──────────────────────────────────────────────
+# POST /api/cashflow/single — New PPOR Values
+# ──────────────────────────────────────────────
+
+
+class TestSingleNewPporValues:
+    """Tests for new PPOR single endpoint values."""
+
+    def test_has_upfront_costs(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        assert data["upfront_costs"] is not None
+        assert data["upfront_costs"]["total"] > 0
+
+    def test_no_cgt(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        assert data["cgt"] is None
+
+    def test_no_rental_income(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        for y in data["years"]:
+            assert y["rental_income"] == 0.0
+
+    def test_no_tax_saving(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        for y in data["years"]:
+            assert y["tax_saving"] == 0.0
+
+    def test_no_rent_paid(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        for y in data["years"]:
+            assert y["rent_paid"] == 0.0
+
+    def test_income_grows(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        incomes = [y["net_income"] for y in data["years"]]
+        for i in range(1, len(incomes)):
+            assert incomes[i] > incomes[i - 1]
+
+    def test_property_value_grows(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        values = [y["property_value"] for y in data["years"]]
+        for i in range(1, len(values)):
+            assert values[i] > values[i - 1]
+
+    def test_loan_balance_decreases(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        balances = [y["loan_balance"] for y in data["years"]]
+        for i in range(1, len(balances)):
+            assert balances[i] <= balances[i - 1]
+
+    def test_net_position_is_inflows_minus_outflows(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        for y in data["years"]:
+            assert y["net_position"] == pytest.approx(y["total_inflows"] - y["total_outflows"], abs=0.01)
+
+    def test_summary_net_wealth(self):
+        data = client.post("/api/cashflow/single", json=_single_new_ppor()).json()
+        last = data["years"][-1]
+        expected = last["equity"] + last["cumulative_position"]
+        assert data["summary"]["net_wealth"] == pytest.approx(expected, abs=1)
+
+
+# ──────────────────────────────────────────────
+# POST /api/cashflow/single — New Investment Values
+# ──────────────────────────────────────────────
+
+
+class TestSingleNewInvestmentValues:
+    """Tests for new investment single endpoint values."""
+
+    def test_has_upfront_costs(self):
+        data = client.post("/api/cashflow/single", json=_single_new_investment()).json()
+        assert data["upfront_costs"] is not None
+
+    def test_has_cgt(self):
+        data = client.post("/api/cashflow/single", json=_single_new_investment()).json()
+        assert data["cgt"] is not None
+        assert data["cgt"]["capital_gain"] > 0
+
+    def test_rental_income_positive(self):
+        data = client.post("/api/cashflow/single", json=_single_new_investment()).json()
+        for y in data["years"]:
+            assert y["rental_income"] > 0
+
+    def test_tax_saving_present(self):
+        data = client.post("/api/cashflow/single", json=_single_new_investment()).json()
+        assert any(y["tax_saving"] != 0 for y in data["years"])
+
+    def test_rent_paid_zero(self):
+        """Single property (not rentvesting) → no rent paid."""
+        data = client.post("/api/cashflow/single", json=_single_new_investment()).json()
+        for y in data["years"]:
+            assert y["rent_paid"] == 0.0
+
+    def test_total_inflows_includes_rental_and_tax_saving(self):
+        data = client.post("/api/cashflow/single", json=_single_new_investment()).json()
+        for y in data["years"]:
+            expected = y["net_income"] + y["rental_income"] + y["tax_saving"]
+            assert y["total_inflows"] == pytest.approx(expected, abs=0.01)
+
+
+# ──────────────────────────────────────────────
+# POST /api/cashflow/single — Existing PPOR Values
+# ──────────────────────────────────────────────
+
+
+class TestSingleExistingPporValues:
+    """Tests for existing PPOR single endpoint values."""
+
+    def test_no_upfront_costs(self):
+        data = client.post("/api/cashflow/single", json=_single_existing_ppor()).json()
+        assert data["upfront_costs"] is None
+
+    def test_no_cgt(self):
+        data = client.post("/api/cashflow/single", json=_single_existing_ppor()).json()
+        assert data["cgt"] is None
+
+    def test_property_value_from_current_value(self):
+        """Property value should start from current_value (600k), not purchase_price (500k)."""
+        data = client.post("/api/cashflow/single", json=_single_existing_ppor()).json()
+        assert data["years"][0]["property_value"] == pytest.approx(600_000, rel=0.01)
+
+    def test_loan_balance_from_current_balance(self):
+        data = client.post("/api/cashflow/single", json=_single_existing_ppor()).json()
+        assert data["years"][0]["loan_balance"] < 350_000
+        assert data["years"][0]["loan_balance"] > 300_000
+
+
+# ──────────────────────────────────────────────
+# POST /api/cashflow/single — Existing Investment Values
+# ──────────────────────────────────────────────
+
+
+class TestSingleExistingInvestmentValues:
+    """Tests for existing investment single endpoint values."""
+
+    def test_no_upfront_costs(self):
+        data = client.post("/api/cashflow/single", json=_single_existing_investment()).json()
+        assert data["upfront_costs"] is None
+
+    def test_has_cgt(self):
+        data = client.post("/api/cashflow/single", json=_single_existing_investment()).json()
+        assert data["cgt"] is not None
+        assert data["cgt"]["capital_gain"] > 0
+
+    def test_rental_income_positive(self):
+        data = client.post("/api/cashflow/single", json=_single_existing_investment()).json()
+        for y in data["years"]:
+            assert y["rental_income"] > 0
+
+    def test_tax_saving_present(self):
+        data = client.post("/api/cashflow/single", json=_single_existing_investment()).json()
+        assert any(y["tax_saving"] != 0 for y in data["years"])
+
+    def test_summary_total_rental_income(self):
+        data = client.post("/api/cashflow/single", json=_single_existing_investment()).json()
+        expected = sum(y["rental_income"] for y in data["years"])
+        assert data["summary"]["total_rental_income"] == pytest.approx(expected, abs=0.01)
+
+
+# ──────────────────────────────────────────────
+# POST /api/cashflow/single — Validation
+# ──────────────────────────────────────────────
+
+
+class TestSingleEndpointValidation:
+    """Tests for single endpoint input validation."""
+
+    def test_missing_property_new_mode_returns_422(self):
+        payload = _single_new_ppor()
+        del payload["property"]
+        assert client.post("/api/cashflow/single", json=payload).status_code == 422
+
+    def test_missing_loan_new_mode_returns_422(self):
+        payload = _single_new_ppor()
+        del payload["loan"]
+        assert client.post("/api/cashflow/single", json=payload).status_code == 422
+
+    def test_missing_existing_property_returns_422(self):
+        payload = _single_existing_ppor()
+        del payload["existing_property"]
+        assert client.post("/api/cashflow/single", json=payload).status_code == 422
+
+    def test_missing_existing_loan_returns_422(self):
+        payload = _single_existing_ppor()
+        del payload["existing_loan"]
+        assert client.post("/api/cashflow/single", json=payload).status_code == 422
+
+    def test_missing_rental_investment_returns_422(self):
+        payload = _single_new_ppor()
+        payload["property_use"] = "investment"
+        assert client.post("/api/cashflow/single", json=payload).status_code == 422
+
+    def test_invalid_mode_returns_422(self):
+        payload = _single_new_ppor()
+        payload["mode"] = "invalid"
+        assert client.post("/api/cashflow/single", json=payload).status_code == 422
+
+    def test_invalid_property_use_returns_422(self):
+        payload = _single_new_ppor()
+        payload["property_use"] = "invalid"
+        assert client.post("/api/cashflow/single", json=payload).status_code == 422
+
+    def test_zero_projection_years_returns_422(self):
+        assert client.post("/api/cashflow/single", json=_single_new_ppor(projection_years=0)).status_code == 422
+
+    def test_get_returns_405(self):
+        assert client.get("/api/cashflow/single").status_code == 405
+
+    def test_defaults_work_with_minimal_new_ppor(self):
+        payload = {
+            "mode": "new",
+            "property_use": "ppor",
+            "property": {"purchase_price": 500_000, "purchase_date": "2020-01-15"},
+            "loan": {"annual_rate": 0.06},
+        }
+        assert client.post("/api/cashflow/single", json=payload).status_code == 200
+
+    def test_defaults_work_with_minimal_existing_ppor(self):
+        payload = {
+            "mode": "existing",
+            "property_use": "ppor",
+            "existing_property": {
+                "purchase_price": 500_000,
+                "purchase_date": "2020-01-15",
+                "current_value": 600_000,
+            },
+            "existing_loan": {
+                "current_balance": 350_000,
+                "remaining_term_years": 25,
+                "annual_rate": 0.06,
+            },
+        }
+        assert client.post("/api/cashflow/single", json=payload).status_code == 200
+
+
+# ──────────────────────────────────────────────
+# Regression — Existing endpoints stable
+# ──────────────────────────────────────────────
+
+
+class TestExistingEndpointsStable:
+    """Ensure PPOR and rentvest endpoints still work after adding /single."""
+
+    def test_ppor_still_200(self):
+        assert client.post("/api/cashflow/ppor", json=_ppor_payload()).status_code == 200
+
+    def test_rentvest_still_200(self):
+        assert client.post("/api/cashflow/rentvest", json=_rentvest_payload()).status_code == 200
+
+    def test_ppor_scenario_unchanged(self):
+        data = client.post("/api/cashflow/ppor", json=_ppor_payload()).json()
+        assert data["scenario"] == "ppor"
+
+    def test_rentvest_scenario_unchanged(self):
+        data = client.post("/api/cashflow/rentvest", json=_rentvest_payload()).json()
+        assert data["scenario"] == "rentvesting"

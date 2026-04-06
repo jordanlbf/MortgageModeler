@@ -20,6 +20,10 @@ from app.schemas.cashflow import (
     PurchaseCostsResponse,
     UpfrontCostsResponse,
 )
+from app.schemas.cashflow_single import (
+    CashFlowSingleRequest,
+    CashFlowSingleResponse,
+)
 
 # ── Request schema → domain model ─────────────
 
@@ -215,5 +219,115 @@ def map_rentvest_response(result) -> CashFlowRentvestResponse:
         upfront_costs=map_upfront_costs_response(result.upfront_costs),
         years=[map_year_response(y) for y in result.years],
         cgt=map_cgt_response(result.cgt),
+        summary=map_summary_response(result.summary),
+    )
+
+
+# ── Single property mapping ─────────────────
+
+
+def build_existing_property(req: CashFlowSingleRequest) -> Property:
+    """Map ExistingPropertyRequest to Property domain model with value_base."""
+    ep = req.existing_property
+    is_ppor = req.property_use == "ppor"
+    rental = req.rental
+
+    return Property(
+        purchase_date=ep.purchase_date,
+        purchase_price=ep.purchase_price,
+        is_new_property=ep.is_new_property,
+        is_ppor=is_ppor,
+        value_base=ep.current_value,
+        annual_appreciation=ep.annual_appreciation,
+        purchase_costs=PurchaseCosts(
+            stamp_duty=ep.purchase_costs.stamp_duty,
+            legal_fees=ep.purchase_costs.legal_fees,
+            building_pest_inspection=ep.purchase_costs.building_pest_inspection,
+            registration_fee=ep.purchase_costs.registration_fee,
+            other_costs=ep.purchase_costs.other_costs,
+        ),
+        rental=RentalConfig(
+            weekly_rent=rental.weekly_rent if rental else 0.0,
+            annual_growth_rate=rental.annual_growth_rate if rental else 0.03,
+            vacancy_weeks=rental.vacancy_weeks if rental else 2,
+        ),
+        depreciable_buildings=[
+            DepreciableBuilding(
+                name=b.name,
+                construction_cost=b.construction_cost,
+                purchase_date=b.purchase_date,
+                construction_start_date=b.construction_start_date,
+            )
+            for b in ep.depreciable_buildings
+        ],
+        depreciable_assets=[
+            DepreciableAsset(
+                name=a.name,
+                cost=a.cost,
+                effective_life_years=a.effective_life_years,
+                purchase_date=a.purchase_date,
+                method=a.method,
+                written_down_value=a.written_down_value,
+            )
+            for a in ep.depreciable_assets
+        ],
+    )
+
+
+def build_new_property(req: CashFlowSingleRequest) -> Property:
+    """Map PropertyRequest from a single cashflow request to Property domain model."""
+    is_ppor = req.property_use == "ppor"
+    rental = req.rental
+
+    return Property(
+        purchase_date=req.property.purchase_date,
+        purchase_price=req.property.purchase_price,
+        is_new_property=req.property.is_new_property,
+        is_ppor=is_ppor,
+        annual_appreciation=req.property.annual_appreciation,
+        purchase_costs=PurchaseCosts(
+            stamp_duty=req.property.purchase_costs.stamp_duty,
+            legal_fees=req.property.purchase_costs.legal_fees,
+            building_pest_inspection=req.property.purchase_costs.building_pest_inspection,
+            registration_fee=req.property.purchase_costs.registration_fee,
+            other_costs=req.property.purchase_costs.other_costs,
+        ),
+        rental=RentalConfig(
+            weekly_rent=rental.weekly_rent if rental else 0.0,
+            annual_growth_rate=rental.annual_growth_rate if rental else 0.03,
+            vacancy_weeks=rental.vacancy_weeks if rental else 2,
+        ),
+        depreciable_buildings=[
+            DepreciableBuilding(
+                name=b.name,
+                construction_cost=b.construction_cost,
+                purchase_date=b.purchase_date,
+                construction_start_date=b.construction_start_date,
+            )
+            for b in req.property.depreciable_buildings
+        ],
+        depreciable_assets=[
+            DepreciableAsset(
+                name=a.name,
+                cost=a.cost,
+                effective_life_years=a.effective_life_years,
+                purchase_date=a.purchase_date,
+                method=a.method,
+                written_down_value=a.written_down_value,
+            )
+            for a in req.property.depreciable_assets
+        ],
+    )
+
+
+def map_single_response(result) -> CashFlowSingleResponse:
+    """Map CashFlowSingleResult domain model to response schema."""
+    return CashFlowSingleResponse(
+        mode=result.mode,
+        property_use=result.property_use,
+        projection_years=result.projection_years,
+        upfront_costs=map_upfront_costs_response(result.upfront_costs) if result.upfront_costs else None,
+        years=[map_year_response(y) for y in result.years],
+        cgt=map_cgt_response(result.cgt) if result.cgt else None,
         summary=map_summary_response(result.summary),
     )
