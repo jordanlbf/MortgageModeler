@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import Header from "@/components/layout/Header";
 import "./cashflow.css";
 
 // ============================================================================
@@ -418,6 +420,8 @@ export default function CashflowCalculator() {
   // ============================================================================
 
   return (
+    <>
+    <Header />
     <div className="cf-layout">
       {/* LEFT SIDEBAR - INPUTS */}
       <aside className="cf-sidebar">
@@ -1297,5 +1301,13 @@ export default function CashflowCalculator() {
         )}
       </main>
     </div>
+    <Link
+      href="/"
+      className="group flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
+    >
+      <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
+      Return to Dashboard
+    </Link>
+    </>
   );
 }
