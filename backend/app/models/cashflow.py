@@ -118,6 +118,34 @@ class CashFlowSummaryInvestment(CashFlowSummary):
 
 
 @dataclass
+class CashFlowSingleResult:
+    """
+    Complete single-property cash flow projection result.
+
+    Supports all four mode × property_use combinations. Nullable fields
+    distinguish between modes: upfront_costs is None for existing properties,
+    cgt is None for PPOR.
+
+    Attributes:
+        mode: "new" or "existing"
+        property_use: "ppor" or "investment"
+        projection_years: Number of years projected
+        upfront_costs: Itemised purchase and borrowing costs (None for existing)
+        years: Year-by-year cash flow breakdown
+        cgt: Capital gains tax result (None for PPOR)
+        summary: Summary stats across the full projection
+    """
+
+    mode: str
+    property_use: str
+    projection_years: int
+    upfront_costs: UpfrontCosts | None
+    years: list[CashFlowYear]
+    cgt: CGTResult | None
+    summary: CashFlowSummary
+
+
+@dataclass
 class CashFlowPPORResult:
     """
     Complete PPOR cash flow projection result.

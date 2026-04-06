@@ -77,6 +77,7 @@ class BorrowingCosts:
         capitalise_lmi: Whether to add LMI to loan principal (default True)
         capitalise_mortgage_registration_fee: Whether to add mortgage registration to principal (default True)
         capitalise_loan_establishment_fee: Whether to add loan establishment to principal (default True)
+        years_elapsed: Years of borrowing cost deductions already claimed (existing properties only)
     """
 
     lmi: float | None = None
@@ -85,6 +86,7 @@ class BorrowingCosts:
     capitalise_lmi: bool = True
     capitalise_mortgage_registration_fee: bool = True
     capitalise_loan_establishment_fee: bool = True
+    years_elapsed: int = 0
 
     @property
     def total_capitalised(self) -> float:

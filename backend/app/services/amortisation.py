@@ -11,7 +11,7 @@ from dataclasses import replace
 
 from app.engine.amortisation import generate_schedule
 from app.models.amortisation import AmortisationSchedule, ScheduleResult, YearChartPoint
-from app.models.loan import Loan, LoanConfig
+from app.models.loan import BorrowingCosts, Loan, LoanConfig, RateChange, RepaymentFrequency
 from app.models.mortgage import Mortgage
 from app.models.property import Property
 from app.services.upfront_costs import resolve_borrowing_costs
@@ -53,6 +53,64 @@ def build_loan(property: Property, loan_config: LoanConfig) -> Loan:
     )
 
     return Loan(config=resolved_config, schedule=schedule)
+
+
+def build_existing_loan(
+    current_balance: float,
+    remaining_term_years: int,
+    annual_rate: float,
+    frequency: RepaymentFrequency = RepaymentFrequency.MONTHLY,
+    offset_balance: float = 0.0,
+    offset_contribution: float = 0.0,
+    extra_repayment: float = 0.0,
+    rate_changes: list[RateChange] | None = None,
+    borrowing_costs: BorrowingCosts | None = None,
+) -> Loan:
+    """Build a Loan aggregate from mid-loan state for existing properties.
+
+    Seeds the amortisation schedule from the current loan balance and
+    remaining term rather than computing principal from purchase price
+    minus deposit.
+
+    Args:
+        current_balance: Outstanding loan balance right now.
+        remaining_term_years: Years left on the loan.
+        annual_rate: Current annual interest rate as decimal.
+        frequency: Repayment frequency (default monthly).
+        offset_balance: Current offset account balance.
+        offset_contribution: Per-period offset addition.
+        extra_repayment: Per-period additional repayment.
+        rate_changes: Scheduled future rate changes.
+        borrowing_costs: Original borrowing costs with years_elapsed
+            for tax deduction offset (default zeroed).
+
+    Returns:
+        Loan wrapping a simplified config and the generated schedule.
+    """
+    config = LoanConfig(
+        deposit=0.0,
+        annual_rate=annual_rate,
+        loan_term_years=remaining_term_years,
+        frequency=frequency,
+        offset_balance=offset_balance,
+        offset_contribution=offset_contribution,
+        extra_repayment=extra_repayment,
+        rate_changes=rate_changes or [],
+        borrowing_costs=borrowing_costs or BorrowingCosts(),
+    )
+
+    schedule = generate_schedule(
+        principal=current_balance,
+        annual_rate=annual_rate,
+        loan_term_years=remaining_term_years,
+        frequency=frequency,
+        offset_balance=offset_balance,
+        extra_repayment=extra_repayment,
+        rate_changes=rate_changes,
+        offset_contribution=offset_contribution,
+    )
+
+    return Loan(config=config, schedule=schedule)
 
 
 def build_year_chart_point(

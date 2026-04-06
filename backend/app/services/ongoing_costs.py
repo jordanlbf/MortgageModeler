@@ -46,8 +46,9 @@ def calculate_year_cost(year: int, mortgage: Mortgage) -> YearCost:
         year, ongoing_costs.landlord_insurance, ongoing_costs.annual_cost_growth_rate, is_investment
     )
     sf = calculate_strata_fees(year, ongoing_costs.strata_fees, ongoing_costs.annual_cost_growth_rate)
+    property_value_base = mortgage.property.value_base or mortgage.property.purchase_price
     mc = calculate_maintenance_cost(
-        year, mortgage.property.purchase_price, ongoing_costs.maintenance_rate, mortgage.property.annual_appreciation
+        year, property_value_base, ongoing_costs.maintenance_rate, mortgage.property.annual_appreciation
     )
     mf = calculate_management_fee(
         year,
@@ -57,7 +58,7 @@ def calculate_year_cost(year: int, mortgage: Mortgage) -> YearCost:
         mortgage.property.rental.annual_growth_rate,
         is_investment,
     )
-    pv = calculate_property_value(year, mortgage.property.purchase_price, mortgage.property.annual_appreciation)
+    pv = calculate_property_value(year, property_value_base, mortgage.property.annual_appreciation)
     ri = calculate_rental_income(
         year,
         mortgage.property.rental.weekly_rent,
