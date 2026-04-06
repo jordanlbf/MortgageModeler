@@ -121,7 +121,9 @@ def build_ongoing_costs(req: CashFlowPPORRequest) -> OngoingCostsConfig:
 
 
 def map_year_response(year) -> CashFlowYearResponse:
-    """Map CashFlowYear domain model to response schema."""
+    """Map CashFlowYear or CashFlowYearInvestment domain model to response schema."""
+    from app.models.cashflow import CashFlowYearInvestment
+
     return CashFlowYearResponse(
         year=year.year,
         net_income=year.net_income,
@@ -131,9 +133,9 @@ def map_year_response(year) -> CashFlowYearResponse:
         mortgage_principal=year.mortgage_principal,
         property_costs=year.property_costs,
         offset_contributions=year.offset_contributions,
-        rent_paid=year.rent_paid,
-        rental_income=year.rental_income,
-        tax_saving=year.tax_saving,
+        rent_paid=year.rent_paid if isinstance(year, CashFlowYearInvestment) else 0.0,
+        rental_income=year.rental_income if isinstance(year, CashFlowYearInvestment) else 0.0,
+        tax_saving=year.tax_saving if isinstance(year, CashFlowYearInvestment) else 0.0,
         total_outflows=year.total_outflows,
         net_position=year.net_position,
         cumulative_position=year.cumulative_position,
@@ -145,14 +147,16 @@ def map_year_response(year) -> CashFlowYearResponse:
 
 
 def map_summary_response(summary) -> CashFlowSummaryResponse:
-    """Map CashFlowSummary domain model to response schema."""
+    """Map CashFlowSummary or CashFlowSummaryInvestment domain model to response schema."""
+    from app.models.cashflow import CashFlowSummaryInvestment
+
     return CashFlowSummaryResponse(
         total_income=summary.total_income,
         total_outflows=summary.total_outflows,
         total_interest_paid=summary.total_interest_paid,
-        total_rent_paid=summary.total_rent_paid,
-        total_rental_income=summary.total_rental_income,
-        total_tax_saving=summary.total_tax_saving,
+        total_rent_paid=summary.total_rent_paid if isinstance(summary, CashFlowSummaryInvestment) else 0.0,
+        total_rental_income=summary.total_rental_income if isinstance(summary, CashFlowSummaryInvestment) else 0.0,
+        total_tax_saving=summary.total_tax_saving if isinstance(summary, CashFlowSummaryInvestment) else 0.0,
         final_property_value=summary.final_property_value,
         final_loan_balance=summary.final_loan_balance,
         final_equity=summary.final_equity,

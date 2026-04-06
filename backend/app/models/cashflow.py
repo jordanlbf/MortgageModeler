@@ -1,5 +1,8 @@
 """
-Cash flow domain models — year-by-year projection results for PPOR and rentvesting scenarios.
+Cash flow domain models — year-by-year projection results.
+
+Base models cover any property owner (PPOR or investment). Investment
+subclasses add rental income, tax deductions, and rent-paid fields.
 """
 
 from dataclasses import dataclass, field
@@ -13,10 +16,7 @@ from app.models.property import UpfrontCosts, YearCost
 @dataclass
 class CashFlowYear:
     """
-    A single year's cash flow breakdown.
-
-    Summary fields provide the main view. Detail fields link to
-    verbose breakdowns for drill-down analysis and CSV export.
+    A single year's cash flow breakdown — shared by all scenarios.
 
     Attributes:
         year: Projection year (0 = purchase year)
@@ -27,9 +27,6 @@ class CashFlowYear:
         mortgage_principal: Principal portion of mortgage payments
         property_costs: Ongoing property costs for the year
         offset_contributions: Cash added to offset account this year
-        rent_paid: Annual rent where the investor lives (0 for PPOR)
-        rental_income: Annual rental income received (0 for PPOR)
-        tax_saving: Tax benefit from deductions (0 for PPOR, negative if positively geared)
         total_outflows: Sum of all expenses for the year
         net_position: total_inflows minus total_outflows
         cumulative_position: Running total of net_position (year 0 offset by upfront costs)
@@ -39,7 +36,6 @@ class CashFlowYear:
         offset_balance: Offset account balance at end of year
         ongoing_costs_detail: Full ongoing cost breakdown for this year
         schedule_rows_detail: Per-period mortgage rows for this year
-        tax_deduction_detail: Tax deduction breakdown for this year (None for PPOR)
     """
 
     year: int
@@ -50,9 +46,6 @@ class CashFlowYear:
     mortgage_principal: float
     property_costs: float
     offset_contributions: float
-    rent_paid: float
-    rental_income: float
-    tax_saving: float
     total_outflows: float
     net_position: float
     cumulative_position: float
@@ -62,21 +55,35 @@ class CashFlowYear:
     offset_balance: float
     ongoing_costs_detail: YearCost | None = None
     schedule_rows_detail: list[ScheduleRow] = field(default_factory=list)
+
+
+@dataclass
+class CashFlowYearInvestment(CashFlowYear):
+    """
+    Investment-specific year fields — rental income, tax deductions, rent paid.
+
+    Attributes:
+        rental_income: Annual rental income received
+        tax_saving: Tax benefit from deductions (negative if positively geared)
+        rent_paid: Annual rent where the investor lives (rentvesting only)
+        tax_deduction_detail: Tax deduction breakdown for this year
+    """
+
+    rental_income: float = 0.0
+    tax_saving: float = 0.0
+    rent_paid: float = 0.0
     tax_deduction_detail: PropertyTaxDeductionSummary | None = None
 
 
 @dataclass
 class CashFlowSummary:
     """
-    Summary stats across the full projection — shared by both scenarios.
+    Summary stats across the full projection — shared by all scenarios.
 
     Attributes:
         total_income: Sum of net income across all years
         total_outflows: Sum of all outflows across all years
         total_interest_paid: Sum of mortgage interest across all years
-        total_rent_paid: Sum of rent paid across all years (0 for PPOR)
-        total_rental_income: Sum of rental income across all years (0 for PPOR)
-        total_tax_saving: Sum of tax saving across all years (0 for PPOR)
         final_property_value: Property value at end of projection
         final_loan_balance: Remaining mortgage at end of projection
         final_equity: Property value minus loan balance at end of projection
@@ -87,14 +94,27 @@ class CashFlowSummary:
     total_income: float
     total_outflows: float
     total_interest_paid: float
-    total_rent_paid: float
-    total_rental_income: float
-    total_tax_saving: float
     final_property_value: float
     final_loan_balance: float
     final_equity: float
     average_annual_net: float
     net_wealth: float
+
+
+@dataclass
+class CashFlowSummaryInvestment(CashFlowSummary):
+    """
+    Investment-specific summary fields.
+
+    Attributes:
+        total_rent_paid: Sum of rent paid across all years (rentvesting only)
+        total_rental_income: Sum of rental income across all years
+        total_tax_saving: Sum of tax saving across all years
+    """
+
+    total_rent_paid: float = 0.0
+    total_rental_income: float = 0.0
+    total_tax_saving: float = 0.0
 
 
 @dataclass
@@ -130,6 +150,6 @@ class CashFlowRentvestResult:
 
     projection_years: int
     upfront_costs: UpfrontCosts
-    years: list[CashFlowYear]
+    years: list[CashFlowYearInvestment]
     cgt: CGTResult
-    summary: CashFlowSummary
+    summary: CashFlowSummaryInvestment

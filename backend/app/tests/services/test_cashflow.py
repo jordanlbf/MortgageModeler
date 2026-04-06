@@ -7,7 +7,7 @@ from datetime import date
 import pytest
 
 from app.models.amortisation import AmortisationSchedule, ScheduleRow
-from app.models.cashflow import CashFlowYear
+from app.models.cashflow import CashFlowYear, CashFlowYearInvestment
 from app.models.deductions import DepreciableBuilding, PropertyTaxDeductionSummary
 from app.models.loan import BorrowingCosts, Loan, LoanConfig
 from app.models.mortgage import Mortgage
@@ -25,6 +25,8 @@ from app.services.amortisation import build_loan
 from app.services.cashflow import (
     _calculate_cashflow_summary,
     _calculate_cashflow_year,
+    _calculate_investment_cashflow_summary,
+    _calculate_investment_cashflow_year,
     _grow_tax_profile,
     build_ppor_cashflow,
     build_rentvest_cashflow,
@@ -198,16 +200,13 @@ def _make_cashflow_year(
     mortgage_principal=6_000,
     property_costs=10_000,
     offset_contributions=0,
-    rent_paid=0,
-    rental_income=0,
-    tax_saving=0,
     property_value=500_000,
     loan_balance=394_000,
     offset_balance=0,
     previous_cumulative=0,
 ) -> CashFlowYear:
-    total_inflows = net_income + rental_income + tax_saving
-    total_outflows = mortgage_repayment + property_costs + offset_contributions + rent_paid
+    total_inflows = net_income
+    total_outflows = mortgage_repayment + property_costs + offset_contributions
     net_position = total_inflows - total_outflows
     cumulative_position = previous_cumulative + net_position
     equity = property_value - loan_balance
@@ -220,9 +219,6 @@ def _make_cashflow_year(
         mortgage_principal=mortgage_principal,
         property_costs=property_costs,
         offset_contributions=offset_contributions,
-        rent_paid=rent_paid,
-        rental_income=rental_income,
-        tax_saving=tax_saving,
         total_outflows=total_outflows,
         net_position=net_position,
         cumulative_position=cumulative_position,
@@ -230,6 +226,49 @@ def _make_cashflow_year(
         loan_balance=loan_balance,
         equity=equity,
         offset_balance=offset_balance,
+    )
+
+
+def _make_investment_cashflow_year(
+    year=0,
+    net_income=77_000,
+    mortgage_repayment=30_000,
+    mortgage_interest=24_000,
+    mortgage_principal=6_000,
+    property_costs=10_000,
+    offset_contributions=0,
+    rent_paid=0,
+    rental_income=0,
+    tax_saving=0,
+    property_value=500_000,
+    loan_balance=394_000,
+    offset_balance=0,
+    previous_cumulative=0,
+) -> CashFlowYearInvestment:
+    total_inflows = net_income + rental_income + tax_saving
+    total_outflows = mortgage_repayment + property_costs + offset_contributions + rent_paid
+    net_position = total_inflows - total_outflows
+    cumulative_position = previous_cumulative + net_position
+    equity = property_value - loan_balance
+    return CashFlowYearInvestment(
+        year=year,
+        net_income=net_income,
+        total_inflows=total_inflows,
+        mortgage_repayment=mortgage_repayment,
+        mortgage_interest=mortgage_interest,
+        mortgage_principal=mortgage_principal,
+        property_costs=property_costs,
+        offset_contributions=offset_contributions,
+        total_outflows=total_outflows,
+        net_position=net_position,
+        cumulative_position=cumulative_position,
+        property_value=property_value,
+        loan_balance=loan_balance,
+        equity=equity,
+        offset_balance=offset_balance,
+        rental_income=rental_income,
+        tax_saving=tax_saving,
+        rent_paid=rent_paid,
     )
 
 
@@ -395,26 +434,26 @@ class TestCalculateCashflowSummary:
 
     def test_total_rent_paid(self):
         years = [
-            _make_cashflow_year(year=0, rent_paid=26_000),
-            _make_cashflow_year(year=1, rent_paid=26_780),
+            _make_investment_cashflow_year(year=0, rent_paid=26_000),
+            _make_investment_cashflow_year(year=1, rent_paid=26_780),
         ]
-        summary = _calculate_cashflow_summary(years)
+        summary = _calculate_investment_cashflow_summary(years)
         assert summary.total_rent_paid == pytest.approx(52_780)
 
     def test_total_rental_income(self):
         years = [
-            _make_cashflow_year(year=0, rental_income=25_000),
-            _make_cashflow_year(year=1, rental_income=25_750),
+            _make_investment_cashflow_year(year=0, rental_income=25_000),
+            _make_investment_cashflow_year(year=1, rental_income=25_750),
         ]
-        summary = _calculate_cashflow_summary(years)
+        summary = _calculate_investment_cashflow_summary(years)
         assert summary.total_rental_income == pytest.approx(50_750)
 
     def test_total_tax_saving(self):
         years = [
-            _make_cashflow_year(year=0, tax_saving=5_000),
-            _make_cashflow_year(year=1, tax_saving=4_500),
+            _make_investment_cashflow_year(year=0, tax_saving=5_000),
+            _make_investment_cashflow_year(year=1, tax_saving=4_500),
         ]
-        summary = _calculate_cashflow_summary(years)
+        summary = _calculate_investment_cashflow_summary(years)
         assert summary.total_tax_saving == pytest.approx(9_500)
 
     def test_final_values_from_last_year(self):
@@ -456,13 +495,13 @@ class TestCalculateCashflowSummary:
         assert summary.net_wealth == 0
         assert summary.average_annual_net == 0
 
-    def test_ppor_zero_rental_fields(self):
-        """PPOR years have zero rental — summary should reflect that."""
-        years = [_make_cashflow_year(year=0, rent_paid=0, rental_income=0, tax_saving=0)]
+    def test_ppor_summary_has_no_investment_fields(self):
+        """PPOR summary should not have investment-specific fields."""
+        years = [_make_cashflow_year(year=0)]
         summary = _calculate_cashflow_summary(years)
-        assert summary.total_rent_paid == 0
-        assert summary.total_rental_income == 0
-        assert summary.total_tax_saving == 0
+        assert not hasattr(summary, "total_rent_paid")
+        assert not hasattr(summary, "total_rental_income")
+        assert not hasattr(summary, "total_tax_saving")
 
 
 # ──────────────────────────────────────────────
@@ -574,7 +613,7 @@ class TestCalculateCashflowYear:
 
     def test_rental_income_from_year_cost(self):
         costs = _make_year_cost(rental_income=25_000)
-        year = _calculate_cashflow_year(
+        year = _calculate_investment_cashflow_year(
             year=0,
             tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
@@ -597,7 +636,7 @@ class TestCalculateCashflowYear:
 
     # ── PPOR (no rentvest, no deductions) ─────
 
-    def test_ppor_zero_rent_paid(self):
+    def test_ppor_returns_base_type(self):
         year = _calculate_cashflow_year(
             year=0,
             tax_profile=_make_tax_profile(),
@@ -605,17 +644,8 @@ class TestCalculateCashflowYear:
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
         )
-        assert year.rent_paid == 0.0
-
-    def test_ppor_zero_tax_saving(self):
-        year = _calculate_cashflow_year(
-            year=0,
-            tax_profile=_make_tax_profile(),
-            schedule_rows=self._make_rows(),
-            ongoing_costs=_make_year_cost(),
-            previous_cumulative=0,
-        )
-        assert year.tax_saving == 0.0
+        assert type(year) is CashFlowYear
+        assert not isinstance(year, CashFlowYearInvestment)
 
     def test_ppor_total_inflows_is_net_income(self):
         year = _calculate_cashflow_year(
@@ -627,12 +657,22 @@ class TestCalculateCashflowYear:
         )
         assert year.total_inflows == pytest.approx(year.net_income)
 
-    # ── Rentvesting ───────────────────────────
+    # ── Investment / Rentvesting ───────────────
+
+    def test_investment_returns_investment_type(self):
+        year = _calculate_investment_cashflow_year(
+            year=0,
+            tax_profile=_make_tax_profile(),
+            schedule_rows=self._make_rows(),
+            ongoing_costs=_make_year_cost(),
+            previous_cumulative=0,
+        )
+        assert isinstance(year, CashFlowYearInvestment)
 
     def test_rentvest_rent_paid(self):
         """Rent paid should be weekly * 52 * growth^year."""
         rentvest = _make_rentvest(weekly_rent_paid=500, annual_rent_paid_growth=0.03)
-        year = _calculate_cashflow_year(
+        year = _calculate_investment_cashflow_year(
             year=2,
             tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
@@ -645,7 +685,7 @@ class TestCalculateCashflowYear:
 
     def test_rentvest_rent_paid_year_zero(self):
         rentvest = _make_rentvest(weekly_rent_paid=500)
-        year = _calculate_cashflow_year(
+        year = _calculate_investment_cashflow_year(
             year=0,
             tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
@@ -666,7 +706,7 @@ class TestCalculateCashflowYear:
             is_negatively_geared=True,
             tax_saving=7_320,
         )
-        year = _calculate_cashflow_year(
+        year = _calculate_investment_cashflow_year(
             year=0,
             tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
@@ -688,7 +728,7 @@ class TestCalculateCashflowYear:
             is_negatively_geared=False,
             tax_saving=5_000,
         )
-        year = _calculate_cashflow_year(
+        year = _calculate_investment_cashflow_year(
             year=0,
             tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
@@ -701,7 +741,7 @@ class TestCalculateCashflowYear:
 
     def test_rentvest_total_outflows_includes_rent_paid(self):
         rentvest = _make_rentvest(weekly_rent_paid=500)
-        year = _calculate_cashflow_year(
+        year = _calculate_investment_cashflow_year(
             year=0,
             tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
@@ -757,7 +797,7 @@ class TestCalculateCashflowYear:
         )
         assert year.schedule_rows_detail is rows
 
-    def test_tax_deduction_detail_none_for_ppor(self):
+    def test_ppor_has_no_tax_deduction_detail(self):
         year = _calculate_cashflow_year(
             year=0,
             tax_profile=_make_tax_profile(),
@@ -765,9 +805,9 @@ class TestCalculateCashflowYear:
             ongoing_costs=_make_year_cost(),
             previous_cumulative=0,
         )
-        assert year.tax_deduction_detail is None
+        assert not hasattr(year, "tax_deduction_detail") or not isinstance(year, CashFlowYearInvestment)
 
-    def test_tax_deduction_detail_attached_for_rentvest(self):
+    def test_tax_deduction_detail_attached_for_investment(self):
         deduction = PropertyTaxDeductionSummary(
             mortgage_interest=0,
             depreciation_building=0,
@@ -778,7 +818,7 @@ class TestCalculateCashflowYear:
             is_negatively_geared=False,
             tax_saving=0,
         )
-        year = _calculate_cashflow_year(
+        year = _calculate_investment_cashflow_year(
             year=0,
             tax_profile=_make_tax_profile(),
             schedule_rows=self._make_rows(),
@@ -839,25 +879,11 @@ class TestBuildPporCashflow:
 
     # ── PPOR specifics ────────────────────────
 
-    def test_no_rent_paid(self):
+    def test_returns_base_cashflow_year(self):
         result = self._build()
         for y in result.years:
-            assert y.rent_paid == 0.0
-
-    def test_no_rental_income(self):
-        result = self._build(property=_make_property(is_ppor=True, weekly_rent=0))
-        for y in result.years:
-            assert y.rental_income == 0.0
-
-    def test_no_tax_saving(self):
-        result = self._build()
-        for y in result.years:
-            assert y.tax_saving == 0.0
-
-    def test_no_tax_deduction_detail(self):
-        result = self._build()
-        for y in result.years:
-            assert y.tax_deduction_detail is None
+            assert type(y) is CashFlowYear
+            assert not isinstance(y, CashFlowYearInvestment)
 
     # ── Income growth ─────────────────────────
 
@@ -1148,7 +1174,7 @@ class TestBuildRentvestCashflow:
         prop_inv = _make_property(is_ppor=False, purchase_price=500_000, weekly_rent=450)
         ppor = build_ppor_cashflow(_make_mortgage(property=prop_ppor, projection_years=3))
         rentvest = self._build(property=prop_inv, projection_years=3)
-        assert all(y.rent_paid == 0 for y in ppor.years)
+        assert all(not isinstance(y, CashFlowYearInvestment) for y in ppor.years)
         assert all(y.rent_paid > 0 for y in rentvest.years)
 
 
