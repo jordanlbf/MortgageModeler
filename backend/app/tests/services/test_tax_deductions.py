@@ -1300,3 +1300,144 @@ class TestTaxSavingIntegration:
         )
         # Higher marginal rate = higher tax saving for same loss
         assert result_high.tax_saving > result_low.tax_saving
+
+
+# ──────────────────────────────────────────────
+# BorrowingCosts.years_elapsed offset
+# ──────────────────────────────────────────────
+
+
+class TestBorrowingCostYearsElapsed:
+    """Tests for borrowing cost deduction offset via years_elapsed."""
+
+    def test_zero_elapsed_same_as_default(self):
+        """years_elapsed=0 should produce the same result as before."""
+        bc = BorrowingCosts(lmi=10_000, years_elapsed=0)
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=bc))
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=_make_property(), loan=loan),
+            year=0,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2021),
+        )
+        assert result.borrowing_costs_deduction == pytest.approx(10_000 / 5)
+
+    def test_elapsed_3_year_0_gets_year_3_deduction(self):
+        """3 years elapsed → projection year 0 maps to deduction year 3 (still within 5-year spread)."""
+        bc = BorrowingCosts(lmi=10_000, years_elapsed=3)
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=bc))
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=_make_property(), loan=loan),
+            year=0,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2021),
+        )
+        assert result.borrowing_costs_deduction == pytest.approx(10_000 / 5)
+
+    def test_elapsed_3_year_1_gets_year_4_deduction(self):
+        """3 years elapsed → projection year 1 maps to deduction year 4 (last year of spread)."""
+        bc = BorrowingCosts(lmi=10_000, years_elapsed=3)
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=bc))
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=_make_property(), loan=loan),
+            year=1,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2022),
+        )
+        assert result.borrowing_costs_deduction == pytest.approx(10_000 / 5)
+
+    def test_elapsed_3_year_2_gets_zero(self):
+        """3 years elapsed → projection year 2 maps to deduction year 5 (beyond spread)."""
+        bc = BorrowingCosts(lmi=10_000, years_elapsed=3)
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=bc))
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=_make_property(), loan=loan),
+            year=2,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2023),
+        )
+        assert result.borrowing_costs_deduction == 0.0
+
+    def test_elapsed_5_all_years_zero(self):
+        """5 years fully elapsed → no deductions remain at any projection year."""
+        bc = BorrowingCosts(lmi=10_000, years_elapsed=5)
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=bc))
+        for y in range(5):
+            result = build_tax_deduction_summary(
+                mortgage=_make_mortgage(property=_make_property(), loan=loan),
+                year=y,
+                ongoing_costs=_zero_costs(),
+                financial_year=FinancialYear(2021 + y),
+            )
+            assert result.borrowing_costs_deduction == 0.0
+
+    def test_elapsed_exceeds_spread_all_zero(self):
+        """years_elapsed > 5 → zero deductions at all projection years."""
+        bc = BorrowingCosts(lmi=10_000, years_elapsed=8)
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=bc))
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=_make_property(), loan=loan),
+            year=0,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2021),
+        )
+        assert result.borrowing_costs_deduction == 0.0
+
+    def test_elapsed_1_remaining_deductions_sum(self):
+        """1 year elapsed → 4 remaining years of deductions sum to 4/5 of total."""
+        bc = BorrowingCosts(lmi=10_000, years_elapsed=1)
+        loan = _make_loan_with_interest(0, _make_loan(borrowing_costs=bc))
+        total = 0.0
+        for y in range(6):
+            result = build_tax_deduction_summary(
+                mortgage=_make_mortgage(property=_make_property(), loan=loan),
+                year=y,
+                ongoing_costs=_zero_costs(),
+                financial_year=FinancialYear(2021 + y),
+            )
+            total += result.borrowing_costs_deduction
+        assert total == pytest.approx(10_000 * 4 / 5)
+
+    def test_elapsed_with_short_loan_term(self):
+        """3-year loan with 2 years elapsed → spread is min(5,3)=3, effective year=2+0=2 still gets deduction."""
+        bc = BorrowingCosts(lmi=9_000, years_elapsed=2)
+        lc = _make_loan(loan_term_years=3, borrowing_costs=bc)
+        loan = _make_loan_with_interest(0, lc)
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=_make_property(), loan=loan),
+            year=0,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2021),
+        )
+        # spread = min(5, 3) = 3, effective_year = 0 + 2 = 2, which is < 3
+        assert result.borrowing_costs_deduction == pytest.approx(9_000 / 3)
+
+    def test_elapsed_with_short_loan_term_beyond(self):
+        """3-year loan with 2 years elapsed → projection year 1 maps to effective year 3 (beyond spread of 3)."""
+        bc = BorrowingCosts(lmi=9_000, years_elapsed=2)
+        lc = _make_loan(loan_term_years=3, borrowing_costs=bc)
+        loan = _make_loan_with_interest(0, lc)
+        result = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=_make_property(), loan=loan),
+            year=1,
+            ongoing_costs=_zero_costs(),
+            financial_year=FinancialYear(2022),
+        )
+        assert result.borrowing_costs_deduction == 0.0
+
+    def test_elapsed_affects_total_deductions(self):
+        """years_elapsed should reduce total_deductions when spread is exhausted."""
+        bc_fresh = BorrowingCosts(lmi=10_000, years_elapsed=0)
+        bc_elapsed = BorrowingCosts(lmi=10_000, years_elapsed=5)
+        prop = _make_property()
+        costs = _zero_costs()
+
+        result_fresh = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0, _make_loan(borrowing_costs=bc_fresh))),
+            year=0, ongoing_costs=costs, financial_year=FinancialYear(2021),
+        )
+        result_elapsed = build_tax_deduction_summary(
+            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0, _make_loan(borrowing_costs=bc_elapsed))),
+            year=0, ongoing_costs=costs, financial_year=FinancialYear(2021),
+        )
+        assert result_fresh.total_deductions > result_elapsed.total_deductions

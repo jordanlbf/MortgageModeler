@@ -10,7 +10,7 @@ from app.models.amortisation import AmortisationSchedule
 from app.models.loan import BorrowingCosts, Loan, LoanConfig, RateChange, RepaymentFrequency
 from app.models.mortgage import Mortgage
 from app.models.property import Property
-from app.services.amortisation import build_loan, build_schedule_result
+from app.services.amortisation import build_existing_loan, build_loan, build_schedule_result
 
 # ──────────────────────────────────────────────
 # Fixtures / Helpers
@@ -524,3 +524,179 @@ class TestLoanMethods:
         assert loan.interest_for_year(0) == 0.0
         assert loan.balance_at_year(0) == 0.0
         assert loan.principal_for_year(0) == 0.0
+
+
+# ──────────────────────────────────────────────
+# build_existing_loan
+# ──────────────────────────────────────────────
+
+
+class TestBuildExistingLoanStructure:
+    """Tests for build_existing_loan schedule structure."""
+
+    def test_returns_loan(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert isinstance(loan, Loan)
+        assert loan.config is not None
+        assert loan.schedule is not None
+
+    def test_schedule_has_rows(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert len(loan.schedule.rows) > 0
+
+    def test_monthly_periods(self):
+        """25-year monthly loan → 300 periods."""
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert loan.schedule.total_periods == 300
+        assert loan.schedule.periods_per_year == 12
+
+    def test_weekly_periods(self):
+        """10-year weekly loan → 520 periods."""
+        loan = build_existing_loan(
+            current_balance=200_000, remaining_term_years=10, annual_rate=0.05,
+            frequency=RepaymentFrequency.WEEKLY,
+        )
+        assert loan.schedule.periods_per_year == 52
+        assert loan.schedule.total_periods == 520
+
+    def test_fortnightly_periods(self):
+        """15-year fortnightly loan → 390 periods."""
+        loan = build_existing_loan(
+            current_balance=300_000, remaining_term_years=15, annual_rate=0.055,
+            frequency=RepaymentFrequency.FORTNIGHTLY,
+        )
+        assert loan.schedule.periods_per_year == 26
+        assert loan.schedule.total_periods == 390
+
+
+class TestBuildExistingLoanConfig:
+    """Tests for build_existing_loan config values."""
+
+    def test_deposit_is_zero(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert loan.config.deposit == 0.0
+
+    def test_rate_matches(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.055)
+        assert loan.config.annual_rate == 0.055
+
+    def test_term_matches(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=20, annual_rate=0.06)
+        assert loan.config.loan_term_years == 20
+
+    def test_default_borrowing_costs_zeroed(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert loan.config.borrowing_costs.total == 0.0
+        assert loan.config.borrowing_costs.years_elapsed == 0
+
+    def test_custom_borrowing_costs_preserved(self):
+        bc = BorrowingCosts(lmi=10_000, years_elapsed=3)
+        loan = build_existing_loan(
+            current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
+            borrowing_costs=bc,
+        )
+        assert loan.config.borrowing_costs.total == pytest.approx(10_000)
+        assert loan.config.borrowing_costs.years_elapsed == 3
+
+    def test_offset_params_preserved(self):
+        loan = build_existing_loan(
+            current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
+            offset_balance=20_000, offset_contribution=500,
+        )
+        assert loan.config.offset_balance == 20_000
+        assert loan.config.offset_contribution == 500
+
+    def test_extra_repayment_preserved(self):
+        loan = build_existing_loan(
+            current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
+            extra_repayment=200,
+        )
+        assert loan.config.extra_repayment == 200
+
+
+class TestBuildExistingLoanScheduleValues:
+    """Tests for build_existing_loan schedule correctness."""
+
+    def test_opening_balance_is_current_balance(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert loan.schedule.rows[0].opening_balance == pytest.approx(350_000)
+
+    def test_final_balance_is_zero(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert loan.schedule.rows[-1].closing_balance == pytest.approx(0.0, abs=0.01)
+
+    def test_balance_decreases(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        balances = [r.closing_balance for r in loan.schedule.rows]
+        for i in range(1, len(balances)):
+            assert balances[i] <= balances[i - 1]
+
+    def test_total_interest_positive(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert loan.schedule.total_interest > 0
+
+    def test_rows_for_year_works(self):
+        """Loan accessors should work on existing loans."""
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        rows = loan.rows_for_year(0)
+        assert len(rows) == 12
+
+    def test_interest_for_year_positive(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert loan.interest_for_year(0) > 0
+
+    def test_balance_at_year_decreases(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert loan.balance_at_year(1) < loan.balance_at_year(0)
+
+    def test_principal_for_year_positive(self):
+        loan = build_existing_loan(current_balance=350_000, remaining_term_years=25, annual_rate=0.06)
+        assert loan.principal_for_year(0) > 0
+
+    def test_offset_reduces_interest(self):
+        """Loan with offset should pay less interest than without."""
+        loan_no_offset = build_existing_loan(
+            current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
+        )
+        loan_with_offset = build_existing_loan(
+            current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
+            offset_balance=50_000,
+        )
+        assert loan_with_offset.schedule.total_interest < loan_no_offset.schedule.total_interest
+
+    def test_extra_repayment_reduces_term(self):
+        """Extra repayments should result in fewer schedule rows."""
+        loan_normal = build_existing_loan(
+            current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
+        )
+        loan_extra = build_existing_loan(
+            current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
+            extra_repayment=500,
+        )
+        assert loan_extra.schedule.total_periods < loan_normal.schedule.total_periods
+
+    def test_rate_changes_applied(self):
+        """Rate change mid-loan should change periodic interest."""
+        loan = build_existing_loan(
+            current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
+            rate_changes=[RateChange(from_period=13, annual_rate=0.05)],
+        )
+        # Year 0 at 6%, year 1 at 5% — interest should drop
+        assert loan.interest_for_year(1) < loan.interest_for_year(0)
+
+    def test_small_balance(self):
+        """Very small balance should produce a valid short schedule."""
+        loan = build_existing_loan(current_balance=1_000, remaining_term_years=1, annual_rate=0.06)
+        assert len(loan.schedule.rows) <= 12
+        assert loan.schedule.rows[-1].closing_balance == pytest.approx(0.0, abs=0.01)
+
+    def test_zero_balance(self):
+        """Zero balance should produce an empty schedule."""
+        loan = build_existing_loan(current_balance=0, remaining_term_years=25, annual_rate=0.06)
+        assert len(loan.schedule.rows) == 0
+
+    def test_beyond_schedule_returns_empty(self):
+        """Year beyond loan term should return empty rows."""
+        loan = build_existing_loan(current_balance=100_000, remaining_term_years=5, annual_rate=0.06)
+        rows = loan.rows_for_year(10)
+        assert rows == []
