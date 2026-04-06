@@ -43,7 +43,8 @@
       "Bash(ls */package.json)",
       "Bash(npm run:*)",
       "Bash(ls backend/*/requirements*.txt backend/pyproject.toml)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find C:UsersJordanMortgageModelerMortgageModeler -type f \\\\\\(-name *home* -o -name *landing* -o -name *dashboard* -o -name *card* -o -name index.html \\\\\\))"
     ]
   }
 }

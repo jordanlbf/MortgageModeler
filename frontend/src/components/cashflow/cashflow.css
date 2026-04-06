@@ -1,0 +1,714 @@
+/* ============================================================================
+   CASHFLOW CALCULATOR - SIDEBAR LAYOUT
+   ============================================================================ */
+
+/* CSS Variables */
+:root {
+  --cf-bg: #111111;
+  --cf-card: #1a1a1a;
+  --cf-border: rgba(255, 255, 255, 0.1);
+  --cf-text: #e5e5e5;
+  --cf-text-muted: #737373;
+  --cf-text-dim: rgba(255, 255, 255, 0.4);
+  --cf-white: #ffffff;
+  --cf-input-bg: rgba(255, 255, 255, 0.05);
+  --cf-hover: rgba(255, 255, 255, 0.1);
+  --cf-accent: rgba(255, 255, 255, 0.02);
+  --cf-sidebar-width: 380px;
+}
+
+/* ============================================================================
+   LAYOUT - SIDEBAR + MAIN
+   ============================================================================ */
+
+.cf-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--cf-bg);
+  color: var(--cf-text);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* LEFT SIDEBAR */
+.cf-sidebar {
+  width: var(--cf-sidebar-width);
+  min-width: var(--cf-sidebar-width);
+  max-width: var(--cf-sidebar-width);
+  border-right: 1px solid var(--cf-border);
+  background: var(--cf-bg);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+
+.cf-sidebar-inner {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* RIGHT MAIN AREA */
+.cf-main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px 32px;
+  overflow-y: auto;
+}
+
+/* ============================================================================
+   INPUT SECTIONS
+   ============================================================================ */
+
+.cf-section {
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  background: var(--cf-card);
+  overflow: hidden;
+}
+
+.cf-section-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cf-text-muted);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.cf-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  color: var(--cf-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cf-section-header:hover {
+  background: var(--cf-hover);
+}
+
+.cf-section-header svg {
+  color: var(--cf-text-muted);
+}
+
+.cf-edit-link {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--cf-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cf-edit-link:hover {
+  color: var(--cf-text);
+}
+
+.cf-section-content {
+  padding: 0 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ============================================================================
+   FORM ELEMENTS
+   ============================================================================ */
+
+.cf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cf-field-row {
+  display: flex;
+  gap: 12px;
+}
+
+.cf-field-row > .cf-field {
+  flex: 1;
+}
+
+.cf-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cf-text-muted);
+}
+
+.cf-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--cf-input-bg);
+  border: 1px solid var(--cf-border);
+  border-radius: 6px;
+  color: var(--cf-text);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.cf-input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cf-input-display {
+  padding: 10px 12px;
+  background: var(--cf-input-bg);
+  border: 1px solid var(--cf-border);
+  border-radius: 6px;
+  color: var(--cf-text-muted);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Button Group */
+.cf-button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.cf-button-option {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--cf-input-bg);
+  border: 1px solid var(--cf-border);
+  border-radius: 6px;
+  color: var(--cf-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cf-button-option:hover {
+  background: var(--cf-hover);
+  color: var(--cf-text);
+}
+
+.cf-button-option.active {
+  background: var(--cf-white);
+  border-color: var(--cf-white);
+  color: var(--cf-bg);
+}
+
+/* Toggle */
+.cf-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cf-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.cf-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.cf-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--cf-input-bg);
+  border: 1px solid var(--cf-border);
+  border-radius: 10px;
+  transition: all 0.15s;
+}
+
+.cf-toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 2px;
+  top: 2px;
+  background: var(--cf-text-muted);
+  border-radius: 50%;
+  transition: all 0.15s;
+}
+
+.cf-toggle input:checked + .cf-toggle-slider {
+  background: var(--cf-white);
+  border-color: var(--cf-white);
+}
+
+.cf-toggle input:checked + .cf-toggle-slider::before {
+  transform: translateX(16px);
+  background: var(--cf-bg);
+}
+
+.cf-toggle-label {
+  font-size: 13px;
+  color: var(--cf-text-muted);
+}
+
+/* Continue Button */
+.cf-continue {
+  width: 100%;
+  padding: 12px;
+  background: var(--cf-white);
+  border: none;
+  border-radius: 6px;
+  color: var(--cf-bg);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  margin-top: 4px;
+}
+
+.cf-continue:hover {
+  opacity: 0.9;
+}
+
+/* ============================================================================
+   OUTPUT PLACEHOLDER
+   ============================================================================ */
+
+.cf-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 48px);
+}
+
+.cf-placeholder-content {
+  text-align: center;
+}
+
+.cf-placeholder-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--cf-text-muted);
+  margin-bottom: 8px;
+}
+
+.cf-placeholder-subtitle {
+  font-size: 14px;
+  color: var(--cf-text-dim);
+}
+
+/* ============================================================================
+   OUTPUTS
+   ============================================================================ */
+
+.cf-outputs {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 900px;
+}
+
+/* Cards */
+.cf-card {
+  background: var(--cf-card);
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cf-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cf-border);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cf-text-muted);
+}
+
+.cf-card-header-note {
+  font-size: 12px;
+  color: var(--cf-text-dim);
+}
+
+.cf-card-header-note .cf-tabular {
+  color: var(--cf-text-muted);
+}
+
+.cf-card-title {
+  padding: 16px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cf-text-muted);
+  border-bottom: 1px solid var(--cf-border);
+}
+
+/* ============================================================================
+   MILESTONES CARD
+   ============================================================================ */
+
+.cf-milestones {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding: 24px 20px;
+}
+
+.cf-milestone {
+  text-align: center;
+}
+
+.cf-milestone-year {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cf-text-dim);
+  margin-bottom: 12px;
+}
+
+.cf-milestone-values {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cf-milestone-value {
+  font-size: 24px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--cf-white);
+}
+
+.cf-milestone-label {
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cf-text-dim);
+}
+
+.cf-milestone-equity {
+  padding-top: 8px;
+  border-top: 1px solid var(--cf-border);
+}
+
+.cf-milestone-equity-value {
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--cf-text-muted);
+}
+
+/* ============================================================================
+   CASHFLOW SECTION
+   ============================================================================ */
+
+.cf-year-selector {
+  display: flex;
+  gap: 4px;
+}
+
+.cf-year-button {
+  padding: 6px 12px;
+  background: var(--cf-input-bg);
+  border: none;
+  border-radius: 4px;
+  color: var(--cf-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cf-year-button:hover {
+  background: var(--cf-hover);
+}
+
+.cf-year-button.active {
+  background: var(--cf-white);
+  color: var(--cf-bg);
+}
+
+/* Focal KPI */
+.cf-focal {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 24px 20px;
+  background: var(--cf-accent);
+  border-bottom: 1px solid var(--cf-border);
+}
+
+.cf-focal-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cf-focal-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cf-text-dim);
+}
+
+.cf-focal-value {
+  font-size: 42px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--cf-white);
+  line-height: 1;
+  margin: 8px 0;
+}
+
+.cf-focal-note {
+  font-size: 13px;
+  color: var(--cf-text-dim);
+}
+
+.cf-focal-total {
+  text-align: right;
+}
+
+.cf-focal-total-value {
+  font-size: 22px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--cf-white);
+  margin-top: 4px;
+}
+
+/* ============================================================================
+   TABLE
+   ============================================================================ */
+
+.cf-table-container {
+  padding: 16px 20px;
+}
+
+.cf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cf-table th {
+  padding: 12px 0;
+  font-weight: 500;
+  color: var(--cf-text-dim);
+  text-align: left;
+  border-bottom: 1px solid var(--cf-border);
+}
+
+.cf-table th:not(:first-child) {
+  text-align: right;
+}
+
+.cf-table td {
+  padding: 10px 0;
+  color: var(--cf-text);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cf-table td:not(:first-child) {
+  text-align: right;
+}
+
+.cf-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-bold {
+  font-weight: 600;
+}
+
+.cf-muted {
+  color: var(--cf-text-muted) !important;
+}
+
+.cf-muted td {
+  color: var(--cf-text-muted);
+}
+
+.cf-indent td:first-child {
+  padding-left: 16px;
+}
+
+/* Section Label Row */
+.cf-table-section td {
+  padding: 16px 0 8px 0;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cf-text-dim);
+  border-bottom: none;
+}
+
+/* Subtotal Row */
+.cf-table-subtotal {
+  background: var(--cf-accent);
+}
+
+.cf-table-subtotal td {
+  font-weight: 500;
+  border-bottom: 1px solid var(--cf-border);
+}
+
+/* Highlight Row */
+.cf-table-highlight td {
+  font-weight: 500;
+  border-bottom: 1px solid var(--cf-border);
+}
+
+/* Total Row */
+.cf-table-total {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cf-table-total td {
+  padding: 16px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cf-white);
+  border-bottom: none;
+}
+
+/* ============================================================================
+   STATS ROW
+   ============================================================================ */
+
+.cf-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.cf-stat-card {
+  background: var(--cf-card);
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.cf-stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cf-text-dim);
+  margin-bottom: 6px;
+}
+
+.cf-stat-value {
+  font-size: 18px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--cf-white);
+}
+
+/* ============================================================================
+   CGT GRID
+   ============================================================================ */
+
+.cf-cgt-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  padding: 20px;
+}
+
+.cf-cgt-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--cf-text-dim);
+  margin-bottom: 6px;
+}
+
+.cf-cgt-value {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--cf-text);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .cf-layout {
+    flex-direction: column;
+  }
+
+  .cf-sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid var(--cf-border);
+  }
+
+  .cf-main {
+    padding: 20px 16px;
+  }
+
+  .cf-milestones {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cf-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cf-cgt-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .cf-milestones {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .cf-milestone-value {
+    font-size: 20px;
+  }
+
+  .cf-focal-value {
+    font-size: 32px;
+  }
+
+  .cf-focal-total-value {
+    font-size: 18px;
+  }
+
+  .cf-stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cf-cgt-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
