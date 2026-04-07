@@ -317,19 +317,226 @@
   color: var(--cf-text-dim);
 }
 
-/* ============================================================================
-   CHART TOGGLES
-   ============================================================================ */
-
-.cf-chart-toggles { display: flex; gap: 4px; }
-.cf-chart-toggle { padding: 5px 10px; background: var(--cf-input-bg); border: none; border-radius: 4px; color: var(--cf-text-dim); font-family: inherit; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-.cf-chart-toggle:hover { color: var(--cf-text-muted); background: var(--cf-hover); }
-.cf-chart-toggle.active { background: var(--cf-accent); color: var(--cf-accent-contrast); }
-
 /* Color utilities */
 .cf-negative { color: var(--cf-negative) !important; }
 .cf-positive { color: var(--cf-positive) !important; }
 .cf-tabular { font-variant-numeric: tabular-nums; }
+
+/* ============================================================================
+   MODE SELECTOR
+   ============================================================================ */
+
+.cf-mode-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--cf-input-bg);
+  border-radius: 6px;
+  padding: 3px;
+  width: fit-content;
+}
+
+.cf-mode-btn {
+  padding: 7px 18px;
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+  color: var(--cf-text-dim);
+}
+
+.cf-mode-btn:hover {
+  color: var(--cf-text-muted);
+}
+
+.cf-mode-btn.active {
+  background: var(--cf-accent);
+  color: var(--cf-accent-contrast);
+}
+
+/* ============================================================================
+   KPI CARDS
+   ============================================================================ */
+
+.cf-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cf-kpi-card {
+  background: var(--cf-card);
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.20),
+              0 0 0 0.5px rgba(255,255,255,0.03),
+              inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.cf-kpi-label {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cf-text-dim);
+  margin-bottom: 5px;
+}
+
+.cf-kpi-value {
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.cf-kpi-sub {
+  font-size: 10px;
+  color: var(--cf-text-dim);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================================
+   DATA TABLE
+   ============================================================================ */
+
+.cf-table-wrap {
+  background: var(--cf-card);
+  border: 1px solid var(--cf-border);
+  border-radius: 10px;
+  overflow-x: auto;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.20),
+              0 0 0 0.5px rgba(255,255,255,0.03),
+              inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.cf-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-data-table thead .cf-group-header th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cf-text-dim);
+  padding: 12px 10px 6px;
+  text-align: center;
+  border-bottom: none;
+}
+
+.cf-data-table thead .cf-col-header th {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cf-text-dim);
+  padding: 5px 10px 10px;
+  text-align: right;
+  border-bottom: 1px solid var(--cf-border);
+  position: sticky;
+  top: 0;
+  background: var(--cf-card-elevated);
+  z-index: 1;
+}
+
+.cf-data-table thead .cf-col-header th.cf-col-center {
+  text-align: center;
+}
+
+.cf-data-table tbody tr {
+  transition: background 0.1s;
+  cursor: pointer;
+}
+
+.cf-data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cf-data-table tbody tr.cf-active-row {
+  background: rgba(45, 212, 191, 0.06);
+}
+
+.cf-data-table tbody tr.cf-crossover-row td {
+  border-top: 1px solid var(--cf-accent-border);
+  border-bottom: 1px solid var(--cf-accent-border);
+}
+
+.cf-data-table tbody td {
+  font-size: 13px;
+  padding: 8px 10px;
+  text-align: right;
+  border-bottom: 1px solid var(--cf-border);
+  color: var(--cf-text-muted);
+}
+
+.cf-data-table tbody td.cf-col-center {
+  text-align: center;
+  color: var(--cf-text);
+  font-weight: 500;
+}
+
+.cf-group-divider {
+  border-left: 1px solid rgba(113, 113, 122, 0.25) !important;
+}
+
+/* Column group colours */
+.cf-col-property { color: rgba(245, 158, 11, 0.55); }
+.cf-col-property-agg { color: #f59e0b; font-weight: 600; }
+.cf-col-tax { color: rgba(167, 139, 250, 0.55); }
+.cf-col-tax-agg { color: #a78bfa; font-weight: 500; }
+.cf-col-cf { color: rgba(45, 212, 191, 0.6); }
+.cf-col-cf-result { font-weight: 700; font-size: 14px; }
+
+.cf-crossover-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.08);
+  border: 1px solid var(--cf-accent-border);
+  border-radius: 3px;
+  padding: 1px 6px;
+  margin-left: 6px;
+}
+
+.cf-formula-row td {
+  border-bottom: none;
+  padding: 8px 10px 12px;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  font-style: italic;
+}
+
+/* Chart tooltip */
+.cf-chart-tooltip {
+  position: absolute;
+  background: var(--cf-card-elevated);
+  border: 1px solid var(--cf-border-hover);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 11px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 10;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.cf-chart-tooltip.visible {
+  opacity: 1;
+}
 
 /* ============================================================================
    RESPONSIVE
