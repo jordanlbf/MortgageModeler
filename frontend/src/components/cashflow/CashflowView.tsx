@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, TrendingUp, TrendingDown, DollarSign, Home, Percent, Receipt, Building } from "lucide-react";
 import Header from "@/components/layout/Header";
 import "./cashflow.css";
 
@@ -1106,9 +1106,9 @@ export default function CashflowCalculator() {
 
         {/* Complete - Show outputs */}
         {allComplete && yearData.length > 0 && (() => {
-          // SVG chart dimensions
-          const svgW = 860, svgH = 220;
-          const mL = 45, mR = 10, mT = 10, mB = 25;
+          // SVG chart dimensions - LARGER for spacious design
+          const svgW = 1000, svgH = 280;
+          const mL = 60, mR = 20, mT = 20, mB = 40;
           const plotW = svgW - mL - mR;
           const plotH = svgH - mT - mB;
           const mapX = (year: number) => mL + (year - 1) / 29 * plotW;
@@ -1122,7 +1122,7 @@ export default function CashflowCalculator() {
           const dataMin = allVals.length > 0 ? Math.min(...allVals) : 0;
           const dataMax = allVals.length > 0 ? Math.max(...allVals) : 1;
           const range = dataMax - dataMin || 1;
-          const pad = range * 0.1;
+          const pad = range * 0.15;
           const yMin = dataMin - pad;
           const yMax = dataMax + pad;
           const mapY = (v: number) => mT + (1 - (v - yMin) / (yMax - yMin)) * plotH;
@@ -1159,19 +1159,15 @@ export default function CashflowCalculator() {
               if (activeData[i - 1].value < 0 && activeData[i].value >= 0) {
                 const ratio = Math.abs(activeData[i - 1].value) / (Math.abs(activeData[i - 1].value) + activeData[i].value);
                 crossoverYear = activeData[i - 1].year + ratio;
-                crossoverLabel = `Cashflow positive: Year ${Math.ceil(crossoverYear)}`;
+                crossoverLabel = `Positive at Year ${Math.ceil(crossoverYear)}`;
                 break;
               }
             }
           }
 
           // Y-axis ticks
-          const yTicks: number[] = [yMin, yMax];
-          if (yMin < 0 && yMax > 0) yTicks.push(0);
+          const yTicks: number[] = [yMin, 0, yMax].filter(v => v >= yMin && v <= yMax);
           yTicks.sort((a, b) => a - b);
-
-          // Grid line at zero
-          const showZeroLine = yMin < 0 && yMax > 0;
 
           // X-axis label years
           const xLabels = [1, 5, 10, 15, 20, 25, 30];
@@ -1198,330 +1194,454 @@ export default function CashflowCalculator() {
           const metricLabels: Record<ChartMetric, string> = { cashflow: "Cashflow", equity: "Equity", gearing: "Gearing", netIncome: "Net Income", taxBenefit: "Tax Benefit" };
 
           return (
-          <div className="cf-outputs">
+          <div className="space-y-8">
             {/* ============================================================ */}
-            {/* HERO CHART CARD                                              */}
+            {/* HERO CHART - SPACIOUS DESIGN                                 */}
             {/* ============================================================ */}
-            <div className="cf-card">
-              <div className="cf-hero-header">
-                <div className="cf-hero-header-left">
-                  <span className="cf-hero-title">{isInvestment ? "Investment" : "Owner-Occupier"} Projections</span>
-                  <span className={`cf-tag ${isInvestment ? "cf-tag-investment" : "cf-tag-ppor"}`}>
-                    {isInvestment ? "INVESTMENT" : "PPOR"}
-                  </span>
+            <section className="overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-card)]">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-[var(--cf-border)] px-8 py-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--cf-accent)]/10">
+                    <TrendingUp className="h-5 w-5 text-[var(--cf-accent)]" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-semibold text-[var(--cf-text)]">
+                      {effectiveMetric === "cashflow" ? "Monthly Cashflow Projection" :
+                       effectiveMetric === "equity" ? "Equity Growth Projection" :
+                       effectiveMetric === "gearing" ? "Gearing Position" :
+                       effectiveMetric === "netIncome" ? "Net Rental Income" : "Tax Benefit Projection"}
+                    </h2>
+                    <p className="text-sm text-[var(--cf-text-dim)]">
+                      {isInvestment ? "Investment property" : "Owner-occupier"} analysis over 30 years
+                    </p>
+                  </div>
                 </div>
-                <div className="cf-chart-toggles">
-                  {isPPOR ? (
-                    <button className="cf-chart-toggle active">Equity</button>
-                  ) : (
-                    (["cashflow", "equity", "gearing", "netIncome", "taxBenefit"] as ChartMetric[]).map(m => (
-                      <button
-                        key={m}
-                        className={`cf-chart-toggle ${effectiveMetric === m ? "active" : ""}`}
-                        onClick={() => setChartMetric(m)}
-                      >
-                        {metricLabels[m]}
-                      </button>
-                    ))
-                  )}
+                <div className="flex items-center gap-3">
+                  <div className="cf-chart-toggles">
+                    {isPPOR ? (
+                      <button className="cf-chart-toggle active">Equity</button>
+                    ) : (
+                      (["cashflow", "equity", "gearing", "netIncome", "taxBenefit"] as ChartMetric[]).map(m => (
+                        <button
+                          key={m}
+                          className={`cf-chart-toggle ${effectiveMetric === m ? "active" : ""}`}
+                          onClick={() => setChartMetric(m)}
+                        >
+                          {metricLabels[m]}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  <span className="rounded-full bg-[var(--cf-accent)]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--cf-accent)]">
+                    {isInvestment ? "Investment" : "PPOR"}
+                  </span>
                 </div>
               </div>
 
-              <div className="cf-chart-area">
-                <div className="cf-chart-container">
-                  <svg className="cf-chart-svg" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+              {/* Chart Area - Enhanced with better visual hierarchy */}
+              <div className="px-8 py-6">
+                <div className="relative h-[260px] w-full">
+                  <svg className="h-full w-full" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
                     <defs>
-                      <clipPath id="clip-above-zero">
-                        <rect x={mL} y={0} width={plotW} height={Math.max(0, zeroY)} />
-                      </clipPath>
-                      <clipPath id="clip-below-zero">
-                        <rect x={mL} y={Math.max(0, zeroY)} width={plotW} height={svgH - Math.max(0, zeroY)} />
-                      </clipPath>
-                      <linearGradient id="grad-pos" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.15" />
+                      <linearGradient id="gradPosA" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.25" />
+                        <stop offset="70%" stopColor="#2dd4bf" stopOpacity="0.05" />
                         <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0" />
                       </linearGradient>
-                      <linearGradient id="grad-neg" x1="0" y1="0" x2="0" y2="1">
+                      <linearGradient id="gradNegA" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#f87171" stopOpacity="0" />
-                        <stop offset="100%" stopColor="#f87171" stopOpacity="0.08" />
+                        <stop offset="30%" stopColor="#f87171" stopOpacity="0.05" />
+                        <stop offset="100%" stopColor="#f87171" stopOpacity="0.15" />
                       </linearGradient>
+                      <clipPath id="clipAboveA">
+                        <rect x={mL} y={0} width={plotW} height={Math.max(0, zeroY)} />
+                      </clipPath>
+                      <clipPath id="clipBelowA">
+                        <rect x={mL} y={Math.max(0, zeroY)} width={plotW} height={svgH - Math.max(0, zeroY)} />
+                      </clipPath>
+                      <filter id="glow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
                     </defs>
 
-                    {/* Horizontal grid lines */}
+                    {/* Subtle vertical grid lines at key years */}
+                    {[1, 5, 10, 15, 20, 25, 30].map(y => (
+                      <line key={y} x1={mapX(y)} x2={mapX(y)} y1={mT} y2={svgH - mB}
+                        stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                    ))}
+
+                    {/* Horizontal grid lines - subtle */}
                     {yTicks.map((v, i) => (
                       <line key={i} x1={mL} x2={svgW - mR} y1={mapY(v)} y2={mapY(v)}
-                        stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                        stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
                     ))}
-                    {showZeroLine && (
+
+                    {/* Zero line - emphasized */}
+                    {yMin < 0 && yMax > 0 && (
                       <line x1={mL} x2={svgW - mR} y1={zeroY} y2={zeroY}
-                        stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="4,3" />
+                        stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="8,4" />
+                    )}
+
+                    {!isGearing && activeData.length > 0 && (
+                      <>
+                        {/* Area fills */}
+                        <path d={areaPath} clipPath="url(#clipAboveA)" fill="url(#gradPosA)" />
+                        <path d={areaPath} clipPath="url(#clipBelowA)" fill="url(#gradNegA)" />
+                        {/* Main line with subtle glow */}
+                        <polyline points={linePoints} stroke="#2dd4bf" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" filter="url(#glow)" />
+                      </>
+                    )}
+
+                    {isGearing && gearingData.income.length > 0 && (
+                      <>
+                        <polyline points={incomePoints} stroke="#4ade80" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                        <polyline points={deductionPoints} stroke="#f87171" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                      </>
+                    )}
+
+                    {/* Crossover marker with pulse effect */}
+                    {crossoverYear !== null && (
+                      <>
+                        <circle cx={mapX(crossoverYear)} cy={isGearing
+                          ? mapY(gearingData.income[Math.floor(crossoverYear) - 1]?.value ?? 0)
+                          : zeroY}
+                          r="10" fill="#2dd4bf" fillOpacity="0.2" />
+                        <circle cx={mapX(crossoverYear)} cy={isGearing
+                          ? mapY(gearingData.income[Math.floor(crossoverYear) - 1]?.value ?? 0)
+                          : zeroY}
+                          r="5" fill="#2dd4bf" />
+                      </>
+                    )}
+
+                    {/* Selected year vertical guide line */}
+                    {!isGearing && (
+                      <line
+                        x1={mapX(selectedYear)} x2={mapX(selectedYear)}
+                        y1={mapY(activeData[selectedYear - 1]?.value ?? 0)} y2={svgH - mB}
+                        stroke="rgba(45, 212, 191, 0.3)" strokeWidth="1" strokeDasharray="4,4" />
+                    )}
+
+                    {/* Selected year marker - enhanced */}
+                    {!isGearing && (
+                      <>
+                        <circle cx={mapX(selectedYear)} cy={mapY(activeData[selectedYear - 1]?.value ?? 0)} r="12" fill="#2dd4bf" fillOpacity="0.15" />
+                        <circle cx={mapX(selectedYear)} cy={mapY(activeData[selectedYear - 1]?.value ?? 0)} r="7" fill="#2dd4bf" />
+                        <circle cx={mapX(selectedYear)} cy={mapY(activeData[selectedYear - 1]?.value ?? 0)} r="3" fill="#0f1115" />
+                      </>
                     )}
 
                     {/* Y-axis labels */}
                     {yTicks.map((v, i) => (
-                      <text key={i} x={mL - 6} y={mapY(v) + 3} textAnchor="end"
-                        fill="var(--cf-text-dim)" fontSize="10" fontFamily="inherit">
+                      <text key={i} x={mL - 12} y={mapY(v) + 4} textAnchor="end"
+                        fill="var(--cf-text-dim)" fontSize="11" fontFamily="inherit" fontWeight="500">
                         {formatChartLabel(v)}
                       </text>
                     ))}
 
                     {/* X-axis labels */}
                     {xLabels.map(y => (
-                      <text key={y} x={mapX(y)} y={svgH - 5} textAnchor="middle"
-                        fill="var(--cf-text-dim)" fontSize="10" fontFamily="inherit">
+                      <text key={y} x={mapX(y)} y={svgH - 8} textAnchor="middle"
+                        fill={selectedYear === y ? "var(--cf-accent)" : "var(--cf-text-dim)"}
+                        fontSize="11" fontFamily="inherit" fontWeight={selectedYear === y ? "600" : "400"}>
                         {y}
                       </text>
                     ))}
-
-                    {!isGearing && activeData.length > 0 && (
-                      <>
-                        {/* Positive area fill */}
-                        <path d={areaPath} clipPath="url(#clip-above-zero)" fill="url(#grad-pos)" />
-                        {/* Negative area fill */}
-                        <path d={areaPath} clipPath="url(#clip-below-zero)" fill="url(#grad-neg)" />
-                        {/* Line */}
-                        <polyline points={linePoints} stroke="#2dd4bf" strokeWidth="2" fill="none" />
-                      </>
-                    )}
-
-                    {isGearing && gearingData.income.length > 0 && (
-                      <>
-                        <polyline points={incomePoints} stroke="#4ade80" strokeWidth="2" fill="none" />
-                        <polyline points={deductionPoints} stroke="#f87171" strokeWidth="2" fill="none" />
-                      </>
-                    )}
-
-                    {/* Crossover marker */}
-                    {crossoverYear !== null && (
-                      <circle cx={mapX(crossoverYear)} cy={isGearing
-                        ? mapY(gearingData.income[Math.floor(crossoverYear) - 1]?.value ?? 0)
-                        : zeroY}
-                        r="4" fill="#2dd4bf" />
-                    )}
                   </svg>
 
-                  {/* Annotation overlay */}
+                  {/* Crossover annotation */}
                   {crossoverYear !== null && (
                     <div
-                      className="cf-chart-annotation"
+                      className="absolute flex items-center gap-2 rounded-full border border-[var(--cf-accent)]/30 bg-[var(--cf-accent)]/10 px-3 py-1.5 text-xs font-medium text-[var(--cf-accent)] backdrop-blur-sm"
                       style={{
                         left: `${(mapX(crossoverYear) / svgW) * 100}%`,
-                        top: `${((isGearing
-                          ? mapY(gearingData.income[Math.floor(crossoverYear) - 1]?.value ?? 0)
-                          : zeroY) / svgH) * 100}%`,
-                        transform: "translate(8px, -50%)",
+                        top: `${((isGearing ? mapY(gearingData.income[Math.floor(crossoverYear) - 1]?.value ?? 0) : zeroY) / svgH) * 100}%`,
+                        transform: "translate(12px, -50%)",
                       }}
                     >
-                      <span className="cf-chart-annotation-dot" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-[var(--cf-accent)]" />
                       {crossoverLabel}
+                    </div>
+                  )}
+
+                  {/* Selected year value tooltip */}
+                  {!isGearing && activeData[selectedYear - 1] && (
+                    <div
+                      className="pointer-events-none absolute rounded-md border border-[var(--cf-border)] bg-[var(--cf-card)] px-2.5 py-1.5 text-xs font-medium shadow-lg"
+                      style={{
+                        left: `${(mapX(selectedYear) / svgW) * 100}%`,
+                        top: `${(mapY(activeData[selectedYear - 1]?.value ?? 0) / svgH) * 100}%`,
+                        transform: "translate(-50%, -140%)",
+                      }}
+                    >
+                      <span className="text-[var(--cf-text-dim)]">Yr {selectedYear}: </span>
+                      <span className={activeData[selectedYear - 1].value >= 0 ? "text-[#4ade80]" : "text-[#f87171]"}>
+                        {formatCurrency(Math.round(activeData[selectedYear - 1].value))}
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Chart Footer Stats */}
-              <div className="cf-chart-footer">
+              {/* Footer Stats - Centered */}
+              <div className="grid grid-cols-4 border-t border-[var(--cf-border)]">
                 {effectiveMetric === "cashflow" && (
                   <>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Year 1 Monthly</p>
-                      <p className={`cf-chart-stat-value ${yr(1).afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
-                        {formatCurrency(Math.round(yr(1).afterTaxCashflow / 12))}
-                      </p>
-                    </div>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Crossover</p>
-                      <p className="cf-chart-stat-value cf-positive">
-                        {cashflowCrossoverYear ? `Year ${cashflowCrossoverYear}` : "N/A"}
-                      </p>
-                    </div>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Year 30 Monthly</p>
-                      <p className={`cf-chart-stat-value ${yr(30).afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
-                        {formatCurrency(Math.round(yr(30).afterTaxCashflow / 12))}
-                      </p>
-                    </div>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Cumulative Outlay</p>
-                      <p className="cf-chart-stat-value cf-negative">{formatCurrency(Math.round(cumulativeOutlay))}</p>
-                    </div>
+                    {[
+                      { label: "Year 1 Monthly", value: formatCurrency(Math.round(yr(1).afterTaxCashflow / 12)), negative: yr(1).afterTaxCashflow < 0 },
+                      { label: "Crossover", value: cashflowCrossoverYear ? `Year ${cashflowCrossoverYear}` : "N/A", positive: true },
+                      { label: "Year 30 Monthly", value: formatCurrency(Math.round(yr(30).afterTaxCashflow / 12)), positive: yr(30).afterTaxCashflow >= 0 },
+                      { label: "Cumulative Outlay", value: formatCurrency(Math.round(cumulativeOutlay)), negative: true },
+                    ].map((stat, i) => (
+                      <div key={i} className="border-r border-[var(--cf-border)] p-5 text-center last:border-r-0">
+                        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--cf-text-dim)]">{stat.label}</p>
+                        <p className={`text-lg font-semibold tabular-nums ${stat.positive ? "text-[#4ade80]" : stat.negative ? "text-[#f87171]" : "text-[var(--cf-text)]"}`}>
+                          {stat.value}
+                        </p>
+                      </div>
+                    ))}
                   </>
                 )}
                 {effectiveMetric === "equity" && (
                   <>
                     {[1, 10, 20, 30].map(y => (
-                      <div key={y} className="cf-chart-stat">
-                        <p className="cf-chart-stat-label">Year {y}</p>
-                        <p className="cf-chart-stat-value cf-positive">{formatAbbreviated(yr(y).equity)}</p>
+                      <div key={y} className="border-r border-[var(--cf-border)] p-5 text-center last:border-r-0">
+                        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--cf-text-dim)]">Year {y}</p>
+                        <p className="text-lg font-semibold tabular-nums text-[#4ade80]">{formatAbbreviated(yr(y).equity)}</p>
                       </div>
                     ))}
                   </>
                 )}
                 {effectiveMetric === "gearing" && (
                   <>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Year 1 Loss</p>
-                      <p className="cf-chart-stat-value cf-negative">{formatCurrency(Math.round(yr(1).rentalLossOrGain))}</p>
-                    </div>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Crossover Year</p>
-                      <p className="cf-chart-stat-value cf-positive">{crossoverYear ? `Year ${Math.ceil(crossoverYear)}` : "N/A"}</p>
-                    </div>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Year 30 Position</p>
-                      <p className={`cf-chart-stat-value ${yr(30).rentalLossOrGain < 0 ? "cf-negative" : "cf-positive"}`}>
-                        {formatCurrency(Math.round(yr(30).rentalLossOrGain))}
-                      </p>
-                    </div>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Peak Deductions</p>
-                      <p className="cf-chart-stat-value">{formatCurrency(Math.round(peakDeductions))}</p>
-                    </div>
+                    {[
+                      { label: "Year 1 Loss", value: formatCurrency(Math.round(yr(1).rentalLossOrGain)), negative: true },
+                      { label: "Crossover Year", value: crossoverYear ? `Year ${Math.ceil(crossoverYear)}` : "N/A", positive: true },
+                      { label: "Year 30 Position", value: formatCurrency(Math.round(yr(30).rentalLossOrGain)), positive: yr(30).rentalLossOrGain >= 0 },
+                      { label: "Peak Deductions", value: formatCurrency(Math.round(peakDeductions)) },
+                    ].map((stat, i) => (
+                      <div key={i} className="border-r border-[var(--cf-border)] p-5 text-center last:border-r-0">
+                        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--cf-text-dim)]">{stat.label}</p>
+                        <p className={`text-lg font-semibold tabular-nums ${stat.positive ? "text-[#4ade80]" : stat.negative ? "text-[#f87171]" : "text-[var(--cf-text)]"}`}>
+                          {stat.value}
+                        </p>
+                      </div>
+                    ))}
                   </>
                 )}
                 {effectiveMetric === "netIncome" && (
                   <>
                     {[1, 10, 20, 30].map(y => (
-                      <div key={y} className="cf-chart-stat">
-                        <p className="cf-chart-stat-label">Year {y}/mo</p>
-                        <p className="cf-chart-stat-value">{formatCurrency(Math.round(yr(y).netRentalIncome / 12))}</p>
+                      <div key={y} className="border-r border-[var(--cf-border)] p-5 text-center last:border-r-0">
+                        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--cf-text-dim)]">Year {y}/mo</p>
+                        <p className="text-lg font-semibold tabular-nums text-[var(--cf-text)]">{formatCurrency(Math.round(yr(y).netRentalIncome / 12))}</p>
                       </div>
                     ))}
                   </>
                 )}
                 {effectiveMetric === "taxBenefit" && (
                   <>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Year 1</p>
-                      <p className="cf-chart-stat-value cf-positive">{formatCurrency(Math.round(yr(1).taxBenefit))}</p>
-                    </div>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Peak Benefit</p>
-                      <p className="cf-chart-stat-value cf-positive">{formatCurrency(Math.round(peakTaxBenefit))}</p>
-                    </div>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Ends Year</p>
-                      <p className="cf-chart-stat-value">{taxBenefitEndsYear ?? "N/A"}</p>
-                    </div>
-                    <div className="cf-chart-stat">
-                      <p className="cf-chart-stat-label">Lifetime Total</p>
-                      <p className="cf-chart-stat-value cf-positive">{formatCurrency(Math.round(lifetimeTaxBenefit))}</p>
-                    </div>
+                    {[
+                      { label: "Year 1", value: formatCurrency(Math.round(yr(1).taxBenefit)), positive: true },
+                      { label: "Peak Benefit", value: formatCurrency(Math.round(peakTaxBenefit)), positive: true },
+                      { label: "Ends Year", value: taxBenefitEndsYear ? `Year ${taxBenefitEndsYear}` : "N/A" },
+                      { label: "Lifetime Total", value: formatCurrency(Math.round(lifetimeTaxBenefit)), positive: true },
+                    ].map((stat, i) => (
+                      <div key={i} className="border-r border-[var(--cf-border)] p-5 text-center last:border-r-0">
+                        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-[var(--cf-text-dim)]">{stat.label}</p>
+                        <p className={`text-lg font-semibold tabular-nums ${stat.positive ? "text-[#4ade80]" : "text-[var(--cf-text)]"}`}>
+                          {stat.value}
+                        </p>
+                      </div>
+                    ))}
                   </>
                 )}
               </div>
-            </div>
+            </section>
 
             {/* ============================================================ */}
-            {/* CASHFLOW BREAKDOWN CARD                                      */}
+            {/* YEAR SELECTOR - BUTTONS + SLIDER                            */}
+            {/* ============================================================ */}
+            <section className="overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-card)]">
+              <div className="flex items-center justify-between px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-[var(--cf-text-muted)]">Year</span>
+                  <span className="min-w-[2.5rem] rounded-md bg-[var(--cf-accent)]/10 px-2.5 py-1 text-center text-sm font-semibold tabular-nums text-[var(--cf-accent)]">
+                    {selectedYear}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* Quick year buttons */}
+                  <div className="flex items-center gap-1 rounded-lg bg-[var(--cf-surface-subtle)] p-1">
+                    {[1, 2, 5, 10, 20, 30].map(y => (
+                      <button
+                        key={y}
+                        onClick={() => setSelectedYear(y)}
+                        className={`rounded-md px-2.5 py-1 text-xs font-medium tabular-nums transition-all ${
+                          selectedYear === y
+                            ? "bg-[var(--cf-accent)] text-[#0f1115] shadow-sm"
+                            : "text-[var(--cf-text-muted)] hover:bg-[var(--cf-border)] hover:text-[var(--cf-text)]"
+                        }`}
+                      >
+                        {y}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Slider */}
+                  <div className="ml-3 flex items-center gap-3">
+                    <input
+                      type="range"
+                      min="1"
+                      max="30"
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                      className="h-1.5 w-32 cursor-pointer appearance-none rounded-full bg-[var(--cf-input-bg)] accent-[var(--cf-accent)]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ============================================================ */}
+            {/* KPI SUMMARY CARDS - REFINED WITH SUBTLE ACCENTS             */}
             {/* ============================================================ */}
             {sy && (
-            <div className="cf-card">
-              <div className="cf-breakdown-header">
-                <span className="cf-breakdown-title">Cashflow Breakdown</span>
-                <div className="cf-chart-toggles">
-                  {[1, 5, 10, 20, 30].map(y => (
-                    <button
-                      key={y}
-                      className={`cf-chart-toggle ${selectedYear === y ? "active" : ""}`}
-                      onClick={() => setSelectedYear(y)}
-                    >
-                      Year {y}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Summary Strip */}
-              <div className={`cf-summary-strip${isPPOR ? " ppor" : ""}`}>
-                <div className="cf-summary-cell">
-                  <p className="cf-summary-label">After-Tax Cashflow</p>
-                  <p className={`cf-summary-value ${sy.afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
-                    {formatCurrency(Math.round(sy.afterTaxCashflow))}
-                  </p>
-                  <p className="cf-summary-sub">{formatCurrency(Math.round(sy.afterTaxCashflow / 12))}/mo</p>
-                </div>
-                <div className="cf-summary-cell">
-                  <p className="cf-summary-label">Pre-Tax Cashflow</p>
-                  <p className={`cf-summary-value ${sy.preTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
-                    {formatCurrency(Math.round(sy.preTaxCashflow))}
-                  </p>
-                  <p className="cf-summary-sub">{formatCurrency(Math.round(sy.preTaxCashflow / 12))}/mo</p>
-                </div>
-                {isInvestment && (
-                  <>
-                    <div className="cf-summary-cell">
-                      <p className="cf-summary-label">Tax Benefit</p>
-                      <p className="cf-summary-value cf-positive">{formatCurrency(Math.round(sy.taxBenefit))}</p>
-                      <p className="cf-summary-sub">at {(marginalRate * 100).toFixed(0)}% + 2% ML</p>
+            <div className={`grid gap-4 ${isInvestment ? "grid-cols-4" : "grid-cols-2"}`}>
+              {[
+                {
+                  icon: DollarSign,
+                  label: "After-Tax Cashflow",
+                  value: formatCurrency(Math.round(sy.afterTaxCashflow)),
+                  sub: `${formatCurrency(Math.round(sy.afterTaxCashflow / 12))}/mo`,
+                  color: sy.afterTaxCashflow < 0 ? "negative" : "positive",
+                  show: true,
+                },
+                {
+                  icon: TrendingDown,
+                  label: "Pre-Tax Cashflow",
+                  value: formatCurrency(Math.round(sy.preTaxCashflow)),
+                  sub: `${formatCurrency(Math.round(sy.preTaxCashflow / 12))}/mo`,
+                  color: sy.preTaxCashflow < 0 ? "negative" : "positive",
+                  show: true,
+                },
+                {
+                  icon: Receipt,
+                  label: "Tax Benefit",
+                  value: sy.taxBenefit > 0 ? `+${formatCurrency(Math.round(sy.taxBenefit))}` : formatCurrency(Math.round(sy.taxBenefit)),
+                  sub: `at ${(marginalRate * 100).toFixed(0)}% + 2% ML`,
+                  color: "positive",
+                  show: isInvestment,
+                },
+                {
+                  icon: Percent,
+                  label: "Gearing Position",
+                  value: formatCurrency(Math.round(sy.rentalLossOrGain)),
+                  sub: sy.rentalLossOrGain < 0 ? "Negatively Geared" : "Positively Geared",
+                  color: sy.rentalLossOrGain < 0 ? "negative" : "positive",
+                  show: isInvestment,
+                },
+              ].filter(kpi => kpi.show).map((kpi, i) => (
+                <div
+                  key={i}
+                  className={`relative overflow-hidden rounded-xl border bg-[var(--cf-card)] p-5 ${
+                    kpi.color === "positive"
+                      ? "border-[#4ade80]/20"
+                      : "border-[#f87171]/20"
+                  }`}
+                >
+                  {/* Subtle gradient accent at top */}
+                  <div className={`absolute inset-x-0 top-0 h-0.5 ${
+                    kpi.color === "positive"
+                      ? "bg-gradient-to-r from-transparent via-[#4ade80]/50 to-transparent"
+                      : "bg-gradient-to-r from-transparent via-[#f87171]/50 to-transparent"
+                  }`} />
+                  <div className="flex items-start justify-between">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                      kpi.color === "positive" ? "bg-[#4ade80]/10" : "bg-[#f87171]/10"
+                    }`}>
+                      <kpi.icon className={`h-4 w-4 ${kpi.color === "positive" ? "text-[#4ade80]" : "text-[#f87171]"}`} />
                     </div>
-                    <div className="cf-summary-cell">
-                      <p className="cf-summary-label">Gearing Position</p>
-                      <p className={`cf-summary-value ${sy.rentalLossOrGain < 0 ? "cf-negative" : "cf-positive"}`}>
-                        {formatCurrency(Math.round(sy.rentalLossOrGain))}
-                      </p>
-                      <p className="cf-summary-sub">{sy.rentalLossOrGain < 0 ? "negatively geared" : "positively geared"}</p>
-                    </div>
-                  </>
-                )}
-              </div>
+                  </div>
+                  <p className="mt-3 text-[11px] font-medium uppercase tracking-wider text-[var(--cf-text-dim)]">{kpi.label}</p>
+                  <p className={`mt-1.5 text-2xl font-bold tabular-nums ${
+                    kpi.color === "positive" ? "text-[#4ade80]" : "text-[#f87171]"
+                  }`}>
+                    {kpi.value}
+                  </p>
+                  <p className="mt-0.5 text-xs text-[var(--cf-text-dim)]">{kpi.sub}</p>
+                </div>
+              ))}
+            </div>
+            )}
 
-              {/* Column Headers */}
-              <div className="cf-col-headers">
-                <span className="cf-col-header">Monthly</span>
-                <span className="cf-col-header">Annual</span>
-              </div>
-
-              {/* ---- Income Section (investment only) ---- */}
+            {/* ============================================================ */}
+            {/* BREAKDOWN CARDS - EXPANDABLE WITH GENEROUS SPACING          */}
+            {/* ============================================================ */}
+            {sy && (
+            <div className="space-y-4">
+              {/* Income Card (investment only) */}
               {isInvestment && (
-                <div className="cf-detail-section">
+                <div className="overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-card)]">
                   <button
-                    className={`cf-section-trigger${expandedOutputSections.has("income") ? " open" : ""}`}
                     onClick={() => toggleOutputSection("income")}
+                    className="flex w-full items-center justify-between px-8 py-5 transition-colors hover:bg-[var(--cf-surface-subtle)]"
                   >
-                    <div className="cf-section-trigger-left">
-                      <ChevronRight size={16} className="cf-section-chevron" />
-                      <span className="cf-section-name">Income</span>
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#4ade80]/10">
+                        <Home className="h-5 w-5 text-[#4ade80]" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-[var(--cf-text)]">Rental Income</p>
+                        <p className="text-xs text-[var(--cf-text-dim)]">Gross income less vacancy and management</p>
+                      </div>
                     </div>
-                    <div className="cf-section-totals">
-                      <div className="cf-section-total-item">
-                        <p className="cf-section-total-value">{formatCurrency(Math.round(sy.netRentalIncome / 12))}</p>
+                    <div className="flex items-center gap-8">
+                      <div className="text-right">
+                        <p className="text-lg font-semibold tabular-nums text-[var(--cf-text)]">
+                          {formatCurrency(Math.round(sy.netRentalIncome))}
+                        </p>
+                        <p className="text-xs text-[var(--cf-text-dim)]">{formatCurrency(Math.round(sy.netRentalIncome / 12))}/mo</p>
                       </div>
-                      <div className="cf-section-total-item">
-                        <p className="cf-section-total-value">{formatCurrency(Math.round(sy.netRentalIncome))}</p>
-                      </div>
+                      <ChevronDown className={`h-5 w-5 text-[var(--cf-text-dim)] transition-transform ${
+                        expandedOutputSections.has("income") ? "rotate-180" : ""
+                      }`} />
                     </div>
                   </button>
+
                   {expandedOutputSections.has("income") && (
-                    <div className="cf-detail-content">
-                      <div className="cf-detail-row">
-                        <span className="cf-detail-row-label">Gross Rental Income</span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.rentalIncome / 12))}</span>
-                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.rentalIncome))}</span>
-                        </div>
-                      </div>
-                      <div className="cf-detail-row">
-                        <span className="cf-detail-row-label">Less: Vacancy ({vacancyRate}%)</span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val">{formatCurrency(-Math.round(sy.vacancy / 12))}</span>
-                          <span className="cf-detail-row-val">{formatCurrency(-Math.round(sy.vacancy))}</span>
-                        </div>
-                      </div>
-                      {usePropertyManager && (
-                        <div className="cf-detail-row">
-                          <span className="cf-detail-row-label">Less: Management Fee ({managementFee}%)</span>
-                          <div className="cf-detail-row-values">
-                            <span className="cf-detail-row-val">{formatCurrency(-Math.round(sy.managementFee / 12))}</span>
-                            <span className="cf-detail-row-val">{formatCurrency(-Math.round(sy.managementFee))}</span>
+                    <div className="border-t border-[var(--cf-border)] bg-[var(--cf-surface-subtle)] px-8 py-6">
+                      <div className="space-y-4">
+                        {[
+                          { label: "Gross Rental Income", monthly: sy.rentalIncome / 12, annual: sy.rentalIncome },
+                          { label: `Less: Vacancy (${vacancyRate}%)`, monthly: -sy.vacancy / 12, annual: -sy.vacancy },
+                          ...(usePropertyManager ? [{ label: `Less: Management Fee (${managementFee}%)`, monthly: -sy.managementFee / 12, annual: -sy.managementFee }] : []),
+                        ].map((row, i) => (
+                          <div key={i} className="flex items-center justify-between">
+                            <span className="text-sm text-[var(--cf-text-muted)]">{row.label}</span>
+                            <div className="flex gap-12 tabular-nums">
+                              <span className="w-24 text-right text-sm text-[var(--cf-text-muted)]">
+                                {formatCurrency(Math.round(row.monthly))}
+                              </span>
+                              <span className="w-24 text-right text-sm text-[var(--cf-text-muted)]">
+                                {formatCurrency(Math.round(row.annual))}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      <div className="cf-detail-row subtotal">
-                        <span className="cf-detail-row-label">Net Rental Income</span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.netRentalIncome / 12))}</span>
-                          <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.netRentalIncome))}</span>
+                        ))}
+                        <div className="flex items-center justify-between border-t border-[var(--cf-border)] pt-4">
+                          <span className="text-sm font-medium text-[var(--cf-text)]">Net Rental Income</span>
+                          <div className="flex gap-12 tabular-nums">
+                            <span className="w-24 text-right text-sm font-medium text-[var(--cf-text)]">
+                              {formatCurrency(Math.round(sy.netRentalIncome / 12))}
+                            </span>
+                            <span className="w-24 text-right text-sm font-medium text-[var(--cf-text)]">
+                              {formatCurrency(Math.round(sy.netRentalIncome))}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1529,252 +1649,197 @@ export default function CashflowCalculator() {
                 </div>
               )}
 
-              {/* ---- Holding Costs Section ---- */}
-              <div className="cf-detail-section">
+              {/* Holding Costs Card */}
+              <div className="overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-card)]">
                 <button
-                  className={`cf-section-trigger${expandedOutputSections.has("holding") ? " open" : ""}`}
                   onClick={() => toggleOutputSection("holding")}
+                  className="flex w-full items-center justify-between px-8 py-5 transition-colors hover:bg-[var(--cf-surface-subtle)]"
                 >
-                  <div className="cf-section-trigger-left">
-                    <ChevronRight size={16} className="cf-section-chevron" />
-                    <span className="cf-section-name">Holding Costs</span>
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f87171]/10">
+                      <TrendingDown className="h-5 w-5 text-[#f87171]" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-[var(--cf-text)]">Holding Costs</p>
+                      <p className="text-xs text-[var(--cf-text-dim)]">Interest, rates, insurance and maintenance</p>
+                    </div>
                   </div>
-                  <div className="cf-section-totals">
-                    <div className="cf-section-total-item">
-                      <p className="cf-section-total-value">{formatCurrency(Math.round(sy.totalExpenses / 12))}</p>
+                  <div className="flex items-center gap-8">
+                    <div className="text-right">
+                      <p className="text-lg font-semibold tabular-nums text-[var(--cf-text)]">
+                        {formatCurrency(Math.round(sy.totalExpenses))}
+                      </p>
+                      <p className="text-xs text-[var(--cf-text-dim)]">{formatCurrency(Math.round(sy.totalExpenses / 12))}/mo</p>
                     </div>
-                    <div className="cf-section-total-item">
-                      <p className="cf-section-total-value">{formatCurrency(Math.round(sy.totalExpenses))}</p>
-                    </div>
+                    <ChevronDown className={`h-5 w-5 text-[var(--cf-text-dim)] transition-transform ${
+                      expandedOutputSections.has("holding") ? "rotate-180" : ""
+                    }`} />
                   </div>
                 </button>
-                {expandedOutputSections.has("holding") && (
-                  <div className="cf-detail-content">
-                    <div className="cf-detail-row">
-                      <span className="cf-detail-row-label">Interest on Loan</span>
-                      <div className="cf-detail-row-values">
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.interestPortion / 12))}</span>
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.interestPortion))}</span>
-                      </div>
-                    </div>
-                    <div className="cf-detail-row">
-                      <span className="cf-detail-row-label indent">Principal Repaid</span>
-                      <div className="cf-detail-row-values">
-                        <span className="cf-detail-row-val" style={{ fontSize: 12, color: "var(--cf-text-dim)" }}>{formatCurrency(Math.round(sy.principalPortion / 12))}</span>
-                        <span className="cf-detail-row-val" style={{ fontSize: 12, color: "var(--cf-text-dim)" }}>{formatCurrency(Math.round(sy.principalPortion))}</span>
-                      </div>
-                    </div>
-                    <div className="cf-detail-row">
-                      <span className="cf-detail-row-label">Council Rates</span>
-                      <div className="cf-detail-row-values">
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.councilRates / 12))}</span>
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.councilRates))}</span>
-                      </div>
-                    </div>
-                    <div className="cf-detail-row">
-                      <span className="cf-detail-row-label">Water Rates</span>
-                      <div className="cf-detail-row-values">
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.waterRates / 12))}</span>
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.waterRates))}</span>
-                      </div>
-                    </div>
-                    <div className="cf-detail-row">
-                      <span className="cf-detail-row-label">Insurance</span>
-                      <div className="cf-detail-row-values">
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.insurance / 12))}</span>
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.insurance))}</span>
-                      </div>
-                    </div>
-                    <div className="cf-detail-row">
-                      <span className="cf-detail-row-label">Maintenance</span>
-                      <div className="cf-detail-row-values">
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.maintenance / 12))}</span>
-                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.maintenance))}</span>
-                      </div>
-                    </div>
-                    {hasStrata && (
-                      <div className="cf-detail-row">
-                        <span className="cf-detail-row-label">Strata Fees</span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.strataFees / 12))}</span>
-                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.strataFees))}</span>
-                        </div>
-                      </div>
-                    )}
-                    <div className="cf-detail-row subtotal">
-                      <span className="cf-detail-row-label">Total Holding Costs</span>
-                      <div className="cf-detail-row-values">
-                        <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.totalExpenses / 12))}</span>
-                        <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.totalExpenses))}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
 
-              {/* ---- Tax Position Section (investment only) ---- */}
-              {isInvestment && (
-                <div className="cf-detail-section">
-                  <button
-                    className={`cf-section-trigger${expandedOutputSections.has("tax") ? " open" : ""}`}
-                    onClick={() => toggleOutputSection("tax")}
-                  >
-                    <div className="cf-section-trigger-left">
-                      <ChevronRight size={16} className="cf-section-chevron" />
-                      <span className="cf-section-name">Tax Position</span>
-                    </div>
-                    <div className="cf-section-totals">
-                      <div className="cf-section-total-item">
-                        <p className="cf-section-total-label">Deductions</p>
-                        <p className="cf-section-total-value">{formatCurrency(Math.round(sy.totalDeductions))}</p>
-                      </div>
-                      <div className="cf-section-total-item">
-                        <p className="cf-section-total-label">Benefit</p>
-                        <p className="cf-section-total-value cf-positive">+{formatCurrency(Math.round(sy.taxBenefit))}</p>
-                      </div>
-                    </div>
-                  </button>
-                  {expandedOutputSections.has("tax") && (
-                    <div className="cf-detail-content">
-                      <div className="cf-detail-row">
-                        <span className="cf-detail-row-label">Net Rental Income</span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val" />
-                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.netRentalIncome))}</span>
-                        </div>
-                      </div>
-                      <div className="cf-detail-row">
-                        <span className="cf-detail-row-label" style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--cf-text-dim)" }}>
-                          DEDUCTIONS
-                        </span>
-                        <div className="cf-detail-row-values"><span className="cf-detail-row-val" /><span className="cf-detail-row-val" /></div>
-                      </div>
-                      <div className="cf-detail-row">
-                        <span className="cf-detail-row-label indent">Interest</span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val" />
-                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.interestPortion))}</span>
-                        </div>
-                      </div>
-                      {sy.depDiv43 > 0 && (
-                        <div className="cf-detail-row">
-                          <span className="cf-detail-row-label indent">Depreciation: Div 43</span>
-                          <div className="cf-detail-row-values">
-                            <span className="cf-detail-row-val" />
-                            <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.depDiv43))}</span>
+                {expandedOutputSections.has("holding") && (
+                  <div className="border-t border-[var(--cf-border)] bg-[var(--cf-surface-subtle)] px-8 py-6">
+                    <div className="space-y-4">
+                      {[
+                        { label: "Interest on Loan", monthly: sy.interestPortion / 12, annual: sy.interestPortion },
+                        { label: "Council Rates", monthly: sy.councilRates / 12, annual: sy.councilRates },
+                        { label: "Water Rates", monthly: sy.waterRates / 12, annual: sy.waterRates },
+                        { label: "Insurance", monthly: sy.insurance / 12, annual: sy.insurance },
+                        { label: "Maintenance", monthly: sy.maintenance / 12, annual: sy.maintenance },
+                        ...(hasStrata ? [{ label: "Strata Fees", monthly: sy.strataFees / 12, annual: sy.strataFees }] : []),
+                      ].map((row, i) => (
+                        <div key={i} className="flex items-center justify-between">
+                          <span className="text-sm text-[var(--cf-text-muted)]">{row.label}</span>
+                          <div className="flex gap-12 tabular-nums">
+                            <span className="w-24 text-right text-sm text-[var(--cf-text-muted)]">
+                              {formatCurrency(Math.round(row.monthly))}
+                            </span>
+                            <span className="w-24 text-right text-sm text-[var(--cf-text-muted)]">
+                              {formatCurrency(Math.round(row.annual))}
+                            </span>
                           </div>
                         </div>
-                      )}
-                      {sy.depDiv40 > 0 && (
-                        <div className="cf-detail-row">
-                          <span className="cf-detail-row-label indent">Depreciation: Div 40</span>
-                          <div className="cf-detail-row-values">
-                            <span className="cf-detail-row-val" />
-                            <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.depDiv40))}</span>
-                          </div>
-                        </div>
-                      )}
-                      <div className="cf-detail-row">
-                        <span className="cf-detail-row-label indent">Other (rates, insurance, mgmt, maint.)</span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val" />
-                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.otherDeductibles))}</span>
-                        </div>
-                      </div>
-                      <div className="cf-detail-row subtotal">
-                        <span className="cf-detail-row-label">Total Deductions</span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val" />
-                          <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.totalDeductions))}</span>
-                        </div>
-                      </div>
-                      <div className="cf-detail-row">
-                        <span className={`cf-detail-row-label ${sy.rentalLossOrGain < 0 ? "cf-negative" : "cf-positive"}`}>
-                          Rental {sy.rentalLossOrGain < 0 ? "Loss" : "Gain"} ({sy.rentalLossOrGain < 0 ? "negatively geared" : "positively geared"})
-                        </span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val" />
-                          <span className={`cf-detail-row-val ${sy.rentalLossOrGain < 0 ? "cf-negative" : "cf-positive"}`}>
-                            {formatCurrency(Math.round(sy.rentalLossOrGain))}
+                      ))}
+                      <div className="flex items-center justify-between border-t border-[var(--cf-border)] pt-4">
+                        <span className="text-sm font-medium text-[var(--cf-text)]">Total Holding Costs</span>
+                        <div className="flex gap-12 tabular-nums">
+                          <span className="w-24 text-right text-sm font-medium text-[var(--cf-text)]">
+                            {formatCurrency(Math.round(sy.totalExpenses / 12))}
+                          </span>
+                          <span className="w-24 text-right text-sm font-medium text-[var(--cf-text)]">
+                            {formatCurrency(Math.round(sy.totalExpenses))}
                           </span>
                         </div>
                       </div>
-                      <div className="cf-detail-row">
-                        <span className="cf-detail-row-label">Tax Offset at {(marginalRate * 100).toFixed(0)}% + 2% ML</span>
-                        <div className="cf-detail-row-values">
-                          <span className="cf-detail-row-val" />
-                          <span className="cf-detail-row-val cf-positive">+{formatCurrency(Math.round(sy.taxBenefit))}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tax Position Card (investment only) */}
+              {isInvestment && (
+                <div className="overflow-hidden rounded-xl border border-[var(--cf-border)] bg-[var(--cf-card)]">
+                  <button
+                    onClick={() => toggleOutputSection("tax")}
+                    className="flex w-full items-center justify-between px-8 py-5 transition-colors hover:bg-[var(--cf-surface-subtle)]"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--cf-accent)]/10">
+                        <Receipt className="h-5 w-5 text-[var(--cf-accent)]" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-[var(--cf-text)]">Tax Position</p>
+                        <p className="text-xs text-[var(--cf-text-dim)]">Deductions and negative gearing benefit</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <div className="flex gap-8 text-right">
+                        <div>
+                          <p className="text-xs text-[var(--cf-text-dim)]">Deductions</p>
+                          <p className="text-lg font-semibold tabular-nums text-[var(--cf-text)]">
+                            {formatCurrency(Math.round(sy.totalDeductions))}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-[var(--cf-text-dim)]">Benefit</p>
+                          <p className="text-lg font-semibold tabular-nums text-[#4ade80]">
+                            +{formatCurrency(Math.round(sy.taxBenefit))}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDown className={`h-5 w-5 text-[var(--cf-text-dim)] transition-transform ${
+                        expandedOutputSections.has("tax") ? "rotate-180" : ""
+                      }`} />
+                    </div>
+                  </button>
+
+                  {expandedOutputSections.has("tax") && (
+                    <div className="border-t border-[var(--cf-border)] bg-[var(--cf-surface-subtle)] px-8 py-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-[var(--cf-text-muted)]">Net Rental Income</span>
+                          <span className="text-sm tabular-nums text-[var(--cf-text-muted)]">
+                            {formatCurrency(Math.round(sy.netRentalIncome))}
+                          </span>
+                        </div>
+                        <div className="pt-2">
+                          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--cf-text-dim)]">Deductions</p>
+                          {[
+                            { label: "Interest", value: sy.interestPortion },
+                            ...(sy.depDiv43 > 0 ? [{ label: "Depreciation: Div 43", value: sy.depDiv43 }] : []),
+                            ...(sy.depDiv40 > 0 ? [{ label: "Depreciation: Div 40", value: sy.depDiv40 }] : []),
+                            { label: "Other (rates, insurance, etc.)", value: sy.otherDeductibles },
+                          ].map((row, i) => (
+                            <div key={i} className="flex items-center justify-between py-1">
+                              <span className="pl-4 text-sm text-[var(--cf-text-dim)]">{row.label}</span>
+                              <span className="text-sm tabular-nums text-[var(--cf-text-muted)]">
+                                {formatCurrency(Math.round(row.value))}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-between border-t border-[var(--cf-border)] pt-4">
+                          <span className="text-sm font-medium text-[var(--cf-text)]">Total Deductions</span>
+                          <span className="text-sm font-medium tabular-nums text-[var(--cf-text)]">
+                            {formatCurrency(Math.round(sy.totalDeductions))}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${sy.rentalLossOrGain < 0 ? "text-[#f87171]" : "text-[#4ade80]"}`}>
+                            Rental {sy.rentalLossOrGain < 0 ? "Loss" : "Gain"} ({sy.rentalLossOrGain < 0 ? "negatively geared" : "positively geared"})
+                          </span>
+                          <span className={`text-sm font-medium tabular-nums ${sy.rentalLossOrGain < 0 ? "text-[#f87171]" : "text-[#4ade80]"}`}>
+                            {formatCurrency(Math.round(sy.rentalLossOrGain))}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg bg-[#4ade80]/5 p-4">
+                          <span className="text-sm font-medium text-[#4ade80]">Tax Offset at {(marginalRate * 100).toFixed(0)}% + 2% ML</span>
+                          <span className="text-lg font-bold tabular-nums text-[#4ade80]">+{formatCurrency(Math.round(sy.taxBenefit))}</span>
                         </div>
                       </div>
                     </div>
                   )}
                 </div>
               )}
-
-              {/* ---- True Position ---- */}
-              <div className="cf-true-position">
-                <div className="cf-true-position-row">
-                  <span className="cf-true-position-label">Pre-Tax Cashflow</span>
-                  <div className="cf-true-position-values">
-                    <span className="cf-true-position-val">{formatCurrency(Math.round(sy.preTaxCashflow / 12))}</span>
-                    <span className="cf-true-position-val">{formatCurrency(Math.round(sy.preTaxCashflow))}</span>
-                  </div>
-                </div>
-                {isInvestment && (
-                  <div className="cf-true-position-row">
-                    <span className="cf-true-position-label">Tax Benefit</span>
-                    <div className="cf-true-position-values">
-                      <span className="cf-true-position-val cf-positive">+{formatCurrency(Math.round(sy.taxBenefit / 12))}</span>
-                      <span className="cf-true-position-val cf-positive">+{formatCurrency(Math.round(sy.taxBenefit))}</span>
-                    </div>
-                  </div>
-                )}
-                <div className="cf-true-position-row total">
-                  <span className="cf-true-position-label">After-Tax Cashflow</span>
-                  <div className="cf-true-position-values">
-                    <span className={`cf-true-position-val ${sy.afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
-                      {formatCurrency(Math.round(sy.afterTaxCashflow / 12))}
-                    </span>
-                    <span className={`cf-true-position-val ${sy.afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
-                      {formatCurrency(Math.round(sy.afterTaxCashflow))}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* ---- Memo Line ---- */}
-              <div className="cf-memo-row">
-                <span className="cf-memo-label">Principal repaid this year (equity gained, not a cost)</span>
-                <div className="cf-memo-values">
-                  <span className="cf-memo-val">{formatCurrency(Math.round(sy.principalPortion / 12))}</span>
-                  <span className="cf-memo-val">{formatCurrency(Math.round(sy.principalPortion))}</span>
-                </div>
-              </div>
-
-              {/* ---- Wealth Strip ---- */}
-              <div className={`cf-wealth-strip${isPPOR ? " ppor" : ""}`}>
-                <div className="cf-wealth-cell">
-                  <p className="cf-wealth-label">Property Value</p>
-                  <p className="cf-wealth-value">{formatAbbreviated(sy.propertyValue)}</p>
-                </div>
-                <div className="cf-wealth-cell">
-                  <p className="cf-wealth-label">Loan Balance</p>
-                  <p className="cf-wealth-value">{formatAbbreviated(sy.loanBalance)}</p>
-                </div>
-                <div className="cf-wealth-cell">
-                  <p className="cf-wealth-label">Equity</p>
-                  <p className="cf-wealth-value">{formatAbbreviated(sy.equity)}</p>
-                </div>
-                {isInvestment && (
-                  <div className="cf-wealth-cell">
-                    <p className="cf-wealth-label">Cash-on-Cash</p>
-                    <p className={`cf-wealth-value ${cashOnCash < 0 ? "cf-negative" : "cf-positive"}`}>
-                      {cashOnCash.toFixed(1)}%
-                    </p>
-                  </div>
-                )}
-              </div>
             </div>
+            )}
+
+            {/* ============================================================ */}
+            {/* WEALTH POSITION - ENHANCED BOTTOM STRIP                     */}
+            {/* ============================================================ */}
+            {sy && (
+            <section className="relative overflow-hidden rounded-xl border border-[var(--cf-accent)]/20 bg-gradient-to-r from-[var(--cf-card)] via-[var(--cf-accent)]/[0.03] to-[var(--cf-card)]">
+              {/* Subtle accent line at top */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--cf-accent)]/40 to-transparent" />
+
+              <div className="px-6 py-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <Building className="h-4 w-4 text-[var(--cf-accent)]" />
+                  <span className="text-xs font-medium uppercase tracking-wider text-[var(--cf-accent)]">
+                    Wealth Position at Year {selectedYear}
+                  </span>
+                </div>
+                <div className={`grid ${isInvestment ? "grid-cols-4" : "grid-cols-3"} gap-4`}>
+                  {[
+                    { label: "Property Value", value: formatAbbreviated(sy.propertyValue), subValue: formatCurrency(Math.round(sy.propertyValue)), show: true },
+                    { label: "Loan Balance", value: formatAbbreviated(sy.loanBalance), subValue: formatCurrency(Math.round(sy.loanBalance)), show: true },
+                    { label: "Net Equity", value: formatAbbreviated(sy.equity), subValue: `${((sy.equity / sy.propertyValue) * 100).toFixed(0)}% LVR`, color: "accent", show: true },
+                    { label: "Cash-on-Cash", value: `${cashOnCash.toFixed(1)}%`, subValue: cashOnCash >= 0 ? "Positive yield" : "Negative yield", color: cashOnCash < 0 ? "negative" : "positive", show: isInvestment },
+                  ].filter(item => item.show).map((item, i) => (
+                    <div key={i} className="rounded-lg bg-[var(--cf-surface-subtle)]/50 p-4 text-center">
+                      <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-[var(--cf-text-dim)]">{item.label}</p>
+                      <p className={`text-lg font-bold tabular-nums ${
+                        item.color === "positive" ? "text-[#4ade80]" :
+                        item.color === "negative" ? "text-[#f87171]" :
+                        item.color === "accent" ? "text-[var(--cf-accent)]" :
+                        "text-[var(--cf-text)]"
+                      }`}>{item.value}</p>
+                      <p className="mt-0.5 text-[10px] text-[var(--cf-text-dim)]">{item.subValue}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
             )}
           </div>
           );
