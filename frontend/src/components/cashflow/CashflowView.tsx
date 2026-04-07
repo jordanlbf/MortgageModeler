@@ -455,12 +455,14 @@ export default function CashflowCalculator() {
             >
               <span>{propertyUseComplete ? (propertyUse === "investment" ? "Investment" : "PPOR") : "Property Use"}</span>
               {propertyUseComplete && (
-                <button
+                <span
+                  role="button"
+                  tabIndex={0}
                   className="cf-edit-link"
                   onClick={(e) => { e.stopPropagation(); resetSection("propertyUse"); }}
                 >
                   Edit
-                </button>
+                </span>
               )}
               {!propertyUseComplete && (
                 expandedSections.has("propertyUse") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
@@ -514,12 +516,14 @@ export default function CashflowCalculator() {
               >
                 <span>{purchaseModeComplete ? (purchaseMode === "new" ? "New Purchase" : "Existing Property") : "Purchase Mode"}</span>
                 {purchaseModeComplete && (
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     className="cf-edit-link"
                     onClick={(e) => { e.stopPropagation(); resetSection("purchaseMode"); }}
                   >
                     Edit
-                  </button>
+                  </span>
                 )}
                 {!purchaseModeComplete && (
                   expandedSections.has("purchaseMode") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
@@ -572,12 +576,14 @@ export default function CashflowCalculator() {
               >
                 <span>Property Details</span>
                 {propertyComplete && (
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     className="cf-edit-link"
                     onClick={(e) => { e.stopPropagation(); resetSection("property"); }}
                   >
                     Edit
-                  </button>
+                  </span>
                 )}
                 {!propertyComplete && (
                   expandedSections.has("property") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
@@ -680,12 +686,14 @@ export default function CashflowCalculator() {
               >
                 <span>Loan Details</span>
                 {loanComplete && (
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     className="cf-edit-link"
                     onClick={(e) => { e.stopPropagation(); resetSection("loan"); }}
                   >
                     Edit
-                  </button>
+                  </span>
                 )}
                 {!loanComplete && (
                   expandedSections.has("loan") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
@@ -807,12 +815,14 @@ export default function CashflowCalculator() {
               >
                 <span>Ongoing Costs</span>
                 {costsComplete && (
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     className="cf-edit-link"
                     onClick={(e) => { e.stopPropagation(); resetSection("costs"); }}
                   >
                     Edit
-                  </button>
+                  </span>
                 )}
                 {!costsComplete && (
                   expandedSections.has("costs") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
@@ -917,12 +927,14 @@ export default function CashflowCalculator() {
               >
                 <span>Rental Income</span>
                 {rentalComplete && (
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     className="cf-edit-link"
                     onClick={(e) => { e.stopPropagation(); resetSection("rental"); }}
                   >
                     Edit
-                  </button>
+                  </span>
                 )}
                 {!rentalComplete && (
                   expandedSections.has("rental") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
@@ -1003,12 +1015,14 @@ export default function CashflowCalculator() {
               >
                 <span>Tax Profile</span>
                 {taxComplete && (
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     className="cf-edit-link"
                     onClick={(e) => { e.stopPropagation(); resetSection("tax"); }}
                   >
                     Edit
-                  </button>
+                  </span>
                 )}
                 {!taxComplete && (
                   expandedSections.has("tax") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
