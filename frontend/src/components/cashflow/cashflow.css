@@ -19,6 +19,8 @@
   --cf-input-bg: var(--color-control, rgba(24,24,27,0.60));
   --cf-hover: var(--color-border-hover, rgba(113,113,122,0.15));
   --cf-surface-subtle: rgba(255, 255, 255, 0.02);
+  --cf-negative: #f87171;
+  --cf-positive: #4ade80;
   --cf-sidebar-width: 380px;
 }
 
@@ -58,7 +60,7 @@
 .cf-main {
   flex: 1;
   min-width: 0;
-  padding: 24px 32px;
+  padding: 24px 40px;
   overflow-y: auto;
 }
 
@@ -323,7 +325,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 900px;
 }
 
 /* Cards */
@@ -363,297 +364,109 @@
 }
 
 /* ============================================================================
-   MILESTONES CARD
+   HERO CHART CARD
    ============================================================================ */
 
-.cf-milestones {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  padding: 24px 20px;
-}
-
-.cf-milestone {
-  text-align: center;
-}
-
-.cf-milestone-year {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-dim);
-  margin-bottom: 12px;
-}
-
-.cf-milestone-values {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cf-milestone-value {
-  font-size: 24px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-white);
-}
-
-.cf-milestone-label {
-  font-size: 9px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--cf-text-dim);
-}
-
-.cf-milestone-equity {
-  padding-top: 8px;
-  border-top: 1px solid var(--cf-border);
-}
-
-.cf-milestone-equity-value {
-  font-size: 16px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-text-muted);
-}
+.cf-hero-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--cf-border); }
+.cf-hero-header-left { display: flex; align-items: center; gap: 10px; }
+.cf-hero-title { font-size: 13px; font-weight: 500; color: var(--cf-text-muted); }
+.cf-tag { display: inline-flex; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.cf-tag-investment { background: rgba(45,212,191,0.12); color: var(--cf-accent); }
+.cf-tag-ppor { background: rgba(56,189,248,0.12); color: #38bdf8; }
+.cf-chart-toggles { display: flex; gap: 4px; }
+.cf-chart-toggle { padding: 5px 10px; background: var(--cf-input-bg); border: none; border-radius: 4px; color: var(--cf-text-dim); font-family: inherit; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.cf-chart-toggle:hover { color: var(--cf-text-muted); background: var(--cf-hover); }
+.cf-chart-toggle.active { background: var(--cf-accent); color: var(--cf-accent-contrast); }
+.cf-chart-area { padding: 24px 20px 16px; position: relative; }
+.cf-chart-container { position: relative; height: 220px; width: 100%; }
+.cf-chart-svg { width: 100%; height: 100%; }
+.cf-chart-annotation { position: absolute; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: var(--cf-accent); }
+.cf-chart-annotation-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cf-accent); }
+.cf-chart-footer { display: flex; border-top: 1px solid var(--cf-border); }
+.cf-chart-stat { flex: 1; padding: 16px 20px; border-right: 1px solid var(--cf-border); }
+.cf-chart-stat:last-child { border-right: none; }
+.cf-chart-stat-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cf-text-dim); margin-bottom: 6px; }
+.cf-chart-stat-value { font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--cf-white); }
+.cf-chart-stat-sub { font-size: 11px; color: var(--cf-text-dim); margin-top: 2px; }
 
 /* ============================================================================
-   CASHFLOW SECTION
+   BREAKDOWN CARD
    ============================================================================ */
 
-.cf-year-selector {
-  display: flex;
-  gap: 4px;
-}
+.cf-breakdown-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--cf-border); }
+.cf-breakdown-title { font-size: 13px; font-weight: 500; color: var(--cf-text-muted); }
 
-.cf-year-button {
-  padding: 6px 12px;
-  background: var(--cf-input-bg);
-  border: none;
-  border-radius: 4px;
-  color: var(--cf-text-muted);
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
+/* Summary Strip */
+.cf-summary-strip { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--cf-border); background: var(--cf-surface-subtle); }
+.cf-summary-strip.ppor { grid-template-columns: repeat(2, 1fr); }
+.cf-summary-cell { padding: 20px; text-align: center; border-right: 1px solid var(--cf-border); }
+.cf-summary-cell:last-child { border-right: none; }
+.cf-summary-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cf-text-dim); margin-bottom: 8px; }
+.cf-summary-value { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; color: var(--cf-white); }
+.cf-summary-sub { font-size: 11px; color: var(--cf-text-dim); margin-top: 4px; }
 
-.cf-year-button:hover {
-  background: var(--cf-hover);
-}
+/* Column Headers */
+.cf-col-headers { display: flex; align-items: center; justify-content: flex-end; padding: 12px 20px 8px 44px; gap: 48px; }
+.cf-col-header { width: 120px; text-align: right; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cf-text-dim); }
 
-.cf-year-button.active {
-  background: var(--cf-accent);
-  color: var(--cf-accent-contrast);
-}
+/* Expandable Detail Sections */
+.cf-detail-section { border-bottom: 1px solid var(--cf-border); }
+.cf-detail-section:last-of-type { border-bottom: none; }
+.cf-section-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 14px 20px; background: transparent; border: none; cursor: pointer; color: inherit; font-family: inherit; transition: background 0.1s; }
+.cf-section-trigger:hover { background: var(--cf-surface-subtle); }
+.cf-section-trigger-left { display: flex; align-items: center; gap: 8px; }
+.cf-section-chevron { width: 16px; height: 16px; color: var(--cf-text-dim); transition: transform 0.2s; }
+.cf-section-trigger.open .cf-section-chevron { transform: rotate(90deg); }
+.cf-section-name { font-size: 13px; font-weight: 500; color: var(--cf-text-muted); }
+.cf-section-totals { display: flex; gap: 48px; font-variant-numeric: tabular-nums; }
+.cf-section-total-item { text-align: right; width: 120px; }
+.cf-section-total-label { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cf-text-dim); margin-bottom: 2px; }
+.cf-section-total-value { font-size: 14px; font-weight: 500; color: var(--cf-white); }
 
-/* Focal KPI */
-.cf-focal {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 24px 20px;
-  background: var(--cf-surface-subtle);
-  border-bottom: 1px solid var(--cf-border);
-}
+/* Detail Rows */
+.cf-detail-content { padding: 0 20px 16px 44px; }
+.cf-detail-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.cf-detail-row:last-child { border-bottom: none; }
+.cf-detail-row-label { font-size: 13px; color: var(--cf-text-muted); }
+.cf-detail-row-label.indent { padding-left: 16px; color: var(--cf-text-dim); font-size: 12px; }
+.cf-detail-row-values { display: flex; gap: 48px; font-variant-numeric: tabular-nums; }
+.cf-detail-row-val { width: 120px; text-align: right; font-size: 13px; color: var(--cf-text-muted); }
+.cf-detail-row-val.primary { color: var(--cf-white); font-weight: 500; }
+.cf-detail-row.subtotal { padding: 10px 0; border-bottom: 1px solid var(--cf-border); margin-top: 4px; }
+.cf-detail-row.subtotal .cf-detail-row-label { font-weight: 500; color: var(--cf-white); }
+.cf-detail-row.subtotal .cf-detail-row-val { font-weight: 500; color: var(--cf-white); }
 
-.cf-focal-main {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+/* True Position */
+.cf-true-position { padding: 16px 20px; background: var(--cf-surface-subtle); }
+.cf-true-position-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+.cf-true-position-label { font-size: 13px; color: var(--cf-text-muted); }
+.cf-true-position-values { display: flex; gap: 48px; font-variant-numeric: tabular-nums; }
+.cf-true-position-val { width: 120px; text-align: right; font-size: 13px; color: var(--cf-text-muted); }
+.cf-true-position-row.total { padding: 12px 0 4px; margin-top: 8px; border-top: 1px solid var(--cf-border); }
+.cf-true-position-row.total .cf-true-position-label { font-size: 14px; font-weight: 600; color: var(--cf-white); }
+.cf-true-position-row.total .cf-true-position-val { font-size: 14px; font-weight: 600; }
 
-.cf-focal-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-dim);
-}
+/* Memo */
+.cf-memo-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; border-top: 1px solid var(--cf-border); }
+.cf-memo-label { font-size: 11px; color: var(--cf-text-dim); font-style: italic; }
+.cf-memo-values { display: flex; gap: 48px; font-variant-numeric: tabular-nums; }
+.cf-memo-val { width: 120px; text-align: right; font-size: 12px; color: var(--cf-text-dim); }
 
-.cf-focal-value {
-  font-size: 42px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  color: var(--cf-white);
-  line-height: 1;
-  margin: 8px 0;
-}
+/* Wealth Strip */
+.cf-wealth-strip { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--cf-border); }
+.cf-wealth-strip.ppor { grid-template-columns: repeat(3, 1fr); }
+.cf-wealth-cell { padding: 16px 20px; border-right: 1px solid var(--cf-border); text-align: center; }
+.cf-wealth-cell:last-child { border-right: none; }
+.cf-wealth-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--cf-text-dim); margin-bottom: 6px; }
+.cf-wealth-value { font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--cf-white); }
 
-.cf-focal-note {
-  font-size: 13px;
-  color: var(--cf-text-dim);
-}
+/* Color utilities */
+.cf-negative { color: var(--cf-negative) !important; }
+.cf-positive { color: var(--cf-positive) !important; }
 
-.cf-focal-total {
-  text-align: right;
-}
-
-.cf-focal-total-value {
-  font-size: 22px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-white);
-  margin-top: 4px;
-}
-
-/* ============================================================================
-   TABLE
-   ============================================================================ */
-
-.cf-table-container {
-  padding: 16px 20px;
-}
-
-.cf-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.cf-table th {
-  padding: 12px 0;
-  font-weight: 500;
-  color: var(--cf-text-dim);
-  text-align: left;
-  border-bottom: 1px solid var(--cf-border);
-}
-
-.cf-table th:not(:first-child) {
-  text-align: right;
-}
-
-.cf-table td {
-  padding: 10px 0;
-  color: var(--cf-text);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.cf-table td:not(:first-child) {
-  text-align: right;
-}
-
-.cf-tabular {
-  font-variant-numeric: tabular-nums;
-}
-
-.cf-bold {
-  font-weight: 600;
-}
-
-.cf-muted {
-  color: var(--cf-text-muted) !important;
-}
-
-.cf-muted td {
-  color: var(--cf-text-muted);
-}
-
-.cf-indent td:first-child {
-  padding-left: 16px;
-}
-
-/* Section Label Row */
-.cf-table-section td {
-  padding: 16px 0 8px 0;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--cf-text-dim);
-  border-bottom: none;
-}
-
-/* Subtotal Row */
-.cf-table-subtotal {
-  background: var(--cf-surface-subtle);
-}
-
-.cf-table-subtotal td {
-  font-weight: 500;
-  border-bottom: 1px solid var(--cf-border);
-}
-
-/* Highlight Row */
-.cf-table-highlight td {
-  font-weight: 500;
-  border-bottom: 1px solid var(--cf-border);
-}
-
-/* Total Row */
-.cf-table-total {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.cf-table-total td {
-  padding: 16px 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--cf-white);
-  border-bottom: none;
-}
-
-/* ============================================================================
-   STATS ROW
-   ============================================================================ */
-
-.cf-stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.cf-stat-card {
-  background: var(--cf-card);
-  border: 1px solid var(--cf-border);
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.cf-stat-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-dim);
-  margin-bottom: 6px;
-}
-
-.cf-stat-value {
-  font-size: 18px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-white);
-}
-
-/* ============================================================================
-   CGT GRID
-   ============================================================================ */
-
-.cf-cgt-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
-  padding: 20px;
-}
-
-.cf-cgt-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-dim);
-  margin-bottom: 6px;
-}
-
-.cf-cgt-value {
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-text);
-}
+/* Keep some general utilities */
+.cf-tabular { font-variant-numeric: tabular-nums; }
+.cf-bold { font-weight: 600; }
 
 /* ============================================================================
    RESPONSIVE
@@ -678,42 +491,64 @@
     padding: 20px 16px;
   }
 
-  .cf-milestones {
+  .cf-hero-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .cf-chart-toggles {
+    flex-wrap: wrap;
+  }
+
+  .cf-summary-strip {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .cf-stats-row {
+  .cf-wealth-strip {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .cf-cgt-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .cf-chart-footer {
+    flex-wrap: wrap;
+  }
+
+  .cf-chart-stat {
+    flex: 1 1 45%;
   }
 }
 
 @media (max-width: 640px) {
-  .cf-milestones {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-
-  .cf-milestone-value {
-    font-size: 20px;
-  }
-
-  .cf-focal-value {
-    font-size: 32px;
-  }
-
-  .cf-focal-total-value {
-    font-size: 18px;
-  }
-
-  .cf-stats-row {
+  .cf-summary-strip,
+  .cf-summary-strip.ppor {
     grid-template-columns: 1fr;
   }
 
-  .cf-cgt-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .cf-summary-value {
+    font-size: 20px;
+  }
+
+  .cf-wealth-strip,
+  .cf-wealth-strip.ppor {
+    grid-template-columns: 1fr;
+  }
+
+  .cf-chart-footer {
+    flex-direction: column;
+  }
+
+  .cf-chart-stat {
+    border-right: none;
+    border-bottom: 1px solid var(--cf-border);
+  }
+
+  .cf-chart-stat:last-child {
+    border-bottom: none;
+  }
+
+  .cf-breakdown-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 }

@@ -13,7 +13,7 @@ import "./cashflow.css";
 type PropertyUse = "investment" | "ppor";
 type PurchaseMode = "new" | "existing";
 type LoanType = "principal-interest" | "interest-only";
-type CashflowView = 1 | 2 | 3 | 5 | 10;
+type ChartMetric = "cashflow" | "equity" | "gearing" | "netIncome" | "taxBenefit";
 
 interface YearData {
   year: number;
@@ -34,11 +34,13 @@ interface YearData {
   strataFees: number;
   totalExpenses: number;
   preTaxCashflow: number;
-  interestDeduction: number;
-  depreciationDeduction: number;
-  otherDeductions: number;
-  totalTaxBenefit: number;
-  netCashflow: number;
+  depDiv43: number;
+  depDiv40: number;
+  otherDeductibles: number;
+  totalDeductions: number;
+  rentalLossOrGain: number;
+  taxBenefit: number;
+  afterTaxCashflow: number;
 }
 
 // ============================================================================
@@ -60,6 +62,14 @@ function formatAbbreviated(value: number): string {
     return `$${(value / 1000000).toFixed(2)}m`;
   }
   return `$${Math.round(value / 1000).toLocaleString()}k`;
+}
+
+function formatChartLabel(value: number): string {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "\u2212" : "";
+  if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}m`;
+  if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(1)}k`;
+  return `${sign}$${Math.round(abs)}`;
 }
 
 function calculateMonthlyRepayment(principal: number, annualRate: number, termYears: number): number {
@@ -189,7 +199,9 @@ export default function CashflowCalculator() {
   const [capitalGrowth, setCapitalGrowth] = useState("3.5");
 
   // Output view state
-  const [cashflowView, setCashflowView] = useState<CashflowView>(1);
+  const [chartMetric, setChartMetric] = useState<ChartMetric>("cashflow");
+  const [selectedYear, setSelectedYear] = useState(1);
+  const [expandedOutputSections, setExpandedOutputSections] = useState<Set<string>>(new Set(["income", "holding", "tax"]));
 
   // Collapsible sections
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["propertyUse"]));
@@ -221,7 +233,7 @@ export default function CashflowCalculator() {
     const term = parseInt(loanTerm) || 30;
     const ioPeriodYears = loanType === "interest-only" ? parseInt(ioPeriod) || 5 : 0;
     const growth = parseFloat(capitalGrowth) || 3.5;
-    const taxRate = getMarginalTaxRate(parseCurrency(taxableIncome));
+    const taxRate = getMarginalTaxRate(parseCurrency(taxableIncome)) + 0.02; // include Medicare Levy
     const annualRent = parseCurrency(weeklyRent) * 52;
     const vacRate = parseFloat(vacancyRate) / 100 || 0.038;
     const mgmtFee = usePropertyManager ? parseFloat(managementFee) / 100 || 0.075 : 0;
@@ -274,19 +286,20 @@ export default function CashflowCalculator() {
 
       // Property costs
       const annualMaintenance = propValue * maintenanceRate;
-      const totalExpenses = annualRepayment + annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata;
+      // Holding costs = interest + running costs (excludes principal)
+      const totalExpenses = interestPaid + annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata;
 
       // Pre-tax cashflow
       const preTax = netRental - totalExpenses;
 
-      // Tax deductions (investment only)
-      const interestDeduct = isInvestment ? interestPaid * taxRate : 0;
-      const deprecDeduct = isInvestment ? annualDepreciation * taxRate : 0;
-      const otherDeduct = isInvestment ? (annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata) * taxRate * 0.3 : 0; // Simplified
-      const totalTaxBenefit = interestDeduct + deprecDeduct + otherDeduct;
-
-      // Net cashflow
-      const netCash = preTax + totalTaxBenefit;
+      // Total deductible expenses (investment only)
+      const depDiv43 = isInvestment ? annualDepreciation * 0.5 : 0;
+      const depDiv40 = isInvestment ? annualDepreciation * 0.5 : 0;
+      const otherDeductibles = isInvestment ? (annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata + mgmt) : 0;
+      const totalDeductions = isInvestment ? (interestPaid + depDiv43 + depDiv40 + otherDeductibles) : 0;
+      const rentalLossOrGain = isInvestment ? netRental - totalDeductions : 0;
+      const taxBenefitAmt = (isInvestment && rentalLossOrGain < 0) ? Math.abs(rentalLossOrGain) * taxRate : 0;
+      const afterTaxCashflow = preTax + taxBenefitAmt;
 
       data.push({
         year,
@@ -307,11 +320,13 @@ export default function CashflowCalculator() {
         strataFees: annualStrata,
         totalExpenses,
         preTaxCashflow: preTax,
-        interestDeduction: interestDeduct,
-        depreciationDeduction: deprecDeduct,
-        otherDeductions: otherDeduct,
-        totalTaxBenefit,
-        netCashflow: netCash,
+        depDiv43,
+        depDiv40,
+        otherDeductibles,
+        totalDeductions,
+        rentalLossOrGain,
+        taxBenefit: taxBenefitAmt,
+        afterTaxCashflow,
       });
     }
 
@@ -323,52 +338,38 @@ export default function CashflowCalculator() {
     hasOffset, offsetBalance, extraRepayments, isInvestment
   ]);
 
-  // Aggregate data for selected cashflow view period
-  const aggregatedData = useMemo(() => {
-    if (yearData.length === 0) return null;
+  // Effective chart metric (PPOR forces equity)
+  const effectiveMetric = isPPOR ? "equity" : chartMetric;
 
-    const yearsToSum = Math.min(cashflowView, yearData.length);
-    const relevantYears = yearData.slice(0, yearsToSum);
-
-    return {
-      totalRentalIncome: relevantYears.reduce((sum, y) => sum + y.rentalIncome, 0),
-      totalVacancy: relevantYears.reduce((sum, y) => sum + y.vacancy, 0),
-      totalManagementFee: relevantYears.reduce((sum, y) => sum + y.managementFee, 0),
-      totalNetRentalIncome: relevantYears.reduce((sum, y) => sum + y.netRentalIncome, 0),
-      totalLoanRepayment: relevantYears.reduce((sum, y) => sum + y.loanRepayment, 0),
-      totalInterest: relevantYears.reduce((sum, y) => sum + y.interestPortion, 0),
-      totalPrincipal: relevantYears.reduce((sum, y) => sum + y.principalPortion, 0),
-      totalCouncilRates: relevantYears.reduce((sum, y) => sum + y.councilRates, 0),
-      totalWaterRates: relevantYears.reduce((sum, y) => sum + y.waterRates, 0),
-      totalInsurance: relevantYears.reduce((sum, y) => sum + y.insurance, 0),
-      totalMaintenance: relevantYears.reduce((sum, y) => sum + y.maintenance, 0),
-      totalStrataFees: relevantYears.reduce((sum, y) => sum + y.strataFees, 0),
-      totalExpenses: relevantYears.reduce((sum, y) => sum + y.totalExpenses, 0),
-      totalPreTaxCashflow: relevantYears.reduce((sum, y) => sum + y.preTaxCashflow, 0),
-      totalInterestDeduction: relevantYears.reduce((sum, y) => sum + y.interestDeduction, 0),
-      totalDepreciationDeduction: relevantYears.reduce((sum, y) => sum + y.depreciationDeduction, 0),
-      totalOtherDeductions: relevantYears.reduce((sum, y) => sum + y.otherDeductions, 0),
-      totalTaxBenefit: relevantYears.reduce((sum, y) => sum + y.totalTaxBenefit, 0),
-      totalNetCashflow: relevantYears.reduce((sum, y) => sum + y.netCashflow, 0),
-      years: yearsToSum,
-    };
-  }, [yearData, cashflowView]);
-
-  // Milestone data for property value & equity card
-  const milestones = useMemo(() => {
-    return [5, 10, 20, 30].map(year => {
-      const data = yearData[year - 1];
-      return data ? {
-        year,
-        propertyValue: data.propertyValue,
-        equity: data.equity,
-      } : {
-        year,
-        propertyValue: propertyValue * Math.pow(1.035, year),
-        equity: propertyValue * Math.pow(1.035, year) - Math.max(0, loanAmount - year * 12000),
-      };
+  // Chart data for single-line metrics
+  const chartData = useMemo(() => {
+    if (yearData.length === 0) return [];
+    return yearData.map(y => {
+      switch (effectiveMetric) {
+        case "cashflow": return { year: y.year, value: y.afterTaxCashflow / 12 };
+        case "equity": return { year: y.year, value: y.equity };
+        case "netIncome": return { year: y.year, value: y.netRentalIncome / 12 };
+        case "taxBenefit": return { year: y.year, value: y.taxBenefit };
+        default: return { year: y.year, value: 0 };
+      }
     });
-  }, [yearData, propertyValue, loanAmount]);
+  }, [yearData, effectiveMetric]);
+
+  // Gearing data (two lines)
+  const gearingData = useMemo(() => {
+    if (yearData.length === 0) return { income: [], deductions: [] };
+    return {
+      income: yearData.map(y => ({ year: y.year, value: y.netRentalIncome })),
+      deductions: yearData.map(y => ({ year: y.year, value: y.totalDeductions })),
+    };
+  }, [yearData]);
+
+  // Selected year data for breakdown
+  const selectedYearData = yearData[selectedYear - 1] || null;
+
+  // Marginal rate for display
+  const marginalRate = getMarginalTaxRate(parseCurrency(taxableIncome));
+  const taxRate = marginalRate + 0.02;
 
   // Toggle section expansion
   const toggleSection = (section: string) => {
@@ -379,6 +380,15 @@ export default function CashflowCalculator() {
       } else {
         next.add(section);
       }
+      return next;
+    });
+  };
+
+  const toggleOutputSection = (section: string) => {
+    setExpandedOutputSections(prev => {
+      const next = new Set(prev);
+      if (next.has(section)) next.delete(section);
+      else next.add(section);
       return next;
     });
   };
@@ -1095,290 +1105,680 @@ export default function CashflowCalculator() {
         )}
 
         {/* Complete - Show outputs */}
-        {allComplete && aggregatedData && (
+        {allComplete && yearData.length > 0 && (() => {
+          // SVG chart dimensions
+          const svgW = 860, svgH = 220;
+          const mL = 45, mR = 10, mT = 10, mB = 25;
+          const plotW = svgW - mL - mR;
+          const plotH = svgH - mT - mB;
+          const mapX = (year: number) => mL + (year - 1) / 29 * plotW;
+
+          // Chart rendering helpers
+          const isGearing = effectiveMetric === "gearing";
+          const activeData = isGearing ? [] : chartData;
+          const allVals = isGearing
+            ? [...gearingData.income.map(d => d.value), ...gearingData.deductions.map(d => d.value)]
+            : activeData.map(d => d.value);
+          const dataMin = allVals.length > 0 ? Math.min(...allVals) : 0;
+          const dataMax = allVals.length > 0 ? Math.max(...allVals) : 1;
+          const range = dataMax - dataMin || 1;
+          const pad = range * 0.1;
+          const yMin = dataMin - pad;
+          const yMax = dataMax + pad;
+          const mapY = (v: number) => mT + (1 - (v - yMin) / (yMax - yMin)) * plotH;
+
+          // Polyline points
+          const linePoints = activeData.map(d => `${mapX(d.year)},${mapY(d.value)}`).join(" ");
+
+          // Area fill path (line → zero → close)
+          const zeroY = mapY(0);
+          const areaPath = activeData.length > 0
+            ? `M ${mapX(1)},${mapY(activeData[0].value)} ${activeData.slice(1).map(d => `L ${mapX(d.year)},${mapY(d.value)}`).join(" ")} L ${mapX(30)},${zeroY} L ${mapX(1)},${zeroY} Z`
+            : "";
+
+          // Gearing polylines
+          const incomePoints = gearingData.income.map(d => `${mapX(d.year)},${mapY(d.value)}`).join(" ");
+          const deductionPoints = gearingData.deductions.map(d => `${mapX(d.year)},${mapY(d.value)}`).join(" ");
+
+          // Zero crossover detection
+          let crossoverYear: number | null = null;
+          let crossoverLabel = "";
+          if (isGearing) {
+            for (let i = 1; i < gearingData.income.length; i++) {
+              const prevDiff = gearingData.income[i - 1].value - gearingData.deductions[i - 1].value;
+              const currDiff = gearingData.income[i].value - gearingData.deductions[i].value;
+              if (prevDiff < 0 && currDiff >= 0) {
+                const ratio = Math.abs(prevDiff) / (Math.abs(prevDiff) + currDiff);
+                crossoverYear = gearingData.income[i - 1].year + ratio;
+                crossoverLabel = `Positively geared: Year ${Math.ceil(crossoverYear)}`;
+                break;
+              }
+            }
+          } else if (effectiveMetric === "cashflow") {
+            for (let i = 1; i < activeData.length; i++) {
+              if (activeData[i - 1].value < 0 && activeData[i].value >= 0) {
+                const ratio = Math.abs(activeData[i - 1].value) / (Math.abs(activeData[i - 1].value) + activeData[i].value);
+                crossoverYear = activeData[i - 1].year + ratio;
+                crossoverLabel = `Cashflow positive: Year ${Math.ceil(crossoverYear)}`;
+                break;
+              }
+            }
+          }
+
+          // Y-axis ticks
+          const yTicks: number[] = [yMin, yMax];
+          if (yMin < 0 && yMax > 0) yTicks.push(0);
+          yTicks.sort((a, b) => a - b);
+
+          // Grid line at zero
+          const showZeroLine = yMin < 0 && yMax > 0;
+
+          // X-axis label years
+          const xLabels = [1, 5, 10, 15, 20, 25, 30];
+
+          // Footer stat helper
+          const yr = (n: number) => yearData[Math.min(n - 1, yearData.length - 1)];
+          const cashflowCrossoverYear = yearData.findIndex(y => y.afterTaxCashflow > 0) + 1 || null;
+          const cumulativeOutlay = yearData.reduce((sum, y) => sum + (y.afterTaxCashflow < 0 ? y.afterTaxCashflow : 0), 0);
+          const peakDeductions = Math.max(...yearData.map(y => y.totalDeductions));
+          const peakTaxBenefit = Math.max(...yearData.map(y => y.taxBenefit));
+          const taxBenefitEndsYear = (() => { for (let i = yearData.length - 1; i >= 0; i--) { if (yearData[i].taxBenefit > 0) return i + 1; } return null; })();
+          const lifetimeTaxBenefit = yearData.reduce((sum, y) => sum + y.taxBenefit, 0);
+
+          // Breakdown selected year
+          const sy = selectedYearData;
+
+          // Cash invested for cash-on-cash
+          const totalCashInvested = isNewPurchase
+            ? parseCurrency(depositAmount) + calculateStampDuty(parseCurrency(purchasePrice), isInvestment) + 5000
+            : (sy ? sy.equity : 0);
+          const cashOnCash = sy && totalCashInvested > 0 ? (sy.afterTaxCashflow / totalCashInvested * 100) : 0;
+
+          // Chart metric labels
+          const metricLabels: Record<ChartMetric, string> = { cashflow: "Cashflow", equity: "Equity", gearing: "Gearing", netIncome: "Net Income", taxBenefit: "Tax Benefit" };
+
+          return (
           <div className="cf-outputs">
-            {/* Property Value & Equity Milestones */}
+            {/* ============================================================ */}
+            {/* HERO CHART CARD                                              */}
+            {/* ============================================================ */}
             <div className="cf-card">
-              <div className="cf-card-header">
-                <span>Property Value & Equity</span>
-                {isNewPurchase && (
-                  <span className="cf-card-header-note">
-                    Starting: <span className="cf-tabular">{formatCurrency(propertyValue)}</span>
+              <div className="cf-hero-header">
+                <div className="cf-hero-header-left">
+                  <span className="cf-hero-title">{isInvestment ? "Investment" : "Owner-Occupier"} Projections</span>
+                  <span className={`cf-tag ${isInvestment ? "cf-tag-investment" : "cf-tag-ppor"}`}>
+                    {isInvestment ? "INVESTMENT" : "PPOR"}
                   </span>
-                )}
+                </div>
+                <div className="cf-chart-toggles">
+                  {isPPOR ? (
+                    <button className="cf-chart-toggle active">Equity</button>
+                  ) : (
+                    (["cashflow", "equity", "gearing", "netIncome", "taxBenefit"] as ChartMetric[]).map(m => (
+                      <button
+                        key={m}
+                        className={`cf-chart-toggle ${effectiveMetric === m ? "active" : ""}`}
+                        onClick={() => setChartMetric(m)}
+                      >
+                        {metricLabels[m]}
+                      </button>
+                    ))
+                  )}
+                </div>
               </div>
-              <div className="cf-milestones">
-                {milestones.map((m) => (
-                  <div key={m.year} className="cf-milestone">
-                    <p className="cf-milestone-year">Year {m.year}</p>
-                    <div className="cf-milestone-values">
-                      <div>
-                        <p className="cf-milestone-value">{formatAbbreviated(m.propertyValue)}</p>
-                        <p className="cf-milestone-label">Value</p>
-                      </div>
-                      <div className="cf-milestone-equity">
-                        <p className="cf-milestone-equity-value">{formatAbbreviated(m.equity)}</p>
-                        <p className="cf-milestone-label">Equity</p>
-                      </div>
+
+              <div className="cf-chart-area">
+                <div className="cf-chart-container">
+                  <svg className="cf-chart-svg" viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
+                    <defs>
+                      <clipPath id="clip-above-zero">
+                        <rect x={mL} y={0} width={plotW} height={Math.max(0, zeroY)} />
+                      </clipPath>
+                      <clipPath id="clip-below-zero">
+                        <rect x={mL} y={Math.max(0, zeroY)} width={plotW} height={svgH - Math.max(0, zeroY)} />
+                      </clipPath>
+                      <linearGradient id="grad-pos" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.15" />
+                        <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0" />
+                      </linearGradient>
+                      <linearGradient id="grad-neg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f87171" stopOpacity="0" />
+                        <stop offset="100%" stopColor="#f87171" stopOpacity="0.08" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Horizontal grid lines */}
+                    {yTicks.map((v, i) => (
+                      <line key={i} x1={mL} x2={svgW - mR} y1={mapY(v)} y2={mapY(v)}
+                        stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                    ))}
+                    {showZeroLine && (
+                      <line x1={mL} x2={svgW - mR} y1={zeroY} y2={zeroY}
+                        stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="4,3" />
+                    )}
+
+                    {/* Y-axis labels */}
+                    {yTicks.map((v, i) => (
+                      <text key={i} x={mL - 6} y={mapY(v) + 3} textAnchor="end"
+                        fill="var(--cf-text-dim)" fontSize="10" fontFamily="inherit">
+                        {formatChartLabel(v)}
+                      </text>
+                    ))}
+
+                    {/* X-axis labels */}
+                    {xLabels.map(y => (
+                      <text key={y} x={mapX(y)} y={svgH - 5} textAnchor="middle"
+                        fill="var(--cf-text-dim)" fontSize="10" fontFamily="inherit">
+                        {y}
+                      </text>
+                    ))}
+
+                    {!isGearing && activeData.length > 0 && (
+                      <>
+                        {/* Positive area fill */}
+                        <path d={areaPath} clipPath="url(#clip-above-zero)" fill="url(#grad-pos)" />
+                        {/* Negative area fill */}
+                        <path d={areaPath} clipPath="url(#clip-below-zero)" fill="url(#grad-neg)" />
+                        {/* Line */}
+                        <polyline points={linePoints} stroke="#2dd4bf" strokeWidth="2" fill="none" />
+                      </>
+                    )}
+
+                    {isGearing && gearingData.income.length > 0 && (
+                      <>
+                        <polyline points={incomePoints} stroke="#4ade80" strokeWidth="2" fill="none" />
+                        <polyline points={deductionPoints} stroke="#f87171" strokeWidth="2" fill="none" />
+                      </>
+                    )}
+
+                    {/* Crossover marker */}
+                    {crossoverYear !== null && (
+                      <circle cx={mapX(crossoverYear)} cy={isGearing
+                        ? mapY(gearingData.income[Math.floor(crossoverYear) - 1]?.value ?? 0)
+                        : zeroY}
+                        r="4" fill="#2dd4bf" />
+                    )}
+                  </svg>
+
+                  {/* Annotation overlay */}
+                  {crossoverYear !== null && (
+                    <div
+                      className="cf-chart-annotation"
+                      style={{
+                        left: `${(mapX(crossoverYear) / svgW) * 100}%`,
+                        top: `${((isGearing
+                          ? mapY(gearingData.income[Math.floor(crossoverYear) - 1]?.value ?? 0)
+                          : zeroY) / svgH) * 100}%`,
+                        transform: "translate(8px, -50%)",
+                      }}
+                    >
+                      <span className="cf-chart-annotation-dot" />
+                      {crossoverLabel}
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
+              </div>
+
+              {/* Chart Footer Stats */}
+              <div className="cf-chart-footer">
+                {effectiveMetric === "cashflow" && (
+                  <>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Year 1 Monthly</p>
+                      <p className={`cf-chart-stat-value ${yr(1).afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
+                        {formatCurrency(Math.round(yr(1).afterTaxCashflow / 12))}
+                      </p>
+                    </div>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Crossover</p>
+                      <p className="cf-chart-stat-value cf-positive">
+                        {cashflowCrossoverYear ? `Year ${cashflowCrossoverYear}` : "N/A"}
+                      </p>
+                    </div>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Year 30 Monthly</p>
+                      <p className={`cf-chart-stat-value ${yr(30).afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
+                        {formatCurrency(Math.round(yr(30).afterTaxCashflow / 12))}
+                      </p>
+                    </div>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Cumulative Outlay</p>
+                      <p className="cf-chart-stat-value cf-negative">{formatCurrency(Math.round(cumulativeOutlay))}</p>
+                    </div>
+                  </>
+                )}
+                {effectiveMetric === "equity" && (
+                  <>
+                    {[1, 10, 20, 30].map(y => (
+                      <div key={y} className="cf-chart-stat">
+                        <p className="cf-chart-stat-label">Year {y}</p>
+                        <p className="cf-chart-stat-value cf-positive">{formatAbbreviated(yr(y).equity)}</p>
+                      </div>
+                    ))}
+                  </>
+                )}
+                {effectiveMetric === "gearing" && (
+                  <>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Year 1 Loss</p>
+                      <p className="cf-chart-stat-value cf-negative">{formatCurrency(Math.round(yr(1).rentalLossOrGain))}</p>
+                    </div>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Crossover Year</p>
+                      <p className="cf-chart-stat-value cf-positive">{crossoverYear ? `Year ${Math.ceil(crossoverYear)}` : "N/A"}</p>
+                    </div>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Year 30 Position</p>
+                      <p className={`cf-chart-stat-value ${yr(30).rentalLossOrGain < 0 ? "cf-negative" : "cf-positive"}`}>
+                        {formatCurrency(Math.round(yr(30).rentalLossOrGain))}
+                      </p>
+                    </div>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Peak Deductions</p>
+                      <p className="cf-chart-stat-value">{formatCurrency(Math.round(peakDeductions))}</p>
+                    </div>
+                  </>
+                )}
+                {effectiveMetric === "netIncome" && (
+                  <>
+                    {[1, 10, 20, 30].map(y => (
+                      <div key={y} className="cf-chart-stat">
+                        <p className="cf-chart-stat-label">Year {y}/mo</p>
+                        <p className="cf-chart-stat-value">{formatCurrency(Math.round(yr(y).netRentalIncome / 12))}</p>
+                      </div>
+                    ))}
+                  </>
+                )}
+                {effectiveMetric === "taxBenefit" && (
+                  <>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Year 1</p>
+                      <p className="cf-chart-stat-value cf-positive">{formatCurrency(Math.round(yr(1).taxBenefit))}</p>
+                    </div>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Peak Benefit</p>
+                      <p className="cf-chart-stat-value cf-positive">{formatCurrency(Math.round(peakTaxBenefit))}</p>
+                    </div>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Ends Year</p>
+                      <p className="cf-chart-stat-value">{taxBenefitEndsYear ?? "N/A"}</p>
+                    </div>
+                    <div className="cf-chart-stat">
+                      <p className="cf-chart-stat-label">Lifetime Total</p>
+                      <p className="cf-chart-stat-value cf-positive">{formatCurrency(Math.round(lifetimeTaxBenefit))}</p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Cashflow Section */}
+            {/* ============================================================ */}
+            {/* CASHFLOW BREAKDOWN CARD                                      */}
+            {/* ============================================================ */}
+            {sy && (
             <div className="cf-card">
-              <div className="cf-card-header">
-                <span>Cashflow Breakdown</span>
-                <div className="cf-year-selector">
-                  {([1, 2, 3, 5, 10] as CashflowView[]).map((years) => (
+              <div className="cf-breakdown-header">
+                <span className="cf-breakdown-title">Cashflow Breakdown</span>
+                <div className="cf-chart-toggles">
+                  {[1, 5, 10, 20, 30].map(y => (
                     <button
-                      key={years}
-                      className={`cf-year-button ${cashflowView === years ? "active" : ""}`}
-                      onClick={() => setCashflowView(years)}
+                      key={y}
+                      className={`cf-chart-toggle ${selectedYear === y ? "active" : ""}`}
+                      onClick={() => setSelectedYear(y)}
                     >
-                      {years === 1 ? "Year 1" : `${years} Years`}
+                      Year {y}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Focal Monthly Cashflow */}
-              <div className="cf-focal">
-                <div className="cf-focal-main">
-                  <p className="cf-focal-label">
-                    {cashflowView === 1 ? "Monthly Cashflow (Year 1 Average)" : `Monthly Cashflow (Year 1-${cashflowView} Average)`}
+              {/* Summary Strip */}
+              <div className={`cf-summary-strip${isPPOR ? " ppor" : ""}`}>
+                <div className="cf-summary-cell">
+                  <p className="cf-summary-label">After-Tax Cashflow</p>
+                  <p className={`cf-summary-value ${sy.afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
+                    {formatCurrency(Math.round(sy.afterTaxCashflow))}
                   </p>
-                  <p className="cf-focal-value">
-                    {formatCurrency(Math.round(aggregatedData.totalNetCashflow / (cashflowView * 12)))}
-                  </p>
-                  <p className="cf-focal-note">
-                    {isInvestment ? "After tax benefits and rental income" : "Total holding cost per month"}
-                  </p>
+                  <p className="cf-summary-sub">{formatCurrency(Math.round(sy.afterTaxCashflow / 12))}/mo</p>
                 </div>
-                <div className="cf-focal-total">
-                  <p className="cf-focal-label">Total over {cashflowView} {cashflowView === 1 ? "year" : "years"}</p>
-                  <p className="cf-focal-total-value">{formatCurrency(Math.round(aggregatedData.totalNetCashflow))}</p>
+                <div className="cf-summary-cell">
+                  <p className="cf-summary-label">Pre-Tax Cashflow</p>
+                  <p className={`cf-summary-value ${sy.preTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
+                    {formatCurrency(Math.round(sy.preTaxCashflow))}
+                  </p>
+                  <p className="cf-summary-sub">{formatCurrency(Math.round(sy.preTaxCashflow / 12))}/mo</p>
                 </div>
+                {isInvestment && (
+                  <>
+                    <div className="cf-summary-cell">
+                      <p className="cf-summary-label">Tax Benefit</p>
+                      <p className="cf-summary-value cf-positive">{formatCurrency(Math.round(sy.taxBenefit))}</p>
+                      <p className="cf-summary-sub">at {(marginalRate * 100).toFixed(0)}% + 2% ML</p>
+                    </div>
+                    <div className="cf-summary-cell">
+                      <p className="cf-summary-label">Gearing Position</p>
+                      <p className={`cf-summary-value ${sy.rentalLossOrGain < 0 ? "cf-negative" : "cf-positive"}`}>
+                        {formatCurrency(Math.round(sy.rentalLossOrGain))}
+                      </p>
+                      <p className="cf-summary-sub">{sy.rentalLossOrGain < 0 ? "negatively geared" : "positively geared"}</p>
+                    </div>
+                  </>
+                )}
               </div>
 
-              {/* Breakdown Table */}
-              <div className="cf-table-container">
-                <table className="cf-table">
-                  <thead>
-                    <tr>
-                      <th>Category</th>
-                      <th>Monthly</th>
-                      <th>Annual</th>
-                      <th>{cashflowView === 1 ? "Year 1" : `${cashflowView} Year Total`}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Income Section - Investment only */}
-                    {isInvestment && (
-                      <>
-                        <tr className="cf-table-section">
-                          <td colSpan={4}>Income</td>
-                        </tr>
-                        <tr>
-                          <td>Rental Income</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalRentalIncome / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalRentalIncome / cashflowView))}</td>
-                          <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalRentalIncome))}</td>
-                        </tr>
-                        <tr className="cf-muted">
-                          <td>Less: Vacancy</td>
-                          <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalVacancy / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalVacancy / cashflowView))}</td>
-                          <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalVacancy))}</td>
-                        </tr>
-                        {usePropertyManager && (
-                          <tr className="cf-muted">
-                            <td>Less: Management Fee</td>
-                            <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalManagementFee / (cashflowView * 12)))}</td>
-                            <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalManagementFee / cashflowView))}</td>
-                            <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalManagementFee))}</td>
-                          </tr>
-                        )}
-                        <tr className="cf-table-subtotal">
-                          <td>Net Rental Income</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetRentalIncome / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetRentalIncome / cashflowView))}</td>
-                          <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalNetRentalIncome))}</td>
-                        </tr>
-                      </>
-                    )}
-
-                    {/* Expenses Section */}
-                    <tr className="cf-table-section">
-                      <td colSpan={4}>Expenses</td>
-                    </tr>
-                    <tr>
-                      <td>Loan Repayment</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalLoanRepayment / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalLoanRepayment / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalLoanRepayment))}</td>
-                    </tr>
-                    <tr className="cf-muted cf-indent">
-                      <td>— Interest portion</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterest / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterest / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterest))}</td>
-                    </tr>
-                    <tr className="cf-muted cf-indent">
-                      <td>— Principal portion</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPrincipal / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPrincipal / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPrincipal))}</td>
-                    </tr>
-                    <tr>
-                      <td>Council Rates</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalCouncilRates / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalCouncilRates / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalCouncilRates))}</td>
-                    </tr>
-                    <tr>
-                      <td>Water Rates</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalWaterRates / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalWaterRates / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalWaterRates))}</td>
-                    </tr>
-                    <tr>
-                      <td>Insurance</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInsurance / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInsurance / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInsurance))}</td>
-                    </tr>
-                    <tr>
-                      <td>Maintenance</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalMaintenance / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalMaintenance / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalMaintenance))}</td>
-                    </tr>
-                    {hasStrata && (
-                      <tr>
-                        <td>Strata Fees</td>
-                        <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalStrataFees / (cashflowView * 12)))}</td>
-                        <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalStrataFees / cashflowView))}</td>
-                        <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalStrataFees))}</td>
-                      </tr>
-                    )}
-                    <tr className="cf-table-subtotal">
-                      <td>Total Expenses</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalExpenses / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalExpenses / cashflowView))}</td>
-                      <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalExpenses))}</td>
-                    </tr>
-
-                    {/* Pre-tax cashflow */}
-                    <tr className="cf-table-highlight">
-                      <td>Pre-Tax Cashflow</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPreTaxCashflow / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPreTaxCashflow / cashflowView))}</td>
-                      <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalPreTaxCashflow))}</td>
-                    </tr>
-
-                    {/* Tax Benefits - Investment only */}
-                    {isInvestment && aggregatedData.totalTaxBenefit > 0 && (
-                      <>
-                        <tr className="cf-table-section">
-                          <td colSpan={4}>Tax Benefits</td>
-                        </tr>
-                        <tr>
-                          <td>Interest Deduction</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterestDeduction / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterestDeduction / cashflowView))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterestDeduction))}</td>
-                        </tr>
-                        {parseCurrency(depreciation) > 0 && (
-                          <tr>
-                            <td>Depreciation Deduction</td>
-                            <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalDepreciationDeduction / (cashflowView * 12)))}</td>
-                            <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalDepreciationDeduction / cashflowView))}</td>
-                            <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalDepreciationDeduction))}</td>
-                          </tr>
-                        )}
-                        <tr className="cf-table-subtotal">
-                          <td>Total Tax Benefit</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalTaxBenefit / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalTaxBenefit / cashflowView))}</td>
-                          <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalTaxBenefit))}</td>
-                        </tr>
-                      </>
-                    )}
-
-                    {/* Final Net Cashflow */}
-                    <tr className="cf-table-total">
-                      <td>Net Cashflow</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetCashflow / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetCashflow / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetCashflow))}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              {/* Column Headers */}
+              <div className="cf-col-headers">
+                <span className="cf-col-header">Monthly</span>
+                <span className="cf-col-header">Annual</span>
               </div>
-            </div>
 
-            {/* Quick Stats */}
-            <div className="cf-stats-row">
+              {/* ---- Income Section (investment only) ---- */}
               {isInvestment && (
-                <>
-                  <div className="cf-stat-card">
-                    <p className="cf-stat-label">Gross Yield</p>
-                    <p className="cf-stat-value">{((parseCurrency(weeklyRent) * 52) / propertyValue * 100).toFixed(2)}%</p>
-                  </div>
-                  <div className="cf-stat-card">
-                    <p className="cf-stat-label">Net Yield</p>
-                    <p className="cf-stat-value">{(aggregatedData.totalNetRentalIncome / cashflowView / propertyValue * 100).toFixed(2)}%</p>
-                  </div>
-                </>
-              )}
-              {isNewPurchase && (
-                <div className="cf-stat-card">
-                  <p className="cf-stat-label">Total Upfront</p>
-                  <p className="cf-stat-value">{formatCurrency(parseCurrency(depositAmount) + calculateStampDuty(parseCurrency(purchasePrice), isInvestment) + 5000)}</p>
+                <div className="cf-detail-section">
+                  <button
+                    className={`cf-section-trigger${expandedOutputSections.has("income") ? " open" : ""}`}
+                    onClick={() => toggleOutputSection("income")}
+                  >
+                    <div className="cf-section-trigger-left">
+                      <ChevronRight size={16} className="cf-section-chevron" />
+                      <span className="cf-section-name">Income</span>
+                    </div>
+                    <div className="cf-section-totals">
+                      <div className="cf-section-total-item">
+                        <p className="cf-section-total-value">{formatCurrency(Math.round(sy.netRentalIncome / 12))}</p>
+                      </div>
+                      <div className="cf-section-total-item">
+                        <p className="cf-section-total-value">{formatCurrency(Math.round(sy.netRentalIncome))}</p>
+                      </div>
+                    </div>
+                  </button>
+                  {expandedOutputSections.has("income") && (
+                    <div className="cf-detail-content">
+                      <div className="cf-detail-row">
+                        <span className="cf-detail-row-label">Gross Rental Income</span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.rentalIncome / 12))}</span>
+                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.rentalIncome))}</span>
+                        </div>
+                      </div>
+                      <div className="cf-detail-row">
+                        <span className="cf-detail-row-label">Less: Vacancy ({vacancyRate}%)</span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val">{formatCurrency(-Math.round(sy.vacancy / 12))}</span>
+                          <span className="cf-detail-row-val">{formatCurrency(-Math.round(sy.vacancy))}</span>
+                        </div>
+                      </div>
+                      {usePropertyManager && (
+                        <div className="cf-detail-row">
+                          <span className="cf-detail-row-label">Less: Management Fee ({managementFee}%)</span>
+                          <div className="cf-detail-row-values">
+                            <span className="cf-detail-row-val">{formatCurrency(-Math.round(sy.managementFee / 12))}</span>
+                            <span className="cf-detail-row-val">{formatCurrency(-Math.round(sy.managementFee))}</span>
+                          </div>
+                        </div>
+                      )}
+                      <div className="cf-detail-row subtotal">
+                        <span className="cf-detail-row-label">Net Rental Income</span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.netRentalIncome / 12))}</span>
+                          <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.netRentalIncome))}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
-              <div className="cf-stat-card">
-                <p className="cf-stat-label">Interest Paid ({cashflowView}yr)</p>
-                <p className="cf-stat-value">{formatCurrency(Math.round(aggregatedData.totalInterest))}</p>
+
+              {/* ---- Holding Costs Section ---- */}
+              <div className="cf-detail-section">
+                <button
+                  className={`cf-section-trigger${expandedOutputSections.has("holding") ? " open" : ""}`}
+                  onClick={() => toggleOutputSection("holding")}
+                >
+                  <div className="cf-section-trigger-left">
+                    <ChevronRight size={16} className="cf-section-chevron" />
+                    <span className="cf-section-name">Holding Costs</span>
+                  </div>
+                  <div className="cf-section-totals">
+                    <div className="cf-section-total-item">
+                      <p className="cf-section-total-value">{formatCurrency(Math.round(sy.totalExpenses / 12))}</p>
+                    </div>
+                    <div className="cf-section-total-item">
+                      <p className="cf-section-total-value">{formatCurrency(Math.round(sy.totalExpenses))}</p>
+                    </div>
+                  </div>
+                </button>
+                {expandedOutputSections.has("holding") && (
+                  <div className="cf-detail-content">
+                    <div className="cf-detail-row">
+                      <span className="cf-detail-row-label">Interest on Loan</span>
+                      <div className="cf-detail-row-values">
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.interestPortion / 12))}</span>
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.interestPortion))}</span>
+                      </div>
+                    </div>
+                    <div className="cf-detail-row">
+                      <span className="cf-detail-row-label indent">Principal Repaid</span>
+                      <div className="cf-detail-row-values">
+                        <span className="cf-detail-row-val" style={{ fontSize: 12, color: "var(--cf-text-dim)" }}>{formatCurrency(Math.round(sy.principalPortion / 12))}</span>
+                        <span className="cf-detail-row-val" style={{ fontSize: 12, color: "var(--cf-text-dim)" }}>{formatCurrency(Math.round(sy.principalPortion))}</span>
+                      </div>
+                    </div>
+                    <div className="cf-detail-row">
+                      <span className="cf-detail-row-label">Council Rates</span>
+                      <div className="cf-detail-row-values">
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.councilRates / 12))}</span>
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.councilRates))}</span>
+                      </div>
+                    </div>
+                    <div className="cf-detail-row">
+                      <span className="cf-detail-row-label">Water Rates</span>
+                      <div className="cf-detail-row-values">
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.waterRates / 12))}</span>
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.waterRates))}</span>
+                      </div>
+                    </div>
+                    <div className="cf-detail-row">
+                      <span className="cf-detail-row-label">Insurance</span>
+                      <div className="cf-detail-row-values">
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.insurance / 12))}</span>
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.insurance))}</span>
+                      </div>
+                    </div>
+                    <div className="cf-detail-row">
+                      <span className="cf-detail-row-label">Maintenance</span>
+                      <div className="cf-detail-row-values">
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.maintenance / 12))}</span>
+                        <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.maintenance))}</span>
+                      </div>
+                    </div>
+                    {hasStrata && (
+                      <div className="cf-detail-row">
+                        <span className="cf-detail-row-label">Strata Fees</span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.strataFees / 12))}</span>
+                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.strataFees))}</span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="cf-detail-row subtotal">
+                      <span className="cf-detail-row-label">Total Holding Costs</span>
+                      <div className="cf-detail-row-values">
+                        <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.totalExpenses / 12))}</span>
+                        <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.totalExpenses))}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ---- Tax Position Section (investment only) ---- */}
+              {isInvestment && (
+                <div className="cf-detail-section">
+                  <button
+                    className={`cf-section-trigger${expandedOutputSections.has("tax") ? " open" : ""}`}
+                    onClick={() => toggleOutputSection("tax")}
+                  >
+                    <div className="cf-section-trigger-left">
+                      <ChevronRight size={16} className="cf-section-chevron" />
+                      <span className="cf-section-name">Tax Position</span>
+                    </div>
+                    <div className="cf-section-totals">
+                      <div className="cf-section-total-item">
+                        <p className="cf-section-total-label">Deductions</p>
+                        <p className="cf-section-total-value">{formatCurrency(Math.round(sy.totalDeductions))}</p>
+                      </div>
+                      <div className="cf-section-total-item">
+                        <p className="cf-section-total-label">Benefit</p>
+                        <p className="cf-section-total-value cf-positive">+{formatCurrency(Math.round(sy.taxBenefit))}</p>
+                      </div>
+                    </div>
+                  </button>
+                  {expandedOutputSections.has("tax") && (
+                    <div className="cf-detail-content">
+                      <div className="cf-detail-row">
+                        <span className="cf-detail-row-label">Net Rental Income</span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val" />
+                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.netRentalIncome))}</span>
+                        </div>
+                      </div>
+                      <div className="cf-detail-row">
+                        <span className="cf-detail-row-label" style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--cf-text-dim)" }}>
+                          DEDUCTIONS
+                        </span>
+                        <div className="cf-detail-row-values"><span className="cf-detail-row-val" /><span className="cf-detail-row-val" /></div>
+                      </div>
+                      <div className="cf-detail-row">
+                        <span className="cf-detail-row-label indent">Interest</span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val" />
+                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.interestPortion))}</span>
+                        </div>
+                      </div>
+                      {sy.depDiv43 > 0 && (
+                        <div className="cf-detail-row">
+                          <span className="cf-detail-row-label indent">Depreciation: Div 43</span>
+                          <div className="cf-detail-row-values">
+                            <span className="cf-detail-row-val" />
+                            <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.depDiv43))}</span>
+                          </div>
+                        </div>
+                      )}
+                      {sy.depDiv40 > 0 && (
+                        <div className="cf-detail-row">
+                          <span className="cf-detail-row-label indent">Depreciation: Div 40</span>
+                          <div className="cf-detail-row-values">
+                            <span className="cf-detail-row-val" />
+                            <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.depDiv40))}</span>
+                          </div>
+                        </div>
+                      )}
+                      <div className="cf-detail-row">
+                        <span className="cf-detail-row-label indent">Other (rates, insurance, mgmt, maint.)</span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val" />
+                          <span className="cf-detail-row-val">{formatCurrency(Math.round(sy.otherDeductibles))}</span>
+                        </div>
+                      </div>
+                      <div className="cf-detail-row subtotal">
+                        <span className="cf-detail-row-label">Total Deductions</span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val" />
+                          <span className="cf-detail-row-val primary">{formatCurrency(Math.round(sy.totalDeductions))}</span>
+                        </div>
+                      </div>
+                      <div className="cf-detail-row">
+                        <span className={`cf-detail-row-label ${sy.rentalLossOrGain < 0 ? "cf-negative" : "cf-positive"}`}>
+                          Rental {sy.rentalLossOrGain < 0 ? "Loss" : "Gain"} ({sy.rentalLossOrGain < 0 ? "negatively geared" : "positively geared"})
+                        </span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val" />
+                          <span className={`cf-detail-row-val ${sy.rentalLossOrGain < 0 ? "cf-negative" : "cf-positive"}`}>
+                            {formatCurrency(Math.round(sy.rentalLossOrGain))}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="cf-detail-row">
+                        <span className="cf-detail-row-label">Tax Offset at {(marginalRate * 100).toFixed(0)}% + 2% ML</span>
+                        <div className="cf-detail-row-values">
+                          <span className="cf-detail-row-val" />
+                          <span className="cf-detail-row-val cf-positive">+{formatCurrency(Math.round(sy.taxBenefit))}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ---- True Position ---- */}
+              <div className="cf-true-position">
+                <div className="cf-true-position-row">
+                  <span className="cf-true-position-label">Pre-Tax Cashflow</span>
+                  <div className="cf-true-position-values">
+                    <span className="cf-true-position-val">{formatCurrency(Math.round(sy.preTaxCashflow / 12))}</span>
+                    <span className="cf-true-position-val">{formatCurrency(Math.round(sy.preTaxCashflow))}</span>
+                  </div>
+                </div>
+                {isInvestment && (
+                  <div className="cf-true-position-row">
+                    <span className="cf-true-position-label">Tax Benefit</span>
+                    <div className="cf-true-position-values">
+                      <span className="cf-true-position-val cf-positive">+{formatCurrency(Math.round(sy.taxBenefit / 12))}</span>
+                      <span className="cf-true-position-val cf-positive">+{formatCurrency(Math.round(sy.taxBenefit))}</span>
+                    </div>
+                  </div>
+                )}
+                <div className="cf-true-position-row total">
+                  <span className="cf-true-position-label">After-Tax Cashflow</span>
+                  <div className="cf-true-position-values">
+                    <span className={`cf-true-position-val ${sy.afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
+                      {formatCurrency(Math.round(sy.afterTaxCashflow / 12))}
+                    </span>
+                    <span className={`cf-true-position-val ${sy.afterTaxCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
+                      {formatCurrency(Math.round(sy.afterTaxCashflow))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ---- Memo Line ---- */}
+              <div className="cf-memo-row">
+                <span className="cf-memo-label">Principal repaid this year (equity gained, not a cost)</span>
+                <div className="cf-memo-values">
+                  <span className="cf-memo-val">{formatCurrency(Math.round(sy.principalPortion / 12))}</span>
+                  <span className="cf-memo-val">{formatCurrency(Math.round(sy.principalPortion))}</span>
+                </div>
+              </div>
+
+              {/* ---- Wealth Strip ---- */}
+              <div className={`cf-wealth-strip${isPPOR ? " ppor" : ""}`}>
+                <div className="cf-wealth-cell">
+                  <p className="cf-wealth-label">Property Value</p>
+                  <p className="cf-wealth-value">{formatAbbreviated(sy.propertyValue)}</p>
+                </div>
+                <div className="cf-wealth-cell">
+                  <p className="cf-wealth-label">Loan Balance</p>
+                  <p className="cf-wealth-value">{formatAbbreviated(sy.loanBalance)}</p>
+                </div>
+                <div className="cf-wealth-cell">
+                  <p className="cf-wealth-label">Equity</p>
+                  <p className="cf-wealth-value">{formatAbbreviated(sy.equity)}</p>
+                </div>
+                {isInvestment && (
+                  <div className="cf-wealth-cell">
+                    <p className="cf-wealth-label">Cash-on-Cash</p>
+                    <p className={`cf-wealth-value ${cashOnCash < 0 ? "cf-negative" : "cf-positive"}`}>
+                      {cashOnCash.toFixed(1)}%
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* CGT Section - Investment only */}
-            {isInvestment && (
-              <div className="cf-card">
-                <p className="cf-card-title">Capital Gains Tax (if sold at end of Year {cashflowView})</p>
-                <div className="cf-cgt-grid">
-                  <div>
-                    <p className="cf-cgt-label">Cost Base</p>
-                    <p className="cf-cgt-value">{formatCurrency(propertyValue + calculateStampDuty(propertyValue, true) + 5000)}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">Capital Gain</p>
-                    <p className="cf-cgt-value">{formatCurrency(Math.round(milestones.find(m => m.year >= cashflowView)?.propertyValue || propertyValue * Math.pow(1.035, cashflowView)) - propertyValue)}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">CGT Discount</p>
-                    <p className="cf-cgt-value">{cashflowView >= 1 ? "50%" : "0%"}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">Discounted Gain</p>
-                    <p className="cf-cgt-value">{formatCurrency(Math.round(((milestones.find(m => m.year >= cashflowView)?.propertyValue || propertyValue * Math.pow(1.035, cashflowView)) - propertyValue) * 0.5))}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">Est. CGT Payable</p>
-                    <p className="cf-cgt-value">{formatCurrency(Math.round(((milestones.find(m => m.year >= cashflowView)?.propertyValue || propertyValue * Math.pow(1.035, cashflowView)) - propertyValue) * 0.5 * getMarginalTaxRate(parseCurrency(taxableIncome))))}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">Net Proceeds</p>
-                    <p className="cf-cgt-value cf-bold">{formatCurrency(Math.round((milestones.find(m => m.year >= cashflowView)?.equity || 0) - ((milestones.find(m => m.year >= cashflowView)?.propertyValue || propertyValue * Math.pow(1.035, cashflowView)) - propertyValue) * 0.5 * getMarginalTaxRate(parseCurrency(taxableIncome))))}</p>
-                  </div>
-                </div>
-              </div>
             )}
           </div>
-        )}
+          );
+        })()}
       </main>
     </div>
     <Link
