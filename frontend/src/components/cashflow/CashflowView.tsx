@@ -52,9 +52,14 @@ interface YearData {
   incomeTaxCalc: number;
   incomeTaxWithout: number;
   taxSaved: number;
+  grossIncome: number;
+  afterTaxIncome: number;
   cfTotalIncome: number;
   netCashflow: number;
   propertyCashflow: number;
+  offsetBalanceAtYear: number;
+  propertyEquity: number;
+  netEquity: number;
 }
 
 // ============================================================================
@@ -245,7 +250,7 @@ export default function CashflowCalculator() {
     ? parseCurrency(purchasePrice)
     : parseCurrency(currentValue);
 
-  const effectiveViewMode: ViewMode = isPPOR ? "equity" : viewMode;
+  const effectiveViewMode: ViewMode = viewMode;
 
   // Calculate all year data
   const yearData = useMemo((): YearData[] => {
@@ -327,9 +332,14 @@ export default function CashflowCalculator() {
       const incomeTaxCalcVal = calculateIncomeTax(taxableIncomeCalcVal);
       const incomeTaxWithoutVal = calculateIncomeTax(salaryVal + otherIncomeVal);
       const taxSavedVal = incomeTaxWithoutVal - incomeTaxCalcVal;
+      const grossIncomeVal = salaryVal + otherIncomeVal + rental;
+      const afterTaxIncomeVal = grossIncomeVal - incomeTaxCalcVal;
       const cfTotalIncomeVal = salaryVal + otherIncomeVal + rental - interestPaid - ongoingCostsVal;
       const netCashflowVal = cfTotalIncomeVal - principalPaid - incomeTaxCalcVal;
       const propertyCashflowVal = gearingVal - principalPaid;
+      const offsetBalAtYear = effectiveOffset;
+      const propertyEquityVal = propValue - loanBal;
+      const netEquityVal = propValue - loanBal + offsetBalAtYear;
 
       data.push({
         year,
@@ -367,9 +377,14 @@ export default function CashflowCalculator() {
         incomeTaxCalc: incomeTaxCalcVal,
         incomeTaxWithout: incomeTaxWithoutVal,
         taxSaved: taxSavedVal,
+        grossIncome: grossIncomeVal,
+        afterTaxIncome: afterTaxIncomeVal,
         cfTotalIncome: cfTotalIncomeVal,
         netCashflow: netCashflowVal,
         propertyCashflow: propertyCashflowVal,
+        offsetBalanceAtYear: offsetBalAtYear,
+        propertyEquity: propertyEquityVal,
+        netEquity: netEquityVal,
       });
     }
 
@@ -388,15 +403,11 @@ export default function CashflowCalculator() {
       switch (effectiveViewMode) {
         case "summary": return { year: y.year, value: y.netCashflow / 12 };
         case "property": return { year: y.year, value: y.propertyCashflow / 12 };
-        case "equity": return { year: y.year, value: y.equity };
-        case "deductions": return { year: y.year, value: y.totalDeductions };
+        case "equity": return { year: y.year, value: y.netEquity };
+        case "deductions": return { year: y.year, value: isInvestment ? y.totalDeductions : y.ongoingCosts };
       }
     });
   }, [yearData, effectiveViewMode]);
-
-  // Crossover: first year where gearing >= 0
-  const crossoverIdx = yearData.findIndex(y => y.gearing >= 0);
-  const crossoverYear = crossoverIdx >= 0 ? crossoverIdx + 1 : null;
 
   // Selected year data
   const selectedYearData = yearData[selectedYear - 1] || null;
@@ -1131,6 +1142,11 @@ export default function CashflowCalculator() {
         {/* Complete - Show outputs */}
         {allComplete && yearData.length > 0 && (() => {
           const sy = selectedYearData;
+          const baseYear = new Date().getFullYear();
+
+          // Column visibility flags
+          const showOtherIncome = yearData.some(y => y.otherIncome !== 0);
+          const showOffset = hasOffset && yearData.some(y => y.offsetBalanceAtYear > 0);
 
           // SVG chart dimensions
           const svgW = 900, svgH = 220;
@@ -1169,7 +1185,7 @@ export default function CashflowCalculator() {
           const chartTitle = effectiveViewMode === "summary" ? "Monthly Net Cashflow"
             : effectiveViewMode === "property" ? "Monthly Property Cashflow"
             : effectiveViewMode === "equity" ? "Net Equity Position"
-            : "Total Annual Deductions";
+            : isInvestment ? "Total Annual Deductions" : "Total Annual Expenses";
 
           // Hovered year data for tooltip
           const hy = hoveredYear !== null ? yearData[hoveredYear - 1] : null;
@@ -1179,13 +1195,13 @@ export default function CashflowCalculator() {
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {/* MODE SELECTOR */}
             <div className="cf-mode-bar">
-              {(isPPOR ? ["equity"] as ViewMode[] : ["summary", "property", "equity", "deductions"] as ViewMode[]).map(m => (
+              {(["summary", "property", "equity", "deductions"] as ViewMode[]).map(m => (
                 <button
                   key={m}
                   className={`cf-mode-btn ${effectiveViewMode === m ? "active" : ""}`}
                   onClick={() => { setViewMode(m); setSelectedYear(1); }}
                 >
-                  {m === "summary" ? "Summary" : m === "property" ? "Property" : m === "equity" ? "Equity" : "Deductions"}
+                  {m === "summary" ? "Summary" : m === "property" ? "Property" : m === "equity" ? "Equity" : (isInvestment ? "Deductions" : "Expenses")}
                 </button>
               ))}
             </div>
@@ -1279,16 +1295,6 @@ export default function CashflowCalculator() {
                       );
                     })}
 
-                    {/* Crossover marker in cashflow modes */}
-                    {(effectiveViewMode === "summary" || effectiveViewMode === "property") && crossoverYear !== null && (
-                      <>
-                        <circle cx={mL + slotW * (crossoverYear - 1) + slotW / 2} cy={zeroY}
-                          r="8" fill="#2dd4bf" fillOpacity="0.2" />
-                        <circle cx={mL + slotW * (crossoverYear - 1) + slotW / 2} cy={zeroY}
-                          r="4" fill="#2dd4bf" />
-                      </>
-                    )}
-
                     {/* Y-axis labels */}
                     {yTicks.map((v, i) => (
                       <text key={i} x={mL - 10} y={mapY(v) + 4} textAnchor="end"
@@ -1306,33 +1312,6 @@ export default function CashflowCalculator() {
                       </text>
                     ))}
                   </svg>
-
-                  {/* Crossover annotation */}
-                  {(effectiveViewMode === "summary" || effectiveViewMode === "property") && crossoverYear !== null && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        borderRadius: "9999px",
-                        border: "1px solid rgba(45,212,191,0.3)",
-                        background: "rgba(45,212,191,0.1)",
-                        padding: "3px 10px",
-                        fontSize: "10px",
-                        fontWeight: 500,
-                        color: "var(--cf-accent)",
-                        backdropFilter: "blur(4px)",
-                        left: `${((mL + slotW * (crossoverYear - 1) + slotW / 2) / svgW) * 100}%`,
-                        top: `${(zeroY / svgH) * 100}%`,
-                        transform: "translate(12px, -50%)",
-                        whiteSpace: "nowrap" as const,
-                      }}
-                    >
-                      <span style={{ height: "5px", width: "5px", borderRadius: "50%", background: "var(--cf-accent)" }} />
-                      Positive at Year {crossoverYear}
-                    </div>
-                  )}
 
                   {/* Hover tooltip */}
                   {hoveredYear !== null && hy && hd && (
@@ -1355,26 +1334,34 @@ export default function CashflowCalculator() {
                       )}
                       {effectiveViewMode === "property" && (
                         <>
-                          <div style={{ color: "var(--cf-text-muted)" }}>Rent: {formatCurrency(Math.round(hy.rentalIncome))}</div>
-                          <div style={{ color: "var(--cf-text-muted)" }}>Interest: {formatCurrency(Math.round(hy.interestPortion))}</div>
-                          <div style={{ color: "var(--cf-text-muted)" }}>Ongoing: {formatCurrency(Math.round(hy.ongoingCosts))}</div>
-                          <div style={{ color: "var(--cf-text-muted)" }}>Gearing: {formatCurrency(Math.round(hy.gearing))}</div>
+                          {isInvestment && <div style={{ color: "var(--cf-text-muted)" }}>Rent: {formatCurrency(Math.round(hy.rentalIncome))}</div>}
+                          <div style={{ color: "var(--cf-text-muted)" }}>Costs: {formatCurrency(Math.round(hy.interestPortion + hy.ongoingCosts))}</div>
+                          {isInvestment && <div style={{ color: "#a78bfa" }}>Gearing: {formatCurrency(Math.round(hy.gearing))}</div>}
                           <div style={{ color: "var(--cf-accent)", fontWeight: 600 }}>Property CF/mo: {formatCurrency(Math.round(hy.propertyCashflow / 12))}</div>
                         </>
                       )}
                       {effectiveViewMode === "equity" && (
                         <>
                           <div style={{ color: "var(--cf-text-muted)" }}>Property: {formatCurrency(Math.round(hy.propertyValue))}</div>
-                          <div style={{ color: "var(--cf-text-muted)" }}>Loan: {formatCurrency(Math.round(hy.loanBalance))}</div>
-                          <div style={{ color: "var(--cf-accent)", fontWeight: 600 }}>Equity: {formatCurrency(Math.round(hy.equity))}</div>
+                          <div style={{ color: "var(--cf-text-muted)" }}>Loan: {formatCurrency(Math.round(-hy.loanBalance))}</div>
+                          {hy.offsetBalanceAtYear > 0 && <div style={{ color: "var(--cf-text-muted)" }}>Offset: {formatCurrency(Math.round(hy.offsetBalanceAtYear))}</div>}
+                          <div style={{ color: "var(--cf-accent)", fontWeight: 600 }}>Net Equity: {formatCurrency(Math.round(hy.netEquity))}</div>
                         </>
                       )}
-                      {effectiveViewMode === "deductions" && (
+                      {effectiveViewMode === "deductions" && isInvestment && (
                         <>
                           <div style={{ color: "var(--cf-text-muted)" }}>Interest: {formatCurrency(Math.round(hy.interestPortion))}</div>
                           <div style={{ color: "var(--cf-text-muted)" }}>Ongoing: {formatCurrency(Math.round(hy.ongoingCosts))}</div>
                           <div style={{ color: "var(--cf-text-muted)" }}>Depreciation: {formatCurrency(Math.round(hy.depDiv43 + hy.depDiv40))}</div>
                           <div style={{ color: "#a78bfa", fontWeight: 600 }}>Total: {formatCurrency(Math.round(hy.totalDeductions))}</div>
+                        </>
+                      )}
+                      {effectiveViewMode === "deductions" && !isInvestment && (
+                        <>
+                          <div style={{ color: "var(--cf-text-muted)" }}>Rates: {formatCurrency(Math.round(hy.councilRates + hy.waterRates))}</div>
+                          <div style={{ color: "var(--cf-text-muted)" }}>Insurance: {formatCurrency(Math.round(hy.insurance))}</div>
+                          <div style={{ color: "var(--cf-text-muted)" }}>Maint: {formatCurrency(Math.round(hy.maintenance + hy.strataFees))}</div>
+                          <div style={{ color: "#a78bfa", fontWeight: 600 }}>Total: {formatCurrency(Math.round(hy.ongoingCosts))}</div>
                         </>
                       )}
                     </div>
@@ -1395,11 +1382,11 @@ export default function CashflowCalculator() {
                     <div className="cf-kpi-sub">{formatCurrency(Math.round(yearData[0].netCashflow))} annual</div>
                   </div>
                   <div className="cf-kpi-card">
-                    <div className="cf-kpi-label">Gearing Crossover</div>
-                    <div className="cf-kpi-value cf-positive">
-                      {crossoverYear ? `Year ${crossoverYear}` : "N/A"}
+                    <div className="cf-kpi-label">Year 30 Monthly</div>
+                    <div className={`cf-kpi-value ${yearData[29].netCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
+                      {formatCurrency(Math.round(yearData[29].netCashflow / 12))}
                     </div>
-                    <div className="cf-kpi-sub">First positively geared year</div>
+                    <div className="cf-kpi-sub">{formatCurrency(Math.round(yearData[29].netCashflow))} annual</div>
                   </div>
                   <div className="cf-kpi-card">
                     <div className="cf-kpi-label">Year 1 Tax Saved</div>
@@ -1419,19 +1406,29 @@ export default function CashflowCalculator() {
                     </div>
                     <div className="cf-kpi-sub">{formatCurrency(Math.round(yearData[0].propertyCashflow))} annual</div>
                   </div>
-                  <div className="cf-kpi-card">
-                    <div className="cf-kpi-label">Gearing Crossover</div>
-                    <div className="cf-kpi-value cf-positive">
-                      {crossoverYear ? `Year ${crossoverYear}` : "N/A"}
+                  {isInvestment ? (
+                    <div className="cf-kpi-card">
+                      <div className="cf-kpi-label">Year 1 Gearing</div>
+                      <div className={`cf-kpi-value ${yearData[0].gearing < 0 ? "cf-negative" : "cf-positive"}`}>
+                        {formatCurrency(Math.round(yearData[0].gearing))}
+                      </div>
+                      <div className="cf-kpi-sub">{yearData[0].gearing < 0 ? "Negatively geared" : "Positively geared"}</div>
                     </div>
-                    <div className="cf-kpi-sub">First positively geared year</div>
-                  </div>
-                  <div className="cf-kpi-card">
-                    <div className="cf-kpi-label">Year 30 Property CF/mo</div>
-                    <div className={`cf-kpi-value ${yearData[29].propertyCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
-                      {formatCurrency(Math.round(yearData[29].propertyCashflow / 12))}
+                  ) : (
+                    <div className="cf-kpi-card">
+                      <div className="cf-kpi-label">Total Interest</div>
+                      <div className="cf-kpi-value cf-negative">
+                        {formatCurrency(Math.round(yearData.reduce((s, y) => s + y.interestPortion, 0)))}
+                      </div>
+                      <div className="cf-kpi-sub">Over 30 years</div>
                     </div>
-                    <div className="cf-kpi-sub">{formatCurrency(Math.round(yearData[29].propertyCashflow))} annual</div>
+                  )}
+                  <div className="cf-kpi-card">
+                    <div className="cf-kpi-label">Total Interest</div>
+                    <div className="cf-kpi-value cf-negative">
+                      {formatCurrency(Math.round(yearData.reduce((s, y) => s + y.interestPortion, 0)))}
+                    </div>
+                    <div className="cf-kpi-sub">Over 30 years</div>
                   </div>
                 </>
               )}
@@ -1439,8 +1436,8 @@ export default function CashflowCalculator() {
                 <>
                   <div className="cf-kpi-card">
                     <div className="cf-kpi-label">Net Equity</div>
-                    <div className="cf-kpi-value cf-positive">{formatAbbreviated(sy.equity)}</div>
-                    <div className="cf-kpi-sub">{formatCurrency(Math.round(sy.equity))}</div>
+                    <div className="cf-kpi-value cf-positive">{formatAbbreviated(sy.netEquity)}</div>
+                    <div className="cf-kpi-sub">{formatCurrency(Math.round(sy.netEquity))}</div>
                   </div>
                   <div className="cf-kpi-card">
                     <div className="cf-kpi-label">LVR</div>
@@ -1461,26 +1458,36 @@ export default function CashflowCalculator() {
               {effectiveViewMode === "deductions" && sy && (
                 <>
                   <div className="cf-kpi-card">
-                    <div className="cf-kpi-label">Total Deductions</div>
+                    <div className="cf-kpi-label">{isInvestment ? "Total Deductions" : "Total Expenses"}</div>
                     <div className="cf-kpi-value" style={{ color: "#a78bfa" }}>
-                      {formatCurrency(Math.round(sy.totalDeductions))}
+                      {formatCurrency(Math.round(isInvestment ? sy.totalDeductions : sy.ongoingCosts))}
                     </div>
                     <div className="cf-kpi-sub">Year {selectedYear}</div>
                   </div>
                   <div className="cf-kpi-card">
-                    <div className="cf-kpi-label">Depreciation</div>
-                    <div className="cf-kpi-value" style={{ color: "#a78bfa" }}>
-                      {formatCurrency(Math.round(sy.depDiv43 + sy.depDiv40))}
+                    <div className="cf-kpi-label">{isInvestment ? "Holding Costs" : "Annual Expenses"}</div>
+                    <div className="cf-kpi-value" style={{ color: "#f59e0b" }}>
+                      {formatCurrency(Math.round(isInvestment ? sy.interestPortion + sy.ongoingCosts : sy.ongoingCosts))}
                     </div>
-                    <div className="cf-kpi-sub">Div 43 + Div 40</div>
+                    <div className="cf-kpi-sub">{isInvestment ? "Interest + expenses" : "Rates + insurance + maint."}</div>
                   </div>
-                  <div className="cf-kpi-card">
-                    <div className="cf-kpi-label">Tax Saved</div>
-                    <div className="cf-kpi-value cf-positive">
-                      +{formatCurrency(Math.round(sy.taxSaved))}
+                  {isInvestment ? (
+                    <div className="cf-kpi-card">
+                      <div className="cf-kpi-label">Depreciation</div>
+                      <div className="cf-kpi-value" style={{ color: "#a78bfa" }}>
+                        {formatCurrency(Math.round(sy.depDiv43 + sy.depDiv40))}
+                      </div>
+                      <div className="cf-kpi-sub">Div 43 + Div 40</div>
                     </div>
-                    <div className="cf-kpi-sub">at {(marginalRate * 100).toFixed(0)}% + 2% ML</div>
-                  </div>
+                  ) : (
+                    <div className="cf-kpi-card">
+                      <div className="cf-kpi-label">Year 30 Total</div>
+                      <div className="cf-kpi-value" style={{ color: "#a78bfa" }}>
+                        {formatCurrency(Math.round(yearData[29].ongoingCosts))}
+                      </div>
+                      <div className="cf-kpi-sub">Annual expenses</div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -1491,63 +1498,45 @@ export default function CashflowCalculator() {
               {effectiveViewMode === "summary" && (
                 <table className="cf-data-table">
                   <thead>
-                    <tr className="cf-group-header">
-                      <th colSpan={2}></th>
-                      <th colSpan={2} style={{ color: "rgba(45,212,191,0.7)" }}>Income</th>
-                      <th colSpan={5} style={{ color: "rgba(245,158,11,0.8)" }}>Property</th>
-                      <th colSpan={4} style={{ color: "rgba(167,139,250,0.8)" }}>Tax</th>
-                      <th colSpan={4} style={{ color: "var(--cf-accent)" }}>Cashflow</th>
-                    </tr>
                     <tr className="cf-col-header">
-                      <th className="cf-col-center" style={{ width: "50px" }}>Year</th>
-                      <th className="cf-col-center" style={{ width: "70px" }}>Loan Yr</th>
+                      <th className="cf-col-center cf-col-year">Year</th>
+                      <th className="cf-col-center cf-col-loan-yr">Cal. Year</th>
                       <th className="cf-group-divider">Salary</th>
-                      <th>Other</th>
-                      <th className="cf-group-divider" style={{ color: "rgba(245,158,11,0.55)" }}>Rent</th>
-                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Interest</th>
-                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Ongoing</th>
-                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Dep.</th>
-                      <th style={{ color: "#f59e0b", fontWeight: 600 }}>Gearing</th>
-                      <th className="cf-group-divider" style={{ color: "rgba(167,139,250,0.55)" }}>Total Inc.</th>
-                      <th style={{ color: "rgba(167,139,250,0.55)" }}>Taxable Inc.</th>
+                      {isInvestment && <th style={{ color: "rgba(45,212,191,0.6)" }}>Rental Income</th>}
+                      <th style={{ fontWeight: 600 }}>Gross Income</th>
+                      <th className="cf-group-divider" style={{ color: "rgba(167,139,250,0.55)" }}>Deductions</th>
+                      <th style={{ color: "rgba(167,139,250,0.55)" }}>Taxable Income</th>
                       <th style={{ color: "rgba(167,139,250,0.55)" }}>Income Tax</th>
-                      <th style={{ color: "#a78bfa", fontWeight: 600 }}>Tax Saved</th>
-                      <th className="cf-group-divider" style={{ color: "rgba(45,212,191,0.6)" }}>Total Inc.</th>
-                      <th style={{ color: "rgba(45,212,191,0.6)" }}>Principal</th>
-                      <th style={{ color: "rgba(45,212,191,0.6)" }}>Tax</th>
-                      <th style={{ color: "var(--cf-text)", fontWeight: 700 }}>Net CF</th>
+                      {isInvestment && <th style={{ color: "#a78bfa", fontWeight: 600 }}>Tax Saved</th>}
+                      <th className="cf-group-divider" style={{ color: "rgba(45,212,191,0.6)" }}>After-Tax Income</th>
+                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Holding Costs</th>
+                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Loan Principal</th>
+                      <th style={{ color: "var(--cf-text)", fontWeight: 700 }}>Net Cashflow</th>
                     </tr>
                   </thead>
                   <tbody>
                     {yearData.map((y, i) => {
-                      const isCrossover = crossoverYear !== null && y.year === crossoverYear;
+                      const holdingCosts = y.interestPortion + y.ongoingCosts;
                       return (
                         <tr
                           key={y.year}
-                          className={`${y.year === selectedYear ? "cf-active-row" : ""} ${isCrossover ? "cf-crossover-row" : ""}`}
+                          className={y.year === selectedYear ? "cf-active-row" : ""}
                           onClick={() => setSelectedYear(y.year)}
                         >
                           <td className="cf-col-center">{y.year}</td>
-                          <td className="cf-col-center">
-                            {i + 1}
-                            {isCrossover && <span className="cf-crossover-chip">● Crossover</span>}
-                          </td>
+                          <td className="cf-col-center">{baseYear + i}</td>
                           <td className="cf-group-divider">{formatCurrency(Math.round(y.salary))}</td>
-                          <td>{formatCurrency(Math.round(y.otherIncome))}</td>
-                          <td className="cf-group-divider cf-col-property">{formatCurrency(Math.round(y.rentalIncome))}</td>
-                          <td className="cf-col-property cf-negative">{formatCurrency(Math.round(-y.interestPortion))}</td>
-                          <td className="cf-col-property cf-negative">{formatCurrency(Math.round(-y.ongoingCosts))}</td>
-                          <td className="cf-col-property cf-negative">{formatCurrency(Math.round(-(y.depDiv43 + y.depDiv40)))}</td>
-                          <td className="cf-col-property-agg" style={{ color: y.gearing < 0 ? "#f87171" : "#4ade80" }}>
-                            {formatCurrency(Math.round(y.gearing))}
-                          </td>
-                          <td className="cf-group-divider cf-col-tax">{formatCurrency(Math.round(y.totalIncomeAll))}</td>
+                          {isInvestment && <td style={{ color: "var(--cf-accent)" }}>{formatCurrency(Math.round(y.rentalIncome))}</td>}
+                          <td style={{ fontWeight: 700, color: "var(--cf-text)" }}>{formatCurrency(Math.round(y.grossIncome))}</td>
+                          <td className="cf-group-divider cf-col-tax cf-negative">{formatCurrency(Math.round(-y.totalDeductionsForTax))}</td>
                           <td className="cf-col-tax">{formatCurrency(Math.round(y.taxableIncomeCalc))}</td>
                           <td className="cf-col-tax cf-negative">{formatCurrency(Math.round(-y.incomeTaxCalc))}</td>
-                          <td className="cf-col-tax-agg" style={{ color: "#4ade80" }}>+{formatCurrency(Math.round(y.taxSaved))}</td>
-                          <td className="cf-group-divider cf-col-cf">{formatCurrency(Math.round(y.cfTotalIncome))}</td>
-                          <td className="cf-col-cf cf-negative">{formatCurrency(Math.round(-y.principalPortion))}</td>
-                          <td className="cf-col-cf cf-negative">{formatCurrency(Math.round(-y.incomeTaxCalc))}</td>
+                          {isInvestment && (
+                            <td style={{ color: "#4ade80", fontWeight: 500 }}>+{formatCurrency(Math.round(y.taxSaved))}</td>
+                          )}
+                          <td className="cf-group-divider" style={{ color: "rgba(45,212,191,0.6)" }}>{formatCurrency(Math.round(y.afterTaxIncome))}</td>
+                          <td className="cf-col-property cf-negative">{formatCurrency(Math.round(-holdingCosts))}</td>
+                          <td className="cf-col-property cf-negative">{formatCurrency(Math.round(-y.principalPortion))}</td>
                           <td className="cf-col-cf-result" style={{ color: y.netCashflow < 0 ? "#f87171" : "#4ade80" }}>
                             {formatCurrency(Math.round(y.netCashflow))}
                           </td>
@@ -1556,15 +1545,14 @@ export default function CashflowCalculator() {
                     })}
                     <tr className="cf-formula-row">
                       <td colSpan={2}></td>
-                      <td colSpan={2}></td>
-                      <td colSpan={5} style={{ color: "rgba(245,158,11,0.4)", textAlign: "center" }}>
-                        Rent &minus; Interest &minus; Ongoing &minus; Dep. = Gearing
+                      <td colSpan={isInvestment ? 3 : 2} style={{ color: "rgba(45,212,191,0.4)", textAlign: "center" }}>
+                        Salary + Rental = Gross
                       </td>
-                      <td colSpan={4} style={{ color: "rgba(167,139,250,0.4)", textAlign: "center" }}>
-                        Total Inc. &minus; Ded. = Taxable Inc. &rarr; Tax
+                      <td colSpan={isInvestment ? 4 : 3} style={{ color: "rgba(167,139,250,0.4)", textAlign: "center" }}>
+                        Gross &minus; Ded. = Taxable &rarr; Tax
                       </td>
                       <td colSpan={4} style={{ color: "rgba(45,212,191,0.4)", textAlign: "center" }}>
-                        Total Inc. &minus; Principal &minus; Tax = Net CF
+                        After-Tax &minus; Costs &minus; Principal = Net CF
                       </td>
                     </tr>
                   </tbody>
@@ -1575,59 +1563,97 @@ export default function CashflowCalculator() {
               {effectiveViewMode === "property" && (
                 <table className="cf-data-table">
                   <thead>
-                    <tr className="cf-group-header">
-                      <th colSpan={2}></th>
-                      <th colSpan={5} style={{ color: "rgba(245,158,11,0.8)" }}>Property</th>
-                      <th colSpan={2} style={{ color: "var(--cf-accent)" }}>Cashflow</th>
-                    </tr>
                     <tr className="cf-col-header">
-                      <th className="cf-col-center" style={{ width: "50px" }}>Year</th>
-                      <th className="cf-col-center" style={{ width: "70px" }}>Loan Yr</th>
-                      <th className="cf-group-divider" style={{ color: "rgba(245,158,11,0.55)" }}>Rent</th>
-                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Interest</th>
-                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Ongoing</th>
-                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Dep.</th>
-                      <th style={{ color: "#f59e0b", fontWeight: 600 }}>Gearing</th>
-                      <th className="cf-group-divider" style={{ color: "rgba(45,212,191,0.6)" }}>Principal</th>
-                      <th style={{ color: "var(--cf-text)", fontWeight: 700 }}>Property CF</th>
+                      <th className="cf-col-center cf-col-year">Year</th>
+                      <th className="cf-col-center cf-col-loan-yr">Cal. Year</th>
+                      {isInvestment && <th className="cf-group-divider" style={{ color: "rgba(45,212,191,0.6)" }}>Rental Income</th>}
+                      {isInvestment ? (
+                        <th style={{ color: "rgba(245,158,11,0.55)" }}>Holding Costs</th>
+                      ) : (
+                        <>
+                          <th className="cf-group-divider" style={{ color: "rgba(245,158,11,0.55)" }}>Holding Costs</th>
+                          <th style={{ color: "rgba(245,158,11,0.55)" }}>Loan Interest</th>
+                          <th style={{ color: "rgba(245,158,11,0.55)" }}>Loan Principal</th>
+                          <th style={{ color: "#f59e0b", fontWeight: 600 }}>Total Repayments</th>
+                          <th style={{ color: "var(--cf-text)", fontWeight: 700 }}>Property Cashflow</th>
+                        </>
+                      )}
+                      {isInvestment && <th className="cf-group-divider" style={{ color: "rgba(167,139,250,0.55)" }}>Depreciation</th>}
+                      {isInvestment && <th style={{ color: "#a78bfa", fontWeight: 600 }}>Net Gearing</th>}
+                      {isInvestment && <th className="cf-group-divider" style={{ color: "rgba(245,158,11,0.55)" }}>Loan Principal</th>}
+                      {isInvestment && <th style={{ color: "var(--cf-text)", fontWeight: 700 }}>Property Cashflow</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {yearData.map((y, i) => {
-                      const isCrossover = crossoverYear !== null && y.year === crossoverYear;
+                      const totalCosts = y.interestPortion + y.ongoingCosts;
+                      const totalDep = y.depDiv43 + y.depDiv40;
                       return (
                         <tr
                           key={y.year}
-                          className={`${y.year === selectedYear ? "cf-active-row" : ""} ${isCrossover ? "cf-crossover-row" : ""}`}
+                          className={y.year === selectedYear ? "cf-active-row" : ""}
                           onClick={() => setSelectedYear(y.year)}
                         >
                           <td className="cf-col-center">{y.year}</td>
-                          <td className="cf-col-center">
-                            {i + 1}
-                            {isCrossover && <span className="cf-crossover-chip">● Crossover</span>}
-                          </td>
-                          <td className="cf-group-divider cf-col-property">{formatCurrency(Math.round(y.rentalIncome))}</td>
-                          <td className="cf-col-property cf-negative">{formatCurrency(Math.round(-y.interestPortion))}</td>
-                          <td className="cf-col-property cf-negative">{formatCurrency(Math.round(-y.ongoingCosts))}</td>
-                          <td className="cf-col-property cf-negative">{formatCurrency(Math.round(-(y.depDiv43 + y.depDiv40)))}</td>
-                          <td className="cf-col-property-agg" style={{ color: y.gearing < 0 ? "#f87171" : "#4ade80" }}>
-                            {formatCurrency(Math.round(y.gearing))}
-                          </td>
-                          <td className="cf-group-divider cf-col-cf cf-negative">{formatCurrency(Math.round(-y.principalPortion))}</td>
-                          <td className="cf-col-cf-result" style={{ color: y.propertyCashflow < 0 ? "#f87171" : "#4ade80" }}>
-                            {formatCurrency(Math.round(y.propertyCashflow))}
-                          </td>
+                          <td className="cf-col-center">{baseYear + i}</td>
+                          {isInvestment && (
+                            <td className="cf-group-divider" style={{ color: "var(--cf-accent)" }}>{formatCurrency(Math.round(y.rentalIncome))}</td>
+                          )}
+                          {isInvestment ? (
+                            <>
+                              <td className="cf-col-property cf-negative">
+                                {formatCurrency(Math.round(-totalCosts))}
+                              </td>
+                              <td className="cf-group-divider cf-col-tax cf-negative">{formatCurrency(Math.round(-totalDep))}</td>
+                              <td style={{ color: y.gearing < 0 ? "#f87171" : "#4ade80", fontWeight: 600 }}>
+                                {formatCurrency(Math.round(y.gearing))}
+                              </td>
+                              <td className="cf-group-divider cf-col-property cf-negative">
+                                {formatCurrency(Math.round(-y.principalPortion))}
+                              </td>
+                              <td className="cf-col-cf-result" style={{ color: y.propertyCashflow < 0 ? "#f87171" : "#4ade80" }}>
+                                {formatCurrency(Math.round(y.propertyCashflow))}
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="cf-group-divider cf-col-property cf-negative">
+                                {formatCurrency(Math.round(-y.ongoingCosts))}
+                              </td>
+                              <td className="cf-col-property cf-negative">
+                                {formatCurrency(Math.round(-y.interestPortion))}
+                              </td>
+                              <td className="cf-col-property cf-negative">
+                                {formatCurrency(Math.round(-y.principalPortion))}
+                              </td>
+                              <td className="cf-col-property-agg cf-negative">
+                                {formatCurrency(Math.round(-(y.interestPortion + y.principalPortion)))}
+                              </td>
+                              <td className="cf-col-cf-result" style={{ color: y.propertyCashflow < 0 ? "#f87171" : "#4ade80" }}>
+                                {formatCurrency(Math.round(y.propertyCashflow))}
+                              </td>
+                            </>
+                          )}
                         </tr>
                       );
                     })}
                     <tr className="cf-formula-row">
                       <td colSpan={2}></td>
-                      <td colSpan={5} style={{ color: "rgba(245,158,11,0.4)", textAlign: "center" }}>
-                        Rent &minus; Interest &minus; Ongoing &minus; Dep. = Gearing
-                      </td>
-                      <td colSpan={2} style={{ color: "rgba(45,212,191,0.4)", textAlign: "center" }}>
-                        Gearing &minus; Principal = Property CF
-                      </td>
+                      {isInvestment ? (
+                        <>
+                          <td colSpan={2}></td>
+                          <td colSpan={2} style={{ color: "rgba(167,139,250,0.4)", textAlign: "center" }}>
+                            Rent &minus; Costs &minus; Dep. = Gearing
+                          </td>
+                          <td colSpan={2} style={{ color: "rgba(45,212,191,0.4)", textAlign: "center" }}>
+                            Rent &minus; Costs &minus; Principal = CF
+                          </td>
+                        </>
+                      ) : (
+                        <td colSpan={5} style={{ color: "rgba(245,158,11,0.4)", textAlign: "center" }}>
+                          Holding Costs + Repayments = Property CF
+                        </td>
+                      )}
                     </tr>
                   </tbody>
                 </table>
@@ -1637,109 +1663,101 @@ export default function CashflowCalculator() {
               {effectiveViewMode === "equity" && (
                 <table className="cf-data-table">
                   <thead>
-                    <tr className="cf-group-header">
-                      <th colSpan={2}></th>
-                      <th colSpan={2} style={{ color: "rgba(245,158,11,0.8)" }}>Property</th>
-                      <th colSpan={3} style={{ color: "rgba(167,139,250,0.8)" }}>Loan</th>
-                      <th colSpan={2} style={{ color: "var(--cf-accent)" }}>Equity</th>
-                    </tr>
                     <tr className="cf-col-header">
-                      <th className="cf-col-center" style={{ width: "50px" }}>Year</th>
-                      <th className="cf-col-center" style={{ width: "70px" }}>Loan Yr</th>
-                      <th className="cf-group-divider" style={{ color: "rgba(245,158,11,0.55)" }}>Value</th>
-                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Growth</th>
-                      <th className="cf-group-divider" style={{ color: "rgba(167,139,250,0.55)" }}>Balance</th>
-                      <th style={{ color: "rgba(167,139,250,0.55)" }}>Principal</th>
-                      <th style={{ color: "rgba(167,139,250,0.55)" }}>Interest</th>
-                      <th className="cf-group-divider" style={{ color: "var(--cf-accent)" }}>Net Equity</th>
-                      <th style={{ color: "rgba(45,212,191,0.6)" }}>LVR</th>
+                      <th className="cf-col-center cf-col-year">Year</th>
+                      <th className="cf-col-center cf-col-loan-yr">Cal. Year</th>
+                      <th className="cf-group-divider" style={{ color: "rgba(245,158,11,0.55)" }}>Property Value</th>
+                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Property Growth</th>
+                      <th className="cf-group-divider" style={{ color: "rgba(167,139,250,0.55)" }}>Loan Balance</th>
+                      <th style={{ color: "#a78bfa", fontWeight: 600 }}>LVR</th>
+                      {showOffset && <th className="cf-group-divider" style={{ color: "rgba(45,212,191,0.6)" }}>Offset Total</th>}
+                      {showOffset && <th style={{ color: "rgba(45,212,191,0.6)" }}>Property Equity</th>}
+                      <th style={{ color: "var(--cf-accent)", fontWeight: 700 }}>Net Equity</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {yearData.map((y, i) => (
-                      <tr
-                        key={y.year}
-                        className={y.year === selectedYear ? "cf-active-row" : ""}
-                        onClick={() => setSelectedYear(y.year)}
-                      >
-                        <td className="cf-col-center">{y.year}</td>
-                        <td className="cf-col-center">{i + 1}</td>
-                        <td className="cf-group-divider cf-col-property">{formatCurrency(Math.round(y.propertyValue))}</td>
-                        <td className="cf-col-property" style={{ color: "#4ade80" }}>
-                          +{formatCurrency(Math.round(y.propertyValue - propertyValue))}
-                        </td>
-                        <td className="cf-group-divider cf-col-tax">{formatCurrency(Math.round(y.loanBalance))}</td>
-                        <td className="cf-col-tax">{formatCurrency(Math.round(y.principalPortion))}</td>
-                        <td className="cf-col-tax">{formatCurrency(Math.round(y.interestPortion))}</td>
-                        <td className="cf-group-divider" style={{ color: "var(--cf-accent)", fontWeight: 600 }}>
-                          {formatCurrency(Math.round(y.equity))}
-                        </td>
-                        <td className="cf-col-cf">{(y.loanBalance / y.propertyValue * 100).toFixed(1)}%</td>
-                      </tr>
-                    ))}
+                    {yearData.map((y, i) => {
+                      return (
+                        <tr
+                          key={y.year}
+                          className={y.year === selectedYear ? "cf-active-row" : ""}
+                          onClick={() => setSelectedYear(y.year)}
+                        >
+                          <td className="cf-col-center">{y.year}</td>
+                          <td className="cf-col-center">{baseYear + i}</td>
+                          <td className="cf-group-divider cf-col-property">{formatCurrency(Math.round(y.propertyValue))}</td>
+                          <td className="cf-col-property" style={{ color: "#4ade80" }}>
+                            +{formatCurrency(Math.round(y.propertyValue - propertyValue))}
+                          </td>
+                          <td className="cf-group-divider cf-negative">{formatCurrency(Math.round(-y.loanBalance))}</td>
+                          <td className="cf-col-tax-agg">{(y.loanBalance / y.propertyValue * 100).toFixed(1)}%</td>
+                          {showOffset && (
+                            <td className="cf-group-divider" style={{ color: "var(--cf-accent)" }}>
+                              {formatCurrency(Math.round(y.offsetBalanceAtYear))}
+                            </td>
+                          )}
+                          {showOffset && (
+                            <td style={{ color: "rgba(45,212,191,0.6)" }}>{formatCurrency(Math.round(y.propertyEquity))}</td>
+                          )}
+                          <td style={{ color: "var(--cf-accent)", fontWeight: 600 }}>
+                            {formatCurrency(Math.round(y.netEquity))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
 
-              {/* DEDUCTIONS TABLE */}
+              {/* DEDUCTIONS / EXPENSES TABLE */}
               {effectiveViewMode === "deductions" && (
                 <table className="cf-data-table">
                   <thead>
                     <tr className="cf-group-header">
                       <th colSpan={2}></th>
-                      <th colSpan={2} style={{ color: "rgba(45,212,191,0.7)" }}>Income</th>
-                      <th colSpan={5} style={{ color: "rgba(245,158,11,0.8)" }}>Holding Costs</th>
-                      <th colSpan={3} style={{ color: "rgba(167,139,250,0.8)" }}>Depreciation</th>
-                      <th colSpan={2} style={{ color: "var(--cf-accent)" }}>Result</th>
+                      <th colSpan={isInvestment ? 5 : 4} style={{ color: "rgba(245,158,11,0.8)" }}>{isInvestment ? "Holding Costs" : "Expenses"}</th>
+                      {isInvestment && <th colSpan={3} style={{ color: "rgba(167,139,250,0.8)" }}>Depreciation</th>}
+                      <th style={{ color: "var(--cf-accent)" }}>Total</th>
                     </tr>
                     <tr className="cf-col-header">
-                      <th className="cf-col-center" style={{ width: "50px" }}>Year</th>
-                      <th className="cf-col-center" style={{ width: "70px" }}>Loan Yr</th>
-                      <th className="cf-group-divider">Rent</th>
-                      <th>Other</th>
-                      <th className="cf-group-divider" style={{ color: "rgba(245,158,11,0.55)" }}>Interest</th>
-                      <th style={{ color: "rgba(245,158,11,0.55)" }}>Rates</th>
+                      <th className="cf-col-center cf-col-year">Year</th>
+                      <th className="cf-col-center cf-col-loan-yr">Cal. Year</th>
+                      {isInvestment && <th className="cf-group-divider" style={{ color: "rgba(245,158,11,0.55)" }}>Interest</th>}
+                      <th className={isInvestment ? "" : "cf-group-divider"} style={{ color: "rgba(245,158,11,0.55)" }}>Rates</th>
                       <th style={{ color: "rgba(245,158,11,0.55)" }}>Insurance</th>
                       <th style={{ color: "rgba(245,158,11,0.55)" }}>Maint.</th>
                       <th style={{ color: "#f59e0b", fontWeight: 600 }}>Total</th>
-                      <th className="cf-group-divider" style={{ color: "rgba(167,139,250,0.55)" }}>Div 43</th>
-                      <th style={{ color: "rgba(167,139,250,0.55)" }}>Div 40</th>
-                      <th style={{ color: "#a78bfa", fontWeight: 600 }}>Total</th>
-                      <th className="cf-group-divider" style={{ color: "var(--cf-accent)" }}>Total Ded.</th>
-                      <th style={{ color: "#f59e0b", fontWeight: 600 }}>Gearing</th>
+                      {isInvestment && <th className="cf-group-divider" style={{ color: "rgba(167,139,250,0.55)" }}>Div 43</th>}
+                      {isInvestment && <th style={{ color: "rgba(167,139,250,0.55)" }}>Div 40</th>}
+                      {isInvestment && <th style={{ color: "#a78bfa", fontWeight: 600 }}>Total</th>}
+                      <th className="cf-group-divider" style={{ color: "var(--cf-accent)", fontWeight: 700 }}>
+                        {isInvestment ? "Total Ded." : "Total Exp."}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {yearData.map((y, i) => {
-                      const isCrossover = crossoverYear !== null && y.year === crossoverYear;
-                      const holdingTotal = y.interestPortion + y.ongoingCosts;
+                      const holdingTotal = isInvestment ? y.interestPortion + y.ongoingCosts : y.ongoingCosts;
                       const depTotal = y.depDiv43 + y.depDiv40;
+                      const grandTotal = isInvestment ? holdingTotal + depTotal : holdingTotal;
                       return (
                         <tr
                           key={y.year}
-                          className={`${y.year === selectedYear ? "cf-active-row" : ""} ${isCrossover ? "cf-crossover-row" : ""}`}
+                          className={y.year === selectedYear ? "cf-active-row" : ""}
                           onClick={() => setSelectedYear(y.year)}
                         >
                           <td className="cf-col-center">{y.year}</td>
-                          <td className="cf-col-center">
-                            {i + 1}
-                            {isCrossover && <span className="cf-crossover-chip">● Crossover</span>}
-                          </td>
-                          <td className="cf-group-divider">{formatCurrency(Math.round(y.rentalIncome))}</td>
-                          <td>{formatCurrency(Math.round(y.otherIncome))}</td>
-                          <td className="cf-group-divider cf-col-property">{formatCurrency(Math.round(y.interestPortion))}</td>
-                          <td className="cf-col-property">{formatCurrency(Math.round(y.councilRates + y.waterRates))}</td>
+                          <td className="cf-col-center">{baseYear + i}</td>
+                          {isInvestment && <td className="cf-group-divider cf-col-property">{formatCurrency(Math.round(y.interestPortion))}</td>}
+                          <td className={isInvestment ? "cf-col-property" : "cf-group-divider cf-col-property"}>{formatCurrency(Math.round(y.councilRates + y.waterRates))}</td>
                           <td className="cf-col-property">{formatCurrency(Math.round(y.insurance))}</td>
                           <td className="cf-col-property">{formatCurrency(Math.round(y.maintenance + y.strataFees))}</td>
                           <td className="cf-col-property-agg">{formatCurrency(Math.round(holdingTotal))}</td>
-                          <td className="cf-group-divider cf-col-tax">{formatCurrency(Math.round(y.depDiv43))}</td>
-                          <td className="cf-col-tax">{formatCurrency(Math.round(y.depDiv40))}</td>
-                          <td className="cf-col-tax-agg">{formatCurrency(Math.round(depTotal))}</td>
+                          {isInvestment && <td className="cf-group-divider cf-col-tax">{formatCurrency(Math.round(y.depDiv43))}</td>}
+                          {isInvestment && <td className="cf-col-tax">{formatCurrency(Math.round(y.depDiv40))}</td>}
+                          {isInvestment && <td className="cf-col-tax-agg">{formatCurrency(Math.round(depTotal))}</td>}
                           <td className="cf-group-divider" style={{ color: "var(--cf-accent)", fontWeight: 600 }}>
-                            {formatCurrency(Math.round(y.totalDeductions))}
-                          </td>
-                          <td style={{ color: y.gearing < 0 ? "#f87171" : "#4ade80", fontWeight: 600 }}>
-                            {formatCurrency(Math.round(y.gearing))}
+                            {formatCurrency(Math.round(grandTotal))}
                           </td>
                         </tr>
                       );
