@@ -1206,8 +1206,10 @@ export default function CashflowCalculator() {
               ))}
             </div>
 
+            {/* CHART + KPI ROW */}
+            <div className="cf-chart-kpi-row">
             {/* BAR CHART */}
-            <section style={{ overflow: "hidden", borderRadius: "12px", border: "1px solid var(--cf-border)", background: "var(--cf-card)" }}>
+            <section style={{ overflow: "hidden", borderRadius: "12px", border: "1px solid var(--cf-border)", background: "var(--cf-card)", flex: 1, minWidth: 0 }}>
               {/* Chart header */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--cf-border)", padding: "16px 24px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -1230,55 +1232,49 @@ export default function CashflowCalculator() {
               <div style={{ padding: "16px 24px", position: "relative" }}>
                 <div style={{ position: "relative", width: "100%", height: "220px" }}>
                   <svg style={{ width: "100%", height: "100%" }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="none">
-                    <defs>
-                      <linearGradient id="barGradPos" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.9" />
-                        <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0.45" />
-                      </linearGradient>
-                      <linearGradient id="barGradNeg" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f87171" stopOpacity="0.45" />
-                        <stop offset="100%" stopColor="#f87171" stopOpacity="0.9" />
-                      </linearGradient>
-                      <linearGradient id="barGradTeal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.9" />
-                        <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0.45" />
-                      </linearGradient>
-                      <linearGradient id="barGradPurple" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.9" />
-                        <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.45" />
-                      </linearGradient>
-                    </defs>
+                    {/* Dot grid lines */}
+                    {yTicks.map((v, i) => {
+                      const y = mapY(v);
+                      const dots = [];
+                      for (let x = mL; x <= svgW - mR; x += 14) {
+                        dots.push(<circle key={x} cx={x} cy={y} r={0.6} fill="rgba(255,255,255,0.07)" />);
+                      }
+                      return <g key={i}>{dots}</g>;
+                    })}
 
-                    {/* Horizontal grid lines */}
-                    {yTicks.map((v, i) => (
-                      <line key={i} x1={mL} x2={svgW - mR} y1={mapY(v)} y2={mapY(v)}
-                        stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-                    ))}
-
-                    {/* Zero line if crossing zero */}
+                    {/* Zero line */}
                     {dataMin < 0 && dataMax > 0 && (
                       <line x1={mL} x2={svgW - mR} y1={zeroY} y2={zeroY}
-                        stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="8,4" />
+                        stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
                     )}
 
-                    {/* Bars */}
+                    {/* Pill bars */}
                     {chartData.map((d, i) => {
-                      const x = mL + slotW * i + 1.5;
+                      const cx = mL + slotW * i + slotW / 2;
+                      const pillW = slotW * 0.55;
+                      const x = cx - pillW / 2;
                       const barTop = d.value >= 0 ? mapY(d.value) : zeroY;
-                      const barHeight = Math.max(1, Math.abs(mapY(d.value) - zeroY));
+                      const barBot = d.value >= 0 ? zeroY : mapY(d.value);
+                      const barHeight = Math.max(1, barBot - barTop);
                       const isActive = d.year === selectedYear;
                       const isHovered = d.year === hoveredYear;
 
+                      const barColor = (() => {
+                        if (effectiveViewMode === "equity") return "#2dd4bf";
+                        if (effectiveViewMode === "deductions") return "#a78bfa";
+                        return d.value >= 0 ? "#2dd4bf" : "#f87171";
+                      })();
+
                       return (
                         <g key={d.year}>
-                          <rect x={x} y={barTop} width={barW} height={barHeight}
-                            fill={barFill(d.value)} opacity={isActive || isHovered ? 1 : 0.5}
-                            rx={2} />
+                          <rect x={x} y={barTop} width={pillW} height={barHeight}
+                            rx={3} fill={barColor}
+                            opacity={isActive || isHovered ? 0.85 : 0.5} />
                           {/* Active bar value label */}
                           {isActive && (
                             <text
-                              x={x + barW / 2}
-                              y={d.value >= 0 ? mapY(d.value) - 6 : mapY(d.value) + 14}
+                              x={cx}
+                              y={d.value >= 0 ? mapY(d.value) - 8 : mapY(d.value) + 14}
                               textAnchor="middle" fill="var(--cf-text)" fontSize="10" fontWeight="600"
                               fontFamily="inherit"
                             >
@@ -1294,6 +1290,23 @@ export default function CashflowCalculator() {
                         </g>
                       );
                     })}
+
+                    {/* Crossover marker */}
+                    {(effectiveViewMode === "summary" || effectiveViewMode === "property") && (() => {
+                      const crossIdx = chartData.findIndex(cd => cd.value >= 0);
+                      if (crossIdx <= 0 || dataMin >= 0) return null;
+                      const cx = mL + slotW * (crossIdx - 0.5) + slotW / 2;
+                      return (
+                        <g>
+                          <polygon points={`${cx - 4},${zeroY + 10} ${cx + 4},${zeroY + 10} ${cx},${zeroY + 4}`}
+                            fill="#2dd4bf" opacity={0.7} />
+                          <text x={cx} y={zeroY + 20} textAnchor="middle"
+                            fill="#2dd4bf" fontSize="9" fontFamily="inherit" fontWeight="500">
+                            Crossover
+                          </text>
+                        </g>
+                      );
+                    })()}
 
                     {/* Y-axis labels */}
                     {yTicks.map((v, i) => (
@@ -1491,6 +1504,7 @@ export default function CashflowCalculator() {
                 </>
               )}
             </div>
+            </div>{/* end cf-chart-kpi-row */}
 
             {/* DATA TABLE */}
             <div className="cf-table-wrap">

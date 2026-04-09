@@ -362,18 +362,30 @@
    KPI CARDS
    ============================================================================ */
 
-.cf-kpi-strip {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+.cf-chart-kpi-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
   margin-bottom: 16px;
 }
 
+.cf-kpi-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 200px;
+  min-width: 200px;
+}
+
 .cf-kpi-card {
+  flex: 1;
   background: var(--cf-card);
   border: 1px solid var(--cf-border);
   border-radius: 8px;
   padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   box-shadow: 0 1px 4px rgba(0,0,0,0.20),
               0 0 0 0.5px rgba(255,255,255,0.03),
               inset 0 1px 0 rgba(255,255,255,0.02);
@@ -570,5 +582,19 @@
 
   .cf-main {
     padding: 20px 16px;
+  }
+
+  .cf-chart-kpi-row {
+    flex-direction: column;
+  }
+
+  .cf-kpi-strip {
+    width: 100%;
+    min-width: 100%;
+    flex-direction: row;
+  }
+
+  .cf-kpi-card {
+    flex: 1;
   }
 }
