@@ -331,31 +331,31 @@
 .cf-mode-bar {
   display: flex;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   margin-bottom: 8px;
-  background: rgba(17,18,21,0.5);
-  border: 1px solid var(--cf-border);
-  border-radius: 10px;
-  padding: 4px;
+  background: rgba(42,42,46,0.30);
+  border: 1px solid rgba(113,113,122,0.15);
+  border-radius: 16px;
+  padding: 6px;
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
 }
 
 .cf-mode-btn {
-  padding: 8px 20px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 7px;
+  border-radius: 12px;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
   background: transparent;
-  color: var(--cf-text-dim);
+  color: var(--cf-text-muted);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cf-mode-btn svg {
@@ -363,7 +363,7 @@
 }
 
 .cf-mode-btn:hover {
-  color: var(--cf-text-muted);
+  color: var(--cf-text);
 }
 
 .cf-mode-btn:hover svg {
@@ -371,9 +371,10 @@
 }
 
 .cf-mode-btn.active {
-  background: rgba(45,212,191,0.15);
+  background: rgba(45,212,191,0.10);
   color: var(--cf-accent);
-  border: 1px solid rgba(45,212,191,0.25);
+  border: 1px solid rgba(45,212,191,0.20);
+  border-radius: 12px;
 }
 
 .cf-mode-btn.active svg {
@@ -385,7 +386,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--cf-accent);
-  margin-left: 2px;
+  margin-left: 4px;
 }
 
 /* ============================================================================
@@ -394,9 +395,9 @@
 
 .cf-chart-section {
   overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid var(--cf-border);
-  background: var(--cf-card);
+  border-radius: 16px;
+  border: 1px solid rgba(113,113,122,0.15);
+  background: transparent;
   flex: 1 1 0;
   min-width: 0;
 }
@@ -412,17 +413,22 @@
 .cf-chart-sub-tabs {
   display: flex;
   gap: 4px;
+  padding: 4px;
+  border-radius: 8px;
+  background: rgba(42,42,46,0.30);
+  border: 1px solid rgba(113,113,122,0.15);
 }
+
 
 .cf-chart-sub-tab {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 14px;
+  padding: 6px 12px;
   border: 1px solid transparent;
   border-radius: 6px;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   background: transparent;
@@ -444,14 +450,14 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 5px 12px;
-  border: 1px solid var(--cf-border);
-  border-radius: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgba(113,113,122,0.15);
+  border-radius: 8px;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  background: transparent;
+  background: rgba(42,42,46,0.30);
   color: var(--cf-text-dim);
   transition: all 0.15s;
 }
@@ -461,9 +467,15 @@
   border-color: var(--cf-border-hover);
 }
 
+.cf-play-btn.cf-play-active {
+  background: rgba(45,212,191,0.15);
+  border-color: rgba(45,212,191,0.25);
+  color: var(--cf-accent);
+}
+
 /* Timeline slider */
 .cf-timeline {
-  padding: 8px 20px 14px;
+  padding: 16px 8px 0;
 }
 
 .cf-timeline-track {
@@ -475,8 +487,8 @@
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 3px;
-  border-radius: 2px;
+  height: 8px;
+  border-radius: 9999px;
   background: rgba(113,113,122,0.2);
   outline: none;
   cursor: pointer;
@@ -485,8 +497,8 @@
 .cf-timeline-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--cf-accent);
   border: 2px solid var(--cf-bg);
@@ -500,8 +512,8 @@
 }
 
 .cf-timeline-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--cf-accent);
   border: 2px solid var(--cf-bg);
@@ -511,25 +523,31 @@
 .cf-timeline-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--cf-text-dim);
-  margin-top: 2px;
+  margin-top: 8px;
 }
 
 .cf-timeline-legend {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 24px;
+  font-size: 12px;
   color: var(--cf-text-dim);
-  margin-top: 8px;
+  margin-top: 16px;
+}
+
+.cf-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .cf-legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
   background: var(--cf-accent);
 }
 
@@ -567,11 +585,11 @@
 
 .cf-chart-inline-title {
   text-align: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
-  color: var(--cf-text-muted);
+  color: var(--cf-text);
   letter-spacing: -0.01em;
-  margin-bottom: -8px;
+  margin-bottom: 12px;
 }
 
 .cf-chart-inline-year {
@@ -584,73 +602,54 @@
    ============================================================================ */
 
 .cf-chart-kpi-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 200px 1fr 200px;
   gap: 16px;
-  align-items: stretch;
   margin-bottom: 12px;
 }
 
 .cf-kpi-strip {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex: 0 0 200px;
+  gap: 16px;
   min-width: 0;
-  justify-content: center;
 }
 
 .cf-kpi-strip.cf-kpi-left {
-  align-items: flex-start;
-  text-align: left;
+  align-items: stretch;
 }
 
 .cf-kpi-strip.cf-kpi-right {
-  align-items: flex-end;
-  text-align: right;
+  align-items: stretch;
 }
 
 .cf-kpi-card {
-  flex: none;
   background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 8px 0;
+  border: 1px solid rgba(113,113,122,0.15);
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  box-shadow: none;
-}
-
-/* Left KPI cards get subtle v0-style card treatment */
-.cf-kpi-strip.cf-kpi-left .cf-kpi-card {
   align-items: center;
   text-align: center;
-  background: rgba(42,42,46,0.30);
-  border: 1px solid rgba(113,113,122,0.08);
-  border-radius: 12px;
-  padding: 16px 20px;
-}
-
-/* Right KPI cards stay borderless, right-aligned */
-.cf-kpi-strip.cf-kpi-right .cf-kpi-card {
-  align-items: flex-end;
 }
 
 .cf-kpi-card.cf-kpi-primary,
 .cf-kpi-card.cf-kpi-highlight {
-  border-color: rgba(113,113,122,0.08);
+  border-color: rgba(113,113,122,0.15);
 }
 
 .cf-kpi-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--cf-text-dim);
-  margin-bottom: 2px;
+  margin-bottom: 8px;
 }
 
 .cf-kpi-value {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
@@ -674,28 +673,25 @@
    ============================================================================ */
 
 .cf-table-wrap {
-  background: var(--cf-card);
-  border: 1px solid var(--cf-border);
-  border-radius: 10px;
+  background: rgba(42,42,46,0.30);
+  border: 1px solid rgba(113,113,122,0.15);
+  border-radius: 12px;
   overflow-x: auto;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.20),
-              0 0 0 0.5px rgba(255,255,255,0.03),
-              inset 0 1px 0 rgba(255,255,255,0.02);
 }
 
 .cf-data-table {
   width: 100%;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
-  table-layout: fixed;
+  font-size: 14px;
 }
 
 .cf-data-table thead .cf-col-header th.cf-col-year {
-  width: 50px;
+  white-space: nowrap;
 }
 
 .cf-data-table thead .cf-col-header th.cf-col-loan-yr {
-  width: 65px;
+  white-space: nowrap;
 }
 
 .cf-data-table thead .cf-group-header th {
@@ -704,29 +700,25 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--cf-text-dim);
-  padding: 12px 10px 6px;
+  padding: 12px 12px 6px;
   text-align: center;
   border-bottom: none;
 }
 
 .cf-data-table thead .cf-col-header th {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--cf-text-dim);
-  padding: 16px 14px;
-  text-align: right;
+  padding: 16px 12px;
+  text-align: center;
   vertical-align: middle;
-  border-bottom: 1px solid var(--cf-border);
-  position: sticky;
-  top: 0;
-  background: var(--cf-card-elevated);
-  z-index: 1;
+  border-bottom: 1px solid rgba(113,113,122,0.15);
 }
 
 .cf-data-table thead .cf-col-header th.cf-col-center {
-  text-align: center;
+  text-align: left;
 }
 
 .cf-data-table tbody tr {
@@ -739,7 +731,7 @@
 }
 
 .cf-data-table tbody tr.cf-active-row {
-  background: rgba(45, 212, 191, 0.06);
+  background: rgba(45, 212, 191, 0.05);
 }
 
 .cf-data-table tbody tr.cf-crossover-row td {
@@ -748,22 +740,21 @@
 }
 
 .cf-data-table tbody td {
-  font-size: 15px;
-  padding: 21px 14px;
-  text-align: right;
+  padding: 16px 12px;
+  text-align: center;
   vertical-align: middle;
-  border-bottom: 1px solid var(--cf-border);
+  border-bottom: 1px solid rgba(113,113,122,0.10);
   color: var(--cf-text-muted);
 }
 
 .cf-data-table tbody td.cf-col-center {
-  text-align: center;
+  text-align: left;
   color: var(--cf-text);
   font-weight: 500;
 }
 
 .cf-group-divider {
-  border-left: 1px solid rgba(113, 113, 122, 0.25) !important;
+  border-left: none !important;
 }
 
 /* Column group colours */
@@ -774,18 +765,19 @@
 .cf-col-cf { color: rgba(45, 212, 191, 0.6); }
 .cf-col-cf-result {
   font-weight: 700;
-  font-size: 15px;
   position: relative;
 }
 
 /* Highlighted columns for critical outputs */
 .cf-data-table thead .cf-col-header th.cf-col-highlight {
   background: rgba(45, 212, 191, 0.06);
+  text-align: right;
 }
 
 .cf-data-table tbody td.cf-col-highlight {
   background: rgba(45, 212, 191, 0.04);
   font-weight: 600;
+  text-align: right;
 }
 
 .cf-data-table tbody td.cf-col-highlight-tax {
@@ -817,22 +809,53 @@
 
 /* Chart tooltip */
 .cf-chart-tooltip {
-  position: absolute;
-  background: var(--cf-card-elevated);
-  border: 1px solid var(--cf-border-hover);
-  border-radius: 6px;
-  padding: 10px 14px;
-  font-size: 11px;
+  background: rgba(42,42,46,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(113,113,122,0.25);
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 14px;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.1s;
   z-index: 10;
-  white-space: nowrap;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  min-width: 200px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .cf-chart-tooltip.visible {
   opacity: 1;
+}
+
+.cf-tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cf-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.cf-tooltip-row + .cf-tooltip-row {
+  margin-top: 8px;
+}
+
+.cf-tooltip-label {
+  color: var(--cf-text-muted);
+}
+
+.cf-tooltip-value {
+  font-weight: 600;
+}
+
+.cf-tooltip-divider {
+  height: 1px;
+  background: rgba(113,113,122,0.25);
+  margin: 8px 0;
 }
 
 .cf-tooltip-caret {
@@ -871,29 +894,11 @@
   }
 
   .cf-chart-kpi-row {
-    flex-direction: column;
-  }
-
-  .cf-chart-section {
-    flex: 1 1 auto;
+    grid-template-columns: 1fr;
   }
 
   .cf-kpi-strip {
-    flex: 1 1 auto;
     flex-direction: row;
-    justify-content: space-around;
-  }
-
-  .cf-kpi-strip.cf-kpi-left,
-  .cf-kpi-strip.cf-kpi-right {
-    flex: 0 0 auto;
-    align-items: center;
-    text-align: center;
-  }
-
-  .cf-kpi-strip.cf-kpi-left .cf-kpi-card,
-  .cf-kpi-strip.cf-kpi-right .cf-kpi-card {
-    align-items: center;
   }
 
   .cf-kpi-card {

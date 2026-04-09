@@ -1,9 +1,21 @@
 "use client";
 
-import React from "react";
-import { TrendingUp, Layers, Target } from "lucide-react";
+import { useState } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  Area,
+  ComposedChart,
+  ReferenceLine,
+} from "recharts";
+import { TrendingUp, Layers, Target, Play, Pause } from "lucide-react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
-import { formatCurrencyCf, formatChartLabel } from "@/lib/cashflow-calculations";
+import { formatCurrencyCf } from "@/lib/cashflow-calculations";
 
 interface Props {
   chartData: { year: number; value: number }[];
@@ -16,238 +28,367 @@ interface Props {
   onHoverYear: (year: number | null) => void;
 }
 
+type ChartView = "bars" | "stacked" | "comparison";
+
+const chartViews = [
+  { id: "bars" as const, label: "Growth", icon: TrendingUp },
+  { id: "stacked" as const, label: "Breakdown", icon: Layers },
+  { id: "comparison" as const, label: "Compare", icon: Target },
+];
+
 export default function CashflowChart({
-  chartData, yearData, viewMode, selectedYear, hoveredYear,
-  isInvestment, onSelectYear, onHoverYear,
+  chartData, yearData, viewMode, selectedYear,
+  isInvestment, onSelectYear,
 }: Props) {
-  const svgW = 540, svgH = 220;
-  const mL = 45, mR = 12, mT = 20, mB = 26;
-  const plotW = svgW - mL - mR;
-  const plotH = svgH - mT - mB;
-  const slotW = plotW / 30;
+  const [chartView, setChartView] = useState<ChartView>("bars");
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationYear, setAnimationYear] = useState(1);
 
-  const vals = chartData.map(d => d.value);
-  const dataMin = Math.min(...vals, 0);
-  const dataMax = Math.max(...vals, 0);
-  const range = dataMax - dataMin || 1;
-  const pad = range * 0.12;
-  const yMin = dataMin - pad;
-  const yMax = dataMax + pad;
-  const mapY = (v: number) => mT + (1 - (v - yMin) / (yMax - yMin)) * plotH;
-  const zeroY = mapY(0);
+  // Whether this mode supports sub-views (Breakdown/Compare)
+  const hasSubViews = viewMode === "equity";
 
-  const ySteps = 4;
-  const yTicks = Array.from({ length: ySteps + 1 }, (_, i) => yMin + (yMax - yMin) * i / ySteps);
-  const xLabels = [1, 5, 10, 15, 20, 25, 30];
-
-  const hy = hoveredYear !== null ? yearData[hoveredYear - 1] : null;
+  // Build recharts-compatible data
+  const rechartsData = yearData.map((y, i) => ({
+    name: `Yr ${y.year}`,
+    year: y.year,
+    value: chartData[i]?.value ?? 0,
+    propertyValue: y.propertyValue,
+    loanBalance: y.loanBalance,
+    netEquity: y.netEquity,
+    rentalIncome: y.rentalIncome,
+    totalExpenses: y.totalExpenses,
+    taxSaved: y.taxSaved,
+    netCashflow: y.netCashflow,
+    propertyCashflow: y.propertyCashflow,
+    interestPortion: y.interestPortion,
+    ongoingCosts: y.ongoingCosts,
+    gearing: y.gearing,
+    totalDeductions: y.totalDeductions,
+    depDiv43: y.depDiv43,
+    depDiv40: y.depDiv40,
+    offsetBalanceAtYear: y.offsetBalanceAtYear,
+    councilRates: y.councilRates,
+    waterRates: y.waterRates,
+    insurance: y.insurance,
+    maintenance: y.maintenance,
+    strataFees: y.strataFees,
+  }));
 
   const chartModeLabel = viewMode === "summary" ? "Net Cashflow"
     : viewMode === "property" ? "Property Cashflow"
     : viewMode === "equity" ? "Net Equity"
     : isInvestment ? "Total Deductions" : "Total Expenses";
 
+  // Colours per mode
+  const barColor = viewMode === "deductions" ? "#a78bfa" : "#2dd4bf";
+  const barColorDark = viewMode === "deductions" ? "#7c3aed" : "#0d9488";
+  const barColorSelected = viewMode === "deductions" ? "#c4b5fd" : "#5eead4";
+
+  const formatYAxis = (value: number) => {
+    const abs = Math.abs(value);
+    const sign = value < 0 ? "\u2212" : "";
+    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}m`;
+    if (abs >= 1000) return `${sign}$${Math.round(abs / 1000)}k`;
+    return `$${value}`;
+  };
+
+  const handleBarClick = (data: unknown) => {
+    const entry = data as { year?: number };
+    if (entry?.year) onSelectYear(entry.year);
+  };
+
+  const startAnimation = () => {
+    if (isAnimating) {
+      setIsAnimating(false);
+      return;
+    }
+    setIsAnimating(true);
+    setAnimationYear(1);
+    onSelectYear(1);
+    let year = 1;
+    const interval = setInterval(() => {
+      year++;
+      if (year > 30) {
+        setIsAnimating(false);
+        clearInterval(interval);
+        return;
+      }
+      setAnimationYear(year);
+      onSelectYear(year);
+    }, 200);
+  };
+
+  // Effective chart view — force "bars" for non-equity modes
+  const effectiveChartView = hasSubViews ? chartView : "bars";
+
+  // Custom tooltip
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: typeof rechartsData[0] }> }) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    const baseYear = new Date().getFullYear();
+    return (
+      <div className="cf-chart-tooltip visible">
+        <div className="cf-tooltip-header">
+          <span className="cf-tooltip-label">Year {d.year}</span>
+          <span className="cf-tooltip-label" style={{ fontSize: "12px" }}>{baseYear + d.year - 1}</span>
+        </div>
+        {viewMode === "summary" && (
+          <div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Rental Income</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.rentalIncome))}</span>
+            </div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Holding Costs</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.totalExpenses))}</span>
+            </div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Tax Saved</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.taxSaved))}</span>
+            </div>
+            <div className="cf-tooltip-divider" />
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label" style={{ color: "var(--cf-accent)", fontWeight: 500 }}>Net CF/mo</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-accent)" }}>{formatCurrencyCf(Math.round(d.netCashflow / 12))}</span>
+            </div>
+          </div>
+        )}
+        {viewMode === "property" && (
+          <div>
+            {isInvestment && (
+              <div className="cf-tooltip-row">
+                <span className="cf-tooltip-label">Rent</span>
+                <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.rentalIncome))}</span>
+              </div>
+            )}
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Costs</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.interestPortion + d.ongoingCosts))}</span>
+            </div>
+            {isInvestment && (
+              <div className="cf-tooltip-row">
+                <span className="cf-tooltip-label">Gearing</span>
+                <span className="cf-tooltip-value" style={{ color: "#a78bfa" }}>{formatCurrencyCf(Math.round(d.gearing))}</span>
+              </div>
+            )}
+            <div className="cf-tooltip-divider" />
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label" style={{ color: "var(--cf-accent)", fontWeight: 500 }}>Property CF/mo</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-accent)" }}>{formatCurrencyCf(Math.round(d.propertyCashflow / 12))}</span>
+            </div>
+          </div>
+        )}
+        {viewMode === "equity" && (
+          <div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Property Value</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.propertyValue))}</span>
+            </div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Loan Balance</span>
+              <span className="cf-tooltip-value" style={{ color: "#f87171" }}>−{formatCurrencyCf(Math.round(d.loanBalance))}</span>
+            </div>
+            {d.offsetBalanceAtYear > 0 && (
+              <div className="cf-tooltip-row">
+                <span className="cf-tooltip-label">Offset</span>
+                <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.offsetBalanceAtYear))}</span>
+              </div>
+            )}
+            <div className="cf-tooltip-divider" />
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label" style={{ color: "var(--cf-accent)", fontWeight: 500 }}>Net Equity</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-accent)" }}>{formatCurrencyCf(Math.round(d.netEquity))}</span>
+            </div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label" style={{ fontSize: "12px" }}>LVR</span>
+              <span className="cf-tooltip-label" style={{ fontSize: "12px" }}>{(d.loanBalance / d.propertyValue * 100).toFixed(1)}%</span>
+            </div>
+          </div>
+        )}
+        {viewMode === "deductions" && isInvestment && (
+          <div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Interest</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.interestPortion))}</span>
+            </div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Ongoing</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.ongoingCosts))}</span>
+            </div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Depreciation</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.depDiv43 + d.depDiv40))}</span>
+            </div>
+            <div className="cf-tooltip-divider" />
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label" style={{ color: "#a78bfa", fontWeight: 500 }}>Total</span>
+              <span className="cf-tooltip-value" style={{ color: "#a78bfa" }}>{formatCurrencyCf(Math.round(d.totalDeductions))}</span>
+            </div>
+          </div>
+        )}
+        {viewMode === "deductions" && !isInvestment && (
+          <div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Rates</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.councilRates + d.waterRates))}</span>
+            </div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Insurance</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.insurance))}</span>
+            </div>
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label">Maint</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.maintenance + d.strataFees))}</span>
+            </div>
+            <div className="cf-tooltip-divider" />
+            <div className="cf-tooltip-row">
+              <span className="cf-tooltip-label" style={{ color: "#a78bfa", fontWeight: 500 }}>Total</span>
+              <span className="cf-tooltip-value" style={{ color: "#a78bfa" }}>{formatCurrencyCf(Math.round(d.ongoingCosts))}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <section className="cf-chart-section">
-      {/* Chart sub-mode tabs */}
+    <section className="cf-chart-section" style={{ padding: "16px" }}>
+      {/* Chart controls */}
       <div className="cf-chart-bar">
         <div className="cf-chart-sub-tabs">
-          <button className="cf-chart-sub-tab active">
-            <TrendingUp size={12} />
-            Growth
-          </button>
-          <button className="cf-chart-sub-tab">
-            <Layers size={12} />
-            Breakdown
-          </button>
-          <button className="cf-chart-sub-tab">
-            <Target size={12} />
-            Compare
-          </button>
+          {chartViews.map((view) => {
+            const Icon = view.icon;
+            const isActive = effectiveChartView === view.id;
+            const isDisabled = !hasSubViews && view.id !== "bars";
+            return (
+              <button
+                key={view.id}
+                onClick={() => !isDisabled && setChartView(view.id)}
+                className={`cf-chart-sub-tab ${isActive ? "active" : ""}`}
+                style={isDisabled ? { opacity: 0.3, cursor: "default" } : undefined}
+              >
+                <Icon size={14} />
+                {view.label}
+              </button>
+            );
+          })}
         </div>
         <button
-          className="cf-play-btn"
-          onClick={() => {
-            let yr = 1;
-            const interval = setInterval(() => {
-              onSelectYear(yr);
-              yr++;
-              if (yr > 30) clearInterval(interval);
-            }, 120);
-          }}
+          className={`cf-play-btn ${isAnimating ? "cf-play-active" : ""}`}
+          onClick={startAnimation}
         >
-          ▷ Play Timeline
+          {isAnimating ? <Pause size={14} /> : <Play size={14} />}
+          {isAnimating ? `Year ${animationYear}` : "Play Timeline"}
         </button>
       </div>
 
-      {/* Chart SVG */}
-      <div style={{ padding: "4px 20px 16px", position: "relative" }}>
-        <div style={{ position: "relative", width: "100%", aspectRatio: `${svgW} / ${svgH}` }}>
-          <svg style={{ width: "100%", height: "100%" }} viewBox={`0 0 ${svgW} ${svgH}`} preserveAspectRatio="xMidYMid meet">
-            <defs>
-              <linearGradient id="barGradPos" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2dd4bf" stopOpacity="1" />
-                <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0.15" />
-              </linearGradient>
-              <linearGradient id="barGradNeg" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(239,68,68,0.15)" stopOpacity="1" />
-                <stop offset="100%" stopColor="rgba(239,68,68,0.5)" stopOpacity="1" />
-              </linearGradient>
-              <linearGradient id="barGradPurple" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#a78bfa" stopOpacity="1" />
-                <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.15" />
-              </linearGradient>
-            </defs>
-
-            {/* Horizontal dotted grid lines */}
-            {yTicks.map((v, i) => {
-              const y = mapY(v);
-              const dots: React.ReactElement[] = [];
-              for (let x = mL; x <= svgW - mR; x += 14) {
-                dots.push(<circle key={x} cx={x} cy={y} r={0.6} fill="rgba(255,255,255,0.06)" />);
-              }
-              return <g key={i}>{dots}</g>;
-            })}
-
-            {/* Zero line */}
-            {dataMin < 0 && dataMax > 0 && (
-              <line x1={mL} x2={svgW - mR} y1={zeroY} y2={zeroY}
-                stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-            )}
-
-            {/* Bars */}
-            {chartData.map((d, i) => {
-              const cx = mL + slotW * i + slotW / 2;
-              const barW = slotW * 0.6;
-              const x = cx - barW / 2;
-              const barTop = d.value >= 0 ? mapY(d.value) : zeroY;
-              const barBot = d.value >= 0 ? zeroY : mapY(d.value);
-              const barHeight = Math.max(2, barBot - barTop);
-              const isActive = d.year === selectedYear;
-              const isHovered = d.year === hoveredYear;
-              const r = 3;
-
-              const barFill = (() => {
-                if (viewMode === "equity") return "url(#barGradPos)";
-                if (viewMode === "deductions") return "url(#barGradPurple)";
-                return d.value >= 0 ? "url(#barGradPos)" : "url(#barGradNeg)";
-              })();
-
-              const topR = d.value >= 0 ? r : 0;
-              const botR = d.value >= 0 ? 0 : r;
-
-              return (
-                <g key={d.year}>
-                  <path
-                    d={`M${x + topR},${barTop} h${barW - topR * 2} a${topR},${topR} 0 0 1 ${topR},${topR} v${barHeight - topR - botR} a${botR},${botR} 0 0 1 ${-botR},${botR} h${-(barW - botR * 2)} a${botR},${botR} 0 0 1 ${-botR},${-botR} v${-(barHeight - topR - botR)} a${topR},${topR} 0 0 1 ${topR},${-topR} z`}
-                    fill={barFill}
-                    opacity={isActive || isHovered ? 1 : 0.6} />
-                  <rect x={mL + slotW * i} y={mT} width={slotW} height={plotH}
-                    fill="transparent" cursor="pointer"
-                    onClick={() => onSelectYear(d.year)}
-                    onMouseEnter={() => onHoverYear(d.year)}
-                    onMouseLeave={() => onHoverYear(null)} />
-                </g>
-              );
-            })}
-
-            {/* Crossover marker */}
-            {(viewMode === "summary" || viewMode === "property") && (() => {
-              const crossIdx = chartData.findIndex(cd => cd.value >= 0);
-              if (crossIdx <= 0 || dataMin >= 0) return null;
-              const cx = mL + slotW * (crossIdx - 0.5) + slotW / 2;
-              return (
-                <g>
-                  <polygon points={`${cx - 4},${zeroY + 10} ${cx + 4},${zeroY + 10} ${cx},${zeroY + 4}`}
-                    fill="#2dd4bf" opacity={0.7} />
-                  <text x={cx} y={zeroY + 20} textAnchor="middle"
-                    fill="#2dd4bf" fontSize="7" fontFamily="inherit" fontWeight="500">
-                    Crossover
-                  </text>
-                </g>
-              );
-            })()}
-
-            {/* Y-axis labels */}
-            {yTicks.map((v, i) => (
-              <text key={i} x={mL - 8} y={mapY(v) + 3} textAnchor="end"
-                fill="#71717a" fontSize="8" fontFamily="inherit" fontWeight="500"
-                style={{ userSelect: "none" }}>
-                {formatChartLabel(v)}
-              </text>
-            ))}
-
-            {/* X-axis labels */}
-            {xLabels.map(y => (
-              <text key={y} x={mL + slotW * (y - 1) + slotW / 2} y={svgH - 8} textAnchor="middle"
-                fill={selectedYear === y ? "#2dd4bf" : "#71717a"}
-                fontSize="7" fontFamily="inherit" fontWeight={selectedYear === y ? "600" : "400"}
-                style={{ userSelect: "none" }}>
-                Yr {y}
-              </text>
-            ))}
-          </svg>
-
-          {/* Hover tooltip anchored to bar top */}
-          {hoveredYear !== null && hy && (() => {
-            const hd = chartData[hoveredYear - 1];
-            const barTopPct = ((hd.value >= 0 ? mapY(hd.value) : zeroY) / svgH) * 100;
-            return (
-              <div
-                className="cf-chart-tooltip visible"
-                style={{
-                  left: `${((mL + slotW * (hoveredYear - 1) + slotW / 2) / svgW) * 100}%`,
-                  top: `${barTopPct}%`,
-                  transform: "translate(-50%, -100%)",
-                  marginTop: "-8px",
-                }}
-              >
-                <div style={{ marginBottom: "4px", fontWeight: 600, color: "var(--cf-text)" }}>Year {hoveredYear}</div>
-                {viewMode === "summary" && (
-                  <>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Rental Income: {formatCurrencyCf(Math.round(hy.rentalIncome))}</div>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Holding Costs: {formatCurrencyCf(Math.round(hy.totalExpenses))}</div>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Tax Saved: {formatCurrencyCf(Math.round(hy.taxSaved))}</div>
-                    <div style={{ color: "var(--cf-accent)", fontWeight: 600 }}>Net CF/mo: {formatCurrencyCf(Math.round(hy.netCashflow / 12))}</div>
-                  </>
-                )}
-                {viewMode === "property" && (
-                  <>
-                    {isInvestment && <div style={{ color: "var(--cf-text-muted)" }}>Rent: {formatCurrencyCf(Math.round(hy.rentalIncome))}</div>}
-                    <div style={{ color: "var(--cf-text-muted)" }}>Costs: {formatCurrencyCf(Math.round(hy.interestPortion + hy.ongoingCosts))}</div>
-                    {isInvestment && <div style={{ color: "#a78bfa" }}>Gearing: {formatCurrencyCf(Math.round(hy.gearing))}</div>}
-                    <div style={{ color: "var(--cf-accent)", fontWeight: 600 }}>Property CF/mo: {formatCurrencyCf(Math.round(hy.propertyCashflow / 12))}</div>
-                  </>
-                )}
-                {viewMode === "equity" && (
-                  <>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Property: {formatCurrencyCf(Math.round(hy.propertyValue))}</div>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Loan: {formatCurrencyCf(Math.round(-hy.loanBalance))}</div>
-                    {hy.offsetBalanceAtYear > 0 && <div style={{ color: "var(--cf-text-muted)" }}>Offset: {formatCurrencyCf(Math.round(hy.offsetBalanceAtYear))}</div>}
-                    <div style={{ color: "var(--cf-accent)", fontWeight: 600 }}>Net Equity: {formatCurrencyCf(Math.round(hy.netEquity))}</div>
-                  </>
-                )}
-                {viewMode === "deductions" && isInvestment && (
-                  <>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Interest: {formatCurrencyCf(Math.round(hy.interestPortion))}</div>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Ongoing: {formatCurrencyCf(Math.round(hy.ongoingCosts))}</div>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Depreciation: {formatCurrencyCf(Math.round(hy.depDiv43 + hy.depDiv40))}</div>
-                    <div style={{ color: "#a78bfa", fontWeight: 600 }}>Total: {formatCurrencyCf(Math.round(hy.totalDeductions))}</div>
-                  </>
-                )}
-                {viewMode === "deductions" && !isInvestment && (
-                  <>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Rates: {formatCurrencyCf(Math.round(hy.councilRates + hy.waterRates))}</div>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Insurance: {formatCurrencyCf(Math.round(hy.insurance))}</div>
-                    <div style={{ color: "var(--cf-text-muted)" }}>Maint: {formatCurrencyCf(Math.round(hy.maintenance + hy.strataFees))}</div>
-                    <div style={{ color: "#a78bfa", fontWeight: 600 }}>Total: {formatCurrencyCf(Math.round(hy.ongoingCosts))}</div>
-                  </>
-                )}
-                <div className="cf-tooltip-caret" />
-              </div>
-            );
-          })()}
-        </div>
+      {/* Chart */}
+      <div style={{ height: "280px", marginTop: "8px" }}>
+        <ResponsiveContainer width="100%" height="100%">
+          {effectiveChartView === "bars" ? (
+            <BarChart
+              data={rechartsData}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              onClick={(data) => data?.activePayload && handleBarClick(data.activePayload[0]?.payload)}
+            >
+              <defs>
+                <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={barColor} stopOpacity={1} />
+                  <stop offset="100%" stopColor={barColorDark} stopOpacity={0.8} />
+                </linearGradient>
+                <linearGradient id="barGradSelected" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={barColorSelected} stopOpacity={1} />
+                  <stop offset="100%" stopColor={barColor} stopOpacity={1} />
+                </linearGradient>
+                <linearGradient id="barGradNeg" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.6} />
+                  <stop offset="100%" stopColor="#dc2626" stopOpacity={0.3} />
+                </linearGradient>
+              </defs>
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#71717a", fontSize: 13 }}
+                interval={4}
+              />
+              <YAxis
+                tickFormatter={formatYAxis}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#71717a", fontSize: 13 }}
+                width={60}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]} className="cursor-pointer">
+                {rechartsData.map((entry) => (
+                  <Cell
+                    key={entry.year}
+                    fill={
+                      entry.value < 0
+                        ? "url(#barGradNeg)"
+                        : entry.year === selectedYear
+                          ? "url(#barGradSelected)"
+                          : "url(#barGrad)"
+                    }
+                    opacity={entry.year === selectedYear ? 1 : 0.7}
+                    className="transition-all duration-200 hover:opacity-100"
+                  />
+                ))}
+              </Bar>
+              <ReferenceLine
+                x={`Yr ${selectedYear}`}
+                stroke={barColor}
+                strokeDasharray="3 3"
+                strokeOpacity={0.5}
+              />
+            </BarChart>
+          ) : effectiveChartView === "stacked" ? (
+            <ComposedChart
+              data={rechartsData}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              onClick={(data) => data?.activePayload && handleBarClick(data.activePayload[0]?.payload)}
+            >
+              <defs>
+                <linearGradient id="loanGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.6} />
+                  <stop offset="100%" stopColor="#dc2626" stopOpacity={0.3} />
+                </linearGradient>
+                <linearGradient id="equityAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2dd4bf" stopOpacity={0.6} />
+                  <stop offset="100%" stopColor="#2dd4bf" stopOpacity={0.1} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} interval={4} />
+              <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} width={60} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+              <Area type="monotone" dataKey="propertyValue" stroke="#2dd4bf" strokeWidth={2} fill="url(#equityAreaGradient)" />
+              <Area type="monotone" dataKey="loanBalance" stroke="#ef4444" strokeWidth={2} fill="url(#loanGradient)" />
+              <ReferenceLine x={`Yr ${selectedYear}`} stroke="#2dd4bf" strokeDasharray="3 3" strokeOpacity={0.5} />
+            </ComposedChart>
+          ) : (
+            <ComposedChart
+              data={rechartsData}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              onClick={(data) => data?.activePayload && handleBarClick(data.activePayload[0]?.payload)}
+            >
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} interval={4} />
+              <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} width={60} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+              <Bar dataKey="netEquity" radius={[4, 4, 0, 0]} opacity={0.8}>
+                {rechartsData.map((entry) => (
+                  <Cell key={entry.year} fill={entry.year === selectedYear ? "#5eead4" : "#2dd4bf"} opacity={entry.year === selectedYear ? 1 : 0.6} />
+                ))}
+              </Bar>
+              <Bar dataKey="loanBalance" radius={[4, 4, 0, 0]} opacity={0.5}>
+                {rechartsData.map((entry) => (
+                  <Cell key={entry.year} fill={entry.year === selectedYear ? "#f87171" : "#ef4444"} opacity={entry.year === selectedYear ? 0.8 : 0.4} />
+                ))}
+              </Bar>
+              <ReferenceLine x={`Yr ${selectedYear}`} stroke="#2dd4bf" strokeDasharray="3 3" strokeOpacity={0.5} />
+            </ComposedChart>
+          )}
+        </ResponsiveContainer>
       </div>
 
       {/* Timeline slider */}
@@ -265,8 +406,24 @@ export default function CashflowChart({
           <span>Year 30</span>
         </div>
         <div className="cf-timeline-legend">
-          <span className="cf-legend-dot" />
-          {chartModeLabel}
+          <div className="cf-legend-item">
+            <span className="cf-legend-dot" style={viewMode === "deductions" ? { background: "#a78bfa" } : undefined} />
+            <span>{chartModeLabel}</span>
+          </div>
+          {effectiveChartView !== "bars" && (
+            <>
+              <div className="cf-legend-item">
+                <span className="cf-legend-dot" style={{ background: "#ef4444", opacity: 0.6 }} />
+                <span>Loan Balance</span>
+              </div>
+              {effectiveChartView === "stacked" && (
+                <div className="cf-legend-item">
+                  <span className="cf-legend-dot" style={{ background: "rgba(45,212,191,0.3)", border: "1px solid #2dd4bf" }} />
+                  <span>Property Value</span>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </section>
