@@ -601,11 +601,153 @@
    KPI CARDS
    ============================================================================ */
 
+/* ============================================================================
+   LAYOUT VARIANT SELECTOR (PROTOTYPE)
+   ============================================================================ */
+
+.cf-layout-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(45,212,191,0.05);
+  border: 1px dashed rgba(45,212,191,0.25);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.cf-layout-label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--cf-text-dim);
+  margin-right: 8px;
+}
+
+.cf-layout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgba(113,113,122,0.15);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: rgba(42,42,46,0.30);
+  color: var(--cf-text-dim);
+  transition: all 0.15s;
+}
+
+.cf-layout-btn:hover {
+  color: var(--cf-text-muted);
+  border-color: var(--cf-border-hover);
+}
+
+.cf-layout-btn.active {
+  background: rgba(45,212,191,0.12);
+  border-color: rgba(45,212,191,0.3);
+  color: var(--cf-accent);
+}
+
+/* ============================================================================
+   CHART + KPI ROW - BASE & VARIANTS
+   ============================================================================ */
+
 .cf-chart-kpi-row {
   display: grid;
   grid-template-columns: 200px 1fr 200px;
   gap: 16px;
   margin-bottom: 12px;
+}
+
+/* VARIANT 1: Tight KPIs - narrower KPI strips (160px) */
+.cf-chart-kpi-row.cf-layout-tight {
+  grid-template-columns: 160px 1fr 160px;
+  gap: 12px;
+}
+
+.cf-layout-tight .cf-kpi-card {
+  padding: 12px;
+}
+
+.cf-layout-tight .cf-kpi-label {
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+
+.cf-layout-tight .cf-kpi-value {
+  font-size: 20px;
+}
+
+.cf-layout-tight .cf-kpi-unit {
+  font-size: 10px;
+}
+
+/* VARIANT 2: Wide Chart - ultra-narrow KPI strips (140px), compact stacked layout */
+.cf-chart-kpi-row.cf-layout-wide {
+  grid-template-columns: 140px 1fr 140px;
+  gap: 10px;
+}
+
+.cf-layout-wide .cf-kpi-strip {
+  gap: 10px;
+}
+
+.cf-layout-wide .cf-kpi-card {
+  padding: 10px 8px;
+  border-radius: 8px;
+}
+
+.cf-layout-wide .cf-kpi-label {
+  font-size: 9px;
+  margin-bottom: 4px;
+  letter-spacing: 0.06em;
+}
+
+.cf-layout-wide .cf-kpi-value {
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+
+.cf-layout-wide .cf-kpi-unit {
+  font-size: 9px;
+}
+
+/* VARIANT 3: Balanced - equal visual weight with vertical centering */
+.cf-chart-kpi-row.cf-layout-balanced {
+  grid-template-columns: 180px 1fr 180px;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.cf-layout-balanced .cf-kpi-strip {
+  justify-content: center;
+}
+
+.cf-layout-balanced .cf-kpi-card {
+  padding: 18px 14px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.cf-layout-balanced .cf-kpi-label {
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+
+.cf-layout-balanced .cf-kpi-value {
+  font-size: 22px;
+}
+
+.cf-layout-balanced .cf-kpi-unit {
+  font-size: 11px;
 }
 
 .cf-kpi-strip {
@@ -672,6 +814,10 @@
    DATA TABLE
    ============================================================================ */
 
+/* ============================================================================
+   TABLE WRAPPER & BASE STYLES
+   ============================================================================ */
+
 .cf-table-wrap {
   background: rgba(42,42,46,0.30);
   border: 1px solid rgba(113,113,122,0.15);
@@ -684,6 +830,133 @@
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
   font-size: 14px;
+}
+
+/* ============================================================================
+   TABLE VARIANT: COMPACT (Linear/Notion style - dense, scannable)
+   ============================================================================ */
+
+.cf-table-compact .cf-data-table {
+  font-size: 12px;
+}
+
+.cf-table-compact .cf-data-table thead .cf-group-header th {
+  font-size: 10px;
+  padding: 8px 8px 4px;
+}
+
+.cf-table-compact .cf-data-table thead .cf-col-header th {
+  font-size: 10px;
+  padding: 10px 8px;
+  letter-spacing: 0.06em;
+}
+
+.cf-table-compact .cf-data-table tbody td {
+  padding: 8px 8px;
+  line-height: 1.3;
+}
+
+.cf-table-compact .cf-data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cf-table-compact .cf-data-table tbody tr.cf-active-row {
+  background: rgba(45, 212, 191, 0.06);
+}
+
+/* Tighter border radius for compact */
+.cf-table-compact {
+  border-radius: 8px;
+}
+
+/* ============================================================================
+   TABLE VARIANT: COMFORTABLE (Default - balanced readability)
+   ============================================================================ */
+
+.cf-table-comfortable .cf-data-table {
+  font-size: 13px;
+}
+
+.cf-table-comfortable .cf-data-table thead .cf-group-header th {
+  font-size: 10px;
+  padding: 14px 10px 6px;
+}
+
+.cf-table-comfortable .cf-data-table thead .cf-col-header th {
+  font-size: 11px;
+  padding: 14px 10px;
+  letter-spacing: 0.05em;
+}
+
+.cf-table-comfortable .cf-data-table tbody td {
+  padding: 12px 10px;
+  line-height: 1.4;
+}
+
+.cf-table-comfortable .cf-data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.cf-table-comfortable .cf-data-table tbody tr.cf-active-row {
+  background: rgba(45, 212, 191, 0.055);
+}
+
+/* Subtle row separators */
+.cf-table-comfortable .cf-data-table tbody td {
+  border-bottom: 1px solid rgba(113,113,122,0.08);
+}
+
+/* ============================================================================
+   TABLE VARIANT: SPACIOUS (Financial dashboard style - generous whitespace)
+   ============================================================================ */
+
+.cf-table-spacious .cf-data-table {
+  font-size: 14px;
+}
+
+.cf-table-spacious .cf-data-table thead .cf-group-header th {
+  font-size: 11px;
+  padding: 18px 14px 8px;
+}
+
+.cf-table-spacious .cf-data-table thead .cf-col-header th {
+  font-size: 12px;
+  padding: 18px 14px;
+  letter-spacing: 0.04em;
+}
+
+.cf-table-spacious .cf-data-table tbody td {
+  padding: 18px 14px;
+  line-height: 1.5;
+}
+
+.cf-table-spacious .cf-data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cf-table-spacious .cf-data-table tbody tr.cf-active-row {
+  background: rgba(45, 212, 191, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.12);
+}
+
+/* More pronounced border radius */
+.cf-table-spacious {
+  border-radius: 16px;
+  border: 1px solid rgba(113,113,122,0.12);
+}
+
+/* Alternating row backgrounds for spacious */
+.cf-table-spacious .cf-data-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.008);
+}
+
+.cf-table-spacious .cf-data-table tbody tr:nth-child(even):hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* Subtle divider lines between rows */
+.cf-table-spacious .cf-data-table tbody td {
+  border-bottom: 1px solid rgba(113,113,122,0.06);
 }
 
 .cf-data-table thead .cf-col-header th.cf-col-year {
@@ -893,8 +1166,11 @@
     padding: 20px 16px;
   }
 
-  .cf-chart-kpi-row {
-    grid-template-columns: 1fr;
+.cf-chart-kpi-row,
+  .cf-chart-kpi-row.cf-layout-tight,
+  .cf-chart-kpi-row.cf-layout-wide,
+  .cf-chart-kpi-row.cf-layout-balanced {
+  grid-template-columns: 1fr;
   }
 
   .cf-kpi-strip {

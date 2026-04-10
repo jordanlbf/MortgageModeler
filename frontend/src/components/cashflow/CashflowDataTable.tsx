@@ -3,6 +3,8 @@
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
 import { formatCurrencyCf } from "@/lib/cashflow-calculations";
 
+type TableVariant = "compact" | "comfortable" | "spacious";
+
 interface Props {
   yearData: YearData[];
   viewMode: ViewMode;
@@ -11,17 +13,18 @@ interface Props {
   hasOffset: boolean;
   propertyValue: number;
   onSelectYear: (year: number) => void;
+  tableVariant?: TableVariant;
 }
 
 export default function CashflowDataTable({
   yearData, viewMode, selectedYear, isInvestment,
-  hasOffset, propertyValue, onSelectYear,
+  hasOffset, propertyValue, onSelectYear, tableVariant = "spacious",
 }: Props) {
   const baseYear = new Date().getFullYear();
   const showOffset = hasOffset && yearData.some(y => y.offsetBalanceAtYear > 0);
 
   return (
-    <div className="cf-table-wrap">
+    <div className={`cf-table-wrap cf-table-${tableVariant}`}>
       {/* SUMMARY TABLE */}
       {viewMode === "summary" && (
         <table className="cf-data-table">

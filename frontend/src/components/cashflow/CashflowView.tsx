@@ -72,7 +72,7 @@ export default function CashflowCalculator() {
               </div>
 
               {/* CHART + KPI ROW */}
-              <div className="cf-chart-kpi-row">
+              <div className="cf-chart-kpi-row cf-layout-wide">
                 <CashflowKpiStrip
                   position="left"
                   viewMode={s.effectiveViewMode}
@@ -114,6 +114,7 @@ export default function CashflowCalculator() {
                 hasOffset={s.hasOffset}
                 propertyValue={s.propertyValue}
                 onSelectYear={s.setSelectedYear}
+                tableVariant="spacious"
               />
             </div>
           )}
