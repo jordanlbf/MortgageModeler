@@ -1,8 +1,22 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Check, Home, Building2, Sparkles, Landmark, Coins, Key, Calculator, Pencil } from "lucide-react";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyCf, formatCurrencyCf } from "@/lib/cashflow-calculations";
+
+// Summary component for completed sections
+function SectionSummary({ items }: { items: { label: string; value: string }[] }) {
+  return (
+    <div className="cf-section-summary">
+      {items.map((item, i) => (
+        <div key={i} className="cf-summary-item">
+          <span className="cf-summary-label">{item.label}</span>
+          <span className="cf-summary-value">{item.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface Props {
   s: CashflowState;
@@ -10,22 +24,39 @@ interface Props {
 
 export default function CashflowSidebar({ s }: Props) {
   const propertyUseComplete = s.propertyUse !== null;
+  const propertyValue = s.isNewPurchase ? parseCurrencyCf(s.purchasePrice) : parseCurrencyCf(s.currentValue);
+  const loanAmount = s.isNewPurchase
+    ? parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount)
+    : parseCurrencyCf(s.currentLoanBalance);
 
   return (
     <aside className="cf-sidebar">
       <div className="cf-sidebar-inner">
         {/* Property Use */}
-        <div className="cf-section">
+        <div className={`cf-section ${propertyUseComplete ? "cf-section-complete" : ""}`}>
           <button className="cf-section-header" onClick={() => s.toggleSection("propertyUse")}>
-            <span>{propertyUseComplete ? (s.propertyUse === "investment" ? "Investment" : "PPOR") : "Property Use"}</span>
+            <div className="cf-section-title">
+              <div className={`cf-section-icon ${propertyUseComplete ? "complete" : ""}`}>
+                {propertyUseComplete ? <Check size={14} /> : <Home size={14} />}
+              </div>
+              <span>Property Use</span>
+            </div>
             {propertyUseComplete && (
-              <span role="button" tabIndex={0} className="cf-edit-link"
-                onClick={(e) => { e.stopPropagation(); s.resetSection("propertyUse"); }}>Edit</span>
+              <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("propertyUse"); }}>
+                <Pencil size={12} />
+              </span>
             )}
             {!propertyUseComplete && (
               s.expandedSections.has("propertyUse") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
             )}
           </button>
+          {propertyUseComplete && (
+            <div className="cf-section-completed-content">
+              <div className="cf-completed-badge">
+                {s.propertyUse === "investment" ? "Investment Property" : "Owner-Occupier (PPOR)"}
+              </div>
+            </div>
+          )}
           {!propertyUseComplete && s.expandedSections.has("propertyUse") && (
             <div className="cf-section-content">
               <div className="cf-button-group">
@@ -48,17 +79,30 @@ export default function CashflowSidebar({ s }: Props) {
 
         {/* Purchase Mode */}
         {s.propertyUse && (
-          <div className="cf-section">
+          <div className={`cf-section ${s.purchaseMode ? "cf-section-complete" : ""}`}>
             <button className="cf-section-header" onClick={() => s.toggleSection("purchaseMode")}>
-              <span>{s.purchaseMode ? (s.purchaseMode === "new" ? "New Purchase" : "Existing Property") : "Purchase Mode"}</span>
+              <div className="cf-section-title">
+                <div className={`cf-section-icon ${s.purchaseMode ? "complete" : ""}`}>
+                  {s.purchaseMode ? <Check size={14} /> : <Sparkles size={14} />}
+                </div>
+                <span>Purchase Type</span>
+              </div>
               {s.purchaseMode && (
-                <span role="button" tabIndex={0} className="cf-edit-link"
-                  onClick={(e) => { e.stopPropagation(); s.resetSection("purchaseMode"); }}>Edit</span>
+                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("purchaseMode"); }}>
+                  <Pencil size={12} />
+                </span>
               )}
               {!s.purchaseMode && (
                 s.expandedSections.has("purchaseMode") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
               )}
             </button>
+            {s.purchaseMode && (
+              <div className="cf-section-completed-content">
+                <div className="cf-completed-badge">
+                  {s.purchaseMode === "new" ? "New Purchase" : "Existing Property"}
+                </div>
+              </div>
+            )}
             {!s.purchaseMode && s.expandedSections.has("purchaseMode") && (
               <div className="cf-section-content">
                 <div className="cf-button-group">
@@ -80,17 +124,36 @@ export default function CashflowSidebar({ s }: Props) {
 
         {/* Property Details */}
         {s.purchaseMode && (
-          <div className="cf-section">
+          <div className={`cf-section ${s.propertyComplete ? "cf-section-complete" : ""}`}>
             <button className="cf-section-header" onClick={() => s.toggleSection("property")}>
-              <span>Property Details</span>
+              <div className="cf-section-title">
+                <div className={`cf-section-icon ${s.propertyComplete ? "complete" : ""}`}>
+                  {s.propertyComplete ? <Check size={14} /> : <Building2 size={14} />}
+                </div>
+                <span>Property</span>
+              </div>
               {s.propertyComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-link"
-                  onClick={(e) => { e.stopPropagation(); s.resetSection("property"); }}>Edit</span>
+                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("property"); }}>
+                  <Pencil size={12} />
+                </span>
               )}
               {!s.propertyComplete && (
                 s.expandedSections.has("property") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
               )}
             </button>
+            {s.propertyComplete && (
+              <div className="cf-section-completed-content">
+                <SectionSummary items={s.isNewPurchase ? [
+                  { label: "Price", value: formatCurrencyCf(parseCurrencyCf(s.purchasePrice)) },
+                  { label: "Deposit", value: formatCurrencyCf(parseCurrencyCf(s.depositAmount)) },
+                  { label: "LVR", value: `${((1 - parseCurrencyCf(s.depositAmount) / parseCurrencyCf(s.purchasePrice)) * 100).toFixed(0)}%` },
+                ] : [
+                  { label: "Value", value: formatCurrencyCf(parseCurrencyCf(s.currentValue)) },
+                  { label: "Loan", value: formatCurrencyCf(parseCurrencyCf(s.currentLoanBalance)) },
+                  { label: "Equity", value: formatCurrencyCf(parseCurrencyCf(s.currentValue) - parseCurrencyCf(s.currentLoanBalance)) },
+                ]} />
+              </div>
+            )}
             {!s.propertyComplete && s.expandedSections.has("property") && (
               <div className="cf-section-content">
                 {s.isNewPurchase ? (
@@ -155,17 +218,33 @@ export default function CashflowSidebar({ s }: Props) {
 
         {/* Loan Details */}
         {s.propertyComplete && (
-          <div className="cf-section">
+          <div className={`cf-section ${s.loanComplete ? "cf-section-complete" : ""}`}>
             <button className="cf-section-header" onClick={() => s.toggleSection("loan")}>
-              <span>Loan Details</span>
+              <div className="cf-section-title">
+                <div className={`cf-section-icon ${s.loanComplete ? "complete" : ""}`}>
+                  {s.loanComplete ? <Check size={14} /> : <Landmark size={14} />}
+                </div>
+                <span>Loan</span>
+              </div>
               {s.loanComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-link"
-                  onClick={(e) => { e.stopPropagation(); s.resetSection("loan"); }}>Edit</span>
+                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("loan"); }}>
+                  <Pencil size={12} />
+                </span>
               )}
               {!s.loanComplete && (
                 s.expandedSections.has("loan") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
               )}
             </button>
+            {s.loanComplete && (
+              <div className="cf-section-completed-content">
+                <SectionSummary items={[
+                  { label: "Rate", value: `${s.interestRate}%` },
+                  { label: "Term", value: `${s.loanTerm}yr` },
+                  { label: "Type", value: s.loanType === "principal-interest" ? "P&I" : `IO (${s.ioPeriod}yr)` },
+                  ...(s.hasOffset ? [{ label: "Offset", value: formatCurrencyCf(parseCurrencyCf(s.offsetBalance)) }] : []),
+                ]} />
+              </div>
+            )}
             {!s.loanComplete && s.expandedSections.has("loan") && (
               <div className="cf-section-content">
                 <div className="cf-field-row">
@@ -229,17 +308,36 @@ export default function CashflowSidebar({ s }: Props) {
 
         {/* Ongoing Costs */}
         {s.loanComplete && (
-          <div className="cf-section">
+          <div className={`cf-section ${s.costsComplete ? "cf-section-complete" : ""}`}>
             <button className="cf-section-header" onClick={() => s.toggleSection("costs")}>
-              <span>Ongoing Costs</span>
+              <div className="cf-section-title">
+                <div className={`cf-section-icon ${s.costsComplete ? "complete" : ""}`}>
+                  {s.costsComplete ? <Check size={14} /> : <Coins size={14} />}
+                </div>
+                <span>Costs</span>
+              </div>
               {s.costsComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-link"
-                  onClick={(e) => { e.stopPropagation(); s.resetSection("costs"); }}>Edit</span>
+                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("costs"); }}>
+                  <Pencil size={12} />
+                </span>
               )}
               {!s.costsComplete && (
                 s.expandedSections.has("costs") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
               )}
             </button>
+            {s.costsComplete && (() => {
+              const totalAnnual = parseCurrencyCf(s.councilRates) + parseCurrencyCf(s.waterRates) +
+                parseCurrencyCf(s.insurance) + (s.hasStrata ? parseCurrencyCf(s.strataFees) * 4 : 0);
+              return (
+                <div className="cf-section-completed-content">
+                  <SectionSummary items={[
+                    { label: "Annual", value: formatCurrencyCf(totalAnnual) },
+                    { label: "Maint.", value: `${s.maintenance}%` },
+                    ...(s.hasStrata ? [{ label: "Strata", value: `${formatCurrencyCf(parseCurrencyCf(s.strataFees))}/qtr` }] : []),
+                  ]} />
+                </div>
+              );
+            })()}
             {!s.costsComplete && s.expandedSections.has("costs") && (
               <div className="cf-section-content">
                 <div className="cf-field-row">
@@ -298,17 +396,32 @@ export default function CashflowSidebar({ s }: Props) {
 
         {/* Rental Income */}
         {s.isInvestment && s.costsComplete && (
-          <div className="cf-section">
+          <div className={`cf-section ${s.rentalComplete ? "cf-section-complete" : ""}`}>
             <button className="cf-section-header" onClick={() => s.toggleSection("rental")}>
-              <span>Rental Income</span>
+              <div className="cf-section-title">
+                <div className={`cf-section-icon ${s.rentalComplete ? "complete" : ""}`}>
+                  {s.rentalComplete ? <Check size={14} /> : <Key size={14} />}
+                </div>
+                <span>Rental</span>
+              </div>
               {s.rentalComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-link"
-                  onClick={(e) => { e.stopPropagation(); s.resetSection("rental"); }}>Edit</span>
+                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("rental"); }}>
+                  <Pencil size={12} />
+                </span>
               )}
               {!s.rentalComplete && (
                 s.expandedSections.has("rental") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
               )}
             </button>
+            {s.rentalComplete && (
+              <div className="cf-section-completed-content">
+                <SectionSummary items={[
+                  { label: "Rent", value: `${formatCurrencyCf(parseCurrencyCf(s.weeklyRent))}/wk` },
+                  { label: "Vacancy", value: `${s.vacancyRate}%` },
+                  ...(s.usePropertyManager ? [{ label: "PM Fee", value: `${s.managementFee}%` }] : []),
+                ]} />
+              </div>
+            )}
             {!s.rentalComplete && s.expandedSections.has("rental") && (
               <div className="cf-section-content">
                 <div className="cf-field">
@@ -348,17 +461,32 @@ export default function CashflowSidebar({ s }: Props) {
 
         {/* Tax Profile */}
         {s.isInvestment && s.rentalComplete && (
-          <div className="cf-section">
+          <div className={`cf-section ${s.taxComplete ? "cf-section-complete" : ""}`}>
             <button className="cf-section-header" onClick={() => s.toggleSection("tax")}>
-              <span>Tax Profile</span>
+              <div className="cf-section-title">
+                <div className={`cf-section-icon ${s.taxComplete ? "complete" : ""}`}>
+                  {s.taxComplete ? <Check size={14} /> : <Calculator size={14} />}
+                </div>
+                <span>Tax</span>
+              </div>
               {s.taxComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-link"
-                  onClick={(e) => { e.stopPropagation(); s.resetSection("tax"); }}>Edit</span>
+                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("tax"); }}>
+                  <Pencil size={12} />
+                </span>
               )}
               {!s.taxComplete && (
                 s.expandedSections.has("tax") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
               )}
             </button>
+            {s.taxComplete && (
+              <div className="cf-section-completed-content">
+                <SectionSummary items={[
+                  { label: "Income", value: formatCurrencyCf(parseCurrencyCf(s.taxableIncome)) },
+                  { label: "Deprec.", value: formatCurrencyCf(parseCurrencyCf(s.depreciation)) },
+                  { label: "Growth", value: `${s.capitalGrowth}%` },
+                ]} />
+              </div>
+            )}
             {!s.taxComplete && s.expandedSections.has("tax") && (
               <div className="cf-section-content">
                 <div className="cf-field">

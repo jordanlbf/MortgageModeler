@@ -72,9 +72,15 @@
 
 .cf-section {
   border: 1px solid var(--cf-border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--cf-card);
   overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.cf-section-complete {
+  border-color: rgba(45, 212, 191, 0.2);
+  background: rgba(45, 212, 191, 0.03);
 }
 
 .cf-section-label {
@@ -92,7 +98,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 14px 16px;
+  padding: 12px 14px;
   background: transparent;
   border: none;
   color: var(--cf-text);
@@ -108,6 +114,104 @@
 
 .cf-section-header svg {
   color: var(--cf-text-muted);
+}
+
+/* Section title with icon */
+.cf-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cf-section-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--cf-input-bg);
+  border: 1px solid var(--cf-border);
+  color: var(--cf-text-muted);
+  transition: all 0.2s ease;
+}
+
+.cf-section-icon.complete {
+  background: var(--cf-accent);
+  border-color: var(--cf-accent);
+  color: var(--cf-accent-contrast);
+}
+
+/* Edit button */
+.cf-edit-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--cf-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cf-edit-btn:hover {
+  background: var(--cf-input-bg);
+  border-color: var(--cf-border);
+  color: var(--cf-text);
+}
+
+/* Completed section content */
+.cf-section-completed-content {
+  padding: 0 14px 12px;
+}
+
+/* Badge for simple completed values */
+.cf-completed-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(45, 212, 191, 0.08);
+  border: 1px solid rgba(45, 212, 191, 0.15);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cf-accent);
+}
+
+/* Summary grid for completed sections */
+.cf-section-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cf-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  background: var(--cf-input-bg);
+  border: 1px solid var(--cf-border);
+  border-radius: 6px;
+  min-width: 70px;
+}
+
+.cf-summary-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cf-text-muted);
+}
+
+.cf-summary-value {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--cf-text);
 }
 
 .cf-edit-link {
@@ -1141,6 +1245,417 @@
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: 5px solid var(--cf-card-elevated);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+/* ============================================================================
+   WIZARD STEP - INLINE CENTERED INPUT FLOW
+   ============================================================================ */
+
+.cf-wizard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  padding: 32px 24px;
+  gap: 32px;
+}
+
+/* Progress indicator */
+.cf-wizard-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.cf-wizard-progress-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.cf-wizard-progress-step-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.cf-wizard-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.cf-wizard-progress-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--cf-input-bg);
+  border: 2px solid var(--cf-border);
+  color: var(--cf-text-muted);
+  transition: all 0.3s ease;
+}
+
+.cf-wizard-progress-step.complete .cf-wizard-progress-icon {
+  background: var(--cf-accent);
+  border-color: var(--cf-accent);
+  color: var(--cf-accent-contrast);
+}
+
+.cf-wizard-progress-step.current .cf-wizard-progress-icon {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: var(--cf-accent);
+  color: var(--cf-accent);
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.1);
+}
+
+.cf-wizard-progress-step.future .cf-wizard-progress-icon {
+  opacity: 0.5;
+}
+
+.cf-wizard-progress-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cf-text-muted);
+  white-space: nowrap;
+}
+
+.cf-wizard-progress-step.complete .cf-wizard-progress-label {
+  color: var(--cf-accent);
+}
+
+.cf-wizard-progress-step.current .cf-wizard-progress-label {
+  color: var(--cf-text);
+  font-weight: 600;
+}
+
+.cf-wizard-progress-step.future .cf-wizard-progress-label {
+  opacity: 0.5;
+}
+
+.cf-wizard-progress-line {
+  width: 40px;
+  height: 2px;
+  background: var(--cf-border);
+  margin: 0 8px;
+  margin-bottom: 26px;
+  transition: background 0.3s ease;
+}
+
+.cf-wizard-progress-line.complete {
+  background: var(--cf-accent);
+}
+
+.cf-wizard-progress-text {
+  font-size: 13px;
+  color: var(--cf-text-muted);
+  font-weight: 500;
+}
+
+/* Card */
+.cf-wizard-card {
+  width: 100%;
+  max-width: 520px;
+  background: var(--cf-card-elevated);
+  border: 1px solid var(--cf-border-hover);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.3);
+  transform: translateY(12px);
+  opacity: 0;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cf-wizard-card.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Header */
+.cf-wizard-header {
+  padding: 32px 32px 24px;
+  text-align: center;
+  border-bottom: 1px solid var(--cf-border);
+}
+
+.cf-wizard-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.2);
+  border-radius: 14px;
+  color: var(--cf-accent);
+}
+
+.cf-wizard-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--cf-text);
+}
+
+.cf-wizard-subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--cf-text-muted);
+}
+
+/* Content */
+.cf-wizard-content {
+  padding: 28px 32px;
+}
+
+/* Options (for selection steps) */
+.cf-wizard-options {
+  display: flex;
+  gap: 16px;
+}
+
+.cf-wizard-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 20px;
+  background: var(--cf-input-bg);
+  border: 1px solid var(--cf-border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--cf-text-muted);
+}
+
+.cf-wizard-option:hover {
+  background: rgba(45, 212, 191, 0.05);
+  border-color: var(--cf-border-hover);
+  color: var(--cf-text);
+}
+
+.cf-wizard-option.selected {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: var(--cf-accent-border);
+  color: var(--cf-accent);
+}
+
+.cf-wizard-option-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.cf-wizard-option-desc {
+  font-size: 12px;
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* Fields */
+.cf-wizard-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cf-wizard-field-row {
+  display: flex;
+  gap: 16px;
+}
+
+.cf-wizard-field-row .cf-wizard-field {
+  flex: 1;
+}
+
+.cf-wizard-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cf-wizard-label {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cf-text-muted);
+}
+
+.cf-wizard-input {
+  padding: 14px 16px;
+  background: var(--cf-input-bg);
+  border: 1px solid var(--cf-border);
+  border-radius: 10px;
+  color: var(--cf-text);
+  font-family: inherit;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s;
+}
+
+.cf-wizard-input:focus {
+  outline: none;
+  border-color: var(--cf-accent-border);
+}
+
+/* Computed values display */
+.cf-wizard-computed {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(45, 212, 191, 0.05);
+  border: 1px solid rgba(45, 212, 191, 0.12);
+  border-radius: 10px;
+}
+
+.cf-wizard-computed-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cf-wizard-computed-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cf-text-muted);
+}
+
+.cf-wizard-computed-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--cf-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Toggle group */
+.cf-wizard-toggle-group {
+  display: flex;
+  gap: 8px;
+}
+
+.cf-wizard-toggle {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--cf-input-bg);
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  color: var(--cf-text-muted);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cf-wizard-toggle:hover {
+  border-color: var(--cf-border-hover);
+  color: var(--cf-text);
+}
+
+.cf-wizard-toggle.active {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: var(--cf-accent-border);
+  color: var(--cf-accent);
+}
+
+/* Checkbox */
+.cf-wizard-checkbox-row {
+  padding-top: 4px;
+}
+
+.cf-wizard-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--cf-text-muted);
+}
+
+.cf-wizard-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cf-wizard-checkbox-box {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--cf-border-hover);
+  border-radius: 5px;
+  background: var(--cf-input-bg);
+  transition: all 0.15s;
+  position: relative;
+}
+
+.cf-wizard-checkbox input:checked + .cf-wizard-checkbox-box {
+  background: var(--cf-accent);
+  border-color: var(--cf-accent);
+}
+
+.cf-wizard-checkbox input:checked + .cf-wizard-checkbox-box::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 7px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--cf-accent-contrast);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Footer */
+.cf-wizard-footer {
+  padding: 20px 32px 28px;
+  border-top: 1px solid var(--cf-border);
+}
+
+.cf-wizard-continue {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  background: var(--cf-accent);
+  border: none;
+  border-radius: 12px;
+  color: var(--cf-accent-contrast);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cf-wizard-continue:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.cf-wizard-continue:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* ============================================================================

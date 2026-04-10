@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import Link from "next/link";
 import { LayoutGrid, Home, TrendingUp, Receipt } from "lucide-react";
 import Header from "@/components/layout/Header";
@@ -9,10 +10,50 @@ import CashflowSidebar from "./CashflowSidebar";
 import CashflowChart from "./CashflowChart";
 import CashflowKpiStrip from "./CashflowKpiStrip";
 import CashflowDataTable from "./CashflowDataTable";
+import CashflowWizardStep from "./CashflowWizardStep";
 import "./cashflow.css";
+
+// Determine which wizard step should be shown
+function getWizardStep(s: ReturnType<typeof useCashflowState>): string | null {
+  if (!s.propertyUse) return "propertyUse";
+  if (!s.purchaseMode) return "purchaseMode";
+  if (!s.propertyComplete) return "property";
+  if (!s.loanComplete) return "loan";
+  if (!s.costsComplete) return "costs";
+  if (s.isInvestment && !s.rentalComplete) return "rental";
+  if (s.isInvestment && !s.taxComplete) return "tax";
+  return null; // All complete
+}
 
 export default function CashflowCalculator() {
   const s = useCashflowState();
+  const currentWizardStep = getWizardStep(s);
+
+  const handleWizardStepComplete = useCallback(() => {
+    switch (currentWizardStep) {
+      case "propertyUse":
+        // propertyUse is already set by the option click
+        break;
+      case "purchaseMode":
+        // purchaseMode is already set by the option click
+        break;
+      case "property":
+        s.setPropertyComplete(true);
+        break;
+      case "loan":
+        s.setLoanComplete(true);
+        break;
+      case "costs":
+        s.setCostsComplete(true);
+        break;
+      case "rental":
+        s.setRentalComplete(true);
+        break;
+      case "tax":
+        s.setTaxComplete(true);
+        break;
+    }
+  }, [currentWizardStep, s]);
 
   const chartModeLabel = s.effectiveViewMode === "summary" ? "Cashflow"
     : s.effectiveViewMode === "property" ? "Property"
@@ -26,22 +67,13 @@ export default function CashflowCalculator() {
         <CashflowSidebar s={s} />
 
         <main className="cf-main">
-          {/* Placeholder when not complete */}
-          {!s.allComplete && (
-            <div className="cf-placeholder">
-              <div className="cf-placeholder-content">
-                <p className="cf-placeholder-title">Complete the form to see your analysis</p>
-                <p className="cf-placeholder-subtitle">
-                  {!s.propertyUse && "Start by selecting property use"}
-                  {s.propertyUse && !s.purchaseMode && "Select purchase mode"}
-                  {s.purchaseMode && !s.propertyComplete && "Enter property details"}
-                  {s.propertyComplete && !s.loanComplete && "Enter loan details"}
-                  {s.loanComplete && !s.costsComplete && "Enter ongoing costs"}
-                  {s.isInvestment && s.costsComplete && !s.rentalComplete && "Enter rental income"}
-                  {s.isInvestment && s.rentalComplete && !s.taxComplete && "Enter tax profile"}
-                </p>
-              </div>
-            </div>
+          {/* Wizard step (inline centered) */}
+          {!s.allComplete && currentWizardStep && (
+            <CashflowWizardStep
+              s={s}
+              currentStep={currentWizardStep}
+              onStepComplete={handleWizardStepComplete}
+            />
           )}
 
           {/* Complete - Show outputs */}
