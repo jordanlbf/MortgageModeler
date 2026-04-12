@@ -17,12 +17,13 @@ interface Props {
   selectedYear: number;
   isInvestment: boolean;
   marginalRate: number;
+  hasOffset?: boolean;
   isHovered?: boolean;
 }
 
 export default function CashflowKpiStrip({
   viewMode, yearData, selectedYearData: sy,
-  selectedYear, isInvestment, marginalRate, isHovered,
+  selectedYear, isInvestment, marginalRate, hasOffset, isHovered,
 }: Props) {
   const y1 = yearData[0];
   let items: KpiItem[] = [];
@@ -87,31 +88,47 @@ export default function CashflowKpiStrip({
       },
     ];
   } else if (viewMode === "equity" && sy) {
+    const lvr = sy.loanBalance / sy.propertyValue * 100;
+    const showOffset = hasOffset && sy.offsetBalanceAtYear > 0;
     items = [
       {
         label: "Property Value",
-        value: formatAbbreviated(sy.propertyValue),
-        color: "var(--cf-positive)",
-        sub: `Year ${selectedYear} · ${formatCurrencyCf(Math.round(sy.propertyValue))}`,
+        value: formatCurrencyCf(Math.round(sy.propertyValue)),
+        color: "var(--cf-text)",
+        sub: "",
       },
       {
         label: "Loan Balance",
-        value: formatAbbreviated(sy.loanBalance),
+        value: `−${formatCurrencyCf(Math.round(sy.loanBalance))}`,
         color: "var(--cf-negative)",
-        sub: `Year ${selectedYear} · ${formatCurrencyCf(Math.round(sy.loanBalance))}`,
-      },
-      {
-        label: "Net Equity",
-        value: formatAbbreviated(sy.netEquity),
-        color: "var(--cf-positive)",
-        sub: `Year ${selectedYear} · ${formatCurrencyCf(Math.round(sy.netEquity))}`,
+        sub: "",
       },
       {
         label: "LVR",
-        value: `${(sy.loanBalance / sy.propertyValue * 100).toFixed(1)}%`,
-        color: (sy.loanBalance / sy.propertyValue * 100) > 80 ? "var(--cf-negative)" : "var(--cf-text)",
-        sub: "Loan-to-value ratio",
+        value: `${lvr.toFixed(1)}%`,
+        color: lvr > 80 ? "var(--cf-negative)" : lvr > 60 ? "#fbbf24" : "var(--cf-positive)",
+        sub: "",
       },
+      {
+        label: "Property Equity",
+        value: formatCurrencyCf(Math.round(sy.propertyValue - sy.loanBalance)),
+        color: "var(--cf-text)",
+        sub: "",
+      },
+      ...(showOffset ? [
+        {
+          label: "Offset Value",
+          value: formatCurrencyCf(Math.round(sy.offsetBalanceAtYear)),
+          color: "var(--cf-text)",
+          sub: "",
+        },
+        {
+          label: "Net Equity",
+          value: formatCurrencyCf(Math.round(sy.netEquity)),
+          color: "var(--cf-positive)",
+          sub: "",
+        },
+      ] : []),
     ];
   } else if (viewMode === "deductions" && sy) {
     items = [
@@ -151,7 +168,6 @@ export default function CashflowKpiStrip({
         <div key={i} className="cf-kpi-cell">
           <div className="cf-kpi-label">{item.label}</div>
           <div className="cf-kpi-value" style={{ color: item.color }}>{item.value}</div>
-          <div className="cf-kpi-sub">{item.sub}</div>
         </div>
       ))}
     </div>

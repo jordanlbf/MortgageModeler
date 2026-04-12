@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -83,136 +82,6 @@ export default function CashflowChart({
     return `$${value}`;
   };
 
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: typeof rechartsData[0] }> }) => {
-    if (!active || !payload?.length) return null;
-    const d = payload[0].payload;
-    const baseYear = new Date().getFullYear();
-    return (
-      <div className="cf-chart-tooltip visible">
-        <div className="cf-tooltip-header">
-          <span className="cf-tooltip-label">Year {d.year}</span>
-          <span className="cf-tooltip-label" style={{ fontSize: "12px" }}>{baseYear + d.year - 1}</span>
-        </div>
-        {viewMode === "summary" && (
-          <div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Rental Income</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.rentalIncome))}</span>
-            </div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Holding Costs</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.totalExpenses))}</span>
-            </div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Tax Saved</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.taxSaved))}</span>
-            </div>
-            <div className="cf-tooltip-divider" />
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label" style={{ color: "var(--cf-positive)", fontWeight: 500 }}>Net CF/mo</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-positive)" }}>{formatCurrencyCf(Math.round(d.netCashflow / 12))}</span>
-            </div>
-          </div>
-        )}
-        {viewMode === "property" && (
-          <div>
-            {isInvestment && (
-              <div className="cf-tooltip-row">
-                <span className="cf-tooltip-label">Rent</span>
-                <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.rentalIncome))}</span>
-              </div>
-            )}
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Costs</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.interestPortion + d.ongoingCosts))}</span>
-            </div>
-            {isInvestment && (
-              <div className="cf-tooltip-row">
-                <span className="cf-tooltip-label">Gearing</span>
-                <span className="cf-tooltip-value" style={{ color: "#a78bfa" }}>{formatCurrencyCf(Math.round(d.gearing))}</span>
-              </div>
-            )}
-            <div className="cf-tooltip-divider" />
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label" style={{ color: "var(--cf-positive)", fontWeight: 500 }}>Property CF/mo</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-positive)" }}>{formatCurrencyCf(Math.round(d.propertyCashflow / 12))}</span>
-            </div>
-          </div>
-        )}
-        {viewMode === "equity" && (
-          <div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Property Value</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.propertyValue))}</span>
-            </div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Loan Balance</span>
-              <span className="cf-tooltip-value" style={{ color: "#f87171" }}>��{formatCurrencyCf(Math.round(d.loanBalance))}</span>
-            </div>
-            {d.offsetBalanceAtYear > 0 && (
-              <div className="cf-tooltip-row">
-                <span className="cf-tooltip-label">Offset</span>
-                <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.offsetBalanceAtYear))}</span>
-              </div>
-            )}
-            <div className="cf-tooltip-divider" />
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label" style={{ color: "var(--cf-accent)", fontWeight: 500 }}>Net Equity</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-accent)" }}>{formatCurrencyCf(Math.round(d.netEquity))}</span>
-            </div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label" style={{ fontSize: "12px" }}>LVR</span>
-              <span className="cf-tooltip-label" style={{ fontSize: "12px" }}>{(d.loanBalance / d.propertyValue * 100).toFixed(1)}%</span>
-            </div>
-          </div>
-        )}
-        {viewMode === "deductions" && isInvestment && (
-          <div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Interest</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.interestPortion))}</span>
-            </div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Ongoing</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.ongoingCosts))}</span>
-            </div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Depreciation</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.depDiv43 + d.depDiv40))}</span>
-            </div>
-            <div className="cf-tooltip-divider" />
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label" style={{ color: "#a78bfa", fontWeight: 500 }}>Total</span>
-              <span className="cf-tooltip-value" style={{ color: "#a78bfa" }}>{formatCurrencyCf(Math.round(d.totalDeductions))}</span>
-            </div>
-          </div>
-        )}
-        {viewMode === "deductions" && !isInvestment && (
-          <div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Rates</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.councilRates + d.waterRates))}</span>
-            </div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Insurance</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.insurance))}</span>
-            </div>
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label">Maint</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(d.maintenance + d.strataFees))}</span>
-            </div>
-            <div className="cf-tooltip-divider" />
-            <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label" style={{ color: "#a78bfa", fontWeight: 500 }}>Total</span>
-              <span className="cf-tooltip-value" style={{ color: "#a78bfa" }}>{formatCurrencyCf(Math.round(d.ongoingCosts))}</span>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <section className="cf-chart-section">
       {/* Chart — constrained width, centered */}
@@ -223,9 +92,11 @@ export default function CashflowChart({
             <BarChart
               data={rechartsData}
               margin={{ top: 16, right: 24, left: 0, bottom: 0 }}
-              onMouseMove={(state) => {
-                const year = (state?.activePayload?.[0]?.payload as { year?: number })?.year;
-                if (year) onHoverYear(year);
+              onMouseMove={(state: Record<string, unknown>) => {
+                const idx = state?.activeTooltipIndex as number | undefined;
+                if (idx != null && idx >= 0 && idx < rechartsData.length) {
+                  onHoverYear(rechartsData[idx].year);
+                }
               }}
               onMouseLeave={() => onHoverYear(null)}
             >
@@ -261,7 +132,7 @@ export default function CashflowChart({
                 tick={{ fill: "#71717a", fontSize: 11 }}
                 width={50}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+              <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Bar
                 dataKey="value"
                 radius={[3, 3, 0, 0]}
@@ -311,7 +182,9 @@ export default function CashflowChart({
             <ComposedChart
               data={rechartsData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-              onClick={(state) => { const year = (state?.activePayload?.[0]?.payload as { year?: number })?.year; if (year) onSelectYear(year); }}
+              onMouseMove={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onHoverYear(rechartsData[idx].year); }}
+              onMouseLeave={() => onHoverYear(null)}
+              onClick={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onSelectYear(rechartsData[idx].year); }}
             >
               <defs>
                 <linearGradient id="loanGradient" x1="0" y1="0" x2="0" y2="1">
@@ -325,7 +198,8 @@ export default function CashflowChart({
               </defs>
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} interval={4} />
               <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} width={60} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+
+              <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Area type="monotone" dataKey="propertyValue" stroke="#2dd4bf" strokeWidth={2} fill="url(#equityAreaGradient)" />
               <Area type="monotone" dataKey="loanBalance" stroke="#ef4444" strokeWidth={2} fill="url(#loanGradient)" />
               <ReferenceLine x={`Yr ${selectedYear}`} stroke="#2dd4bf" strokeDasharray="3 3" strokeOpacity={0.5} />
@@ -334,11 +208,14 @@ export default function CashflowChart({
             <ComposedChart
               data={rechartsData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-              onClick={(state) => { const year = (state?.activePayload?.[0]?.payload as { year?: number })?.year; if (year) onSelectYear(year); }}
+              onMouseMove={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onHoverYear(rechartsData[idx].year); }}
+              onMouseLeave={() => onHoverYear(null)}
+              onClick={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onSelectYear(rechartsData[idx].year); }}
             >
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} interval={4} />
               <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} width={60} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "transparent" }} />
+
+              <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Bar dataKey="netEquity" radius={[4, 4, 0, 0]} opacity={0.8}
                 onMouseEnter={(data) => {
                   if (data?.year) onHoverYear(data.year);

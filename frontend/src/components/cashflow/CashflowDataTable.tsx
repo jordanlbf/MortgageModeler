@@ -29,7 +29,7 @@ export default function CashflowDataTable({
     const cal = baseYear + index;
     return (
       <span className="cft-year-cell cft-year-b">
-        <span className="cft-year-b-yr">Yr {year}</span>
+        <span className="cft-year-b-yr">Year {year}</span>
         <span className="cft-year-b-dot">·</span>
         <span className="cft-year-b-cal">{cal}</span>
       </span>
@@ -52,6 +52,8 @@ export default function CashflowDataTable({
   };
 
   // Row class helper for selected/hovered states
+  const isSecondPanel = propertyPanel === "cashflow" || equityPanel === "position";
+
   const getRowClass = (year: number) => {
     const isSelected = year === selectedYear;
     const isHovered = year === hoveredYear && year !== selectedYear;
@@ -67,7 +69,7 @@ export default function CashflowDataTable({
           <thead>
             {/* Group headers */}
             <tr className="cft-group-row">
-              <th className="cft-group-cell" />
+              <th className="cft-group-cell" colSpan={2} />
               <th className="cft-group-cell cft-group-label cft-group-income" colSpan={isInvestment ? 4 : 3}>income</th>
               <th className="cft-group-divider" />
               <th className="cft-group-cell cft-group-label cft-group-tax" colSpan={1}>tax</th>
@@ -78,7 +80,7 @@ export default function CashflowDataTable({
             </tr>
             {/* Column headers */}
             <tr className="cft-header-row">
-              <th className="cft-th cft-th-year" />
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
               <th className="cft-th">salary</th>
               {isInvestment && <th className="cft-th">rent</th>}
               <th className="cft-th">prop. ded.</th>
@@ -103,7 +105,7 @@ export default function CashflowDataTable({
                   onClick={() => onSelectYear(y.year)}
                   onMouseEnter={() => onHoverYear(y.year)}
                   onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.salary))}</td>
                   {isInvestment && <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
                   <td className={`cft-td ${getValueClass(-y.totalDeductionsForTax, false, true)}`}>{formatCurrencyCf(Math.round(-y.totalDeductionsForTax))}</td>
@@ -130,11 +132,11 @@ export default function CashflowDataTable({
         <table className="cft-table">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell" />
+              <th className="cft-group-cell" colSpan={2} />
               <th className="cft-group-cell cft-group-label cft-group-tax" colSpan={5}>gearing</th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-th-year">year</th>
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
               <th className="cft-th">rent</th>
               <th className="cft-th">holding</th>
               <th className="cft-th cft-th-agg">net gearing</th>
@@ -150,7 +152,7 @@ export default function CashflowDataTable({
                   onClick={() => onSelectYear(y.year)}
                   onMouseEnter={() => onHoverYear(y.year)}
                   onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>
                   <td className={`cft-td ${getValueClass(-holdingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-holdingCosts))}</td>
                   <td className={`cft-td ${getValueClass(y.gearing, true)}`}>{formatCurrencyCf(Math.round(y.gearing))}</td>
@@ -168,11 +170,9 @@ export default function CashflowDataTable({
         <table className="cft-table">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell" />
               <th className="cft-group-cell cft-group-label cft-group-net" colSpan={4}>cashflow</th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-th-year">year</th>
               <th className="cft-th">rent</th>
               <th className="cft-th cft-th-agg">total costs</th>
               <th className="cft-th">tax saved</th>
@@ -188,7 +188,6 @@ export default function CashflowDataTable({
                   onClick={() => onSelectYear(y.year)}
                   onMouseEnter={() => onHoverYear(y.year)}
                   onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td>
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>
                   <td className={`cft-td ${getValueClass(-totalCosts, true)}`}>{formatCurrencyCf(Math.round(-totalCosts))}</td>
                   <td className="cft-td cft-val-positive">{y.taxSaved > 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.taxSaved))}</td>
@@ -207,7 +206,7 @@ export default function CashflowDataTable({
         <table className="cft-table">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell" />
+              <th className="cft-group-cell" colSpan={2} />
               <th className="cft-group-cell cft-group-label cft-group-costs" colSpan={2}>costs</th>
               <th className="cft-group-divider" />
               <th className="cft-group-cell cft-group-label cft-group-costs" colSpan={2}>loan</th>
@@ -215,7 +214,7 @@ export default function CashflowDataTable({
               <th className="cft-group-cell cft-group-label cft-group-net" />
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-th-year">year</th>
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
               <th className="cft-th">holding</th>
               <th className="cft-th">interest</th>
               <th className="cft-th-divider" />
@@ -229,7 +228,7 @@ export default function CashflowDataTable({
             {yearData.map((y, i) => (
               <tr key={y.year} className={`cft-row ${y.year === selectedYear ? "cft-row-active" : ""}`}
                 onClick={() => onSelectYear(y.year)}>
-                <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td>
+                <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
                 <td className={`cft-td ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-y.ongoingCosts))}</td>
                 <td className={`cft-td ${getValueClass(-y.interestPortion, false, true)}`}>{formatCurrencyCf(Math.round(-y.interestPortion))}</td>
                 <td className="cft-td-divider" />
@@ -250,16 +249,18 @@ export default function CashflowDataTable({
         <table className="cft-table">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell" />
-              <th className="cft-group-cell cft-group-label cft-group-income" colSpan={5}>property</th>
+              <th className="cft-group-cell" colSpan={2} />
+              <th className="cft-group-cell cft-group-label cft-group-income" colSpan={9}>property</th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-th-year">year</th>
-              <th className="cft-th">value</th>
-              <th className="cft-th cft-th-agg" style={{ textAlign: "right" }}>total growth</th>
-              <th className="cft-th" />
-              <th className="cft-th" style={{ textAlign: "right" }}>yoy growth</th>
-              <th className="cft-th" />
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
+              <th className="cft-th">total growth</th>
+              <th className="cft-th">gain %</th>
+              <th className="cft-th-divider" />
+              <th className="cft-th">yoy growth</th>
+              <th className="cft-th">yoy %</th>
+              <th className="cft-th-divider" />
+              <th className="cft-th cft-th-result">value</th>
             </tr>
           </thead>
           <tbody>
@@ -276,12 +277,14 @@ export default function CashflowDataTable({
                   onClick={() => onSelectYear(y.year)}
                   onMouseEnter={() => onHoverYear(y.year)}
                   onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td>
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.propertyValue))}</td>
-                  <td className="cft-td cft-val-result">+{formatCurrencyCf(Math.round(totalGrowth))}</td>
-                  <td className="cft-td cft-val-growth-pct"><span className="cft-growth-arrow">↑</span><span className="cft-pill">{totalGrowthPct}%</span></td>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
+                  <td className="cft-td cft-val-dim">+{formatCurrencyCf(Math.round(totalGrowth))}</td>
+                  <td className="cft-td" style={{ color: parseFloat(totalGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{totalGrowthPct}%</td>
+                  <td className="cft-td-divider" />
                   <td className="cft-td cft-val-dim">+{formatCurrencyCf(Math.round(yoyGrowth))}</td>
-                  <td className="cft-td cft-val-growth-pct"><span className="cft-growth-arrow">↑</span><span className="cft-pill">{yoyGrowthPct}%</span></td>
+                  <td className="cft-td" style={{ color: parseFloat(yoyGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{yoyGrowthPct}%</td>
+                  <td className="cft-td-divider" />
+                  <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(y.propertyValue))}</td>
                 </tr>
               );
             })}
@@ -294,29 +297,33 @@ export default function CashflowDataTable({
         <table className="cft-table">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell" />
-              <th className="cft-group-cell cft-group-label cft-group-position" colSpan={4}>position</th>
+              <th className="cft-group-cell cft-group-label cft-group-position" colSpan={showOffset ? 7 : 6}>position</th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-th-year">year</th>
-              <th className="cft-th">loan</th>
-              {showOffset && <th className="cft-th">offset</th>}
+              <th className="cft-th">prop value</th>
+              <th className="cft-th">loan balance</th>
+              <th className="cft-th cft-th-agg">prop equity</th>
               <th className="cft-th cft-th-agg">lvr</th>
-              <th className="cft-th cft-th-result">equity</th>
+              <th className="cft-th-divider" />
+              {showOffset && <th className="cft-th">offset</th>}
+              <th className="cft-th cft-th-result">net equity</th>
             </tr>
           </thead>
           <tbody>
             {yearData.map((y, i) => {
               const lvr = y.loanBalance / y.propertyValue * 100;
+              const propertyEquity = y.propertyValue - y.loanBalance;
               return (
                 <tr key={y.year} className={getRowClass(y.year)}
                   onClick={() => onSelectYear(y.year)}
                   onMouseEnter={() => onHoverYear(y.year)}
                   onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td>
+                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.propertyValue))}</td>
                   <td className={`cft-td ${getValueClass(-y.loanBalance, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanBalance))}</td>
+                  <td className="cft-td" style={{ fontWeight: 700, color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(propertyEquity))}</td>
+                  <td className={`cft-td ${getLvrClass(lvr)}`} style={{ fontWeight: 700 }}>{lvr.toFixed(1)}%</td>
+                  <td className="cft-td-divider" />
                   {showOffset && <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.offsetBalanceAtYear))}</td>}
-                  <td className={`cft-td ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</td>
                   <td className="cft-td cft-td-result cft-val-result">
                     {formatCurrencyCf(Math.round(y.netEquity))}
                   </td>
@@ -332,7 +339,7 @@ export default function CashflowDataTable({
         <table className="cft-table">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell" />
+              <th className="cft-group-cell" colSpan={2} />
               <th className="cft-group-cell cft-group-label cft-group-tax" colSpan={isInvestment ? 5 : 4}>holding costs</th>
               {isInvestment && (
                 <>
@@ -344,7 +351,7 @@ export default function CashflowDataTable({
               <th className="cft-group-cell cft-group-label cft-group-net" />
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-th-year">year</th>
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
               {isInvestment && <th className="cft-th">interest</th>}
               <th className="cft-th">rates</th>
               <th className="cft-th">insurance</th>
@@ -372,7 +379,7 @@ export default function CashflowDataTable({
                   onClick={() => onSelectYear(y.year)}
                   onMouseEnter={() => onHoverYear(y.year)}
                   onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
                   {isInvestment && <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.councilRates + y.waterRates))}</td>
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.insurance))}</td>

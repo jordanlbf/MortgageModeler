@@ -55,7 +55,8 @@
       "Bash(sed -n '773,775p' cashflow.css)",
       "Bash(sed -n '1467,1469p' cashflow.css)",
       "Bash(sed -n '765,780p' cashflow.css)",
-      "Bash(sed -n '1460,1475p' cashflow.css)"
+      "Bash(sed -n '1460,1475p' cashflow.css)",
+      "Bash(node -e ':*)"
     ]
   }
 }

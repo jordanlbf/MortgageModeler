@@ -471,125 +471,19 @@
   border: none;
 }
 
-/* Year overlay picker */
-.cf-year-overlay-picker {
-  display: flex;
-  gap: 2px;
-}
-
-.cf-year-overlay-picker-btn {
-  font-size: 8px;
+/* Year overlay — "Year 1" (hero-matched) + "2026" (secondary) */
+.cf-year-overlay-yr {
+  font-size: 18px;
   font-weight: 600;
-  font-family: inherit;
-  padding: 1px 4px;
-  border-radius: 3px;
-  border: 1px solid rgba(113, 113, 122, 0.15);
-  background: transparent;
-  color: rgba(113, 113, 122, 0.4);
-  cursor: pointer;
-  transition: all 0.1s ease;
-  line-height: 1.4;
-}
-
-.cf-year-overlay-picker-btn.active {
-  border-color: rgba(45, 212, 191, 0.35);
-  background: rgba(45, 212, 191, 0.08);
-  color: var(--cf-accent);
-}
-
-/* Variant A — Large stacked: "Yr 1" big + "2026" below */
-.cf-year-overlay-a {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0;
-}
-
-.cf-year-overlay-a-num {
-  font-size: 28px;
-  font-weight: 600;
-  color: rgba(250, 250, 250, 0.12);
+  letter-spacing: -0.01em;
   line-height: 1;
-  letter-spacing: -0.02em;
 }
 
-.cf-year-overlay-a-cal {
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(113, 113, 122, 0.35);
-  line-height: 1.2;
-}
-
-/* Variant B — Compact inline badge: "Year 1 · 2026" */
-.cf-year-overlay-b {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: rgba(24, 24, 27, 0.6);
-  border: 1px solid rgba(63, 63, 70, 0.3);
-  border-radius: 8px;
-}
-
-.cf-year-overlay-b-yr {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(250, 250, 250, 0.85);
-}
-
-.cf-year-overlay-b-dot {
-  font-size: 10px;
-  color: rgba(113, 113, 122, 0.3);
-}
-
-.cf-year-overlay-b-cal {
-  font-size: 12px;
+.cf-year-overlay-cal {
+  font-size: 14px;
   font-weight: 400;
-  color: rgba(113, 113, 122, 0.55);
-}
-
-/* Variant C — Loan year primary (large, colored) stacked: "Yr 1" big + "2026" small */
-.cf-year-overlay-c {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0;
-}
-
-.cf-year-overlay-c-yr {
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.cf-year-overlay-c-cal {
-  font-size: 11px;
-  font-weight: 400;
-  color: rgba(113, 113, 122, 0.5);
-  line-height: 1.2;
-}
-
-/* Variant D — Minimal large number only */
-.cf-year-overlay-d {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.cf-year-overlay-d-num {
-  font-size: 32px;
-  font-weight: 700;
-  color: rgba(250, 250, 250, 0.08);
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.cf-year-overlay-d-label {
-  font-size: 11px;
-  font-weight: 400;
-  color: rgba(113, 113, 122, 0.25);
-  text-transform: lowercase;
+  color: var(--cf-text-dim);
+  margin-left: 12px;
 }
 
 .cf-chart-wrapper:focus,
@@ -627,6 +521,12 @@
   box-shadow: none;
 }
 
+.cf-chart-wrapper *:focus,
+.cf-chart-wrapper *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .cf-chart-section {
   overflow: hidden;
   border-radius: 0;
@@ -635,6 +535,15 @@
   width: 100%;
   min-width: 0;
   margin: 0;
+  outline: none;
+}
+
+.cf-chart-section:focus,
+.cf-chart-section:focus-visible,
+.cf-chart-section:focus-within {
+  outline: none;
+  border: none;
+  box-shadow: none;
 }
 
 .cf-chart-bar {
@@ -866,7 +775,7 @@
 
 /* Hero number — Fey-inspired compact inline */
 .cf-hero-area {
-  padding: 10px 0 20px;
+  padding: 8px 0 12px;
 }
 
 /* Hero row */
@@ -884,6 +793,8 @@
   right: 24px;
   z-index: 20;
   pointer-events: none;
+  display: flex;
+  align-items: baseline;
 }
 
 .cf-hero-value {
@@ -1345,9 +1256,9 @@
 }
 
 .cft-th-year {
-  text-align: left;
-  padding-left: 20px;
-  padding-right: 28px;
+  text-align: right;
+  padding-left: 18px;
+  padding-right: 18px;
 }
 
 .cft-th-agg {
@@ -1408,9 +1319,9 @@
 }
 
 .cft-td-year {
-  text-align: left;
-  padding-left: 20px;
-  padding-right: 28px;
+  text-align: right;
+  padding-left: 18px;
+  padding-right: 18px;
 }
 
 .cft-td-divider {
@@ -1475,7 +1386,7 @@
 .cft-year-b-dot {
   font-size: 10px;
   color: rgba(113, 113, 122, 0.3);
-  margin: 0 2px;
+  margin: 0 6px;
 }
 
 .cft-year-b-cal {
@@ -1597,11 +1508,9 @@
   font-weight: 700;
 }
 
-/* Growth percentage — pill badge */
+/* Growth percentage */
 .cft-val-growth-pct {
-  text-align: left;
-  padding-left: 4px;
-  padding-right: 8px;
+  text-align: right;
 }
 
 .cft-growth-arrow {
@@ -1626,19 +1535,16 @@
 .cft-lvr-danger {
   color: #f87171;
   font-weight: 600;
-  background: rgba(248, 113, 113, 0.06);
 }
 
 .cft-lvr-moderate {
   color: #fbbf24;
   font-weight: 600;
-  background: rgba(251, 191, 36, 0.04);
 }
 
 .cft-lvr-healthy {
   color: #34d399;
   font-weight: 600;
-  background: rgba(52, 211, 153, 0.04);
 }
 
 /* ���─ Depreciation — paper deductions, distinct from cash costs ── */
@@ -1671,68 +1577,6 @@
   font-weight: 600;
 }
 
-/* Chart tooltip */
-.cf-chart-tooltip {
-  background: rgba(42, 42, 46, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(113, 113, 122, 0.25);
-  border-radius: 12px;
-  padding: 16px;
-  font-size: 14px;
-  pointer-events: none;
-  z-index: 10;
-  min-width: 200px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-.cf-chart-tooltip.visible {
-  opacity: 1;
-}
-
-.cf-tooltip-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.cf-tooltip-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-.cf-tooltip-row+.cf-tooltip-row {
-  margin-top: 8px;
-}
-
-.cf-tooltip-label {
-  color: var(--cf-text-muted);
-}
-
-.cf-tooltip-value {
-  font-weight: 600;
-}
-
-.cf-tooltip-divider {
-  height: 1px;
-  background: rgba(113, 113, 122, 0.25);
-  margin: 8px 0;
-}
-
-.cf-tooltip-caret {
-  position: absolute;
-  bottom: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid var(--cf-card-elevated);
-}
 
 
 /* ============================================================================

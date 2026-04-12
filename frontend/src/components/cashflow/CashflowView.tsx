@@ -141,13 +141,13 @@ export default function CashflowCalculator() {
           summary: {
             value: formatCurrencyCf(Math.round(y1.netCashflow)),
             label: "net cashflow",
-            monthly: `${formatCurrencyCf(Math.round(y1.netCashflow / 12))}/mo`,
+            monthly: `${formatCurrencyCf(Math.round(y1.netCashflow / 12))}/month`,
             color: y1.netCashflow >= 0 ? "var(--cf-accent)" : "var(--cf-negative)",
           },
           property: {
             value: formatCurrencyCf(Math.round(y1.propertyCashflow)),
             label: "property cashflow",
-            monthly: `${formatCurrencyCf(Math.round(y1.propertyCashflow / 12))}/mo`,
+            monthly: `${formatCurrencyCf(Math.round(y1.propertyCashflow / 12))}/month`,
             color: y1.propertyCashflow >= 0 ? "var(--cf-accent)" : "var(--cf-negative)",
           },
           equity: {
@@ -173,18 +173,26 @@ export default function CashflowCalculator() {
               <div className="cf-chart-main">
                 {/* Year overlay — positioned at top-right of chart-main, aligned with hero */}
                 <div className="cf-year-overlay-positioned">
-                  <div className="cf-year-overlay-c">
-                    <span className="cf-year-overlay-c-yr" style={{ color: vm === "summary" || vm === "property" ? "var(--cf-accent)" : "#06b6d4" }}>Year {displayYear}</span>
-                    <span className="cf-year-overlay-c-cal">{calendarYear}</span>
-                  </div>
+                  <span className="cf-year-overlay-yr" style={{ color: hero.color }}>Year {displayYear}</span>
+                  <span className="cf-year-overlay-cal">{calendarYear}</span>
                 </div>
 
-                {/* Hero number — Fey-style compact inline */}
+                {/* Chart view toggles */}
                 <div className="cf-hero-area">
-                  <div className="cf-hero-row">
-                    <span className="cf-hero-value" style={{ color: hero.color }}>{hero.value}</span>
-                    <span className="cf-hero-label">{hero.label}</span>
-                    <span className="cf-hero-monthly">{hero.monthly}</span>
+                  <div className="cf-mode-toggles">
+                    {(vm === "equity" ? chartViewOptions : [chartViewOptions[0]]).map((view) => {
+                      const Icon = view.icon;
+                      return (
+                        <button
+                          key={view.id}
+                          onClick={() => setChartView(view.id)}
+                          className={`cf-mode-toggle ${(vm === "equity" ? chartView : "bars") === view.id ? "active" : ""}`}
+                        >
+                          <Icon size={14} />
+                          {view.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -218,24 +226,6 @@ export default function CashflowCalculator() {
                     );
                   })}
 
-                  {/* Mode toggles (Growth/Breakdown/Compare) — bottom-right for equity only */}
-                  {vm === "equity" && (
-                    <div className="cf-mode-toggles cf-mode-toggles--final">
-                      {chartViewOptions.map((view) => {
-                        const Icon = view.icon;
-                        return (
-                          <button
-                            key={view.id}
-                            onClick={() => setChartView(view.id)}
-                            className={`cf-mode-toggle ${chartView === view.id ? "active" : ""}`}
-                          >
-                            <Icon size={14} />
-                            {view.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -392,6 +382,7 @@ export default function CashflowCalculator() {
                 selectedYear={displayYear}
                 isInvestment={s.isInvestment}
                 marginalRate={s.marginalRate}
+                hasOffset={s.hasOffset}
                 isHovered={hoveredYear !== null}
               />
             </div>
