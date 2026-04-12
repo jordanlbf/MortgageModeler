@@ -3,8 +3,14 @@
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
 import { formatCurrencyCf, formatAbbreviated } from "@/lib/cashflow-calculations";
 
+interface KpiItem {
+  label: string;
+  value: string;
+  color: string;
+  sub: string;
+}
+
 interface Props {
-  position: "left" | "right";
   viewMode: ViewMode;
   yearData: YearData[];
   selectedYearData: YearData | null;
@@ -14,128 +20,136 @@ interface Props {
 }
 
 export default function CashflowKpiStrip({
-  position, viewMode, yearData, selectedYearData: sy,
+  viewMode, yearData, selectedYearData: sy,
   selectedYear, isInvestment, marginalRate,
 }: Props) {
-  if (position === "left") {
-    return (
-      <div className="cf-kpi-strip cf-kpi-left">
-        {viewMode === "summary" && (
-          <>
-            <div className="cf-kpi-card cf-kpi-primary">
-              <div className="cf-kpi-label">Net Cashflow</div>
-              <div className={`cf-kpi-value ${yearData[0].netCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
-                {formatCurrencyCf(Math.round(yearData[0].netCashflow / 12))}
-                <span className="cf-kpi-unit">/mo</span>
-              </div>
-              <div className="cf-kpi-sub">Year 1 · {formatCurrencyCf(Math.round(yearData[0].netCashflow))} p.a.</div>
-            </div>
-            <div className="cf-kpi-card cf-kpi-highlight">
-              <div className="cf-kpi-label">Tax Saved</div>
-              <div className="cf-kpi-value cf-positive">
-                +{formatCurrencyCf(Math.round(yearData[0].taxSaved))}
-              </div>
-              <div className="cf-kpi-sub">Year 1 · {Math.round(marginalRate * 100)}% marginal rate</div>
-            </div>
-          </>
-        )}
-        {viewMode === "property" && (
-          <>
-            <div className="cf-kpi-card cf-kpi-primary">
-              <div className="cf-kpi-label">Property Cashflow</div>
-              <div className={`cf-kpi-value ${yearData[0].propertyCashflow < 0 ? "cf-negative" : "cf-positive"}`}>
-                {formatCurrencyCf(Math.round(yearData[0].propertyCashflow / 12))}
-                <span className="cf-kpi-unit">/mo</span>
-              </div>
-              <div className="cf-kpi-sub">Year 1 · {formatCurrencyCf(Math.round(yearData[0].propertyCashflow))} p.a.</div>
-            </div>
-            {isInvestment ? (
-              <div className="cf-kpi-card cf-kpi-highlight">
-                <div className="cf-kpi-label">Gearing Status</div>
-                <div className={`cf-kpi-value ${yearData[0].gearing < 0 ? "cf-negative" : "cf-positive"}`}>
-                  {formatCurrencyCf(Math.round(yearData[0].gearing))}
-                </div>
-                <div className="cf-kpi-sub">{yearData[0].gearing < 0 ? "Negatively geared" : "Positively geared"}</div>
-              </div>
-            ) : (
-              <div className="cf-kpi-card">
-                <div className="cf-kpi-label">Total Interest</div>
-                <div className="cf-kpi-value cf-negative">
-                  {formatCurrencyCf(Math.round(yearData.reduce((s, y) => s + y.interestPortion, 0)))}
-                </div>
-                <div className="cf-kpi-sub">Over 30 years</div>
-              </div>
-            )}
-          </>
-        )}
-        {viewMode === "equity" && sy && (
-          <>
-            <div className="cf-kpi-card cf-kpi-primary">
-              <div className="cf-kpi-label">Property Value</div>
-              <div className="cf-kpi-value cf-positive">{formatAbbreviated(sy.propertyValue)}</div>
-              <div className="cf-kpi-sub">Year {selectedYear} · {formatCurrencyCf(Math.round(sy.propertyValue))}</div>
-            </div>
-            <div className="cf-kpi-card">
-              <div className="cf-kpi-label">LVR</div>
-              <div className="cf-kpi-value" style={{ color: (sy.loanBalance / sy.propertyValue * 100) > 80 ? "var(--cf-negative)" : "var(--cf-text)" }}>
-                {(sy.loanBalance / sy.propertyValue * 100).toFixed(1)}%
-              </div>
-              <div className="cf-kpi-sub">Loan-to-value ratio</div>
-            </div>
-          </>
-        )}
-        {viewMode === "deductions" && sy && (
-          <>
-            <div className="cf-kpi-card cf-kpi-primary">
-              <div className="cf-kpi-label">{isInvestment ? "Total Deductions" : "Total Expenses"}</div>
-              <div className="cf-kpi-value" style={{ color: "#a78bfa" }}>
-                {formatCurrencyCf(Math.round(isInvestment ? sy.totalDeductions : sy.ongoingCosts))}
-              </div>
-              <div className="cf-kpi-sub">Year {selectedYear} · Tax-deductible</div>
-            </div>
-            <div className="cf-kpi-card">
-              <div className="cf-kpi-label">{isInvestment ? "Holding Costs" : "Annual Expenses"}</div>
-              <div className="cf-kpi-value" style={{ color: "#f59e0b" }}>
-                {formatCurrencyCf(Math.round(isInvestment ? sy.interestPortion + sy.ongoingCosts : sy.ongoingCosts))}
-              </div>
-              <div className="cf-kpi-sub">{isInvestment ? "Interest + ongoing expenses" : "Rates + insurance + maint."}</div>
-            </div>
-          </>
-        )}
-      </div>
-    );
+  const y1 = yearData[0];
+  let items: KpiItem[] = [];
+
+  if (viewMode === "summary") {
+    items = [
+      {
+        label: "Net Cashflow",
+        value: `${formatCurrencyCf(Math.round(y1.netCashflow / 12))}/mo`,
+        color: y1.netCashflow < 0 ? "var(--cf-negative)" : "var(--cf-positive)",
+        sub: `Year 1 · ${formatCurrencyCf(Math.round(y1.netCashflow))} p.a.`,
+      },
+      {
+        label: "Tax Saved",
+        value: `${y1.taxSaved > 0 ? "+" : ""}${formatCurrencyCf(Math.round(y1.taxSaved))}`,
+        color: "var(--cf-positive)",
+        sub: `Year 1 · ${Math.round(marginalRate * 100)}% marginal rate`,
+      },
+      {
+        label: "Property Value",
+        value: formatAbbreviated(y1.propertyValue),
+        color: "var(--cf-text)",
+        sub: formatCurrencyCf(Math.round(y1.propertyValue)),
+      },
+      {
+        label: "LVR",
+        value: `${(y1.loanBalance / y1.propertyValue * 100).toFixed(1)}%`,
+        color: (y1.loanBalance / y1.propertyValue * 100) > 80 ? "var(--cf-negative)" : "var(--cf-text)",
+        sub: "Loan-to-value ratio",
+      },
+    ];
+  } else if (viewMode === "property") {
+    items = [
+      {
+        label: "Property Cashflow",
+        value: `${formatCurrencyCf(Math.round(y1.propertyCashflow / 12))}/mo`,
+        color: y1.propertyCashflow < 0 ? "var(--cf-negative)" : "var(--cf-positive)",
+        sub: `Year 1 · ${formatCurrencyCf(Math.round(y1.propertyCashflow))} p.a.`,
+      },
+      ...(isInvestment ? [{
+        label: "Gearing Status",
+        value: formatCurrencyCf(Math.round(y1.gearing)),
+        color: y1.gearing < 0 ? "var(--cf-negative)" : "var(--cf-positive)",
+        sub: y1.gearing < 0 ? "Negatively geared" : "Positively geared",
+      }] : [{
+        label: "Total Interest",
+        value: formatCurrencyCf(Math.round(yearData.reduce((s, y) => s + y.interestPortion, 0))),
+        color: "var(--cf-negative)",
+        sub: "Over 30 years",
+      }]),
+      {
+        label: "Gross Rent",
+        value: formatCurrencyCf(Math.round(y1.grossRent)),
+        color: "var(--cf-text)",
+        sub: `${formatCurrencyCf(Math.round(y1.grossRent / 52))}/wk`,
+      },
+      {
+        label: "Holding Costs",
+        value: formatCurrencyCf(Math.round(y1.interestPortion + y1.ongoingCosts)),
+        color: "#f59e0b",
+        sub: "Interest + ongoing",
+      },
+    ];
+  } else if (viewMode === "equity" && sy) {
+    items = [
+      {
+        label: "Property Value",
+        value: formatAbbreviated(sy.propertyValue),
+        color: "var(--cf-positive)",
+        sub: `Year ${selectedYear} · ${formatCurrencyCf(Math.round(sy.propertyValue))}`,
+      },
+      {
+        label: "Loan Balance",
+        value: formatAbbreviated(sy.loanBalance),
+        color: "var(--cf-negative)",
+        sub: `Year ${selectedYear} · ${formatCurrencyCf(Math.round(sy.loanBalance))}`,
+      },
+      {
+        label: "Net Equity",
+        value: formatAbbreviated(sy.netEquity),
+        color: "var(--cf-positive)",
+        sub: `Year ${selectedYear} · ${formatCurrencyCf(Math.round(sy.netEquity))}`,
+      },
+      {
+        label: "LVR",
+        value: `${(sy.loanBalance / sy.propertyValue * 100).toFixed(1)}%`,
+        color: (sy.loanBalance / sy.propertyValue * 100) > 80 ? "var(--cf-negative)" : "var(--cf-text)",
+        sub: "Loan-to-value ratio",
+      },
+    ];
+  } else if (viewMode === "deductions" && sy) {
+    items = [
+      {
+        label: isInvestment ? "Total Deductions" : "Total Expenses",
+        value: formatCurrencyCf(Math.round(isInvestment ? sy.totalDeductions : sy.ongoingCosts)),
+        color: "#a78bfa",
+        sub: `Year ${selectedYear} · Tax-deductible`,
+      },
+      {
+        label: isInvestment ? "Holding Costs" : "Annual Expenses",
+        value: formatCurrencyCf(Math.round(isInvestment ? sy.interestPortion + sy.ongoingCosts : sy.ongoingCosts)),
+        color: "#f59e0b",
+        sub: isInvestment ? "Interest + ongoing" : "Rates + insurance + maint.",
+      },
+      {
+        label: "Tax Saved",
+        value: `${sy.taxSaved > 0 ? "+" : ""}${formatCurrencyCf(Math.round(sy.taxSaved))}`,
+        color: "var(--cf-positive)",
+        sub: `Year ${selectedYear}`,
+      },
+      {
+        label: "Effective Rate",
+        value: `${Math.round(marginalRate * 100)}%`,
+        color: "var(--cf-text)",
+        sub: "Marginal tax rate",
+      },
+    ];
   }
 
-  // Right strip
   return (
-    <div className="cf-kpi-strip cf-kpi-right">
-      {viewMode === "equity" && sy ? (
-        <>
-          <div className="cf-kpi-card">
-            <div className="cf-kpi-label">Loan Balance</div>
-            <div className="cf-kpi-value cf-negative">{formatAbbreviated(sy.loanBalance)}</div>
-            <div className="cf-kpi-sub">Year {selectedYear} · {formatCurrencyCf(Math.round(sy.loanBalance))}</div>
-          </div>
-          <div className="cf-kpi-card cf-kpi-highlight">
-            <div className="cf-kpi-label">Net Equity</div>
-            <div className="cf-kpi-value cf-positive">{formatAbbreviated(sy.netEquity)}</div>
-            <div className="cf-kpi-sub">Year {selectedYear} · {formatCurrencyCf(Math.round(sy.netEquity))}</div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="cf-kpi-card">
-            <div className="cf-kpi-label">Placeholder 1</div>
-            <div className="cf-kpi-value" style={{ color: "var(--cf-text-dim)" }}>—</div>
-            <div className="cf-kpi-sub">Coming soon</div>
-          </div>
-          <div className="cf-kpi-card">
-            <div className="cf-kpi-label">Placeholder 2</div>
-            <div className="cf-kpi-value" style={{ color: "var(--cf-text-dim)" }}>—</div>
-            <div className="cf-kpi-sub">Coming soon</div>
-          </div>
-        </>
-      )}
+    <div className="cf-kpi-strip">
+      {items.map((item, i) => (
+        <div key={i} className="cf-kpi-cell">
+          <div className="cf-kpi-label">{item.label}</div>
+          <div className="cf-kpi-value" style={{ color: item.color }}>{item.value}</div>
+          <div className="cf-kpi-sub">{item.sub}</div>
+        </div>
+      ))}
     </div>
   );
 }

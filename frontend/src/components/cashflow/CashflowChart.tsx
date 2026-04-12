@@ -9,7 +9,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  Area,
   ComposedChart,
   ReferenceLine,
 } from "recharts";
@@ -22,10 +21,8 @@ interface Props {
   yearData: YearData[];
   viewMode: ViewMode;
   selectedYear: number;
-  hoveredYear: number | null;
   isInvestment: boolean;
   onSelectYear: (year: number) => void;
-  onHoverYear: (year: number | null) => void;
 }
 
 type ChartView = "bars" | "stacked" | "comparison";
@@ -80,7 +77,7 @@ export default function CashflowChart({
     : isInvestment ? "Total Deductions" : "Total Expenses";
 
   // Colours per mode
-  const barColor = viewMode === "deductions" ? "#a78bfa" : "#2dd4bf";
+  const barColor = viewMode === "deductions" ? "#a78bfa" : viewMode === "equity" ? "#2dd4bf" : "#4ade80";
   const barColorDark = viewMode === "deductions" ? "#7c3aed" : "#0d9488";
   const barColorSelected = viewMode === "deductions" ? "#c4b5fd" : "#5eead4";
 
@@ -148,8 +145,8 @@ export default function CashflowChart({
             </div>
             <div className="cf-tooltip-divider" />
             <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label" style={{ color: "var(--cf-accent)", fontWeight: 500 }}>Net CF/mo</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-accent)" }}>{formatCurrencyCf(Math.round(d.netCashflow / 12))}</span>
+              <span className="cf-tooltip-label" style={{ color: "var(--cf-positive)", fontWeight: 500 }}>Net CF/mo</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-positive)" }}>{formatCurrencyCf(Math.round(d.netCashflow / 12))}</span>
             </div>
           </div>
         )}
@@ -173,8 +170,8 @@ export default function CashflowChart({
             )}
             <div className="cf-tooltip-divider" />
             <div className="cf-tooltip-row">
-              <span className="cf-tooltip-label" style={{ color: "var(--cf-accent)", fontWeight: 500 }}>Property CF/mo</span>
-              <span className="cf-tooltip-value" style={{ color: "var(--cf-accent)" }}>{formatCurrencyCf(Math.round(d.propertyCashflow / 12))}</span>
+              <span className="cf-tooltip-label" style={{ color: "var(--cf-positive)", fontWeight: 500 }}>Property CF/mo</span>
+              <span className="cf-tooltip-value" style={{ color: "var(--cf-positive)" }}>{formatCurrencyCf(Math.round(d.propertyCashflow / 12))}</span>
             </div>
           </div>
         )}
@@ -186,7 +183,7 @@ export default function CashflowChart({
             </div>
             <div className="cf-tooltip-row">
               <span className="cf-tooltip-label">Loan Balance</span>
-              <span className="cf-tooltip-value" style={{ color: "#f87171" }}>−{formatCurrencyCf(Math.round(d.loanBalance))}</span>
+              <span className="cf-tooltip-value" style={{ color: "#f87171" }}>��{formatCurrencyCf(Math.round(d.loanBalance))}</span>
             </div>
             {d.offsetBalanceAtYear > 0 && (
               <div className="cf-tooltip-row">
@@ -252,7 +249,7 @@ export default function CashflowChart({
   };
 
   return (
-    <section className="cf-chart-section" style={{ padding: "16px" }}>
+    <section className="cf-chart-section" style={{ padding: "12px 8px" }}>
       {/* Chart controls */}
       <div className="cf-chart-bar">
         <div className="cf-chart-sub-tabs">
@@ -282,9 +279,10 @@ export default function CashflowChart({
         </button>
       </div>
 
-      {/* Chart */}
-      <div style={{ height: "280px", marginTop: "8px" }}>
-        <ResponsiveContainer width="100%" height="100%">
+      {/* Chart — constrained width, centered */}
+      <div className="cf-chart-wrapper">
+        <div style={{ height: "100px", marginTop: "4px" }}>
+          <ResponsiveContainer width="100%" height="100%">
           {effectiveChartView === "bars" ? (
             <BarChart
               data={rechartsData}
@@ -390,8 +388,9 @@ export default function CashflowChart({
           )}
         </ResponsiveContainer>
       </div>
+      </div>
 
-      {/* Timeline slider */}
+      {/* Timeline slider — full width, below chart */}
       <div className="cf-timeline">
         <div className="cf-timeline-track">
           <input

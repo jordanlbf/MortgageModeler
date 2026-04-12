@@ -1,518 +1,333 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Check, Home, Building2, Sparkles, Landmark, Coins, Key, Calculator, Pencil } from "lucide-react";
+import { useState } from "react";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyCf, formatCurrencyCf } from "@/lib/cashflow-calculations";
+import {
+  Home,
+  DollarSign,
+  Percent,
+  Receipt,
+  Building2,
+  Calculator,
+  Check,
+  ChevronDown,
+  ChevronRight
+} from "lucide-react";
 
-// Summary component for completed sections
-function SectionSummary({ items }: { items: { label: string; value: string }[] }) {
-  return (
-    <div className="cf-section-summary">
-      {items.map((item, i) => (
-        <div key={i} className="cf-summary-item">
-          <span className="cf-summary-label">{item.label}</span>
-          <span className="cf-summary-value">{item.value}</span>
-        </div>
-      ))}
-    </div>
-  );
+type StepId = "setup" | "property" | "loan" | "costs" | "rental" | "tax";
+
+const WIZARD_STEPS: { id: StepId; label: string; icon: typeof Home }[] = [
+  { id: "setup", label: "Property Setup", icon: Home },
+  { id: "property", label: "Property Details", icon: Building2 },
+  { id: "loan", label: "Loan Terms", icon: Percent },
+  { id: "costs", label: "Running Costs", icon: Receipt },
+  { id: "rental", label: "Rental Income", icon: DollarSign },
+  { id: "tax", label: "Tax Details", icon: Calculator },
+];
+
+function getWizardSteps(isInvestment: boolean) {
+  if (isInvestment) return WIZARD_STEPS;
+  return WIZARD_STEPS.filter(s => s.id !== "rental" && s.id !== "tax");
+}
+
+function getNaturalStepIndex(s: CashflowState): number {
+  if (!s.propertyUse || !s.purchaseMode) return 0;
+  if (!s.propertyComplete) return 1;
+  if (!s.loanComplete) return 2;
+  if (!s.costsComplete) return 3;
+  if (s.isInvestment && !s.rentalComplete) return 4;
+  if (s.isInvestment && !s.taxComplete) return 5;
+  return -1;
+}
+
+type StepLine =
+  | { primary: true; text: string }
+  | { primary?: false; value: string; descriptor: string };
+
+function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
+  switch (stepId) {
+    case "setup": {
+      if (!s.propertyUse || !s.purchaseMode) return null;
+      return [
+        { primary: true, text: s.propertyUse === "investment" ? "Investment Property" : "Owner-Occupier" },
+        { value: s.purchaseMode === "new" ? "New" : "Existing", descriptor: "Purchase" },
+      ];
+    }
+    case "property": {
+      if (!s.propertyComplete) return null;
+      if (s.isNewPurchase) {
+        const price = parseCurrencyCf(s.purchasePrice);
+        const deposit = parseCurrencyCf(s.depositAmount);
+        const loanAmt = price - deposit;
+        const lvr = price > 0 ? Math.round((loanAmt / price) * 100) : 0;
+        return [
+          { primary: true, text: `${formatCurrencyCf(price)} Purchase Price` },
+          { value: formatCurrencyCf(loanAmt), descriptor: "Loan Balance" },
+          { value: `${lvr}%`, descriptor: "LVR" },
+        ];
+      } else {
+        const value = parseCurrencyCf(s.currentValue);
+        const loan = parseCurrencyCf(s.currentLoanBalance);
+        const equity = value - loan;
+        const lvr = value > 0 ? Math.round((loan / value) * 100) : 0;
+        return [
+          { primary: true, text: `${formatCurrencyCf(value)} Current Value` },
+          { value: formatCurrencyCf(equity), descriptor: "Equity" },
+          { value: `${lvr}%`, descriptor: "LVR" },
+        ];
+      }
+    }
+    case "loan": {
+      if (!s.loanComplete) return null;
+      const loanAmt = s.isNewPurchase
+        ? parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount)
+        : parseCurrencyCf(s.currentLoanBalance);
+      const rate = parseFloat(s.interestRate) / 100 / 12;
+      const n = parseInt(s.loanTerm) * 12;
+      const monthly = rate > 0 ? Math.round((loanAmt * rate) / (1 - Math.pow(1 + rate, -n))) : 0;
+      return [
+        { primary: true, text: `${s.interestRate}% Interest Rate` },
+        { value: `${s.loanTerm} Year`, descriptor: "Loan Term" },
+        { value: formatCurrencyCf(monthly), descriptor: "/ mo Repayment" },
+      ];
+    }
+    case "costs": {
+      if (!s.costsComplete) return null;
+      const council = parseCurrencyCf(s.councilRates);
+      const water = parseCurrencyCf(s.waterRates);
+      const insurance = parseCurrencyCf(s.insurance);
+      const strata = s.hasStrata ? parseCurrencyCf(s.strataFees) * 4 : 0;
+      const total = council + water + insurance + strata;
+      const lines: StepLine[] = [
+        { primary: true, text: `${formatCurrencyCf(total)} Annual Costs` },
+        { value: formatCurrencyCf(council), descriptor: "Council" },
+        { value: formatCurrencyCf(insurance), descriptor: "Insurance" },
+      ];
+      if (s.hasStrata) lines.push({ value: formatCurrencyCf(strata), descriptor: "Strata / yr" });
+      return lines;
+    }
+    case "rental": {
+      if (!s.rentalComplete) return null;
+      const weekly = parseCurrencyCf(s.weeklyRent);
+      const annual = weekly * 52;
+      const mgmt = parseFloat(s.managementFee) || 0;
+      const netAnnual = annual * (1 - mgmt / 100);
+      return [
+        { primary: true, text: `${formatCurrencyCf(weekly)} / wk Rent` },
+        { value: formatCurrencyCf(Math.round(netAnnual)), descriptor: "Net Annual" },
+        { value: `${mgmt}%`, descriptor: "Management" },
+      ];
+    }
+    case "tax": {
+      if (!s.taxComplete) return null;
+      const income = parseCurrencyCf(s.taxableIncome);
+      const rate =
+        income > 180000 ? "45%" :
+        income > 120000 ? "37%" :
+        income > 45000  ? "32.5%" : "19%";
+      return [
+        { primary: true, text: `${formatCurrencyCf(income)} Taxable Income` },
+        { value: rate, descriptor: "Tax Bracket" },
+      ];
+    }
+    default:
+      return null;
+  }
 }
 
 interface Props {
   s: CashflowState;
+  currentStep?: string;
+  onStepClick?: (step: StepId) => void;
 }
 
-export default function CashflowSidebar({ s }: Props) {
-  const propertyUseComplete = s.propertyUse !== null;
-  const propertyValue = s.isNewPurchase ? parseCurrencyCf(s.purchasePrice) : parseCurrencyCf(s.currentValue);
-  const loanAmount = s.isNewPurchase
-    ? parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount)
-    : parseCurrencyCf(s.currentLoanBalance);
+function StepIndicator({
+  index,
+  isComplete,
+  isCurrent,
+  Icon,
+  isLast
+}: {
+  index: number;
+  isComplete: boolean;
+  isCurrent: boolean;
+  Icon: typeof Home;
+  isLast: boolean;
+}) {
+  return (
+    <div className="cf-step-indicator-wrap">
+      <div className={[
+        "cf-step-indicator",
+        isComplete && "complete",
+        isCurrent && "current"
+      ].filter(Boolean).join(" ")}>
+        {isComplete ? (
+          <Check size={14} strokeWidth={2.5} />
+        ) : (
+          <Icon size={14} strokeWidth={1.5} />
+        )}
+      </div>
+      {!isLast && (
+        <div className={[
+          "cf-step-connector",
+          isComplete && "complete"
+        ].filter(Boolean).join(" ")} />
+      )}
+    </div>
+  );
+}
+
+function StepBody({
+  step,
+  lines,
+  isComplete,
+  isExpanded,
+  onToggle
+}: {
+  step: { id: StepId; label: string; icon: typeof Home };
+  lines: StepLine[] | null;
+  isComplete: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const primary = lines?.find(l => l.primary) as { primary: true; text: string } | undefined;
+  const secondary = lines?.filter(l => !l.primary) as { value: string; descriptor: string }[];
+  const hasDetails = secondary?.length > 0;
+
+  return (
+    <div className="cf-sidebar-step-body">
+      <div className="cf-sidebar-step-header">
+        <span className="cf-sidebar-step-label">
+          {primary ? primary.text : step.label}
+        </span>
+        {isComplete && hasDetails && (
+          <span
+            className="cf-step-toggle"
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggle();
+              }
+            }}
+            aria-label={isExpanded ? "Collapse details" : "Expand details"}
+          >
+            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </span>
+        )}
+      </div>
+      {hasDetails && (
+        <div className={[
+          "cf-sidebar-step-lines",
+          !isExpanded && isComplete && "collapsed"
+        ].filter(Boolean).join(" ")}>
+          {secondary.map((line, i) => (
+            <span key={i} className="cf-sidebar-step-line">
+              <span className="cf-sidebar-step-value">{line.value}</span>
+              <span className="cf-sidebar-step-descriptor">{line.descriptor}</span>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) {
+  const steps = getWizardSteps(s.isInvestment);
+  const naturalStepIndex = getNaturalStepIndex(s);
+  const isAllComplete = naturalStepIndex === -1;
+
+  const activeStepIndex = currentStep
+    ? steps.findIndex(st => st.id === currentStep)
+    : naturalStepIndex;
+
+  // Track which steps are expanded (completed steps start collapsed)
+  const [expandedSteps, setExpandedSteps] = useState<Set<StepId>>(new Set());
+
+  const toggleStep = (stepId: StepId) => {
+    setExpandedSteps(prev => {
+      const next = new Set(prev);
+      if (next.has(stepId)) {
+        next.delete(stepId);
+      } else {
+        next.add(stepId);
+      }
+      return next;
+    });
+  };
+
+  const completedCount = isAllComplete ? steps.length : naturalStepIndex;
+  const progressPercent = Math.round((completedCount / steps.length) * 100);
 
   return (
     <aside className="cf-sidebar">
       <div className="cf-sidebar-inner">
-        {/* Property Use */}
-        <div className={`cf-section ${propertyUseComplete ? "cf-section-complete" : ""}`}>
-          <button className="cf-section-header" onClick={() => s.toggleSection("propertyUse")}>
-            <div className="cf-section-title">
-              <div className={`cf-section-icon ${propertyUseComplete ? "complete" : ""}`}>
-                {propertyUseComplete ? <Check size={14} /> : <Home size={14} />}
-              </div>
-              <span>Property Use</span>
-            </div>
-            {propertyUseComplete && (
-              <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("propertyUse"); }}>
-                <Pencil size={12} />
-              </span>
-            )}
-            {!propertyUseComplete && (
-              s.expandedSections.has("propertyUse") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-            )}
-          </button>
-          {propertyUseComplete && (
-            <div className="cf-section-completed-content">
-              <div className="cf-completed-badge">
-                {s.propertyUse === "investment" ? "Investment Property" : "Owner-Occupier (PPOR)"}
-              </div>
-            </div>
-          )}
-          {!propertyUseComplete && s.expandedSections.has("propertyUse") && (
-            <div className="cf-section-content">
-              <div className="cf-button-group">
-                <button className={`cf-button-option ${s.propertyUse === "investment" ? "active" : ""}`}
-                  onClick={() => {
-                    s.setPropertyUse("investment");
-                    s.setPurchaseMode(null);
-                    s.setExpandedSections(prev => { const next = new Set(prev); next.delete("propertyUse"); next.add("purchaseMode"); return next; });
-                  }}>Investment</button>
-                <button className={`cf-button-option ${s.propertyUse === "ppor" ? "active" : ""}`}
-                  onClick={() => {
-                    s.setPropertyUse("ppor");
-                    s.setPurchaseMode(null);
-                    s.setExpandedSections(prev => { const next = new Set(prev); next.delete("propertyUse"); next.add("purchaseMode"); return next; });
-                  }}>Owner-Occupier</button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Purchase Mode */}
-        {s.propertyUse && (
-          <div className={`cf-section ${s.purchaseMode ? "cf-section-complete" : ""}`}>
-            <button className="cf-section-header" onClick={() => s.toggleSection("purchaseMode")}>
-              <div className="cf-section-title">
-                <div className={`cf-section-icon ${s.purchaseMode ? "complete" : ""}`}>
-                  {s.purchaseMode ? <Check size={14} /> : <Sparkles size={14} />}
-                </div>
-                <span>Purchase Type</span>
-              </div>
-              {s.purchaseMode && (
-                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("purchaseMode"); }}>
-                  <Pencil size={12} />
-                </span>
-              )}
-              {!s.purchaseMode && (
-                s.expandedSections.has("purchaseMode") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-              )}
-            </button>
-            {s.purchaseMode && (
-              <div className="cf-section-completed-content">
-                <div className="cf-completed-badge">
-                  {s.purchaseMode === "new" ? "New Purchase" : "Existing Property"}
-                </div>
-              </div>
-            )}
-            {!s.purchaseMode && s.expandedSections.has("purchaseMode") && (
-              <div className="cf-section-content">
-                <div className="cf-button-group">
-                  <button className={`cf-button-option ${s.purchaseMode === "new" ? "active" : ""}`}
-                    onClick={() => {
-                      s.setPurchaseMode("new");
-                      s.setExpandedSections(prev => { const next = new Set(prev); next.delete("purchaseMode"); next.add("property"); return next; });
-                    }}>New Purchase</button>
-                  <button className={`cf-button-option ${s.purchaseMode === "existing" ? "active" : ""}`}
-                    onClick={() => {
-                      s.setPurchaseMode("existing");
-                      s.setExpandedSections(prev => { const next = new Set(prev); next.delete("purchaseMode"); next.add("property"); return next; });
-                    }}>Existing Property</button>
-                </div>
-              </div>
-            )}
+        <div className="cf-sidebar-nav">
+          <div className="cf-sidebar-nav-header">
+            <span className="cf-sidebar-nav-head">Setup Progress</span>
+            <span className="cf-sidebar-progress-text">{progressPercent}%</span>
           </div>
-        )}
 
-        {/* Property Details */}
-        {s.purchaseMode && (
-          <div className={`cf-section ${s.propertyComplete ? "cf-section-complete" : ""}`}>
-            <button className="cf-section-header" onClick={() => s.toggleSection("property")}>
-              <div className="cf-section-title">
-                <div className={`cf-section-icon ${s.propertyComplete ? "complete" : ""}`}>
-                  {s.propertyComplete ? <Check size={14} /> : <Building2 size={14} />}
-                </div>
-                <span>Property</span>
-              </div>
-              {s.propertyComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("property"); }}>
-                  <Pencil size={12} />
-                </span>
-              )}
-              {!s.propertyComplete && (
-                s.expandedSections.has("property") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-              )}
-            </button>
-            {s.propertyComplete && (
-              <div className="cf-section-completed-content">
-                <SectionSummary items={s.isNewPurchase ? [
-                  { label: "Price", value: formatCurrencyCf(parseCurrencyCf(s.purchasePrice)) },
-                  { label: "Deposit", value: formatCurrencyCf(parseCurrencyCf(s.depositAmount)) },
-                  { label: "LVR", value: `${((1 - parseCurrencyCf(s.depositAmount) / parseCurrencyCf(s.purchasePrice)) * 100).toFixed(0)}%` },
-                ] : [
-                  { label: "Value", value: formatCurrencyCf(parseCurrencyCf(s.currentValue)) },
-                  { label: "Loan", value: formatCurrencyCf(parseCurrencyCf(s.currentLoanBalance)) },
-                  { label: "Equity", value: formatCurrencyCf(parseCurrencyCf(s.currentValue) - parseCurrencyCf(s.currentLoanBalance)) },
-                ]} />
-              </div>
-            )}
-            {!s.propertyComplete && s.expandedSections.has("property") && (
-              <div className="cf-section-content">
-                {s.isNewPurchase ? (
-                  <>
-                    <div className="cf-field">
-                      <label className="cf-label">Purchase Price</label>
-                      <input type="text" className="cf-input"
-                        value={`$${parseCurrencyCf(s.purchasePrice).toLocaleString()}`}
-                        onChange={(e) => s.setPurchasePrice(e.target.value)} />
-                    </div>
-                    <div className="cf-field">
-                      <label className="cf-label">Deposit Amount</label>
-                      <input type="text" className="cf-input"
-                        value={`$${parseCurrencyCf(s.depositAmount).toLocaleString()}`}
-                        onChange={(e) => s.setDepositAmount(e.target.value)} />
-                    </div>
-                    <div className="cf-field-row">
-                      <div className="cf-field">
-                        <label className="cf-label">Loan Amount</label>
-                        <div className="cf-input-display">
-                          {formatCurrencyCf(parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount))}
-                        </div>
-                      </div>
-                      <div className="cf-field">
-                        <label className="cf-label">LVR</label>
-                        <div className="cf-input-display">
-                          {((1 - parseCurrencyCf(s.depositAmount) / parseCurrencyCf(s.purchasePrice)) * 100).toFixed(1)}%
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="cf-field">
-                      <label className="cf-label">Current Value</label>
-                      <input type="text" className="cf-input"
-                        value={`$${parseCurrencyCf(s.currentValue).toLocaleString()}`}
-                        onChange={(e) => s.setCurrentValue(e.target.value)} />
-                    </div>
-                    <div className="cf-field">
-                      <label className="cf-label">Original Purchase Price</label>
-                      <input type="text" className="cf-input"
-                        value={`$${parseCurrencyCf(s.originalPurchasePrice).toLocaleString()}`}
-                        onChange={(e) => s.setOriginalPurchasePrice(e.target.value)} />
-                    </div>
-                    <div className="cf-field">
-                      <label className="cf-label">Current Loan Balance</label>
-                      <input type="text" className="cf-input"
-                        value={`$${parseCurrencyCf(s.currentLoanBalance).toLocaleString()}`}
-                        onChange={(e) => s.setCurrentLoanBalance(e.target.value)} />
-                    </div>
-                  </>
-                )}
-                <button className="cf-continue" onClick={() => {
-                  s.setPropertyComplete(true);
-                  s.setExpandedSections(prev => { const next = new Set(prev); next.delete("property"); next.add("loan"); return next; });
-                }}>Continue</button>
-              </div>
-            )}
+          {/* Progress bar */}
+          <div className="cf-sidebar-progress-bar">
+            <div
+              className="cf-sidebar-progress-fill"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
-        )}
 
-        {/* Loan Details */}
-        {s.propertyComplete && (
-          <div className={`cf-section ${s.loanComplete ? "cf-section-complete" : ""}`}>
-            <button className="cf-section-header" onClick={() => s.toggleSection("loan")}>
-              <div className="cf-section-title">
-                <div className={`cf-section-icon ${s.loanComplete ? "complete" : ""}`}>
-                  {s.loanComplete ? <Check size={14} /> : <Landmark size={14} />}
-                </div>
-                <span>Loan</span>
-              </div>
-              {s.loanComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("loan"); }}>
-                  <Pencil size={12} />
-                </span>
-              )}
-              {!s.loanComplete && (
-                s.expandedSections.has("loan") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-              )}
-            </button>
-            {s.loanComplete && (
-              <div className="cf-section-completed-content">
-                <SectionSummary items={[
-                  { label: "Rate", value: `${s.interestRate}%` },
-                  { label: "Term", value: `${s.loanTerm}yr` },
-                  { label: "Type", value: s.loanType === "principal-interest" ? "P&I" : `IO (${s.ioPeriod}yr)` },
-                  ...(s.hasOffset ? [{ label: "Offset", value: formatCurrencyCf(parseCurrencyCf(s.offsetBalance)) }] : []),
-                ]} />
-              </div>
-            )}
-            {!s.loanComplete && s.expandedSections.has("loan") && (
-              <div className="cf-section-content">
-                <div className="cf-field-row">
-                  <div className="cf-field">
-                    <label className="cf-label">Interest Rate (%)</label>
-                    <input type="text" className="cf-input" value={s.interestRate}
-                      onChange={(e) => s.setInterestRate(e.target.value)} />
-                  </div>
-                  <div className="cf-field">
-                    <label className="cf-label">Loan Term (years)</label>
-                    <input type="text" className="cf-input" value={s.loanTerm}
-                      onChange={(e) => s.setLoanTerm(e.target.value)} />
-                  </div>
-                </div>
-                <div className="cf-field">
-                  <label className="cf-label">Loan Type</label>
-                  <div className="cf-button-group">
-                    <button className={`cf-button-option ${s.loanType === "principal-interest" ? "active" : ""}`}
-                      onClick={() => s.setLoanType("principal-interest")}>P&I</button>
-                    <button className={`cf-button-option ${s.loanType === "interest-only" ? "active" : ""}`}
-                      onClick={() => s.setLoanType("interest-only")}>Interest Only</button>
-                  </div>
-                </div>
-                {s.loanType === "interest-only" && (
-                  <div className="cf-field">
-                    <label className="cf-label">IO Period (years)</label>
-                    <input type="text" className="cf-input" value={s.ioPeriod}
-                      onChange={(e) => s.setIoPeriod(e.target.value)} />
-                  </div>
-                )}
-                <div className="cf-toggle-row">
-                  <label className="cf-toggle">
-                    <input type="checkbox" checked={s.hasOffset}
-                      onChange={(e) => s.setHasOffset(e.target.checked)} />
-                    <span className="cf-toggle-slider"></span>
-                  </label>
-                  <span className="cf-toggle-label">Offset Account</span>
-                </div>
-                {s.hasOffset && (
-                  <div className="cf-field">
-                    <label className="cf-label">Offset Balance</label>
-                    <input type="text" className="cf-input"
-                      value={`$${parseCurrencyCf(s.offsetBalance).toLocaleString()}`}
-                      onChange={(e) => s.setOffsetBalance(e.target.value)} />
-                  </div>
-                )}
-                <div className="cf-field">
-                  <label className="cf-label">Extra Repayments (monthly)</label>
-                  <input type="text" className="cf-input"
-                    value={`$${parseCurrencyCf(s.extraRepayments).toLocaleString()}`}
-                    onChange={(e) => s.setExtraRepayments(e.target.value)} />
-                </div>
-                <button className="cf-continue" onClick={() => {
-                  s.setLoanComplete(true);
-                  s.setExpandedSections(prev => { const next = new Set(prev); next.delete("loan"); next.add("costs"); return next; });
-                }}>Continue</button>
-              </div>
-            )}
-          </div>
-        )}
+          <div className="cf-sidebar-nav-steps">
+            {steps.map((step, index) => {
+              const isComplete = isAllComplete || index < naturalStepIndex;
+              const isCurrent = !isAllComplete && index === activeStepIndex;
+              const isUpcoming = !isComplete && !isCurrent;
+              const lines = getStepLines(step.id, s);
+              const isExpanded = expandedSteps.has(step.id) || isCurrent;
 
-        {/* Ongoing Costs */}
-        {s.loanComplete && (
-          <div className={`cf-section ${s.costsComplete ? "cf-section-complete" : ""}`}>
-            <button className="cf-section-header" onClick={() => s.toggleSection("costs")}>
-              <div className="cf-section-title">
-                <div className={`cf-section-icon ${s.costsComplete ? "complete" : ""}`}>
-                  {s.costsComplete ? <Check size={14} /> : <Coins size={14} />}
-                </div>
-                <span>Costs</span>
-              </div>
-              {s.costsComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("costs"); }}>
-                  <Pencil size={12} />
-                </span>
-              )}
-              {!s.costsComplete && (
-                s.expandedSections.has("costs") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-              )}
-            </button>
-            {s.costsComplete && (() => {
-              const totalAnnual = parseCurrencyCf(s.councilRates) + parseCurrencyCf(s.waterRates) +
-                parseCurrencyCf(s.insurance) + (s.hasStrata ? parseCurrencyCf(s.strataFees) * 4 : 0);
               return (
-                <div className="cf-section-completed-content">
-                  <SectionSummary items={[
-                    { label: "Annual", value: formatCurrencyCf(totalAnnual) },
-                    { label: "Maint.", value: `${s.maintenance}%` },
-                    ...(s.hasStrata ? [{ label: "Strata", value: `${formatCurrencyCf(parseCurrencyCf(s.strataFees))}/qtr` }] : []),
-                  ]} />
-                </div>
-              );
-            })()}
-            {!s.costsComplete && s.expandedSections.has("costs") && (
-              <div className="cf-section-content">
-                <div className="cf-field-row">
-                  <div className="cf-field">
-                    <label className="cf-label">Council Rates (p.a.)</label>
-                    <input type="text" className="cf-input"
-                      value={`$${parseCurrencyCf(s.councilRates).toLocaleString()}`}
-                      onChange={(e) => s.setCouncilRates(e.target.value)} />
-                  </div>
-                  <div className="cf-field">
-                    <label className="cf-label">Water Rates (p.a.)</label>
-                    <input type="text" className="cf-input"
-                      value={`$${parseCurrencyCf(s.waterRates).toLocaleString()}`}
-                      onChange={(e) => s.setWaterRates(e.target.value)} />
-                  </div>
-                </div>
-                <div className="cf-field-row">
-                  <div className="cf-field">
-                    <label className="cf-label">Insurance (p.a.)</label>
-                    <input type="text" className="cf-input"
-                      value={`$${parseCurrencyCf(s.insurance).toLocaleString()}`}
-                      onChange={(e) => s.setInsurance(e.target.value)} />
-                  </div>
-                  <div className="cf-field">
-                    <label className="cf-label">Maintenance (%)</label>
-                    <input type="text" className="cf-input" value={s.maintenance}
-                      onChange={(e) => s.setMaintenance(e.target.value)} />
-                  </div>
-                </div>
-                <div className="cf-toggle-row">
-                  <label className="cf-toggle">
-                    <input type="checkbox" checked={s.hasStrata}
-                      onChange={(e) => s.setHasStrata(e.target.checked)} />
-                    <span className="cf-toggle-slider"></span>
-                  </label>
-                  <span className="cf-toggle-label">Strata/Body Corp</span>
-                </div>
-                {s.hasStrata && (
-                  <div className="cf-field">
-                    <label className="cf-label">Strata Fees (quarterly)</label>
-                    <input type="text" className="cf-input"
-                      value={`$${parseCurrencyCf(s.strataFees).toLocaleString()}`}
-                      onChange={(e) => s.setStrataFees(e.target.value)} />
-                  </div>
-                )}
-                <button className="cf-continue" onClick={() => {
-                  s.setCostsComplete(true);
-                  if (s.isInvestment) {
-                    s.setExpandedSections(prev => { const next = new Set(prev); next.delete("costs"); next.add("rental"); return next; });
-                  }
-                }}>{s.isInvestment ? "Continue" : "Calculate"}</button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Rental Income */}
-        {s.isInvestment && s.costsComplete && (
-          <div className={`cf-section ${s.rentalComplete ? "cf-section-complete" : ""}`}>
-            <button className="cf-section-header" onClick={() => s.toggleSection("rental")}>
-              <div className="cf-section-title">
-                <div className={`cf-section-icon ${s.rentalComplete ? "complete" : ""}`}>
-                  {s.rentalComplete ? <Check size={14} /> : <Key size={14} />}
-                </div>
-                <span>Rental</span>
-              </div>
-              {s.rentalComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("rental"); }}>
-                  <Pencil size={12} />
-                </span>
-              )}
-              {!s.rentalComplete && (
-                s.expandedSections.has("rental") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-              )}
-            </button>
-            {s.rentalComplete && (
-              <div className="cf-section-completed-content">
-                <SectionSummary items={[
-                  { label: "Rent", value: `${formatCurrencyCf(parseCurrencyCf(s.weeklyRent))}/wk` },
-                  { label: "Vacancy", value: `${s.vacancyRate}%` },
-                  ...(s.usePropertyManager ? [{ label: "PM Fee", value: `${s.managementFee}%` }] : []),
-                ]} />
-              </div>
-            )}
-            {!s.rentalComplete && s.expandedSections.has("rental") && (
-              <div className="cf-section-content">
-                <div className="cf-field">
-                  <label className="cf-label">Weekly Rent</label>
-                  <input type="text" className="cf-input"
-                    value={`$${parseCurrencyCf(s.weeklyRent).toLocaleString()}`}
-                    onChange={(e) => s.setWeeklyRent(e.target.value)} />
-                </div>
-                <div className="cf-field">
-                  <label className="cf-label">Vacancy Rate (%)</label>
-                  <input type="text" className="cf-input" value={s.vacancyRate}
-                    onChange={(e) => s.setVacancyRate(e.target.value)} />
-                </div>
-                <div className="cf-toggle-row">
-                  <label className="cf-toggle">
-                    <input type="checkbox" checked={s.usePropertyManager}
-                      onChange={(e) => s.setUsePropertyManager(e.target.checked)} />
-                    <span className="cf-toggle-slider"></span>
-                  </label>
-                  <span className="cf-toggle-label">Property Manager</span>
-                </div>
-                {s.usePropertyManager && (
-                  <div className="cf-field">
-                    <label className="cf-label">Management Fee (%)</label>
-                    <input type="text" className="cf-input" value={s.managementFee}
-                      onChange={(e) => s.setManagementFee(e.target.value)} />
-                  </div>
-                )}
-                <button className="cf-continue" onClick={() => {
-                  s.setRentalComplete(true);
-                  s.setExpandedSections(prev => { const next = new Set(prev); next.delete("rental"); next.add("tax"); return next; });
-                }}>Continue</button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tax Profile */}
-        {s.isInvestment && s.rentalComplete && (
-          <div className={`cf-section ${s.taxComplete ? "cf-section-complete" : ""}`}>
-            <button className="cf-section-header" onClick={() => s.toggleSection("tax")}>
-              <div className="cf-section-title">
-                <div className={`cf-section-icon ${s.taxComplete ? "complete" : ""}`}>
-                  {s.taxComplete ? <Check size={14} /> : <Calculator size={14} />}
-                </div>
-                <span>Tax</span>
-              </div>
-              {s.taxComplete && (
-                <span role="button" tabIndex={0} className="cf-edit-btn" onClick={(e) => { e.stopPropagation(); s.resetSection("tax"); }}>
-                  <Pencil size={12} />
-                </span>
-              )}
-              {!s.taxComplete && (
-                s.expandedSections.has("tax") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-              )}
-            </button>
-            {s.taxComplete && (
-              <div className="cf-section-completed-content">
-                <SectionSummary items={[
-                  { label: "Income", value: formatCurrencyCf(parseCurrencyCf(s.taxableIncome)) },
-                  { label: "Deprec.", value: formatCurrencyCf(parseCurrencyCf(s.depreciation)) },
-                  { label: "Growth", value: `${s.capitalGrowth}%` },
-                ]} />
-              </div>
-            )}
-            {!s.taxComplete && s.expandedSections.has("tax") && (
-              <div className="cf-section-content">
-                <div className="cf-field">
-                  <label className="cf-label">Taxable Income (p.a.)</label>
-                  <input type="text" className="cf-input"
-                    value={`$${parseCurrencyCf(s.taxableIncome).toLocaleString()}`}
-                    onChange={(e) => s.setTaxableIncome(e.target.value)} />
-                </div>
-                <div className="cf-field">
-                  <label className="cf-label">Depreciation (p.a.)</label>
-                  <input type="text" className="cf-input"
-                    value={`$${parseCurrencyCf(s.depreciation).toLocaleString()}`}
-                    onChange={(e) => s.setDepreciation(e.target.value)} />
-                </div>
-                <div className="cf-field">
-                  <label className="cf-label">Capital Growth Assumption (%)</label>
-                  <input type="text" className="cf-input" value={s.capitalGrowth}
-                    onChange={(e) => s.setCapitalGrowth(e.target.value)} />
-                </div>
-                <button className="cf-continue" onClick={() => s.setTaxComplete(true)}>
-                  Calculate
+                <button
+                  key={step.id}
+                  className={[
+                    "cf-sidebar-nav-item",
+                    isCurrent && "active",
+                    isComplete && "done",
+                    isComplete && "clickable",
+                    isUpcoming && "upcoming",
+                  ].filter(Boolean).join(" ")}
+                  onClick={() => isComplete && onStepClick?.(step.id)}
+                  disabled={!isComplete}
+                >
+                  <StepIndicator
+                    index={index}
+                    isComplete={isComplete}
+                    isCurrent={isCurrent}
+                    Icon={step.icon}
+                    isLast={index === steps.length - 1}
+                  />
+                  <StepBody
+                    step={step}
+                    lines={lines}
+                    isComplete={isComplete}
+                    isExpanded={isExpanded}
+                    onToggle={() => toggleStep(step.id)}
+                  />
                 </button>
-              </div>
-            )}
+              );
+            })}
           </div>
-        )}
+
+          <span className="cf-sidebar-counter">
+            {completedCount} of {steps.length} steps complete
+          </span>
+        </div>
       </div>
     </aside>
   );

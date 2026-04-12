@@ -138,8 +138,8 @@ export function useCashflowState(): CashflowState {
   const [taxComplete, setTaxComplete] = useState(false);
 
   // Form values - Property
-  const [purchasePrice, setPurchasePrice] = useState("750000");
-  const [depositAmount, setDepositAmount] = useState("150000");
+  const [purchasePrice, setPurchasePrice] = useState("0");
+  const [depositAmount, setDepositAmount] = useState("0");
   const [currentValue, setCurrentValue] = useState("850000");
   const [originalPurchasePrice, setOriginalPurchasePrice] = useState("650000");
   const [currentLoanBalance, setCurrentLoanBalance] = useState("480000");
@@ -274,7 +274,8 @@ export function useCashflowState(): CashflowState {
       const taxableIncomeCalcVal = totalIncomeAllVal - totalDeductionsForTaxVal;
       const incomeTaxCalcVal = calculateIncomeTax(taxableIncomeCalcVal);
       const incomeTaxWithoutVal = calculateIncomeTax(salaryVal + otherIncomeVal);
-      const taxSavedVal = incomeTaxWithoutVal - incomeTaxCalcVal;
+      const incomeTaxWithRentalVal = calculateIncomeTax(salaryVal + otherIncomeVal + rental);
+      const taxSavedVal = incomeTaxWithRentalVal - incomeTaxCalcVal;
       const grossIncomeVal = salaryVal + otherIncomeVal + rental;
       const afterTaxIncomeVal = grossIncomeVal - incomeTaxCalcVal;
       const cfTotalIncomeVal = salaryVal + otherIncomeVal + rental - interestPaid - ongoingCostsVal;

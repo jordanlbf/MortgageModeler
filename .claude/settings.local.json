@@ -44,7 +44,18 @@
       "Bash(npm run:*)",
       "Bash(ls backend/*/requirements*.txt backend/pyproject.toml)",
       "Bash(ls:*)",
-      "Bash(find C:UsersJordanMortgageModelerMortgageModeler -type f \\\\\\(-name *home* -o -name *landing* -o -name *dashboard* -o -name *card* -o -name index.html \\\\\\))"
+      "Bash(find C:UsersJordanMortgageModelerMortgageModeler -type f \\\\\\(-name *home* -o -name *landing* -o -name *dashboard* -o -name *card* -o -name index.html \\\\\\))",
+      "Bash(awk '/^\\\\.cf-|^\\\\.cft-/ { gsub\\(/{.*/, \"\", $0\\); gsub\\(/^ +/, \"\", $0\\); print }' cashflow.css)",
+      "Bash(awk 'NR==773 || NR==774 || NR==775 || NR==1467 || NR==1468 || NR==1469 {print NR\": \"$0}' cashflow.css)",
+      "Bash(cat)",
+      "Bash(bash /tmp/check_unused.sh)",
+      "Bash(awk '/^interface Props/,/^}/' CashflowDataTable.tsx)",
+      "Bash(awk '/hoveredYear/ {count++} END {print \"hoveredYear occurrences: \" count}' CashflowChart.tsx)",
+      "Bash(awk '/^interface Props/,/^}/' CashflowKpiStrip.tsx)",
+      "Bash(sed -n '773,775p' cashflow.css)",
+      "Bash(sed -n '1467,1469p' cashflow.css)",
+      "Bash(sed -n '765,780p' cashflow.css)",
+      "Bash(sed -n '1460,1475p' cashflow.css)"
     ]
   }
 }

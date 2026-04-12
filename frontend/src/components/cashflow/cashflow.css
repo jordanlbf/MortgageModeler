@@ -1,5 +1,5 @@
 /* ============================================================================
-   CASHFLOW CALCULATOR - SIDEBAR LAYOUT
+   CASHFLOW CALCULATOR — Fey-inspired design
    ============================================================================ */
 
 /* CSS Variables — Graphite Teal design system */
@@ -21,11 +21,11 @@
   --cf-surface-subtle: rgba(255, 255, 255, 0.02);
   --cf-negative: #f87171;
   --cf-positive: #4ade80;
-  --cf-sidebar-width: 380px;
+  --cf-sidebar-width: 240px;
 }
 
 /* ============================================================================
-   LAYOUT - SIDEBAR + MAIN
+   LAYOUT
    ============================================================================ */
 
 .cf-layout {
@@ -36,397 +36,364 @@
   font-family: var(--font-sans, "Sora", system-ui, sans-serif);
 }
 
-/* LEFT SIDEBAR */
+/* ── Wizard view: sidebar + wizard centered as a unit ── */
+.cf-wizard-view {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 100px);
+  background: var(--cf-bg);
+  color: var(--cf-text);
+  font-family: var(--font-sans, "Sora", system-ui, sans-serif);
+  padding: 40px 32px;
+}
+
+.cf-wizard-view-inner {
+  display: flex;
+  width: 100%;
+  max-width: 960px;
+  gap: 0;
+}
+
+.cf-wizard-view-main {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 48px 32px 56px;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* ── Dashboard view: container for Fey outer cards ── */
+.cf-dashboard-view {
+  background: var(--cf-bg);
+  color: var(--cf-text);
+  font-family: var(--font-sans, "Sora", system-ui, sans-serif);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Fey outer card — single encapsulating surface ── */
+.cf-outer-card {
+  background: rgba(24, 24, 27, 0.45);
+  border: 1px solid var(--cf-border-hover);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* ── Card header: title left, mode tabs right ── */
+.cf-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--cf-border);
+}
+
+.cf-card-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ============================================================================
+   LEFT SIDEBAR — Progress stepper with connecting lines
+   ============================================================================ */
+
 .cf-sidebar {
+  --cf-sidebar-width: 300px;
   width: var(--cf-sidebar-width);
   min-width: var(--cf-sidebar-width);
   max-width: var(--cf-sidebar-width);
   border-right: 1px solid var(--cf-border);
   background: var(--cf-bg);
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .cf-sidebar-inner {
-  padding: 24px;
+  padding: 8px 0 32px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
-/* RIGHT MAIN AREA */
-.cf-main {
-  flex: 1;
-  min-width: 0;
-  max-width: 2100px;
-  margin: 0 auto;
-  padding: 24px 40px;
-  overflow-y: auto;
+/* ── Sidebar Nav ── */
+.cf-sidebar-nav {
+  display: flex;
+  flex-direction: column;
 }
 
-/* ============================================================================
-   INPUT SECTIONS
-   ============================================================================ */
-
-.cf-section {
-  border: 1px solid var(--cf-border);
-  border-radius: 10px;
-  background: var(--cf-card);
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.cf-section-complete {
-  border-color: rgba(45, 212, 191, 0.2);
-  background: rgba(45, 212, 191, 0.03);
-}
-
-.cf-section-label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--cf-text-muted);
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.cf-section-header {
+/* Header with progress */
+.cf-sidebar-nav-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 12px 14px;
-  background: transparent;
-  border: none;
-  color: var(--cf-text);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: left;
+  padding: 0 24px;
+  margin-bottom: 12px;
 }
 
-.cf-section-header:hover {
-  background: var(--cf-hover);
-}
-
-.cf-section-header svg {
+.cf-sidebar-nav-head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--cf-text-muted);
 }
 
-/* Section title with icon */
-.cf-section-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.cf-sidebar-progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cf-accent);
+  font-variant-numeric: tabular-nums;
 }
 
-.cf-section-icon {
+/* Progress bar */
+.cf-sidebar-progress-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  margin: 0 24px 20px;
+  overflow: hidden;
+}
+
+.cf-sidebar-progress-fill {
+  height: 100%;
+  background: var(--cf-accent);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cf-sidebar-nav-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Each step item */
+.cf-sidebar-nav-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 24px;
+  position: relative;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: default;
+  transition: background 0.15s ease;
+}
+
+.cf-sidebar-nav-item.clickable {
+  cursor: pointer;
+}
+
+.cf-sidebar-nav-item.clickable:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Upcoming state */
+.cf-sidebar-nav-item.upcoming {
+  opacity: 0.5;
+}
+
+/* Active state */
+.cf-sidebar-nav-item.active {
+  background: rgba(45, 212, 191, 0.04);
+}
+
+/* Step indicator wrapper with connector line */
+.cf-step-indicator-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Step indicator circle */
+.cf-step-indicator {
   width: 28px;
   height: 28px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 7px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  color: var(--cf-text-muted);
+  border: 1.5px solid var(--cf-border);
+  background: var(--cf-bg);
+  color: var(--cf-text-dim);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.cf-step-indicator.current {
+  border-color: var(--cf-accent);
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.08);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+}
+
+.cf-step-indicator.complete {
+  border-color: var(--cf-accent);
+  background: var(--cf-accent);
+  color: var(--cf-accent-contrast);
+}
+
+/* Connector line between steps */
+.cf-step-connector {
+  width: 2px;
+  height: 24px;
+  background: var(--cf-border);
+  margin-top: 6px;
+  border-radius: 1px;
+  transition: background 0.25s ease;
+}
+
+.cf-step-connector.complete {
+  background: var(--cf-accent);
+}
+
+/* Step body text */
+.cf-sidebar-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+  padding-top: 3px;
+}
+
+.cf-sidebar-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cf-sidebar-step-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cf-text-dim);
+  transition: color 0.15s ease;
+  line-height: 1.4;
+}
+
+.cf-sidebar-nav-item.active .cf-sidebar-step-label {
+  color: var(--cf-text);
+  font-weight: 600;
+}
+
+.cf-sidebar-nav-item.done .cf-sidebar-step-label {
+  color: var(--cf-text);
+}
+
+/* Collapse/expand toggle */
+.cf-step-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  color: var(--cf-text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.cf-step-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cf-text);
+}
+
+/* Step detail lines */
+.cf-sidebar-step-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+  max-height: 200px;
+  transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+}
+
+.cf-sidebar-step-lines.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+}
+
+.cf-sidebar-step-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.cf-sidebar-step-value {
+  color: var(--cf-accent);
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.cf-sidebar-step-descriptor {
+  color: var(--cf-text-dim);
+  font-size: 11px;
+}
+
+/* Counter */
+.cf-sidebar-counter {
+  font-size: 11px;
+  color: var(--cf-text-dim);
+  padding: 0 24px;
+  margin-top: 20px;
+}
+
+/* ============================================================================
+   VIEW TABS — Setup / Dashboard switcher
+   ============================================================================ */
+
+.cf-view-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  border-bottom: 1px solid var(--cf-border);
+  padding: 0 24px;
+  background: var(--cf-bg);
+  font-family: var(--font-sans, "Sora", system-ui, sans-serif);
+}
+
+.cf-view-tab {
+  padding: 12px 20px;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--cf-text-dim);
+  background: none;
+  border: none;
+  border-bottom: 1.5px solid transparent;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.cf-section-icon.complete {
-  background: var(--cf-accent);
-  border-color: var(--cf-accent);
-  color: var(--cf-accent-contrast);
-}
-
-/* Edit button */
-.cf-edit-btn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--cf-text-muted);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.cf-edit-btn:hover {
-  background: var(--cf-input-bg);
-  border-color: var(--cf-border);
+.cf-view-tab:hover:not(:disabled) {
   color: var(--cf-text);
 }
 
-/* Completed section content */
-.cf-section-completed-content {
-  padding: 0 14px 12px;
-}
-
-/* Badge for simple completed values */
-.cf-completed-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  background: rgba(45, 212, 191, 0.08);
-  border: 1px solid rgba(45, 212, 191, 0.15);
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+.cf-view-tab.active {
   color: var(--cf-accent);
+  border-bottom-color: var(--cf-accent);
 }
 
-/* Summary grid for completed sections */
-.cf-section-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.cf-view-tab:disabled:not(.active) {
+  color: rgba(113, 113, 122, 0.3);
+  cursor: not-allowed;
 }
-
-.cf-summary-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 12px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 6px;
-  min-width: 70px;
-}
-
-.cf-summary-label {
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--cf-text-muted);
-}
-
-.cf-summary-value {
-  font-size: 13px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-text);
-}
-
-.cf-edit-link {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--cf-text-muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-}
-
-.cf-edit-link:hover {
-  color: var(--cf-text);
-}
-
-.cf-section-content {
-  padding: 0 16px 16px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* ============================================================================
-   FORM ELEMENTS
-   ============================================================================ */
-
-.cf-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.cf-field-row {
-  display: flex;
-  gap: 12px;
-}
-
-.cf-field-row > .cf-field {
-  flex: 1;
-}
-
-.cf-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-muted);
-}
-
-.cf-input {
-  width: 100%;
-  padding: 10px 12px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 6px;
-  color: var(--cf-text);
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.cf-input:focus {
-  border-color: var(--cf-accent-border);
-}
-
-.cf-input-display {
-  padding: 10px 12px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 6px;
-  color: var(--cf-text-muted);
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-/* Button Group */
-.cf-button-group {
-  display: flex;
-  gap: 8px;
-}
-
-.cf-button-option {
-  flex: 1;
-  padding: 12px 16px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 6px;
-  color: var(--cf-text-muted);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.cf-button-option:hover {
-  background: var(--cf-hover);
-  color: var(--cf-text);
-}
-
-.cf-button-option.active {
-  background: var(--cf-accent);
-  border-color: var(--cf-accent);
-  color: var(--cf-accent-contrast);
-}
-
-/* Toggle */
-.cf-toggle-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.cf-toggle {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  cursor: pointer;
-}
-
-.cf-toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.cf-toggle-slider {
-  position: absolute;
-  inset: 0;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 10px;
-  transition: all 0.15s;
-}
-
-.cf-toggle-slider::before {
-  content: "";
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  left: 2px;
-  top: 2px;
-  background: var(--cf-text-muted);
-  border-radius: 50%;
-  transition: all 0.15s;
-}
-
-.cf-toggle input:checked + .cf-toggle-slider {
-  background: var(--cf-accent);
-  border-color: var(--cf-accent);
-}
-
-.cf-toggle input:checked + .cf-toggle-slider::before {
-  transform: translateX(16px);
-  background: var(--cf-accent-contrast);
-}
-
-.cf-toggle-label {
-  font-size: 13px;
-  color: var(--cf-text-muted);
-}
-
-/* Continue Button */
-.cf-continue {
-  width: 100%;
-  padding: 12px;
-  background: var(--cf-accent);
-  border: none;
-  border-radius: 6px;
-  color: var(--cf-accent-contrast);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  margin-top: 4px;
-}
-
-.cf-continue:hover {
-  opacity: 0.9;
-}
-
-/* ============================================================================
-   OUTPUT PLACEHOLDER
-   ============================================================================ */
-
-.cf-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 48px);
-}
-
-.cf-placeholder-content {
-  text-align: center;
-}
-
-.cf-placeholder-title {
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--cf-text-muted);
-  margin-bottom: 8px;
-}
-
-.cf-placeholder-subtitle {
-  font-size: 14px;
-  color: var(--cf-text-dim);
-}
-
-/* Color utilities */
-.cf-negative { color: var(--cf-negative) !important; }
-.cf-positive { color: var(--cf-positive) !important; }
-.cf-tabular { font-variant-numeric: tabular-nums; }
 
 /* ============================================================================
    MODE SELECTOR
@@ -434,32 +401,28 @@
 
 .cf-mode-bar {
   display: flex;
-  justify-content: center;
-  gap: 4px;
-  margin-bottom: 8px;
-  background: rgba(42,42,46,0.30);
-  border: 1px solid rgba(113,113,122,0.15);
-  border-radius: 16px;
-  padding: 6px;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--cf-border);
+  border-radius: 9px;
+  padding: 3px;
   width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .cf-mode-btn {
-  padding: 10px 20px;
+  padding: 5px 11px;
   border: none;
-  border-radius: 12px;
+  border-radius: 6px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
   background: transparent;
-  color: var(--cf-text-muted);
+  color: var(--cf-text-dim);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .cf-mode-btn svg {
@@ -475,10 +438,10 @@
 }
 
 .cf-mode-btn.active {
-  background: rgba(45,212,191,0.10);
+  background: rgba(45,212,191,0.08);
   color: var(--cf-accent);
-  border: 1px solid rgba(45,212,191,0.20);
-  border-radius: 12px;
+  border: 1px solid rgba(45,212,191,0.18);
+  border-radius: 6px;
 }
 
 .cf-mode-btn.active svg {
@@ -497,16 +460,27 @@
    CHART SECTION
    ============================================================================ */
 
-.cf-chart-section {
-  overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid rgba(113,113,122,0.15);
-  background: transparent;
-  flex: 1 1 0;
-  min-width: 0;
+/* Chart wrapper — full width */
+.cf-chart-wrapper {
+  width: 100%;
+  margin-bottom: 8px;
 }
 
-/* Chart top bar with sub-tabs and play button */
+.cf-chart-wrapper > div {
+  width: 100%;
+  max-width: 100%;
+}
+
+.cf-chart-section {
+  overflow: hidden;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
 .cf-chart-bar {
   display: flex;
   align-items: center;
@@ -522,7 +496,6 @@
   background: rgba(42,42,46,0.30);
   border: 1px solid rgba(113,113,122,0.15);
 }
-
 
 .cf-chart-sub-tab {
   display: flex;
@@ -579,12 +552,12 @@
 
 /* Timeline slider */
 .cf-timeline {
-  padding: 16px 8px 0;
+  padding: 8px 18px 0 68px;
 }
 
 .cf-timeline-track {
   position: relative;
-  padding: 8px 0;
+  padding: 6px 0;
 }
 
 .cf-timeline-slider {
@@ -627,19 +600,19 @@
 .cf-timeline-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--cf-text-dim);
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .cf-timeline-legend {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
-  font-size: 12px;
+  gap: 20px;
+  font-size: 11px;
   color: var(--cf-text-dim);
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .cf-legend-item {
@@ -655,45 +628,13 @@
   background: var(--cf-accent);
 }
 
-.cf-chart-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--cf-border);
-  padding: 14px 20px;
-}
-
-.cf-chart-icon {
-  display: flex;
-  height: 32px;
-  width: 32px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: rgba(45,212,191,0.1);
-}
-
-.cf-chart-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--cf-text);
-  margin: 0;
-  line-height: 1.3;
-}
-
-.cf-chart-subtitle {
-  font-size: 11px;
-  color: var(--cf-text-dim);
-  margin: 0;
-}
-
 .cf-chart-inline-title {
   text-align: center;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--cf-text);
   letter-spacing: -0.01em;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .cf-chart-inline-year {
@@ -702,486 +643,381 @@
 }
 
 /* ============================================================================
-   KPI CARDS
+   DASHBOARD HEADER — title left, mode tabs right
    ============================================================================ */
 
-/* ============================================================================
-   LAYOUT VARIANT SELECTOR (PROTOTYPE)
-   ============================================================================ */
-
-.cf-layout-selector {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: rgba(45,212,191,0.05);
-  border: 1px dashed rgba(45,212,191,0.25);
-  border-radius: 10px;
-  margin-bottom: 8px;
-}
-
-.cf-layout-label {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-dim);
-  margin-right: 8px;
-}
-
-.cf-layout-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid rgba(113,113,122,0.15);
-  border-radius: 6px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  background: rgba(42,42,46,0.30);
-  color: var(--cf-text-dim);
-  transition: all 0.15s;
-}
-
-.cf-layout-btn:hover {
-  color: var(--cf-text-muted);
-  border-color: var(--cf-border-hover);
-}
-
-.cf-layout-btn.active {
-  background: rgba(45,212,191,0.12);
-  border-color: rgba(45,212,191,0.3);
-  color: var(--cf-accent);
-}
-
-/* ============================================================================
-   CHART + KPI ROW - BASE & VARIANTS
-   ============================================================================ */
-
-.cf-chart-kpi-row {
-  display: grid;
-  grid-template-columns: 200px 1fr 200px;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-/* VARIANT 1: Tight KPIs - narrower KPI strips (160px) */
-.cf-chart-kpi-row.cf-layout-tight {
-  grid-template-columns: 160px 1fr 160px;
-  gap: 12px;
-}
-
-.cf-layout-tight .cf-kpi-card {
-  padding: 12px;
-}
-
-.cf-layout-tight .cf-kpi-label {
-  font-size: 10px;
-  margin-bottom: 6px;
-}
-
-.cf-layout-tight .cf-kpi-value {
-  font-size: 20px;
-}
-
-.cf-layout-tight .cf-kpi-unit {
-  font-size: 10px;
-}
-
-/* VARIANT 2: Wide Chart - ultra-narrow KPI strips (140px), compact stacked layout */
-.cf-chart-kpi-row.cf-layout-wide {
-  grid-template-columns: 140px 1fr 140px;
-  gap: 10px;
-}
-
-.cf-layout-wide .cf-kpi-strip {
-  gap: 10px;
-}
-
-.cf-layout-wide .cf-kpi-card {
-  padding: 10px 8px;
-  border-radius: 8px;
-}
-
-.cf-layout-wide .cf-kpi-label {
-  font-size: 9px;
-  margin-bottom: 4px;
-  letter-spacing: 0.06em;
-}
-
-.cf-layout-wide .cf-kpi-value {
-  font-size: 18px;
-  letter-spacing: -0.03em;
-}
-
-.cf-layout-wide .cf-kpi-unit {
-  font-size: 9px;
-}
-
-/* VARIANT 3: Balanced - equal visual weight with vertical centering */
-.cf-chart-kpi-row.cf-layout-balanced {
-  grid-template-columns: 180px 1fr 180px;
-  gap: 20px;
-  align-items: stretch;
-}
-
-.cf-layout-balanced .cf-kpi-strip {
-  justify-content: center;
-}
-
-.cf-layout-balanced .cf-kpi-card {
-  padding: 18px 14px;
-  border-radius: 14px;
+.cf-dashboard-title-block {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100px;
-}
-
-.cf-layout-balanced .cf-kpi-label {
-  font-size: 11px;
-  margin-bottom: 10px;
-}
-
-.cf-layout-balanced .cf-kpi-value {
-  font-size: 22px;
-}
-
-.cf-layout-balanced .cf-kpi-unit {
-  font-size: 11px;
-}
-
-.cf-kpi-strip {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-}
-
-.cf-kpi-strip.cf-kpi-left {
-  align-items: stretch;
-}
-
-.cf-kpi-strip.cf-kpi-right {
-  align-items: stretch;
-}
-
-.cf-kpi-card {
-  background: transparent;
-  border: 1px solid rgba(113,113,122,0.15);
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.cf-kpi-card.cf-kpi-primary,
-.cf-kpi-card.cf-kpi-highlight {
-  border-color: rgba(113,113,122,0.15);
-}
-
-.cf-kpi-label {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--cf-text-dim);
-  margin-bottom: 8px;
-}
-
-.cf-kpi-value {
-  font-size: 24px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: baseline;
   gap: 2px;
 }
 
-.cf-kpi-unit {
-  font-size: 12px;
+.cf-dashboard-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cf-text);
+  letter-spacing: -0.015em;
+}
+
+.cf-dashboard-subtitle {
+  font-size: 11px;
+  color: var(--cf-text-dim);
+}
+
+/* ============================================================================
+   KPI STRIP — Fey border-divided cells
+   ============================================================================ */
+
+.cf-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--cf-border);
+}
+
+.cf-kpi-cell {
+  padding: 16px 20px;
+  border-right: 1px solid var(--cf-border);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cf-kpi-cell:last-child {
+  border-right: none;
+}
+
+.cf-kpi-label {
+  font-size: 9px;
   font-weight: 500;
-  opacity: 0.6;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--cf-text-dim);
 }
 
-.cf-kpi-sub {
-  display: none;
-}
-
-/* ============================================================================
-   DATA TABLE
-   ============================================================================ */
-
-/* ============================================================================
-   TABLE WRAPPER & BASE STYLES
-   ============================================================================ */
-
-.cf-table-wrap {
-  background: rgba(42,42,46,0.30);
-  border: 1px solid rgba(113,113,122,0.15);
-  border-radius: 12px;
-  overflow-x: auto;
-}
-
-.cf-data-table {
-  width: 100%;
-  border-collapse: collapse;
+.cf-kpi-value {
+  font-size: 18px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  font-size: 14px;
-}
-
-/* ============================================================================
-   TABLE VARIANT: COMPACT (Linear/Notion style - dense, scannable)
-   ============================================================================ */
-
-.cf-table-compact .cf-data-table {
-  font-size: 12px;
-}
-
-.cf-table-compact .cf-data-table thead .cf-group-header th {
-  font-size: 10px;
-  padding: 8px 8px 4px;
-}
-
-.cf-table-compact .cf-data-table thead .cf-col-header th {
-  font-size: 10px;
-  padding: 10px 8px;
-  letter-spacing: 0.06em;
-}
-
-.cf-table-compact .cf-data-table tbody td {
-  padding: 8px 8px;
+  letter-spacing: -0.02em;
   line-height: 1.3;
 }
 
-.cf-table-compact .cf-data-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.cf-table-compact .cf-data-table tbody tr.cf-active-row {
-  background: rgba(45, 212, 191, 0.06);
-}
-
-/* Tighter border radius for compact */
-.cf-table-compact {
-  border-radius: 8px;
-}
-
-/* ============================================================================
-   TABLE VARIANT: COMFORTABLE (Default - balanced readability)
-   ============================================================================ */
-
-.cf-table-comfortable .cf-data-table {
-  font-size: 13px;
-}
-
-.cf-table-comfortable .cf-data-table thead .cf-group-header th {
+.cf-kpi-sub {
   font-size: 10px;
-  padding: 14px 10px 6px;
-}
-
-.cf-table-comfortable .cf-data-table thead .cf-col-header th {
-  font-size: 11px;
-  padding: 14px 10px;
-  letter-spacing: 0.05em;
-}
-
-.cf-table-comfortable .cf-data-table tbody td {
-  padding: 12px 10px;
-  line-height: 1.4;
-}
-
-.cf-table-comfortable .cf-data-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.025);
-}
-
-.cf-table-comfortable .cf-data-table tbody tr.cf-active-row {
-  background: rgba(45, 212, 191, 0.055);
-}
-
-/* Subtle row separators */
-.cf-table-comfortable .cf-data-table tbody td {
-  border-bottom: 1px solid rgba(113,113,122,0.08);
+  color: var(--cf-text-dim);
+  margin-top: 1px;
 }
 
 /* ============================================================================
-   TABLE VARIANT: SPACIOUS (Financial dashboard style - generous whitespace)
+   CHART & TABLE ZONES — sections within outer card
    ============================================================================ */
 
-.cf-table-spacious .cf-data-table {
-  font-size: 14px;
+.cf-chart-zone {
+  /* Last section in aggregates card — no bottom border */
 }
 
-.cf-table-spacious .cf-data-table thead .cf-group-header th {
-  font-size: 11px;
-  padding: 18px 14px 8px;
+.cf-table-zone {
+  /* Table fills its card naturally — no scroll constraint */
 }
 
-.cf-table-spacious .cf-data-table thead .cf-col-header th {
+/* ============================================================================
+   DATA TABLE — Refined, restrained, data-dense
+   ============================================================================ */
+
+/* Outer container: fills card width */
+.cft-outer {
+  width: 100%;
+}
+
+/* ── Property dual card layout ── */
+.cf-property-cards {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  overflow-x: auto;
+}
+
+.cf-property-card {
+  flex: 1 1 auto;
+  overflow-x: auto;
+}
+
+.cft-wrap {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.cft-table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
-  padding: 18px 14px;
-  letter-spacing: 0.04em;
-}
-
-.cf-table-spacious .cf-data-table tbody td {
-  padding: 18px 14px;
-  line-height: 1.5;
-}
-
-.cf-table-spacious .cf-data-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.cf-table-spacious .cf-data-table tbody tr.cf-active-row {
-  background: rgba(45, 212, 191, 0.05);
-  box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.12);
-}
-
-/* More pronounced border radius */
-.cf-table-spacious {
-  border-radius: 16px;
-  border: 1px solid rgba(113,113,122,0.12);
-}
-
-/* Alternating row backgrounds for spacious */
-.cf-table-spacious .cf-data-table tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.008);
-}
-
-.cf-table-spacious .cf-data-table tbody tr:nth-child(even):hover {
-  background: rgba(255, 255, 255, 0.025);
-}
-
-/* Subtle divider lines between rows */
-.cf-table-spacious .cf-data-table tbody td {
-  border-bottom: 1px solid rgba(113,113,122,0.06);
-}
-
-.cf-data-table thead .cf-col-header th.cf-col-year {
+  line-height: 1.4;
   white-space: nowrap;
+  width: 100%;
 }
 
-.cf-data-table thead .cf-col-header th.cf-col-loan-yr {
-  white-space: nowrap;
-}
-
-.cf-data-table thead .cf-group-header th {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--cf-text-dim);
-  padding: 12px 12px 6px;
-  text-align: center;
+/* ── Group headers (thin colour-coded labels) ── */
+.cft-group-row {
   border-bottom: none;
 }
 
-.cf-data-table thead .cf-col-header th {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+.cft-group-cell {
+  padding: 14px 18px 6px;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.cft-group-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--cf-text-dim);
-  padding: 16px 12px;
-  text-align: center;
-  vertical-align: middle;
-  border-bottom: 1px solid rgba(113,113,122,0.15);
-}
-
-.cf-data-table thead .cf-col-header th.cf-col-center {
-  text-align: left;
-}
-
-.cf-data-table tbody tr {
-  transition: background 0.1s;
-  cursor: pointer;
-}
-
-.cf-data-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.cf-data-table tbody tr.cf-active-row {
-  background: rgba(45, 212, 191, 0.05);
-}
-
-.cf-data-table tbody tr.cf-crossover-row td {
-  border-top: 1px solid var(--cf-accent-border);
-  border-bottom: 1px solid var(--cf-accent-border);
-}
-
-.cf-data-table tbody td {
-  padding: 16px 12px;
-  text-align: center;
-  vertical-align: middle;
-  border-bottom: 1px solid rgba(113,113,122,0.10);
-  color: var(--cf-text-muted);
-}
-
-.cf-data-table tbody td.cf-col-center {
-  text-align: left;
-  color: var(--cf-text);
-  font-weight: 500;
-}
-
-.cf-group-divider {
-  border-left: none !important;
-}
-
-/* Column group colours */
-.cf-col-property { color: rgba(245, 158, 11, 0.55); }
-.cf-col-property-agg { color: #f59e0b; font-weight: 600; }
-.cf-col-tax { color: rgba(167, 139, 250, 0.55); }
-.cf-col-tax-agg { color: #a78bfa; font-weight: 500; }
-.cf-col-cf { color: rgba(45, 212, 191, 0.6); }
-.cf-col-cf-result {
-  font-weight: 700;
+  color: rgba(161, 161, 170, 0.45);
   position: relative;
 }
 
-/* Highlighted columns for critical outputs */
-.cf-data-table thead .cf-col-header th.cf-col-highlight {
-  background: rgba(45, 212, 191, 0.06);
+/* Per-group color coding for labels and top bars */
+.cft-group-income { color: rgba(45, 212, 191, 0.5); }
+.cft-group-tax    { color: rgba(245, 158, 11, 0.5); }
+.cft-group-costs  { color: rgba(161, 161, 170, 0.45); }
+.cft-group-net    { color: rgba(45, 212, 191, 0.5); }
+.cft-group-position { color: rgba(96, 165, 250, 0.5); }
+.cft-group-depreciation { color: rgba(167, 139, 250, 0.5); }
+
+/* Color bar indicator at top of each group */
+.cft-group-label::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  border-radius: 0 0 2px 2px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+.cft-group-divider {
+  width: 0;
+  max-width: 0;
+  padding: 0;
+  background: transparent;
+  position: relative;
+  border-left: 1px solid rgba(113, 113, 122, 0.08);
+}
+
+.cft-group-divider::after {
+  display: none;
+}
+
+/* ── Column headers (lowercase, light, receding) ── */
+.cft-header-row {
+  border-bottom: 1px solid rgba(113, 113, 122, 0.1);
+}
+
+.cft-th {
+  padding: 6px 18px 14px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+  color: rgba(161, 161, 170, 0.5);
   text-align: right;
+  white-space: nowrap;
 }
 
-.cf-data-table tbody td.cf-col-highlight {
-  background: rgba(45, 212, 191, 0.04);
-  font-weight: 600;
+.cft-th-year {
+  text-align: left;
+  padding-left: 20px;
+  padding-right: 28px;
+}
+
+.cft-th-agg {
+  color: rgba(161, 161, 170, 0.65);
+  font-weight: 500;
+}
+
+.cft-th-accent {
+  color: rgba(45, 212, 191, 0.55);
+}
+
+.cft-th-result {
+  color: rgba(45, 212, 191, 0.7);
+  padding-right: 20px;
+}
+
+.cft-th-divider {
+  width: 0;
+  max-width: 0;
+  padding: 0;
+  border-left: 1px solid rgba(113, 113, 122, 0.08);
+}
+
+.cft-th-divider::after {
+  display: none;
+}
+
+/* ── Data rows ── */
+.cft-row {
+  transition: background 0.1s ease;
+  cursor: pointer;
+}
+
+.cft-row:hover {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.cft-row-active {
+  background: rgba(45, 212, 191, 0.035);
+}
+
+.cft-row-active:hover {
+  background: rgba(45, 212, 191, 0.045);
+}
+
+/* ── Data cells ── */
+.cft-td {
+  padding: 14px 18px;
   text-align: right;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.05);
 }
 
-.cf-data-table tbody td.cf-col-highlight-tax {
-  background: rgba(74, 222, 128, 0.04);
-  font-weight: 600;
+.cft-td-year {
+  text-align: left;
+  padding-left: 20px;
+  padding-right: 28px;
 }
 
-.cf-crossover-chip {
+.cft-td-divider {
+  width: 0;
+  max-width: 0;
+  padding: 0;
+  border-left: 1px solid rgba(113, 113, 122, 0.08);
+  border-bottom: 1px solid rgba(113, 113, 122, 0.05);
+}
+
+.cft-td-result {
+  padding-right: 20px;
+}
+
+/* ── Year cell formatting ── */
+.cft-year-cell {
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--cf-accent);
-  background: rgba(45, 212, 191, 0.08);
-  border: 1px solid var(--cf-accent-border);
-  border-radius: 3px;
-  padding: 1px 6px;
-  margin-left: 6px;
 }
 
-.cf-formula-row td {
-  border-bottom: none;
-  padding: 8px 10px 12px;
+.cft-year-idx {
+  color: var(--cf-accent);
+  font-weight: 600;
   font-size: 10px;
-  letter-spacing: 0.03em;
-  font-style: italic;
+  background: rgba(45, 212, 191, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.8em;
+  text-align: center;
+  line-height: 1.4;
+  margin-right: 8px;
+}
+
+.cft-year-cal {
+  color: rgba(113, 113, 122, 0.7);
+  font-weight: 400;
+  font-size: 13px;
+}
+
+/* ── Three-tier text hierarchy ── */
+
+/* Tier 1: Dim — detail data (salary, rent), recedes */
+.cft-val-dim {
+  color: #b4b4bc;
+}
+
+/* Tier 2: Neutral — summary columns (taxable inc.), bold bright */
+.cft-val-neutral {
+  color: #f0fdfa;
+  font-weight: 700;
+}
+
+/* Tier 3: Outflow — muted red for detail expenses (prop ded, holding, principal) */
+.cft-val-outflow {
+  color: rgba(239, 68, 68, 0.5);
+}
+
+/* Tier 4: Negative result — bold red for summary negatives (tax payable, total costs) */
+.cft-val-negative {
+  color: #f87171;
+  font-weight: 700;
+}
+
+/* Tier 4b: Positive — green for tax saved / positive benefits */
+.cft-val-positive {
+  color: #34d399;
+  font-weight: 700;
+}
+
+/* Tier 5: Result — teal for positive outcomes (cashflow) */
+.cft-val-result {
+  color: var(--cf-accent);
+  font-weight: 700;
+}
+
+/* Growth percentage — pill badge */
+.cft-val-growth-pct {
+  text-align: left;
+  padding-left: 4px;
+  padding-right: 8px;
+}
+
+.cft-growth-arrow {
+  color: rgba(74, 222, 128, 0.4);
+  font-size: 10px;
+  margin-right: 4px;
+}
+
+.cft-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 500;
+  border-radius: 999px;
+  background: rgba(74, 222, 128, 0.08);
+  color: rgba(74, 222, 128, 0.6);
+  border: 1px solid rgba(74, 222, 128, 0.12);
+  letter-spacing: 0.02em;
+}
+
+/* ── LVR conditional styling ── */
+.cft-lvr-danger {
+  color: #f87171;
+  font-weight: 600;
+  background: rgba(248, 113, 113, 0.06);
+}
+.cft-lvr-moderate {
+  color: #fbbf24;
+  font-weight: 600;
+  background: rgba(251, 191, 36, 0.04);
+}
+.cft-lvr-healthy {
+  color: #34d399;
+  font-weight: 600;
+  background: rgba(52, 211, 153, 0.04);
+}
+
+/* ── Depreciation — paper deductions, distinct from cash costs ── */
+.cft-val-dep-dim {
+  color: rgba(167, 139, 250, 0.4);
+}
+.cft-val-dep-agg {
+  color: rgba(167, 139, 250, 0.7);
+  font-weight: 700;
 }
 
 /* Chart tooltip */
@@ -1247,376 +1083,376 @@
   border-top: 5px solid var(--cf-card-elevated);
 }
 
-/* ============================================================================
-   RESPONSIVE
-   ============================================================================ */
 
 /* ============================================================================
-   WIZARD STEP - INLINE CENTERED INPUT FLOW
+   WIZARD STEP — Fey-inspired flat surface
    ============================================================================ */
 
-.cf-wizard-container {
+.cf-wiz-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 500px;
-  padding: 32px 24px;
+  align-items: stretch;
+  justify-content: flex-start;
+  min-height: 520px;
+  padding: 0;
+  width: 100%;
+}
+
+.cf-wiz-wrap {
+  display: flex;
+  flex-direction: column;
   gap: 32px;
-}
-
-/* Progress indicator */
-.cf-wizard-progress {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
   width: 100%;
-  max-width: 600px;
+  max-width: 480px;
 }
 
-.cf-wizard-progress-steps {
+/* Breadcrumb progress indicator */
+.cf-wiz-breadcrumb {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--cf-text-muted);
+  margin-bottom: 12px;
 }
 
-.cf-wizard-progress-step-wrapper {
-  display: flex;
-  align-items: center;
+.cf-wiz-breadcrumb-step {
+  font-weight: 600;
+  color: var(--cf-accent);
+  font-variant-numeric: tabular-nums;
 }
 
-.cf-wizard-progress-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+.cf-wiz-breadcrumb-divider {
+  color: var(--cf-text-dim);
+}
+
+.cf-wiz-breadcrumb-title {
+  color: var(--cf-text-muted);
+}
+
+/* Card — borderless, content sits directly on the page */
+.cf-wiz-card {
+  border-radius: 0;
+  border: none;
+  background: transparent;
   position: relative;
 }
 
-.cf-wizard-progress-icon {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--cf-input-bg);
-  border: 2px solid var(--cf-border);
-  color: var(--cf-text-muted);
-  transition: all 0.3s ease;
-}
-
-.cf-wizard-progress-step.complete .cf-wizard-progress-icon {
-  background: var(--cf-accent);
-  border-color: var(--cf-accent);
-  color: var(--cf-accent-contrast);
-}
-
-.cf-wizard-progress-step.current .cf-wizard-progress-icon {
-  background: rgba(45, 212, 191, 0.15);
-  border-color: var(--cf-accent);
-  color: var(--cf-accent);
-  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.1);
-}
-
-.cf-wizard-progress-step.future .cf-wizard-progress-icon {
-  opacity: 0.5;
-}
-
-.cf-wizard-progress-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--cf-text-muted);
-  white-space: nowrap;
-}
-
-.cf-wizard-progress-step.complete .cf-wizard-progress-label {
-  color: var(--cf-accent);
-}
-
-.cf-wizard-progress-step.current .cf-wizard-progress-label {
-  color: var(--cf-text);
-  font-weight: 600;
-}
-
-.cf-wizard-progress-step.future .cf-wizard-progress-label {
-  opacity: 0.5;
-}
-
-.cf-wizard-progress-line {
-  width: 40px;
-  height: 2px;
-  background: var(--cf-border);
-  margin: 0 8px;
-  margin-bottom: 26px;
-  transition: background 0.3s ease;
-}
-
-.cf-wizard-progress-line.complete {
-  background: var(--cf-accent);
-}
-
-.cf-wizard-progress-text {
-  font-size: 13px;
-  color: var(--cf-text-muted);
-  font-weight: 500;
-}
-
-/* Card */
-.cf-wizard-card {
-  width: 100%;
-  max-width: 520px;
-  background: var(--cf-card-elevated);
-  border: 1px solid var(--cf-border-hover);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.3);
-  transform: translateY(12px);
-  opacity: 0;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cf-wizard-card.visible {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-/* Header */
-.cf-wizard-header {
-  padding: 32px 32px 24px;
+/* Header — title + subtitle, no icon badge */
+.cf-wiz-header {
+  padding: 0;
   text-align: center;
-  border-bottom: 1px solid var(--cf-border);
 }
 
-.cf-wizard-icon {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(45, 212, 191, 0.1);
-  border: 1px solid rgba(45, 212, 191, 0.2);
-  border-radius: 14px;
-  color: var(--cf-accent);
-}
-
-.cf-wizard-title {
+.cf-wiz-title {
   margin: 0;
   font-size: 22px;
   font-weight: 600;
-  letter-spacing: -0.02em;
   color: var(--cf-text);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-.cf-wizard-subtitle {
+.cf-wiz-subtitle {
   margin: 8px 0 0;
   font-size: 14px;
   color: var(--cf-text-muted);
+  font-weight: 400;
+  line-height: 1.4;
 }
 
-/* Content */
-.cf-wizard-content {
-  padding: 28px 32px;
-}
-
-/* Options (for selection steps) */
-.cf-wizard-options {
-  display: flex;
-  gap: 16px;
-}
-
-.cf-wizard-option {
-  flex: 1;
+/* Centered card variant — setup step */
+.cf-wiz-card--centered .cf-wiz-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 28px 20px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--cf-text-muted);
 }
 
-.cf-wizard-option:hover {
-  background: rgba(45, 212, 191, 0.05);
-  border-color: var(--cf-border-hover);
-  color: var(--cf-text);
+.cf-wiz-card--centered .cf-wiz-fields {
+  width: 100%;
+  align-items: stretch;
 }
 
-.cf-wizard-option.selected {
-  background: rgba(45, 212, 191, 0.1);
-  border-color: var(--cf-accent-border);
-  color: var(--cf-accent);
+.cf-wiz-card--centered .cf-wiz-footer {
+  justify-content: center;
 }
 
-.cf-wizard-option-title {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.cf-wiz-card--centered .cf-wiz-continue {
+  flex: unset;
+  min-width: 200px;
 }
 
-.cf-wizard-option-desc {
-  font-size: 12px;
-  text-align: center;
-  opacity: 0.7;
+/* Content area */
+.cf-wiz-content {
+  padding: 32px 0 12px;
 }
 
-/* Fields */
-.cf-wizard-fields {
+/* Fields container */
+.cf-wiz-fields {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 28px;
 }
 
-.cf-wizard-field-row {
+/* Field group (label + options) */
+.cf-wiz-field-group {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.cf-wizard-field-row .cf-wizard-field {
+.cf-wiz-field-label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cf-text-dim);
+}
+
+/* Option buttons — transparent, single border, teal on select */
+.cf-wiz-option-row {
+  display: flex;
+  gap: 12px;
+}
+
+.cf-wiz-opt {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--cf-border);
+  background: transparent;
+  color: var(--cf-text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cf-wiz-opt:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--cf-text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cf-wiz-opt.selected {
+  border-color: rgba(45, 212, 191, 0.3);
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.08);
+}
+
+/* Compact variant (loan type toggle) */
+.cf-wiz-opt.compact {
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+/* Input fields */
+.cf-wiz-input-row {
+  display: flex;
+  gap: 14px;
+}
+
+.cf-wiz-input-row .cf-wiz-input-field {
   flex: 1;
 }
 
-.cf-wizard-field {
+.cf-wiz-input-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.cf-wizard-label {
+.cf-wiz-input-label {
   font-size: 12px;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--cf-text-muted);
 }
 
-.cf-wizard-input {
+.cf-wiz-input {
   padding: 14px 16px;
-  background: var(--cf-input-bg);
+  background: transparent;
   border: 1px solid var(--cf-border);
-  border-radius: 10px;
+  border-radius: 12px;
   color: var(--cf-text);
   font-family: inherit;
   font-size: 16px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  transition: border-color 0.15s;
+  transition: border-color 0.2s ease;
 }
 
-.cf-wizard-input:focus {
+.cf-wiz-input:focus {
   outline: none;
-  border-color: var(--cf-accent-border);
+  border-color: rgba(45, 212, 191, 0.4);
 }
 
-/* Computed values display */
-.cf-wizard-computed {
+/* ── Property summary strip ── */
+.cf-wiz-summary-strip {
   display: flex;
-  gap: 16px;
-  padding: 16px;
-  background: rgba(45, 212, 191, 0.05);
+  align-items: stretch;
+  background: rgba(45, 212, 191, 0.04);
   border: 1px solid rgba(45, 212, 191, 0.12);
-  border-radius: 10px;
+  border-radius: 14px;
+  overflow: hidden;
 }
 
-.cf-wizard-computed-item {
+.cf-wiz-summary-item {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  padding: 16px 20px;
 }
 
-.cf-wizard-computed-label {
+.cf-wiz-summary-label {
   font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--cf-text-muted);
+  color: rgba(45, 212, 191, 0.5);
 }
 
-.cf-wizard-computed-value {
+.cf-wiz-summary-value {
   font-size: 18px;
   font-weight: 600;
   color: var(--cf-accent);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
-/* Toggle group */
-.cf-wizard-toggle-group {
+.cf-wiz-summary-divider {
+  width: 1px;
+  background: rgba(45, 212, 191, 0.1);
+  flex-shrink: 0;
+  margin: 12px 0;
+}
+
+/* ── Loan banner ── */
+.cf-wiz-loan-banner {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: rgba(45, 212, 191, 0.05);
+  border: 1px solid rgba(45, 212, 191, 0.15);
+  border-radius: 14px;
+  gap: 16px;
+}
+
+.cf-wiz-loan-banner-main {
+  display: flex;
+  align-items: baseline;
   gap: 8px;
 }
 
-.cf-wizard-toggle {
-  flex: 1;
-  padding: 12px 16px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 8px;
-  color: var(--cf-text-muted);
-  font-family: inherit;
+.cf-wiz-loan-banner-amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--cf-accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.cf-wiz-loan-banner-label {
+  font-size: 14px;
+  color: rgba(45, 212, 191, 0.6);
+  font-weight: 500;
+}
+
+.cf-wiz-loan-banner-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cf-wiz-loan-banner-sub {
+  font-size: 12px;
+  color: var(--cf-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-wiz-loan-banner-dot {
+  font-size: 12px;
+  color: var(--cf-text-dim);
+  opacity: 0.4;
+}
+
+/* Input with suffix unit */
+.cf-wiz-input-wrap {
+  position: relative;
+}
+
+.cf-wiz-input-suffix {
+  padding-right: 40px;
+}
+
+.cf-wiz-input-unit {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 13px;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
+  color: var(--cf-text-dim);
+  pointer-events: none;
 }
 
-.cf-wizard-toggle:hover {
-  border-color: var(--cf-border-hover);
-  color: var(--cf-text);
-}
-
-.cf-wizard-toggle.active {
-  background: rgba(45, 212, 191, 0.1);
-  border-color: var(--cf-accent-border);
-  color: var(--cf-accent);
+/* Section divider within fields */
+.cf-wiz-section-divider {
+  height: 1px;
+  background: var(--cf-border);
+  margin: 4px 0;
 }
 
 /* Checkbox */
-.cf-wizard-checkbox-row {
-  padding-top: 4px;
+.cf-wiz-checkbox-row {
+  padding-top: 2px;
 }
 
-.cf-wizard-checkbox {
+.cf-wiz-checkbox {
   display: flex;
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--cf-text-muted);
 }
 
-.cf-wizard-checkbox input {
+.cf-wiz-checkbox input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
-.cf-wizard-checkbox-box {
-  width: 20px;
-  height: 20px;
+.cf-wiz-checkbox-box {
+  width: 18px;
+  height: 18px;
   border: 1px solid var(--cf-border-hover);
-  border-radius: 5px;
-  background: var(--cf-input-bg);
+  border-radius: 4px;
+  background: transparent;
   transition: all 0.15s;
   position: relative;
+  flex-shrink: 0;
 }
 
-.cf-wizard-checkbox input:checked + .cf-wizard-checkbox-box {
+.cf-wiz-checkbox input:checked + .cf-wiz-checkbox-box {
   background: var(--cf-accent);
   border-color: var(--cf-accent);
 }
 
-.cf-wizard-checkbox input:checked + .cf-wizard-checkbox-box::after {
+.cf-wiz-checkbox input:checked + .cf-wiz-checkbox-box::after {
   content: "";
   position: absolute;
-  top: 4px;
-  left: 7px;
+  top: 3px;
+  left: 6px;
   width: 4px;
   height: 8px;
   border: solid var(--cf-accent-contrast);
@@ -1624,79 +1460,162 @@
   transform: rotate(45deg);
 }
 
-/* Footer */
-.cf-wizard-footer {
-  padding: 20px 32px 28px;
-  border-top: 1px solid var(--cf-border);
+/* Footer — flat teal CTA, ghost back button */
+.cf-wiz-footer {
+  padding: 24px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.cf-wizard-continue {
-  width: 100%;
+.cf-wiz-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  background: transparent;
+  border: 1px solid var(--cf-border);
+  border-radius: 12px;
+  color: var(--cf-text-dim);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cf-wiz-back:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--cf-text-muted);
+}
+
+.cf-wiz-continue {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 16px 24px;
+  padding: 16px 32px;
   background: var(--cf-accent);
   border: none;
   border-radius: 12px;
   color: var(--cf-accent-contrast);
   font-family: inherit;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.15s ease;
+  letter-spacing: 0.01em;
 }
 
-.cf-wizard-continue:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+.cf-wiz-continue:hover:not(:disabled) {
+  filter: brightness(1.08);
 }
 
-.cf-wizard-continue:disabled {
-  opacity: 0.4;
+.cf-wiz-continue:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
 }
+
 
 /* ============================================================================
    RESPONSIVE
    ============================================================================ */
 
 @media (max-width: 1024px) {
-  .cf-layout {
+  .cf-kpi-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cf-kpi-cell:nth-child(2) {
+    border-right: none;
+  }
+
+  .cf-kpi-cell:nth-child(1),
+  .cf-kpi-cell:nth-child(2) {
+    border-bottom: 1px solid var(--cf-border);
+  }
+
+  .cf-card-header {
     flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .cf-mode-bar {
+    overflow-x: auto;
+  }
+
+  /* Wizard view responsive */
+  .cf-wizard-view {
+    padding: 24px 16px;
+  }
+
+  .cf-wizard-view-inner {
+    flex-direction: column;
+  }
+
+  .cf-wizard-view-main {
+    padding: 24px 0;
+    align-items: stretch;
   }
 
   .cf-sidebar {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-    height: auto;
-    position: relative;
     border-right: none;
     border-bottom: 1px solid var(--cf-border);
   }
 
-  .cf-main {
-    padding: 20px 16px;
+  .cf-dashboard-view {
+    padding: 16px 8px;
   }
 
-.cf-chart-kpi-row,
-  .cf-chart-kpi-row.cf-layout-tight,
-  .cf-chart-kpi-row.cf-layout-wide,
-  .cf-chart-kpi-row.cf-layout-balanced {
-  grid-template-columns: 1fr;
+  /* Wizard responsive */
+  .cf-wiz-container {
+    padding: 0;
+    min-height: 400px;
   }
 
-  .cf-kpi-strip {
-    flex-direction: row;
+  .cf-wiz-wrap {
+    max-width: 100%;
+    gap: 24px;
   }
 
-  .cf-kpi-card {
-    flex: 1;
+  .cf-wiz-dots {
+    justify-content: center;
   }
 
-  .cf-kpi-value {
-    font-size: 18px;
+  .cf-wiz-option-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cf-wiz-opt {
+    padding: 16px;
+  }
+
+  /* Sidebar responsive */
+  .cf-sidebar-nav-head {
+    margin-bottom: 16px;
+  }
+
+  .cf-sidebar-nav-item {
+    padding: 10px 24px;
+  }
+
+  .cf-wiz-content {
+    padding: 24px 0 8px;
+  }
+
+  .cf-wiz-fields {
+    gap: 20px;
+  }
+
+  .cf-wiz-footer {
+    padding: 16px 0 0;
   }
 }

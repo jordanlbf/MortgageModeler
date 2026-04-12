@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { ArrowRight, Home, Building2, Sparkles, Landmark, Coins, Key, Calculator, Check } from "lucide-react";
+import { useMemo } from "react";
+import { ArrowRight, X, Home, Building2, Sparkles, Landmark, Coins, Key, Calculator } from "lucide-react";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyCf, formatCurrencyCf } from "@/lib/cashflow-calculations";
 
@@ -9,496 +9,367 @@ interface Props {
   s: CashflowState;
   currentStep: string;
   onStepComplete: () => void;
+  onStepBack: () => void;
+  canGoBack: boolean;
+  isModal?: boolean;
 }
 
-type StepId = "propertyUse" | "purchaseMode" | "property" | "loan" | "costs" | "rental" | "tax";
+type StepId = "setup" | "property" | "loan" | "costs" | "rental" | "tax";
 
-const STEP_META: Record<StepId, { title: string; subtitle: string; icon: React.ElementType; shortLabel: string }> = {
-  propertyUse: {
-    title: "How will you use this property?",
-    subtitle: "This determines tax treatment and cashflow calculations",
-    icon: Home,
-    shortLabel: "Use",
-  },
-  purchaseMode: {
-    title: "Is this a new purchase?",
-    subtitle: "We'll tailor the inputs based on your situation",
-    icon: Sparkles,
-    shortLabel: "Type",
-  },
-  property: {
-    title: "Property Details",
-    subtitle: "Enter the key financials for your property",
-    icon: Building2,
-    shortLabel: "Property",
-  },
-  loan: {
-    title: "Loan Structure",
-    subtitle: "Configure your mortgage details",
-    icon: Landmark,
-    shortLabel: "Loan",
-  },
-  costs: {
-    title: "Ongoing Costs",
-    subtitle: "Annual expenses for maintaining the property",
-    icon: Coins,
-    shortLabel: "Costs",
-  },
-  rental: {
-    title: "Rental Income",
-    subtitle: "Expected rental returns and management",
-    icon: Key,
-    shortLabel: "Rental",
-  },
-  tax: {
-    title: "Tax Profile",
-    subtitle: "Your income details for tax benefit calculations",
-    icon: Calculator,
-    shortLabel: "Tax",
-  },
+const STEP_META: Record<StepId, { title: string; subtitle: string; icon: React.ElementType }> = {
+  setup:    { title: "Property setup",   subtitle: "Define your property type and purchase scenario",  icon: Home       },
+  property: { title: "Property",         subtitle: "Enter your property details",                      icon: Building2  },
+  loan:     { title: "Loan",             subtitle: "Configure your loan structure",                    icon: Landmark   },
+  costs:    { title: "Costs",            subtitle: "Annual holding costs and expenses",                icon: Coins      },
+  rental:   { title: "Rental income",    subtitle: "Expected rental yield and management",             icon: Key        },
+  tax:      { title: "Tax",              subtitle: "Income and depreciation for tax modelling",        icon: Calculator },
 };
 
-// Get steps based on property type (investment has more steps)
 function getStepOrder(isInvestment: boolean): StepId[] {
-  const base: StepId[] = ["propertyUse", "purchaseMode", "property", "loan", "costs"];
-  if (isInvestment) {
-    return [...base, "rental", "tax"];
-  }
+  const base: StepId[] = ["setup", "property", "loan", "costs"];
+  if (isInvestment) return [...base, "rental", "tax"];
   return base;
 }
 
-export default function CashflowWizardStep({ s, currentStep, onStepComplete }: Props) {
-  const [isVisible, setIsVisible] = useState(false);
+export default function CashflowWizardStep({ s, currentStep, onStepComplete, onStepBack, canGoBack, isModal }: Props) {
   const step = currentStep as StepId;
   const meta = STEP_META[step];
-  const Icon = meta?.icon || Home;
 
-  // Calculate step order and progress
   const stepOrder = useMemo(() => getStepOrder(s.isInvestment), [s.isInvestment]);
   const currentStepIndex = stepOrder.indexOf(step);
-  const totalSteps = stepOrder.length;
-
-  useEffect(() => {
-    // Animate in on mount
-    setIsVisible(false);
-    const timer = setTimeout(() => setIsVisible(true), 50);
-    return () => clearTimeout(timer);
-  }, [currentStep]);
 
   const handleContinue = () => {
-    setIsVisible(false);
-    setTimeout(() => {
-      onStepComplete();
-    }, 200);
+    onStepComplete();
   };
 
   if (!meta) return null;
 
-  return (
-    <div className="cf-wizard-container">
-      {/* Progress indicator */}
-      <div className="cf-wizard-progress">
-        <div className="cf-wizard-progress-steps">
-          {stepOrder.map((stepId, index) => {
-            const stepMeta = STEP_META[stepId];
-            const StepIcon = stepMeta.icon;
-            const isComplete = index < currentStepIndex;
-            const isCurrent = index === currentStepIndex;
-            const isFuture = index > currentStepIndex;
-
-            return (
-              <div key={stepId} className="cf-wizard-progress-step-wrapper">
-                <div
-                  className={`cf-wizard-progress-step ${isComplete ? "complete" : ""} ${isCurrent ? "current" : ""} ${isFuture ? "future" : ""}`}
+  const fieldsContent = (
+    <>
+      {step === "setup" && (
+        <div className="cf-wiz-fields">
+          <div className="cf-wiz-field-group">
+            <span className="cf-wiz-field-label">Property type</span>
+            <div className="cf-wiz-option-row">
+              <button
+                className={`cf-wiz-opt ${s.propertyUse === "investment" ? "selected" : ""}`}
+                onClick={() => { s.setPropertyUse("investment"); s.setPurchaseMode(null); }}
+              >
+                <Building2 size={18} />
+                <span>Investment</span>
+              </button>
+              <button
+                className={`cf-wiz-opt ${s.propertyUse === "ppor" ? "selected" : ""}`}
+                onClick={() => { s.setPropertyUse("ppor"); s.setPurchaseMode(null); }}
+              >
+                <Home size={18} />
+                <span>Owner-occupier</span>
+              </button>
+            </div>
+          </div>
+          {s.propertyUse && (
+            <div className="cf-wiz-field-group">
+              <span className="cf-wiz-field-label">Purchase type</span>
+              <div className="cf-wiz-option-row">
+                <button
+                  className={`cf-wiz-opt ${s.purchaseMode === "new" ? "selected" : ""}`}
+                  onClick={() => s.setPurchaseMode("new")}
                 >
-                  <div className="cf-wizard-progress-icon">
-                    {isComplete ? <Check size={14} /> : <StepIcon size={14} />}
-                  </div>
-                  <span className="cf-wizard-progress-label">{stepMeta.shortLabel}</span>
+                  <Sparkles size={18} />
+                  <span>New purchase</span>
+                </button>
+                <button
+                  className={`cf-wiz-opt ${s.purchaseMode === "existing" ? "selected" : ""}`}
+                  onClick={() => s.setPurchaseMode("existing")}
+                >
+                  <Building2 size={18} />
+                  <span>Existing property</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {step === "property" && (
+        <>
+          {s.isNewPurchase ? (
+            <div className="cf-wiz-fields">
+              <div className="cf-wiz-input-row">
+                <div className="cf-wiz-input-field">
+                  <label className="cf-wiz-input-label">Purchase price</label>
+                  <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.purchasePrice).toLocaleString()}`} onChange={(e) => s.setPurchasePrice(e.target.value)} />
                 </div>
-                {index < stepOrder.length - 1 && (
-                  <div className={`cf-wizard-progress-line ${isComplete ? "complete" : ""}`} />
+                <div className="cf-wiz-input-field">
+                  <label className="cf-wiz-input-label">Deposit</label>
+                  <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.depositAmount).toLocaleString()}`} onChange={(e) => s.setDepositAmount(e.target.value)} />
+                </div>
+              </div>
+              <div className="cf-wiz-summary-strip">
+                <div className="cf-wiz-summary-item">
+                  <span className="cf-wiz-summary-label">Loan amount</span>
+                  <span className="cf-wiz-summary-value">{formatCurrencyCf(parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount))}</span>
+                </div>
+                <div className="cf-wiz-summary-divider" />
+                <div className="cf-wiz-summary-item">
+                  <span className="cf-wiz-summary-label">LVR</span>
+                  <span className="cf-wiz-summary-value">{parseCurrencyCf(s.purchasePrice) > 0 ? ((1 - parseCurrencyCf(s.depositAmount) / parseCurrencyCf(s.purchasePrice)) * 100).toFixed(1) : "0.0"}%</span>
+                </div>
+                <div className="cf-wiz-summary-divider" />
+                <div className="cf-wiz-summary-item">
+                  <span className="cf-wiz-summary-label">Deposit</span>
+                  <span className="cf-wiz-summary-value">{parseCurrencyCf(s.purchasePrice) > 0 ? ((parseCurrencyCf(s.depositAmount) / parseCurrencyCf(s.purchasePrice)) * 100).toFixed(1) : "0.0"}%</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="cf-wiz-fields">
+              <div className="cf-wiz-input-row">
+                <div className="cf-wiz-input-field">
+                  <label className="cf-wiz-input-label">Current value</label>
+                  <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.currentValue).toLocaleString()}`} onChange={(e) => s.setCurrentValue(e.target.value)} />
+                </div>
+                <div className="cf-wiz-input-field">
+                  <label className="cf-wiz-input-label">Loan balance</label>
+                  <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.currentLoanBalance).toLocaleString()}`} onChange={(e) => s.setCurrentLoanBalance(e.target.value)} />
+                </div>
+              </div>
+              <div className="cf-wiz-input-field">
+                <label className="cf-wiz-input-label">Original purchase price</label>
+                <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.originalPurchasePrice).toLocaleString()}`} onChange={(e) => s.setOriginalPurchasePrice(e.target.value)} />
+              </div>
+              <div className="cf-wiz-summary-strip">
+                <div className="cf-wiz-summary-item">
+                  <span className="cf-wiz-summary-label">Equity</span>
+                  <span className="cf-wiz-summary-value">{formatCurrencyCf(parseCurrencyCf(s.currentValue) - parseCurrencyCf(s.currentLoanBalance))}</span>
+                </div>
+                <div className="cf-wiz-summary-divider" />
+                <div className="cf-wiz-summary-item">
+                  <span className="cf-wiz-summary-label">LVR</span>
+                  <span className="cf-wiz-summary-value">{parseCurrencyCf(s.currentValue) > 0 ? (parseCurrencyCf(s.currentLoanBalance) / parseCurrencyCf(s.currentValue) * 100).toFixed(1) : "0.0"}%</span>
+                </div>
+                <div className="cf-wiz-summary-divider" />
+                <div className="cf-wiz-summary-item">
+                  <span className="cf-wiz-summary-label">Growth</span>
+                  <span className="cf-wiz-summary-value">{parseCurrencyCf(s.originalPurchasePrice) > 0 ? formatCurrencyCf(parseCurrencyCf(s.currentValue) - parseCurrencyCf(s.originalPurchasePrice)) : "—"}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {step === "loan" && (() => {
+        const principal = s.isNewPurchase
+          ? parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount)
+          : parseCurrencyCf(s.currentLoanBalance);
+        const rate = parseFloat(s.interestRate) / 100 / 12;
+        const n = parseFloat(s.loanTerm) * 12;
+        const offset = parseCurrencyCf(s.offsetBalance);
+        const effectivePrincipal = Math.max(0, principal - (s.hasOffset ? offset : 0));
+        let monthlyRepayment = 0;
+        if (s.loanType === "interest-only") {
+          monthlyRepayment = effectivePrincipal * (parseFloat(s.interestRate) / 100 / 12);
+        } else if (rate > 0 && n > 0) {
+          monthlyRepayment = effectivePrincipal * (rate * Math.pow(1 + rate, n)) / (Math.pow(1 + rate, n) - 1);
+        }
+        const monthlyInterest = effectivePrincipal * (parseFloat(s.interestRate) / 100 / 12);
+        const monthlyPrincipal = s.loanType === "principal-interest" ? monthlyRepayment - monthlyInterest : 0;
+
+        return (
+          <div className="cf-wiz-fields">
+            {/* Live repayment banner */}
+            <div className="cf-wiz-loan-banner">
+              <div className="cf-wiz-loan-banner-main">
+                <span className="cf-wiz-loan-banner-amount">{formatCurrencyCf(monthlyRepayment)}</span>
+                <span className="cf-wiz-loan-banner-label">/ month</span>
+              </div>
+              <div className="cf-wiz-loan-banner-breakdown">
+                <span className="cf-wiz-loan-banner-sub">{formatCurrencyCf(monthlyInterest)} interest</span>
+                {s.loanType === "principal-interest" && (
+                  <><span className="cf-wiz-loan-banner-dot">·</span><span className="cf-wiz-loan-banner-sub">{formatCurrencyCf(monthlyPrincipal)} principal</span></>
                 )}
               </div>
-            );
-          })}
-        </div>
-        <div className="cf-wizard-progress-text">
-          Step {currentStepIndex + 1} of {totalSteps}
-        </div>
-      </div>
+            </div>
 
-      {/* Card */}
-      <div className={`cf-wizard-card ${isVisible ? "visible" : ""}`}>
-        {/* Header */}
-        <div className="cf-wizard-header">
-          <div className="cf-wizard-icon">
-            <Icon size={24} />
+            {/* Rate & term */}
+            <div className="cf-wiz-input-row">
+              <div className="cf-wiz-input-field">
+                <label className="cf-wiz-input-label">Interest rate</label>
+                <div className="cf-wiz-input-wrap">
+                  <input type="text" className="cf-wiz-input cf-wiz-input-suffix" value={s.interestRate} onChange={(e) => s.setInterestRate(e.target.value)} />
+                  <span className="cf-wiz-input-unit">%</span>
+                </div>
+              </div>
+              <div className="cf-wiz-input-field">
+                <label className="cf-wiz-input-label">Loan term</label>
+                <div className="cf-wiz-input-wrap">
+                  <input type="text" className="cf-wiz-input cf-wiz-input-suffix" value={s.loanTerm} onChange={(e) => s.setLoanTerm(e.target.value)} />
+                  <span className="cf-wiz-input-unit">yrs</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Loan type */}
+            <div className="cf-wiz-field-group">
+              <span className="cf-wiz-field-label">Repayment type</span>
+              <div className="cf-wiz-option-row">
+                <button className={`cf-wiz-opt compact ${s.loanType === "principal-interest" ? "selected" : ""}`} onClick={() => s.setLoanType("principal-interest")}>P&amp;I</button>
+                <button className={`cf-wiz-opt compact ${s.loanType === "interest-only" ? "selected" : ""}`} onClick={() => s.setLoanType("interest-only")}>Interest Only</button>
+              </div>
+            </div>
+
+            {s.loanType === "interest-only" && (
+              <div className="cf-wiz-input-field">
+                <label className="cf-wiz-input-label">IO period</label>
+                <div className="cf-wiz-input-wrap">
+                  <input type="text" className="cf-wiz-input cf-wiz-input-suffix" value={s.ioPeriod} onChange={(e) => s.setIoPeriod(e.target.value)} />
+                  <span className="cf-wiz-input-unit">yrs</span>
+                </div>
+              </div>
+            )}
+
+            {/* Offset & extras */}
+            <div className="cf-wiz-section-divider" />
+            <div className="cf-wiz-checkbox-row">
+              <label className="cf-wiz-checkbox">
+                <input type="checkbox" checked={s.hasOffset} onChange={(e) => s.setHasOffset(e.target.checked)} />
+                <span className="cf-wiz-checkbox-box" />
+                Offset account
+              </label>
+            </div>
+            {s.hasOffset && (
+              <div className="cf-wiz-input-field">
+                <label className="cf-wiz-input-label">Offset balance</label>
+                <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.offsetBalance).toLocaleString()}`} onChange={(e) => s.setOffsetBalance(e.target.value)} />
+              </div>
+            )}
+            <div className="cf-wiz-input-field">
+              <label className="cf-wiz-input-label">Extra repayments / month</label>
+              <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.extraRepayments).toLocaleString()}`} onChange={(e) => s.setExtraRepayments(e.target.value)} />
+            </div>
           </div>
-          <h2 className="cf-wizard-title">{meta.title}</h2>
-          <p className="cf-wizard-subtitle">{meta.subtitle}</p>
-        </div>
+        );
+      })()}
 
-        {/* Content */}
-        <div className="cf-wizard-content">
-          {step === "propertyUse" && (
-            <div className="cf-wizard-options">
-              <button
-                className={`cf-wizard-option ${s.propertyUse === "investment" ? "selected" : ""}`}
-                onClick={() => s.setPropertyUse("investment")}
-              >
-                <Building2 size={28} />
-                <span className="cf-wizard-option-title">Investment</span>
-                <span className="cf-wizard-option-desc">Rental property for income and growth</span>
-              </button>
-              <button
-                className={`cf-wizard-option ${s.propertyUse === "ppor" ? "selected" : ""}`}
-                onClick={() => s.setPropertyUse("ppor")}
-              >
-                <Home size={28} />
-                <span className="cf-wizard-option-title">Owner-Occupier</span>
-                <span className="cf-wizard-option-desc">Your primary place of residence</span>
-              </button>
+      {step === "costs" && (
+        <div className="cf-wiz-fields">
+          <div className="cf-wiz-input-row">
+            <div className="cf-wiz-input-field">
+              <label className="cf-wiz-input-label">Council rates (p.a.)</label>
+              <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.councilRates).toLocaleString()}`} onChange={(e) => s.setCouncilRates(e.target.value)} />
             </div>
-          )}
-
-          {step === "purchaseMode" && (
-            <div className="cf-wizard-options">
-              <button
-                className={`cf-wizard-option ${s.purchaseMode === "new" ? "selected" : ""}`}
-                onClick={() => s.setPurchaseMode("new")}
-              >
-                <Sparkles size={28} />
-                <span className="cf-wizard-option-title">New Purchase</span>
-                <span className="cf-wizard-option-desc">I&apos;m buying a new property</span>
-              </button>
-              <button
-                className={`cf-wizard-option ${s.purchaseMode === "existing" ? "selected" : ""}`}
-                onClick={() => s.setPurchaseMode("existing")}
-              >
-                <Building2 size={28} />
-                <span className="cf-wizard-option-title">Existing Property</span>
-                <span className="cf-wizard-option-desc">I already own this property</span>
-              </button>
+            <div className="cf-wiz-input-field">
+              <label className="cf-wiz-input-label">Water rates (p.a.)</label>
+              <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.waterRates).toLocaleString()}`} onChange={(e) => s.setWaterRates(e.target.value)} />
             </div>
-          )}
-
-          {step === "property" && (
-            <div className="cf-wizard-fields">
-              {s.isNewPurchase ? (
-                <>
-                  <div className="cf-wizard-field">
-                    <label className="cf-wizard-label">Purchase Price</label>
-                    <input
-                      type="text"
-                      className="cf-wizard-input"
-                      value={`$${parseCurrencyCf(s.purchasePrice).toLocaleString()}`}
-                      onChange={(e) => s.setPurchasePrice(e.target.value)}
-                    />
-                  </div>
-                  <div className="cf-wizard-field">
-                    <label className="cf-wizard-label">Deposit Amount</label>
-                    <input
-                      type="text"
-                      className="cf-wizard-input"
-                      value={`$${parseCurrencyCf(s.depositAmount).toLocaleString()}`}
-                      onChange={(e) => s.setDepositAmount(e.target.value)}
-                    />
-                  </div>
-                  <div className="cf-wizard-computed">
-                    <div className="cf-wizard-computed-item">
-                      <span className="cf-wizard-computed-label">Loan Amount</span>
-                      <span className="cf-wizard-computed-value">
-                        {formatCurrencyCf(parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount))}
-                      </span>
-                    </div>
-                    <div className="cf-wizard-computed-item">
-                      <span className="cf-wizard-computed-label">LVR</span>
-                      <span className="cf-wizard-computed-value">
-                        {((1 - parseCurrencyCf(s.depositAmount) / parseCurrencyCf(s.purchasePrice)) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="cf-wizard-field">
-                    <label className="cf-wizard-label">Current Value</label>
-                    <input
-                      type="text"
-                      className="cf-wizard-input"
-                      value={`$${parseCurrencyCf(s.currentValue).toLocaleString()}`}
-                      onChange={(e) => s.setCurrentValue(e.target.value)}
-                    />
-                  </div>
-                  <div className="cf-wizard-field">
-                    <label className="cf-wizard-label">Original Purchase Price</label>
-                    <input
-                      type="text"
-                      className="cf-wizard-input"
-                      value={`$${parseCurrencyCf(s.originalPurchasePrice).toLocaleString()}`}
-                      onChange={(e) => s.setOriginalPurchasePrice(e.target.value)}
-                    />
-                  </div>
-                  <div className="cf-wizard-field">
-                    <label className="cf-wizard-label">Current Loan Balance</label>
-                    <input
-                      type="text"
-                      className="cf-wizard-input"
-                      value={`$${parseCurrencyCf(s.currentLoanBalance).toLocaleString()}`}
-                      onChange={(e) => s.setCurrentLoanBalance(e.target.value)}
-                    />
-                  </div>
-                </>
-              )}
+          </div>
+          <div className="cf-wiz-input-row">
+            <div className="cf-wiz-input-field">
+              <label className="cf-wiz-input-label">Insurance (p.a.)</label>
+              <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.insurance).toLocaleString()}`} onChange={(e) => s.setInsurance(e.target.value)} />
             </div>
-          )}
-
-          {step === "loan" && (
-            <div className="cf-wizard-fields">
-              <div className="cf-wizard-field-row">
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">Interest Rate (%)</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={s.interestRate}
-                    onChange={(e) => s.setInterestRate(e.target.value)}
-                  />
-                </div>
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">Loan Term (years)</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={s.loanTerm}
-                    onChange={(e) => s.setLoanTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="cf-wizard-field">
-                <label className="cf-wizard-label">Loan Type</label>
-                <div className="cf-wizard-toggle-group">
-                  <button
-                    className={`cf-wizard-toggle ${s.loanType === "principal-interest" ? "active" : ""}`}
-                    onClick={() => s.setLoanType("principal-interest")}
-                  >
-                    Principal & Interest
-                  </button>
-                  <button
-                    className={`cf-wizard-toggle ${s.loanType === "interest-only" ? "active" : ""}`}
-                    onClick={() => s.setLoanType("interest-only")}
-                  >
-                    Interest Only
-                  </button>
-                </div>
-              </div>
-              {s.loanType === "interest-only" && (
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">IO Period (years)</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={s.ioPeriod}
-                    onChange={(e) => s.setIoPeriod(e.target.value)}
-                  />
-                </div>
-              )}
-              <div className="cf-wizard-checkbox-row">
-                <label className="cf-wizard-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={s.hasOffset}
-                    onChange={(e) => s.setHasOffset(e.target.checked)}
-                  />
-                  <span className="cf-wizard-checkbox-box" />
-                  Offset Account
-                </label>
-              </div>
-              {s.hasOffset && (
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">Offset Balance</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={`$${parseCurrencyCf(s.offsetBalance).toLocaleString()}`}
-                    onChange={(e) => s.setOffsetBalance(e.target.value)}
-                  />
-                </div>
-              )}
-              <div className="cf-wizard-field">
-                <label className="cf-wizard-label">Extra Repayments (monthly)</label>
-                <input
-                  type="text"
-                  className="cf-wizard-input"
-                  value={`$${parseCurrencyCf(s.extraRepayments).toLocaleString()}`}
-                  onChange={(e) => s.setExtraRepayments(e.target.value)}
-                />
-              </div>
+            <div className="cf-wiz-input-field">
+              <label className="cf-wiz-input-label">Maintenance (%)</label>
+              <input type="text" className="cf-wiz-input" value={s.maintenance} onChange={(e) => s.setMaintenance(e.target.value)} />
             </div>
-          )}
-
-          {step === "costs" && (
-            <div className="cf-wizard-fields">
-              <div className="cf-wizard-field-row">
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">Council Rates (p.a.)</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={`$${parseCurrencyCf(s.councilRates).toLocaleString()}`}
-                    onChange={(e) => s.setCouncilRates(e.target.value)}
-                  />
-                </div>
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">Water Rates (p.a.)</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={`$${parseCurrencyCf(s.waterRates).toLocaleString()}`}
-                    onChange={(e) => s.setWaterRates(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="cf-wizard-field-row">
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">Insurance (p.a.)</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={`$${parseCurrencyCf(s.insurance).toLocaleString()}`}
-                    onChange={(e) => s.setInsurance(e.target.value)}
-                  />
-                </div>
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">Maintenance (%)</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={s.maintenance}
-                    onChange={(e) => s.setMaintenance(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="cf-wizard-checkbox-row">
-                <label className="cf-wizard-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={s.hasStrata}
-                    onChange={(e) => s.setHasStrata(e.target.checked)}
-                  />
-                  <span className="cf-wizard-checkbox-box" />
-                  Strata / Body Corp
-                </label>
-              </div>
-              {s.hasStrata && (
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">Strata Fees (quarterly)</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={`$${parseCurrencyCf(s.strataFees).toLocaleString()}`}
-                    onChange={(e) => s.setStrataFees(e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {step === "rental" && (
-            <div className="cf-wizard-fields">
-              <div className="cf-wizard-field">
-                <label className="cf-wizard-label">Weekly Rent</label>
-                <input
-                  type="text"
-                  className="cf-wizard-input"
-                  value={`$${parseCurrencyCf(s.weeklyRent).toLocaleString()}`}
-                  onChange={(e) => s.setWeeklyRent(e.target.value)}
-                />
-              </div>
-              <div className="cf-wizard-field">
-                <label className="cf-wizard-label">Vacancy Rate (%)</label>
-                <input
-                  type="text"
-                  className="cf-wizard-input"
-                  value={s.vacancyRate}
-                  onChange={(e) => s.setVacancyRate(e.target.value)}
-                />
-              </div>
-              <div className="cf-wizard-checkbox-row">
-                <label className="cf-wizard-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={s.usePropertyManager}
-                    onChange={(e) => s.setUsePropertyManager(e.target.checked)}
-                  />
-                  <span className="cf-wizard-checkbox-box" />
-                  Property Manager
-                </label>
-              </div>
-              {s.usePropertyManager && (
-                <div className="cf-wizard-field">
-                  <label className="cf-wizard-label">Management Fee (%)</label>
-                  <input
-                    type="text"
-                    className="cf-wizard-input"
-                    value={s.managementFee}
-                    onChange={(e) => s.setManagementFee(e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {step === "tax" && (
-            <div className="cf-wizard-fields">
-              <div className="cf-wizard-field">
-                <label className="cf-wizard-label">Taxable Income (p.a.)</label>
-                <input
-                  type="text"
-                  className="cf-wizard-input"
-                  value={`$${parseCurrencyCf(s.taxableIncome).toLocaleString()}`}
-                  onChange={(e) => s.setTaxableIncome(e.target.value)}
-                />
-              </div>
-              <div className="cf-wizard-field">
-                <label className="cf-wizard-label">Depreciation (p.a.)</label>
-                <input
-                  type="text"
-                  className="cf-wizard-input"
-                  value={`$${parseCurrencyCf(s.depreciation).toLocaleString()}`}
-                  onChange={(e) => s.setDepreciation(e.target.value)}
-                />
-              </div>
-              <div className="cf-wizard-field">
-                <label className="cf-wizard-label">Capital Growth Assumption (%)</label>
-                <input
-                  type="text"
-                  className="cf-wizard-input"
-                  value={s.capitalGrowth}
-                  onChange={(e) => s.setCapitalGrowth(e.target.value)}
-                />
-              </div>
+          </div>
+          <div className="cf-wiz-checkbox-row">
+            <label className="cf-wiz-checkbox">
+              <input type="checkbox" checked={s.hasStrata} onChange={(e) => s.setHasStrata(e.target.checked)} />
+              <span className="cf-wiz-checkbox-box" />
+              Strata / Body corp
+            </label>
+          </div>
+          {s.hasStrata && (
+            <div className="cf-wiz-input-field">
+              <label className="cf-wiz-input-label">Strata fees (quarterly)</label>
+              <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.strataFees).toLocaleString()}`} onChange={(e) => s.setStrataFees(e.target.value)} />
             </div>
           )}
         </div>
+      )}
 
-        {/* Footer */}
-        <div className="cf-wizard-footer">
-          <button
-            className="cf-wizard-continue"
-            onClick={handleContinue}
-            disabled={
-              (step === "propertyUse" && !s.propertyUse) ||
-              (step === "purchaseMode" && !s.purchaseMode)
-            }
-          >
-            {step === "tax" || (!s.isInvestment && step === "costs") ? "Calculate" : "Continue"}
-            <ArrowRight size={18} />
-          </button>
+      {step === "rental" && (
+        <div className="cf-wiz-fields">
+          <div className="cf-wiz-input-field">
+            <label className="cf-wiz-input-label">Weekly rent</label>
+            <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.weeklyRent).toLocaleString()}`} onChange={(e) => s.setWeeklyRent(e.target.value)} />
+          </div>
+          <div className="cf-wiz-input-field">
+            <label className="cf-wiz-input-label">Vacancy rate (%)</label>
+            <input type="text" className="cf-wiz-input" value={s.vacancyRate} onChange={(e) => s.setVacancyRate(e.target.value)} />
+          </div>
+          <div className="cf-wiz-checkbox-row">
+            <label className="cf-wiz-checkbox">
+              <input type="checkbox" checked={s.usePropertyManager} onChange={(e) => s.setUsePropertyManager(e.target.checked)} />
+              <span className="cf-wiz-checkbox-box" />
+              Property manager
+            </label>
+          </div>
+          {s.usePropertyManager && (
+            <div className="cf-wiz-input-field">
+              <label className="cf-wiz-input-label">Management fee (%)</label>
+              <input type="text" className="cf-wiz-input" value={s.managementFee} onChange={(e) => s.setManagementFee(e.target.value)} />
+            </div>
+          )}
+        </div>
+      )}
+
+      {step === "tax" && (
+        <div className="cf-wiz-fields">
+          <div className="cf-wiz-input-field">
+            <label className="cf-wiz-input-label">Taxable income (p.a.)</label>
+            <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.taxableIncome).toLocaleString()}`} onChange={(e) => s.setTaxableIncome(e.target.value)} />
+          </div>
+          <div className="cf-wiz-input-field">
+            <label className="cf-wiz-input-label">Depreciation (p.a.)</label>
+            <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.depreciation).toLocaleString()}`} onChange={(e) => s.setDepreciation(e.target.value)} />
+          </div>
+          <div className="cf-wiz-input-field">
+            <label className="cf-wiz-input-label">Capital growth assumption (%)</label>
+            <input type="text" className="cf-wiz-input" value={s.capitalGrowth} onChange={(e) => s.setCapitalGrowth(e.target.value)} />
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  const footerContent = (
+    <div className="cf-wiz-footer">
+      {canGoBack && (
+        <button className="cf-wiz-back" onClick={onStepBack}>
+          {isModal ? <X size={16} /> : null}
+          {isModal ? "Cancel" : "Back"}
+        </button>
+      )}
+      <button className="cf-wiz-continue" onClick={handleContinue} disabled={step === "setup" && (!s.propertyUse || !s.purchaseMode)}>
+        {isModal ? "Save" : (step === "tax" || (!s.isInvestment && step === "costs") ? "Calculate" : "Continue")}
+        <ArrowRight size={16} />
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="cf-wiz-container">
+      <div className="cf-wiz-wrap">
+        {/* Breadcrumb progress indicator */}
+        <div className="cf-wiz-breadcrumb">
+          <span className="cf-wiz-breadcrumb-step">Step {currentStepIndex + 1} of {stepOrder.length}</span>
+          <span className="cf-wiz-breadcrumb-divider">·</span>
+          <span className="cf-wiz-breadcrumb-title">{meta.title}</span>
+        </div>
+
+        {/* Card */}
+        <div className={`cf-wiz-card ${step === "setup" ? "cf-wiz-card--centered" : ""}`}>
+          <div className="cf-wiz-header">
+            <h2 className="cf-wiz-title">{meta.title}</h2>
+            <p className="cf-wiz-subtitle">{meta.subtitle}</p>
+          </div>
+          <div className="cf-wiz-content">{fieldsContent}</div>
+          {footerContent}
         </div>
       </div>
     </div>
   );
 }
-
