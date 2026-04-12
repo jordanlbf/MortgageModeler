@@ -716,6 +716,191 @@
   /* Last section in aggregates card — no bottom border */
 }
 
+/* ============================================================================
+   FEY LAYOUT — Hero on background, chart + side card, tabs below
+   ============================================================================ */
+
+/* Hero number — sits directly on background */
+.cf-hero-area {
+  padding: 0 0 16px;
+}
+
+.cf-hero-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cf-hero-value {
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-feature-settings: "tnum";
+  line-height: 1.1;
+}
+
+.cf-hero-change {
+  font-size: 14px;
+  font-weight: 600;
+  font-feature-settings: "tnum";
+}
+
+.cf-hero-year {
+  font-size: 12px;
+  color: rgba(161, 161, 170, 0.35);
+}
+
+.cf-hero-sub {
+  font-size: 12px;
+  color: rgba(161, 161, 170, 0.3);
+  margin-top: 6px;
+}
+
+/* Chart + side card — side by side on background */
+.cf-chart-row {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+  margin-top: 36px;
+}
+
+.cf-chart-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.cf-chart-side-card {
+  width: 280px;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Side card content area */
+.cf-side-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+}
+
+.cf-side-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.06);
+}
+
+.cf-side-field:last-child {
+  border-bottom: none;
+}
+
+.cf-side-label {
+  font-size: 11px;
+  color: rgba(161, 161, 170, 0.45);
+  letter-spacing: 0.01em;
+}
+
+.cf-side-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cf-text);
+  font-feature-settings: "tnum";
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.cf-side-value:hover {
+  background: rgba(45, 212, 191, 0.08);
+  color: var(--cf-accent);
+}
+
+.cf-side-value-muted {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(161, 161, 170, 0.4);
+  font-feature-settings: "tnum";
+}
+
+/* Side card tabs */
+.cf-side-tabs {
+  display: flex;
+  border-top: 1px solid rgba(113, 113, 122, 0.08);
+  padding: 0;
+}
+
+.cf-side-tab {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  color: rgba(161, 161, 170, 0.3);
+  font-size: 10px;
+  font-weight: 500;
+  font-family: var(--font-sans, 'Sora', sans-serif);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.cf-side-tab:hover {
+  color: rgba(161, 161, 170, 0.5);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cf-side-tab.active {
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.06);
+}
+
+.cf-side-tab + .cf-side-tab {
+  border-left: 1px solid rgba(113, 113, 122, 0.06);
+}
+
+/* View mode tabs — below chart area, on background */
+.cf-mode-tabs-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.cf-mode-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(161, 161, 170, 0.3);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans, 'Sora', sans-serif);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cf-mode-tab:hover {
+  color: rgba(161, 161, 170, 0.5);
+}
+
+.cf-mode-tab.active {
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--cf-accent);
+}
+
+.cf-mode-tab svg {
+  opacity: 0.6;
+}
+
 .cf-table-zone {
   /* Table fills its card naturally — no scroll constraint */
 }
@@ -1545,6 +1730,24 @@
   }
 
   .cf-mode-bar {
+    overflow-x: auto;
+  }
+
+  /* Fey layout responsive */
+  .cf-hero-value {
+    font-size: 32px;
+  }
+
+  .cf-chart-row {
+    flex-direction: column;
+  }
+
+  .cf-chart-side-card {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .cf-mode-tabs-row {
     overflow-x: auto;
   }
 
