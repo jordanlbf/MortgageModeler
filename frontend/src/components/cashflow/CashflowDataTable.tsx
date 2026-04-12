@@ -29,7 +29,7 @@ export default function CashflowDataTable({
     const cal = baseYear + index;
     return (
       <span className="cft-year-cell cft-year-b">
-        <span className="cft-year-b-yr">Year {year}</span>
+        <span className="cft-year-b-yr">Year {year < 10 ? `\u00A0${year}` : year}</span>
         <span className="cft-year-b-dot">·</span>
         <span className="cft-year-b-cal">{cal}</span>
       </span>
@@ -65,7 +65,7 @@ export default function CashflowDataTable({
     <div className="cft-wrap">
       {/* SUMMARY TABLE */}
       {viewMode === "summary" && (
-        <table className="cft-table">
+        <table className="cft-table cft-table-wide">
           <thead>
             {/* Group headers */}
             <tr className="cft-group-row">
@@ -129,7 +129,7 @@ export default function CashflowDataTable({
 
       {/* PROPERTY TABLE — Gearing panel */}
       {viewMode === "property" && isInvestment && propertyPanel === "gearing" && (
-        <table className="cft-table">
+        <table className="cft-table cft-table-narrow">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell" colSpan={2} />
@@ -167,7 +167,7 @@ export default function CashflowDataTable({
 
       {/* PROPERTY TABLE — Cashflow panel */}
       {viewMode === "property" && isInvestment && propertyPanel === "cashflow" && (
-        <table className="cft-table">
+        <table className="cft-table cft-table-narrow">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell cft-group-label cft-group-net" colSpan={4}>cashflow</th>
@@ -203,7 +203,7 @@ export default function CashflowDataTable({
 
       {/* PROPERTY TABLE — PPOR */}
       {viewMode === "property" && !isInvestment && (
-        <table className="cft-table">
+        <table className="cft-table cft-table-mid">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell" colSpan={2} />
@@ -246,7 +246,7 @@ export default function CashflowDataTable({
 
       {/* EQUITY — Property panel */}
       {viewMode === "equity" && equityPanel === "property" && (
-        <table className="cft-table">
+        <table className="cft-table cft-table-mid">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell" colSpan={2} />
@@ -294,7 +294,7 @@ export default function CashflowDataTable({
 
       {/* EQUITY — Position panel */}
       {viewMode === "equity" && equityPanel === "position" && (
-        <table className="cft-table">
+        <table className="cft-table cft-table-mid">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell cft-group-label cft-group-position" colSpan={showOffset ? 7 : 6}>position</th>
@@ -324,7 +324,7 @@ export default function CashflowDataTable({
                   <td className={`cft-td ${getLvrClass(lvr)}`} style={{ fontWeight: 700 }}>{lvr.toFixed(1)}%</td>
                   <td className="cft-td-divider" />
                   {showOffset && <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.offsetBalanceAtYear))}</td>}
-                  <td className="cft-td cft-td-result cft-val-result">
+                  <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-text)" }}>
                     {formatCurrencyCf(Math.round(y.netEquity))}
                   </td>
                 </tr>
@@ -336,7 +336,7 @@ export default function CashflowDataTable({
 
       {/* DEDUCTIONS TABLE */}
       {viewMode === "deductions" && (
-        <table className="cft-table">
+        <table className="cft-table cft-table-wide">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell" colSpan={2} />
@@ -394,7 +394,7 @@ export default function CashflowDataTable({
                     </>
                   )}
                   <td className="cft-td-divider" />
-                  <td className="cft-td cft-td-result cft-val-result">
+                  <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-text)" }}>
                     {formatCurrencyCf(Math.round(grandTotal))}
                   </td>
                 </tr>

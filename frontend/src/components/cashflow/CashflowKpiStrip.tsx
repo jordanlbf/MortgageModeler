@@ -131,30 +131,26 @@ export default function CashflowKpiStrip({
       ] : []),
     ];
   } else if (viewMode === "deductions" && sy) {
+    const holdingCosts = isInvestment ? sy.interestPortion + sy.ongoingCosts : sy.ongoingCosts;
+    const depTotal = sy.depDiv43 + sy.depDiv40;
     items = [
+      {
+        label: "Holding Costs",
+        value: formatCurrencyCf(Math.round(holdingCosts)),
+        color: "var(--cf-text)",
+        sub: "",
+      },
+      ...(isInvestment ? [{
+        label: "Total Depreciation",
+        value: formatCurrencyCf(Math.round(depTotal)),
+        color: "var(--cf-text)",
+        sub: "",
+      }] : []),
       {
         label: isInvestment ? "Total Deductions" : "Total Expenses",
         value: formatCurrencyCf(Math.round(isInvestment ? sy.totalDeductions : sy.ongoingCosts)),
-        color: "#a78bfa",
-        sub: `Year ${selectedYear} · Tax-deductible`,
-      },
-      {
-        label: isInvestment ? "Holding Costs" : "Annual Expenses",
-        value: formatCurrencyCf(Math.round(isInvestment ? sy.interestPortion + sy.ongoingCosts : sy.ongoingCosts)),
-        color: "#f59e0b",
-        sub: isInvestment ? "Interest + ongoing" : "Rates + insurance + maint.",
-      },
-      {
-        label: "Tax Saved",
-        value: `${sy.taxSaved > 0 ? "+" : ""}${formatCurrencyCf(Math.round(sy.taxSaved))}`,
-        color: "var(--cf-positive)",
-        sub: `Year ${selectedYear}`,
-      },
-      {
-        label: "Effective Rate",
-        value: `${Math.round(marginalRate * 100)}%`,
         color: "var(--cf-text)",
-        sub: "Marginal tax rate",
+        sub: "",
       },
     ];
   }

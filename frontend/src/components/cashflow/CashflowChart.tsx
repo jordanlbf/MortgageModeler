@@ -67,12 +67,15 @@ export default function CashflowChart({
     insurance: y.insurance,
     maintenance: y.maintenance,
     strataFees: y.strataFees,
+    holdingCosts: y.interestPortion + y.ongoingCosts,
+    depTotal: y.depDiv43 + y.depDiv40,
   }));
 
   // Colours per mode
-  const barColor = viewMode === "deductions" ? "#a78bfa" : viewMode === "equity" ? "#2dd4bf" : "#4ade80";
-  const barColorDark = viewMode === "deductions" ? "#7c3aed" : "#0d9488";
-  const barColorSelected = viewMode === "deductions" ? "#c4b5fd" : "#5eead4";
+  const isCashflow = viewMode === "summary" || viewMode === "property";
+  const barColor = isCashflow ? "#4ade80" : "#2dd4bf";
+  const barColorDark = isCashflow ? "#16a34a" : "#0d9488";
+  const barColorSelected = isCashflow ? "#86efac" : "#5eead4";
 
   const formatYAxis = (value: number) => {
     const abs = Math.abs(value);
@@ -204,7 +207,8 @@ export default function CashflowChart({
               <Area type="monotone" dataKey="loanBalance" stroke="#ef4444" strokeWidth={2} fill="url(#loanGradient)" />
               <ReferenceLine x={`Yr ${selectedYear}`} stroke="#2dd4bf" strokeDasharray="3 3" strokeOpacity={0.5} />
             </ComposedChart>
-          ) : (
+          ) : viewMode === "deductions" ? (
+            /* Deductions compare: Holding Costs (amber) vs Depreciation (purple) */
             <ComposedChart
               data={rechartsData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
@@ -214,12 +218,39 @@ export default function CashflowChart({
             >
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} interval={4} />
               <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} width={60} />
-
+              <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
+              <Bar dataKey="holdingCosts" radius={[4, 4, 0, 0]}
+                onMouseEnter={(data) => { if (data?.year) onHoverYear(data.year); }}
+                onMouseLeave={() => onHoverYear(null)}
+              >
+                {rechartsData.map((entry) => (
+                  <Cell key={entry.year} fill={entry.year === selectedYear ? "#fcd34d" : entry.year === hoveredYear ? "#fcd34d" : "#f59e0b"} opacity={entry.year === selectedYear ? 1 : entry.year === hoveredYear ? 0.85 : 0.6} />
+                ))}
+              </Bar>
+              <Bar dataKey="depTotal" radius={[4, 4, 0, 0]}
+                onMouseEnter={(data) => { if (data?.year) onHoverYear(data.year); }}
+                onMouseLeave={() => onHoverYear(null)}
+              >
+                {rechartsData.map((entry) => (
+                  <Cell key={entry.year} fill={entry.year === selectedYear ? "#c4b5fd" : entry.year === hoveredYear ? "#c4b5fd" : "#a78bfa"} opacity={entry.year === selectedYear ? 1 : entry.year === hoveredYear ? 0.85 : 0.5} />
+                ))}
+              </Bar>
+              <ReferenceLine x={`Yr ${selectedYear}`} stroke="#2dd4bf" strokeDasharray="3 3" strokeOpacity={0.5} />
+            </ComposedChart>
+          ) : (
+            /* Equity compare: Net Equity (teal) vs Loan Balance (red) */
+            <ComposedChart
+              data={rechartsData}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              onMouseMove={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onHoverYear(rechartsData[idx].year); }}
+              onMouseLeave={() => onHoverYear(null)}
+              onClick={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onSelectYear(rechartsData[idx].year); }}
+            >
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} interval={4} />
+              <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} width={60} />
               <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Bar dataKey="netEquity" radius={[4, 4, 0, 0]} opacity={0.8}
-                onMouseEnter={(data) => {
-                  if (data?.year) onHoverYear(data.year);
-                }}
+                onMouseEnter={(data) => { if (data?.year) onHoverYear(data.year); }}
                 onMouseLeave={() => onHoverYear(null)}
               >
                 {rechartsData.map((entry) => (
@@ -227,9 +258,7 @@ export default function CashflowChart({
                 ))}
               </Bar>
               <Bar dataKey="loanBalance" radius={[4, 4, 0, 0]} opacity={0.5}
-                onMouseEnter={(data) => {
-                  if (data?.year) onHoverYear(data.year);
-                }}
+                onMouseEnter={(data) => { if (data?.year) onHoverYear(data.year); }}
                 onMouseLeave={() => onHoverYear(null)}
               >
                 {rechartsData.map((entry) => (

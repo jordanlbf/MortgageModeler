@@ -173,20 +173,20 @@ export default function CashflowCalculator() {
               <div className="cf-chart-main">
                 {/* Year overlay — positioned at top-right of chart-main, aligned with hero */}
                 <div className="cf-year-overlay-positioned">
-                  <span className="cf-year-overlay-yr" style={{ color: hero.color }}>Year {displayYear}</span>
+                  <span className="cf-year-overlay-yr" style={{ color: "var(--cf-accent)" }}>Year {displayYear}</span>
                   <span className="cf-year-overlay-cal">{calendarYear}</span>
                 </div>
 
                 {/* Chart view toggles */}
                 <div className="cf-hero-area">
                   <div className="cf-mode-toggles">
-                    {(vm === "equity" ? chartViewOptions : [chartViewOptions[0]]).map((view) => {
+                    {(vm === "equity" ? chartViewOptions : vm === "deductions" ? [chartViewOptions[0], chartViewOptions[2]] : [chartViewOptions[0]]).map((view) => {
                       const Icon = view.icon;
                       return (
                         <button
                           key={view.id}
                           onClick={() => setChartView(view.id)}
-                          className={`cf-mode-toggle ${(vm === "equity" ? chartView : "bars") === view.id ? "active" : ""}`}
+                          className={`cf-mode-toggle ${((vm === "equity" || vm === "deductions") ? chartView : "bars") === view.id ? "active" : ""}`}
                         >
                           <Icon size={14} />
                           {view.label}
@@ -204,7 +204,7 @@ export default function CashflowCalculator() {
                     selectedYear={s.selectedYear}
                     hoveredYear={hoveredYear}
                     isInvestment={s.isInvestment}
-                    chartView={vm === "equity" ? chartView : "bars"}
+                    chartView={(vm === "equity" || vm === "deductions") ? chartView : "bars"}
                     onSelectYear={s.setSelectedYear}
                     onHoverYear={setHoveredYear}
                 />
