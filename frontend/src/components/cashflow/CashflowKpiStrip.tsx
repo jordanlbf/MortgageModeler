@@ -17,11 +17,12 @@ interface Props {
   selectedYear: number;
   isInvestment: boolean;
   marginalRate: number;
+  isHovered?: boolean;
 }
 
 export default function CashflowKpiStrip({
   viewMode, yearData, selectedYearData: sy,
-  selectedYear, isInvestment, marginalRate,
+  selectedYear, isInvestment, marginalRate, isHovered,
 }: Props) {
   const y1 = yearData[0];
   let items: KpiItem[] = [];
@@ -141,8 +142,11 @@ export default function CashflowKpiStrip({
     ];
   }
 
+  const baseYear = new Date().getFullYear();
+  const calendarYear = baseYear + selectedYear - 1;
+
   return (
-    <div className="cf-kpi-strip">
+    <div className={`cf-kpi-strip ${isHovered ? "cf-kpi-strip--hover" : ""}`}>
       {items.map((item, i) => (
         <div key={i} className="cf-kpi-cell">
           <div className="cf-kpi-label">{item.label}</div>

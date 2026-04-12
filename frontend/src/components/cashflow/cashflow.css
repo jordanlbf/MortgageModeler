@@ -5,19 +5,19 @@
 /* CSS Variables — Graphite Teal design system */
 :root {
   --cf-bg: var(--color-background, #111215);
-  --cf-card: var(--color-card, rgba(42,42,46,0.72));
-  --cf-card-elevated: var(--color-card-elevated, rgba(44,44,48,0.82));
-  --cf-border: var(--color-border, rgba(113,113,122,0.08));
-  --cf-border-hover: var(--color-border-hover, rgba(113,113,122,0.15));
+  --cf-card: var(--color-card, rgba(42, 42, 46, 0.72));
+  --cf-card-elevated: var(--color-card-elevated, rgba(44, 44, 48, 0.82));
+  --cf-border: var(--color-border, rgba(113, 113, 122, 0.08));
+  --cf-border-hover: var(--color-border-hover, rgba(113, 113, 122, 0.15));
   --cf-text: var(--color-foreground, #f0fdfa);
   --cf-text-muted: var(--color-subtle, #a1a1aa);
   --cf-text-dim: var(--color-faint, #71717a);
   --cf-white: var(--color-muted, #f4f4f5);
   --cf-accent: var(--color-accent, #2dd4bf);
   --cf-accent-contrast: var(--color-accent-contrast, #18181b);
-  --cf-accent-border: var(--color-accent-border, rgba(45,212,191,0.35));
-  --cf-input-bg: var(--color-control, rgba(24,24,27,0.60));
-  --cf-hover: var(--color-border-hover, rgba(113,113,122,0.15));
+  --cf-accent-border: var(--color-accent-border, rgba(45, 212, 191, 0.35));
+  --cf-input-bg: var(--color-control, rgba(24, 24, 27, 0.60));
+  --cf-hover: var(--color-border-hover, rgba(113, 113, 122, 0.15));
   --cf-surface-subtle: rgba(255, 255, 255, 0.02);
   --cf-negative: #f87171;
   --cf-positive: #4ade80;
@@ -76,11 +76,11 @@
   gap: 24px;
 }
 
-/* ── Fey outer card — single encapsulating surface ── */
+/* ── Fey outer card — subtle, minimal surface ── */
 .cf-outer-card {
-  background: rgba(24, 24, 27, 0.45);
-  border: 1px solid var(--cf-border-hover);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(113, 113, 122, 0.08);
+  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -111,7 +111,7 @@
   border-right: 1px solid var(--cf-border);
   background: var(--cf-bg);
   flex-shrink: 0;
-}
+} p
 
 .cf-sidebar-inner {
   padding: 8px 0 32px;
@@ -438,9 +438,9 @@
 }
 
 .cf-mode-btn.active {
-  background: rgba(45,212,191,0.08);
+  background: rgba(45, 212, 191, 0.08);
   color: var(--cf-accent);
-  border: 1px solid rgba(45,212,191,0.18);
+  border: 1px solid rgba(45, 212, 191, 0.18);
   border-radius: 6px;
 }
 
@@ -460,15 +460,171 @@
    CHART SECTION
    ============================================================================ */
 
-/* Chart wrapper — full width */
+/* Chart wrapper — bleeds left so Y-axis aligns with KPI strip left edge (24px).
+   Section has 0 left padding, Y-axis is 50px wide, so shift left by 26px. */
 .cf-chart-wrapper {
-  width: 100%;
-  margin-bottom: 8px;
+  position: relative;
+  width: calc(100% + 26px);
+  margin-left: -26px;
+  height: 238px;
+  outline: none;
+  border: none;
 }
 
-.cf-chart-wrapper > div {
+/* Year overlay picker */
+.cf-year-overlay-picker {
+  display: flex;
+  gap: 2px;
+}
+
+.cf-year-overlay-picker-btn {
+  font-size: 8px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid rgba(113, 113, 122, 0.15);
+  background: transparent;
+  color: rgba(113, 113, 122, 0.4);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  line-height: 1.4;
+}
+
+.cf-year-overlay-picker-btn.active {
+  border-color: rgba(45, 212, 191, 0.35);
+  background: rgba(45, 212, 191, 0.08);
+  color: var(--cf-accent);
+}
+
+/* Variant A — Large stacked: "Yr 1" big + "2026" below */
+.cf-year-overlay-a {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+}
+
+.cf-year-overlay-a-num {
+  font-size: 28px;
+  font-weight: 600;
+  color: rgba(250, 250, 250, 0.12);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.cf-year-overlay-a-cal {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(113, 113, 122, 0.35);
+  line-height: 1.2;
+}
+
+/* Variant B — Compact inline badge: "Year 1 · 2026" */
+.cf-year-overlay-b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(24, 24, 27, 0.6);
+  border: 1px solid rgba(63, 63, 70, 0.3);
+  border-radius: 8px;
+}
+
+.cf-year-overlay-b-yr {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(250, 250, 250, 0.85);
+}
+
+.cf-year-overlay-b-dot {
+  font-size: 10px;
+  color: rgba(113, 113, 122, 0.3);
+}
+
+.cf-year-overlay-b-cal {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.55);
+}
+
+/* Variant C — Loan year primary (large, colored) stacked: "Yr 1" big + "2026" small */
+.cf-year-overlay-c {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+}
+
+.cf-year-overlay-c-yr {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.cf-year-overlay-c-cal {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.5);
+  line-height: 1.2;
+}
+
+/* Variant D — Minimal large number only */
+.cf-year-overlay-d {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.cf-year-overlay-d-num {
+  font-size: 32px;
+  font-weight: 700;
+  color: rgba(250, 250, 250, 0.08);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.cf-year-overlay-d-label {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.25);
+  text-transform: lowercase;
+}
+
+.cf-chart-wrapper:focus,
+.cf-chart-wrapper:focus-visible,
+.cf-chart-wrapper:focus-within {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.cf-chart-wrapper>div {
   width: 100%;
-  max-width: 100%;
+  height: 100%;
+  outline: none;
+  border: none;
+}
+
+.cf-chart-wrapper>div:focus,
+.cf-chart-wrapper>div:focus-visible,
+.cf-chart-wrapper>div:focus-within {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.cf-chart-wrapper svg {
+  outline: none;
+  border: none;
+}
+
+.cf-chart-wrapper svg:focus,
+.cf-chart-wrapper svg:focus-visible {
+  outline: none;
+  border: none;
+  box-shadow: none;
 }
 
 .cf-chart-section {
@@ -488,22 +644,25 @@
   padding: 10px 16px;
 }
 
-.cf-chart-sub-tabs {
+/* ═══════════════════════════════════════════════════════════
+   MODE TOGGLES — Growth / Breakdown / Compare (Equity view)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Base toggle button style — underline tabs */
+.cf-mode-toggles {
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 8px;
-  background: rgba(42,42,46,0.30);
-  border: 1px solid rgba(113,113,122,0.15);
+  gap: 0;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.12);
 }
 
-.cf-chart-sub-tab {
+.cf-mode-toggle {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 12px;
-  border: 1px solid transparent;
-  border-radius: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
@@ -513,14 +672,30 @@
   transition: all 0.15s;
 }
 
-.cf-chart-sub-tab:hover {
+.cf-mode-toggle:hover {
   color: var(--cf-text-muted);
 }
 
-.cf-chart-sub-tab.active {
-  background: rgba(45,212,191,0.12);
+.cf-mode-toggle.active {
   color: var(--cf-accent);
-  border-color: rgba(45,212,191,0.2);
+  border-bottom-color: var(--cf-accent);
+}
+
+/* Final position: bottom-right with mode tabs */
+.cf-mode-toggles--final {
+  margin-left: auto;
+  border-bottom: none;
+  padding: 0;
+  background: none;
+}
+
+.cf-mode-toggles--final .cf-mode-toggle {
+  border-bottom: 2px solid transparent;
+  margin-bottom: 0;
+}
+
+.cf-mode-toggles--final .cf-mode-toggle.active {
+  border-bottom-color: var(--cf-accent);
 }
 
 .cf-play-btn {
@@ -528,13 +703,13 @@
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border: 1px solid rgba(113,113,122,0.15);
+  border: 1px solid rgba(113, 113, 122, 0.15);
   border-radius: 8px;
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  background: rgba(42,42,46,0.30);
+  background: rgba(42, 42, 46, 0.30);
   color: var(--cf-text-dim);
   transition: all 0.15s;
 }
@@ -545,88 +720,12 @@
 }
 
 .cf-play-btn.cf-play-active {
-  background: rgba(45,212,191,0.15);
-  border-color: rgba(45,212,191,0.25);
+  background: rgba(45, 212, 191, 0.15);
+  border-color: rgba(45, 212, 191, 0.25);
   color: var(--cf-accent);
 }
 
-/* Timeline slider */
-.cf-timeline {
-  padding: 8px 18px 0 68px;
-}
 
-.cf-timeline-track {
-  position: relative;
-  padding: 6px 0;
-}
-
-.cf-timeline-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 8px;
-  border-radius: 9999px;
-  background: rgba(113,113,122,0.2);
-  outline: none;
-  cursor: pointer;
-}
-
-.cf-timeline-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--cf-accent);
-  border: 2px solid var(--cf-bg);
-  box-shadow: 0 0 0 2px rgba(45,212,191,0.3);
-  cursor: pointer;
-  transition: box-shadow 0.15s;
-}
-
-.cf-timeline-slider::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 0 4px rgba(45,212,191,0.2);
-}
-
-.cf-timeline-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--cf-accent);
-  border: 2px solid var(--cf-bg);
-  cursor: pointer;
-}
-
-.cf-timeline-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--cf-text-dim);
-  margin-top: 4px;
-}
-
-.cf-timeline-legend {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  font-size: 11px;
-  color: var(--cf-text-dim);
-  margin-top: 10px;
-}
-
-.cf-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cf-legend-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-  background: var(--cf-accent);
-}
 
 .cf-chart-inline-title {
   text-align: center;
@@ -665,47 +764,92 @@
 }
 
 /* ============================================================================
-   KPI STRIP — Fey border-divided cells
+   KPI STRIP — Fey minimal horizontal metrics
    ============================================================================ */
 
 .cf-kpi-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border-bottom: 1px solid var(--cf-border);
+  display: flex;
+  padding: 0;
 }
 
 .cf-kpi-cell {
-  padding: 16px 20px;
-  border-right: 1px solid var(--cf-border);
+  flex: 1;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 4px;
+  text-align: center;
+  position: relative;
 }
 
-.cf-kpi-cell:last-child {
-  border-right: none;
+.cf-kpi-cell+.cf-kpi-cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 1px;
+  background: rgba(113, 113, 122, 0.08);
 }
 
 .cf-kpi-label {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--cf-text-dim);
+  color: rgba(161, 161, 170, 0.4);
 }
 
 .cf-kpi-value {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-  line-height: 1.3;
+  line-height: 1.2;
+  color: var(--cf-text);
 }
 
 .cf-kpi-sub {
   font-size: 10px;
-  color: var(--cf-text-dim);
-  margin-top: 1px;
+  color: rgba(161, 161, 170, 0.35);
+}
+
+/* Selected year indicator in KPI strip */
+.cf-kpi-year-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px;
+  gap: 4px;
+  border-right: 1px solid rgba(113, 113, 122, 0.08);
+  min-width: 80px;
+}
+
+.cf-kpi-year-badge {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.1);
+  padding: 4px 12px;
+  border-radius: 6px;
+  letter-spacing: -0.01em;
+}
+
+.cf-kpi-year-cal {
+  font-size: 11px;
+  color: rgba(161, 161, 170, 0.4);
+  font-weight: 500;
+}
+
+/* KPI strip hover state — subtle indicator that values are temporary */
+.cf-kpi-strip--hover .cf-kpi-value {
+  transition: opacity 0.15s ease;
+}
+
+.cf-kpi-year-indicator--hover .cf-kpi-year-badge {
+  background: rgba(45, 212, 191, 0.06);
+  color: rgba(45, 212, 191, 0.7);
 }
 
 /* ============================================================================
@@ -717,72 +861,110 @@
 }
 
 /* ============================================================================
-   FEY LAYOUT — Hero on background, chart + side card, tabs below
+   FEY LAYOUT — Clean, minimal hero + chart layout
    ============================================================================ */
 
-/* Hero number — sits directly on background */
+/* Hero number — Fey-inspired compact inline */
 .cf-hero-area {
-  padding: 0 0 16px;
+  padding: 10px 0 20px;
 }
 
+/* Hero row */
 .cf-hero-row {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+/* Year overlay — positioned absolutely at top-right of chart-main, aligned with hero */
+.cf-year-overlay-positioned {
+  position: absolute;
+  top: 10px;
+  right: 24px;
+  z-index: 20;
+  pointer-events: none;
 }
 
 .cf-hero-value {
-  font-size: 44px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  font-feature-settings: "tnum";
-  line-height: 1.1;
-}
-
-.cf-hero-change {
-  font-size: 14px;
+  font-size: 22px;
   font-weight: 600;
+  letter-spacing: -0.01em;
+  font-feature-settings: "tnum";
+  line-height: 1;
+  color: rgba(250, 250, 250, 0.95);
+}
+
+.cf-hero-label {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.6);
+}
+
+.cf-hero-monthly {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cf-positive);
   font-feature-settings: "tnum";
 }
 
-.cf-hero-year {
-  font-size: 12px;
-  color: rgba(161, 161, 170, 0.35);
+.cf-hero-context {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.5);
 }
 
 .cf-hero-sub {
   font-size: 12px;
-  color: rgba(161, 161, 170, 0.3);
-  margin-top: 6px;
+  color: rgba(161, 161, 170, 0.25);
+  margin-top: 8px;
 }
 
-/* Chart + side card — side by side on background */
+/* Chart + side card layout — Fey ratio: 67% chart / 33% inputs card */
 .cf-chart-row {
   display: flex;
   gap: 20px;
   align-items: stretch;
-  margin-top: 36px;
 }
 
 .cf-chart-main {
-  flex: 1;
+  position: relative;
+  flex: 2;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Inputs card — grows to match chart-main height (includes tabs) */
 .cf-chart-side-card {
-  width: 280px;
-  min-width: 280px;
+  flex: 0 0 364px;
+  width: 364px;
   display: flex;
   flex-direction: column;
   padding: 0;
   overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  border-left: 1px solid rgba(113, 113, 122, 0.1);
 }
 
-/* Side card content area */
+
+
+.cf-side-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.cf-side-header-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(161, 161, 170, 0.7);
+  letter-spacing: 0.02em;
+}
+
+/* Side card content area — fills available space */
 .cf-side-content {
   flex: 1;
-  padding: 20px;
+  padding: 8px 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -793,8 +975,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(113, 113, 122, 0.06);
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
 }
 
 .cf-side-field:last-child {
@@ -802,85 +984,212 @@
 }
 
 .cf-side-label {
-  font-size: 11px;
-  color: rgba(161, 161, 170, 0.45);
-  letter-spacing: 0.01em;
+  font-size: 12px;
+  color: rgba(161, 161, 170, 0.55);
 }
 
 .cf-side-value {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--cf-text);
+  color: rgba(250, 250, 250, 0.95);
   font-feature-settings: "tnum";
   cursor: pointer;
-  padding: 2px 8px;
-  border-radius: 4px;
-  transition: background 0.15s;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
 }
 
 .cf-side-value:hover {
-  background: rgba(45, 212, 191, 0.08);
+  background: rgba(45, 212, 191, 0.15);
   color: var(--cf-accent);
 }
 
 .cf-side-value-muted {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  color: rgba(161, 161, 170, 0.4);
+  color: rgba(161, 161, 170, 0.45);
   font-feature-settings: "tnum";
 }
 
-/* Side card tabs */
+/* Side card tabs — Fey style */
 .cf-side-tabs {
   display: flex;
-  border-top: 1px solid rgba(113, 113, 122, 0.08);
-  padding: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.3);
+  padding: 6px 8px;
+  gap: 2px;
 }
 
 .cf-side-tab {
   flex: 1;
-  padding: 10px 0;
+  padding: 8px 0;
   border: none;
+  border-radius: 6px;
   background: transparent;
-  color: rgba(161, 161, 170, 0.3);
-  font-size: 10px;
+  color: rgba(161, 161, 170, 0.35);
+  font-size: 11px;
   font-weight: 500;
   font-family: var(--font-sans, 'Sora', sans-serif);
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
-  letter-spacing: 0.02em;
 }
 
 .cf-side-tab:hover {
-  color: rgba(161, 161, 170, 0.5);
+  color: rgba(161, 161, 170, 0.55);
   background: rgba(255, 255, 255, 0.02);
 }
 
 .cf-side-tab.active {
+  color: var(--cf-text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INPUTS CARD — Expand button and full-screen overlay
+   ═══════════════════════════════════════════════════════════ */
+
+/* Expand button in header */
+.cf-side-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(161, 161, 170, 0.5);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cf-side-expand-btn:hover {
+  background: rgba(45, 212, 191, 0.15);
   color: var(--cf-accent);
-  background: rgba(45, 212, 191, 0.06);
 }
 
-.cf-side-tab + .cf-side-tab {
-  border-left: 1px solid rgba(113, 113, 122, 0.06);
+.cf-side-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* View mode tabs — below chart area, on background */
+/* Full-screen inputs overlay */
+.cf-inputs-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(9, 9, 11, 0.97);
+  display: flex;
+  flex-direction: column;
+  animation: cf-overlay-fade-in 0.2s ease-out;
+}
+
+@keyframes cf-overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.cf-inputs-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.1);
+}
+
+.cf-inputs-overlay-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(250, 250, 250, 0.95);
+}
+
+.cf-inputs-overlay-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(113, 113, 122, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(161, 161, 170, 0.6);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cf-inputs-overlay-close:hover {
+  border-color: rgba(45, 212, 191, 0.3);
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--cf-accent);
+}
+
+.cf-inputs-overlay-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.cf-inputs-overlay-placeholder {
+  text-align: center;
+  max-width: 400px;
+}
+
+.cf-inputs-overlay-placeholder p {
+  color: rgba(161, 161, 170, 0.6);
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+
+.cf-inputs-overlay-hint {
+  font-size: 13px !important;
+  color: rgba(161, 161, 170, 0.4) !important;
+  margin-bottom: 24px !important;
+}
+
+.cf-inputs-overlay-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: 8px;
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--cf-accent);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cf-inputs-overlay-back:hover {
+  background: rgba(45, 212, 191, 0.2);
+  border-color: rgba(45, 212, 191, 0.5);
+}
+
+/* View mode tabs — Fey pill style */
 .cf-mode-tabs-row {
   display: flex;
-  gap: 4px;
-  margin-top: 16px;
+  gap: 6px;
+  margin-top: 20px;
+  padding-right: 24px;
 }
 
 .cf-mode-tab {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 16px;
-  border-radius: 8px;
+  padding: 8px 14px;
+  border-radius: 20px;
   border: none;
   background: transparent;
-  color: rgba(161, 161, 170, 0.3);
+  color: rgba(161, 161, 170, 0.4);
   font-size: 12px;
   font-weight: 500;
   font-family: var(--font-sans, 'Sora', sans-serif);
@@ -889,16 +1198,20 @@
 }
 
 .cf-mode-tab:hover {
-  color: rgba(161, 161, 170, 0.5);
+  color: rgba(161, 161, 170, 0.6);
 }
 
 .cf-mode-tab.active {
-  background: rgba(45, 212, 191, 0.1);
-  color: var(--cf-accent);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cf-text);
 }
 
 .cf-mode-tab svg {
-  opacity: 0.6;
+  opacity: 0.5;
+}
+
+.cf-mode-tab.active svg {
+  opacity: 0.8;
 }
 
 .cf-table-zone {
@@ -965,12 +1278,29 @@
 }
 
 /* Per-group color coding for labels and top bars */
-.cft-group-income { color: rgba(45, 212, 191, 0.5); }
-.cft-group-tax    { color: rgba(245, 158, 11, 0.5); }
-.cft-group-costs  { color: rgba(161, 161, 170, 0.45); }
-.cft-group-net    { color: rgba(45, 212, 191, 0.5); }
-.cft-group-position { color: rgba(96, 165, 250, 0.5); }
-.cft-group-depreciation { color: rgba(167, 139, 250, 0.5); }
+.cft-group-income {
+  color: rgba(45, 212, 191, 0.5);
+}
+
+.cft-group-tax {
+  color: rgba(245, 158, 11, 0.5);
+}
+
+.cft-group-costs {
+  color: rgba(161, 161, 170, 0.45);
+}
+
+.cft-group-net {
+  color: rgba(45, 212, 191, 0.5);
+}
+
+.cft-group-position {
+  color: rgba(96, 165, 250, 0.5);
+}
+
+.cft-group-depreciation {
+  color: rgba(167, 139, 250, 0.5);
+}
 
 /* Color bar indicator at top of each group */
 .cft-group-label::before {
@@ -1055,8 +1385,14 @@
   background: rgba(255, 255, 255, 0.018);
 }
 
+/* Hover state — duller highlight (from hovering on chart or other table) */
+.cft-row-hover {
+  background: rgba(45, 212, 191, 0.015);
+}
+
+/* Selected state — full highlight */
 .cft-row-active {
-  background: rgba(45, 212, 191, 0.035);
+  background: rgba(45, 212, 191, 0.045);
 }
 
 .cft-row-active:hover {
@@ -1096,6 +1432,7 @@
   align-items: center;
 }
 
+/* Variant A (default) — teal badge + calendar year */
 .cft-year-idx {
   color: var(--cf-accent);
   font-weight: 600;
@@ -1116,6 +1453,112 @@
   color: rgba(113, 113, 122, 0.7);
   font-weight: 400;
   font-size: 13px;
+}
+
+/* Variant B — inline with dot: "Yr N · YYYY" with monospace alignment */
+.cft-year-b {
+  gap: 0;
+  align-items: center;
+  font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.cft-year-b-yr {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(240, 253, 250, 0.75);
+  display: inline-block;
+  width: 3.2em;
+  text-align: right;
+}
+
+.cft-year-b-dot {
+  font-size: 10px;
+  color: rgba(113, 113, 122, 0.3);
+  margin: 0 2px;
+}
+
+.cft-year-b-cal {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.55);
+  display: inline-block;
+}
+
+/* Variant C — stacked: calendar year on top, loan year below */
+.cft-year-c {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.cft-year-c-cal {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(240, 253, 250, 0.75);
+  line-height: 1.2;
+}
+
+.cft-year-c-yr {
+  font-size: 9px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.45);
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+/* Variant D — compact parenthetical: "2026 (1)" */
+.cft-year-d {
+  gap: 3px;
+  align-items: baseline;
+}
+
+.cft-year-d-cal {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(240, 253, 250, 0.75);
+}
+
+.cft-year-d-yr {
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.4);
+}
+
+/* ── Year variant picker in header ── */
+.cft-year-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cft-year-picker-label {
+  display: block;
+}
+
+.cft-year-picker-btns {
+  display: flex;
+  gap: 2px;
+}
+
+.cft-year-picker-btn {
+  font-size: 8px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid rgba(113, 113, 122, 0.15);
+  background: transparent;
+  color: rgba(113, 113, 122, 0.4);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  line-height: 1.4;
+}
+
+.cft-year-picker-btn.active {
+  border-color: rgba(45, 212, 191, 0.35);
+  background: rgba(45, 212, 191, 0.08);
+  color: var(--cf-accent);
 }
 
 /* ── Three-tier text hierarchy ── */
@@ -1185,32 +1628,55 @@
   font-weight: 600;
   background: rgba(248, 113, 113, 0.06);
 }
+
 .cft-lvr-moderate {
   color: #fbbf24;
   font-weight: 600;
   background: rgba(251, 191, 36, 0.04);
 }
+
 .cft-lvr-healthy {
   color: #34d399;
   font-weight: 600;
   background: rgba(52, 211, 153, 0.04);
 }
 
-/* ── Depreciation — paper deductions, distinct from cash costs ── */
+/* ���─ Depreciation — paper deductions, distinct from cash costs ── */
 .cft-val-dep-dim {
   color: rgba(167, 139, 250, 0.4);
 }
+
 .cft-val-dep-agg {
   color: rgba(167, 139, 250, 0.7);
   font-weight: 700;
 }
 
+.cft-lvr-moderate {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.cft-lvr-healthy {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+/* ── Depreciation ── */
+.cft-val-dep-dim {
+  color: rgba(167, 139, 250, 0.4);
+}
+
+.cft-val-dep-agg {
+  color: rgba(167, 139, 250, 0.6);
+  font-weight: 600;
+}
+
 /* Chart tooltip */
 .cf-chart-tooltip {
-  background: rgba(42,42,46,0.95);
+  background: rgba(42, 42, 46, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(113,113,122,0.25);
+  border: 1px solid rgba(113, 113, 122, 0.25);
   border-radius: 12px;
   padding: 16px;
   font-size: 14px;
@@ -1238,7 +1704,7 @@
   gap: 16px;
 }
 
-.cf-tooltip-row + .cf-tooltip-row {
+.cf-tooltip-row+.cf-tooltip-row {
   margin-top: 8px;
 }
 
@@ -1252,7 +1718,7 @@
 
 .cf-tooltip-divider {
   height: 1px;
-  background: rgba(113,113,122,0.25);
+  background: rgba(113, 113, 122, 0.25);
   margin: 8px 0;
 }
 
@@ -1628,12 +2094,12 @@
   flex-shrink: 0;
 }
 
-.cf-wiz-checkbox input:checked + .cf-wiz-checkbox-box {
+.cf-wiz-checkbox input:checked+.cf-wiz-checkbox-box {
   background: var(--cf-accent);
   border-color: var(--cf-accent);
 }
 
-.cf-wiz-checkbox input:checked + .cf-wiz-checkbox-box::after {
+.cf-wiz-checkbox input:checked+.cf-wiz-checkbox-box::after {
   content: "";
   position: absolute;
   top: 3px;
@@ -1711,16 +2177,16 @@
 
 @media (max-width: 1024px) {
   .cf-kpi-strip {
-    grid-template-columns: repeat(2, 1fr);
+    flex-wrap: wrap;
   }
 
-  .cf-kpi-cell:nth-child(2) {
-    border-right: none;
+  .cf-kpi-cell {
+    flex: 1 1 50%;
+    min-width: 50%;
   }
 
-  .cf-kpi-cell:nth-child(1),
-  .cf-kpi-cell:nth-child(2) {
-    border-bottom: 1px solid var(--cf-border);
+  .cf-kpi-cell+.cf-kpi-cell::before {
+    display: none;
   }
 
   .cf-card-header {
@@ -1735,7 +2201,7 @@
 
   /* Fey layout responsive */
   .cf-hero-value {
-    font-size: 32px;
+    font-size: 26px;
   }
 
   .cf-chart-row {
@@ -1743,12 +2209,14 @@
   }
 
   .cf-chart-side-card {
+    flex: none;
     width: 100%;
-    min-width: 100%;
+    height: 238px;
   }
 
   .cf-mode-tabs-row {
     overflow-x: auto;
+    flex-wrap: wrap;
   }
 
   /* Wizard view responsive */
