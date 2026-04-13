@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { LayoutGrid, Home, TrendingUp, Receipt } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { useCashflowState } from "@/hooks/useCashflowState";
-import { formatCurrencyCf, parseCurrencyCf } from "@/lib/cashflow-calculations";
+import { formatCurrencyCf } from "@/lib/cashflow-calculations";
 import type { ViewMode } from "@/lib/cashflow-types";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowChart, { chartViewOptions, type ChartView } from "./CashflowChart";
@@ -35,9 +35,9 @@ export default function CashflowCalculator() {
   const [inlineStep, setInlineStep] = useState<StepId | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("wizard");
   const [editStep, setEditStep] = useState<StepId>("setup");
-  const [sideTab, setSideTab] = useState<StepId>("property");
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
   const [chartView, setChartView] = useState<ChartView>("bars");
+
 
   const stepOrder = s.isInvestment ? STEP_ORDER_INVESTMENT : STEP_ORDER_BASE;
   const naturalStep = getNaturalStep(s);
@@ -85,12 +85,14 @@ export default function CashflowCalculator() {
     ? (activeTab === "wizard" ? editStep : undefined)
     : (currentWizardStep ?? undefined);
 
-  // Auto-switch to dashboard when wizard completes
+  // Auto-switch to dashboard when wizard first completes
+  const [wasComplete, setWasComplete] = useState(false);
   useEffect(() => {
-    if (s.allComplete && activeTab === "wizard" && !inlineStep) {
+    if (s.allComplete && !wasComplete) {
+      setWasComplete(true);
       setActiveTab("dashboard");
     }
-  }, [s.allComplete, activeTab, inlineStep]);
+  }, [s.allComplete, wasComplete]);
 
   return (
     <>
@@ -136,6 +138,16 @@ export default function CashflowCalculator() {
         const sy = displayYearData;
         const vm = s.effectiveViewMode;
 
+        // Title data for hero-value prototypes
+        const heroValue = vm === "equity"
+          ? formatCurrencyCf(Math.round(y1.netEquity))
+          : vm === "deductions"
+          ? formatCurrencyCf(Math.round(y1.totalDeductions))
+          : vm === "property"
+          ? formatCurrencyCf(Math.round(y1.propertyCashflow))
+          : formatCurrencyCf(Math.round(y1.netCashflow));
+        const heroLabel = vm === "equity" ? "Net Equity" : vm === "deductions" ? "Total Deductions" : vm === "property" ? "Property Cashflow" : "Net Cashflow";
+
         // Hero data per view mode — Fey-style: value + label (muted) + secondary + color
         const heroMap: Record<ViewMode, { value: string; label: string; monthly: string; color: string }> = {
           summary: {
@@ -168,31 +180,53 @@ export default function CashflowCalculator() {
         return (
           <main className="cf-dashboard-view">
 
-            {/* ── Hero + Chart + Tabs (left) with Side card (right) ── */}
-            <div className="cf-chart-row cf-chart-row--vb">
+            {/* ── Back to inputs button — sits in the left gutter ── */}
+            <button
+              className="cf-back-to-inputs"
+              onClick={() => goToStep("property")}
+              aria-label="Back to inputs"
+            >
+              <ChevronLeft size={14} />
+              <span>Inputs</span>
+            </button>
+
+            {/* ── Chart + Tabs ── */}
+            <div className="cf-chart-row">
               <div className="cf-chart-main">
-                {/* Year overlay — positioned at top-right of chart-main, aligned with hero */}
+                {/* Year overlay — positioned at top-right of chart-main */}
                 <div className="cf-year-overlay-positioned">
                   <span className="cf-year-overlay-yr" style={{ color: "var(--cf-accent)" }}>Year {displayYear}</span>
                   <span className="cf-year-overlay-cal">{calendarYear}</span>
                 </div>
 
-                {/* Chart view toggles */}
+                {/* Chart view toggles + Center Title */}
                 <div className="cf-hero-area">
-                  <div className="cf-mode-toggles">
-                    {(vm === "equity" ? chartViewOptions : vm === "deductions" ? [chartViewOptions[0], chartViewOptions[2]] : [chartViewOptions[0]]).map((view) => {
-                      const Icon = view.icon;
-                      return (
-                        <button
-                          key={view.id}
-                          onClick={() => setChartView(view.id)}
-                          className={`cf-mode-toggle ${((vm === "equity" || vm === "deductions") ? chartView : "bars") === view.id ? "active" : ""}`}
-                        >
-                          <Icon size={14} />
-                          {view.label}
-                        </button>
-                      );
-                    })}
+                  <div className="cf-chart-header-row">
+                    {/* Left: Chart view toggles */}
+                    <div className="cf-mode-toggles">
+                      {(vm === "equity" ? chartViewOptions : vm === "deductions" ? [chartViewOptions[0], chartViewOptions[2]] : [chartViewOptions[0]]).map((view) => {
+                        const Icon = view.icon;
+                        return (
+                          <button
+                            key={view.id}
+                            onClick={() => setChartView(view.id)}
+                            className={`cf-mode-toggle ${((vm === "equity" || vm === "deductions") ? chartView : "bars") === view.id ? "active" : ""}`}
+                          >
+                            <Icon size={14} />
+                            {view.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Center: Title */}
+                    <div className="cf-center-title">
+                      <div className="cf-title-split">
+                        <span className="cf-title-split-label">{heroLabel}</span>
+                        <span className="cf-title-split-divider" />
+                        <span className="cf-title-split-value">{heroValue}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -209,10 +243,9 @@ export default function CashflowCalculator() {
                     onHoverYear={setHoveredYear}
                 />
 
-                {/* View mode tabs with mode toggles (equity only) */}
+                {/* View mode tabs */}
                 <div className="cf-mode-tabs-row">
                   {(["summary", "property", "equity", "deductions"] as ViewMode[]).map(m => {
-                    const icon = m === "summary" ? <LayoutGrid size={14} /> : m === "property" ? <Home size={14} /> : m === "equity" ? <TrendingUp size={14} /> : <Receipt size={14} />;
                     const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
                     return (
                       <button
@@ -220,155 +253,10 @@ export default function CashflowCalculator() {
                         className={`cf-mode-tab ${vm === m ? "active" : ""}`}
                         onClick={() => { s.setViewMode(m); s.setSelectedYear(1); }}
                       >
-                        {icon}
                         {label}
                       </button>
                     );
                   })}
-
-                </div>
-              </div>
-
-              {/* Side card — Inputs placeholder */}
-              <div className="cf-outer-card cf-chart-side-card">
-                <div className="cf-side-header">
-                  <span className="cf-side-header-title">Inputs</span>
-                </div>
-                <div className="cf-side-content">
-                  {sideTab === "property" && (() => {
-                    if (s.isNewPurchase) {
-                      const price = parseCurrencyCf(s.purchasePrice);
-                      const deposit = parseCurrencyCf(s.depositAmount);
-                      return (
-                        <>
-                          <div className="cf-side-field">
-                            <span className="cf-side-label">Purchase Price</span>
-                            <span className="cf-side-value" onClick={() => goToStep("property")}>{formatCurrencyCf(price)}</span>
-                          </div>
-                          <div className="cf-side-field">
-                            <span className="cf-side-label">Deposit</span>
-                            <span className="cf-side-value" onClick={() => goToStep("property")}>{formatCurrencyCf(deposit)}</span>
-                          </div>
-                          <div className="cf-side-field">
-                            <span className="cf-side-label">Loan Amount</span>
-                            <span className="cf-side-value-muted">{formatCurrencyCf(price - deposit)}</span>
-                          </div>
-                        </>
-                      );
-                    }
-                    const val = parseCurrencyCf(s.currentValue);
-                    const loan = parseCurrencyCf(s.currentLoanBalance);
-                    return (
-                      <>
-                        <div className="cf-side-field">
-                          <span className="cf-side-label">Current Value</span>
-                          <span className="cf-side-value" onClick={() => goToStep("property")}>{formatCurrencyCf(val)}</span>
-                        </div>
-                        <div className="cf-side-field">
-                          <span className="cf-side-label">Loan Balance</span>
-                          <span className="cf-side-value" onClick={() => goToStep("property")}>{formatCurrencyCf(loan)}</span>
-                        </div>
-                        <div className="cf-side-field">
-                          <span className="cf-side-label">Equity</span>
-                          <span className="cf-side-value-muted">{formatCurrencyCf(val - loan)}</span>
-                        </div>
-                      </>
-                    );
-                  })()}
-                  {sideTab === "loan" && (
-                    <>
-                      <div className="cf-side-field">
-                        <span className="cf-side-label">Interest Rate</span>
-                        <span className="cf-side-value" onClick={() => goToStep("loan")}>{s.interestRate}%</span>
-                      </div>
-                      <div className="cf-side-field">
-                        <span className="cf-side-label">Loan Term</span>
-                        <span className="cf-side-value" onClick={() => goToStep("loan")}>{s.loanTerm} years</span>
-                      </div>
-                      <div className="cf-side-field">
-                        <span className="cf-side-label">Repayment Type</span>
-                        <span className="cf-side-value-muted">P&I</span>
-                      </div>
-                    </>
-                  )}
-                  {sideTab === "costs" && (() => {
-                    const council = parseCurrencyCf(s.councilRates);
-                    const water = parseCurrencyCf(s.waterRates);
-                    const ins = parseCurrencyCf(s.insurance);
-                    const strata = s.hasStrata ? parseCurrencyCf(s.strataFees) * 4 : 0;
-                    return (
-                      <>
-                        <div className="cf-side-field">
-                          <span className="cf-side-label">Council Rates</span>
-                          <span className="cf-side-value" onClick={() => goToStep("costs")}>{formatCurrencyCf(council)}/yr</span>
-                        </div>
-                        <div className="cf-side-field">
-                          <span className="cf-side-label">Water Rates</span>
-                          <span className="cf-side-value" onClick={() => goToStep("costs")}>{formatCurrencyCf(water)}/yr</span>
-                        </div>
-                        <div className="cf-side-field">
-                          <span className="cf-side-label">Insurance</span>
-                          <span className="cf-side-value" onClick={() => goToStep("costs")}>{formatCurrencyCf(ins)}/yr</span>
-                        </div>
-                        {s.hasStrata && (
-                          <div className="cf-side-field">
-                            <span className="cf-side-label">Strata</span>
-                            <span className="cf-side-value" onClick={() => goToStep("costs")}>{formatCurrencyCf(strata)}/yr</span>
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
-                  {sideTab === "rental" && s.isInvestment && (
-                    <>
-                      <div className="cf-side-field">
-                        <span className="cf-side-label">Weekly Rent</span>
-                        <span className="cf-side-value" onClick={() => goToStep("rental")}>{formatCurrencyCf(parseCurrencyCf(s.weeklyRent))}/wk</span>
-                      </div>
-                      <div className="cf-side-field">
-                        <span className="cf-side-label">Management Fee</span>
-                        <span className="cf-side-value" onClick={() => goToStep("rental")}>{s.managementFee}%</span>
-                      </div>
-                      <div className="cf-side-field">
-                        <span className="cf-side-label">Annual Net</span>
-                        <span className="cf-side-value-muted">{formatCurrencyCf(Math.round(parseCurrencyCf(s.weeklyRent) * 52 * (1 - (parseFloat(s.managementFee) || 0) / 100)))}</span>
-                      </div>
-                    </>
-                  )}
-                  {sideTab === "tax" && s.isInvestment && (
-                    <>
-                      <div className="cf-side-field">
-                        <span className="cf-side-label">Taxable Income</span>
-                        <span className="cf-side-value" onClick={() => goToStep("tax")}>{formatCurrencyCf(parseCurrencyCf(s.taxableIncome))}</span>
-                      </div>
-                      <div className="cf-side-field">
-                        <span className="cf-side-label">Marginal Rate</span>
-                        <span className="cf-side-value-muted">{Math.round(s.marginalRate * 100)}%</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className="cf-side-tabs">
-                  {(s.isInvestment
-                    ? [
-                        { id: "property" as StepId, label: "Property" },
-                        { id: "loan" as StepId, label: "Loan" },
-                        { id: "costs" as StepId, label: "Costs" },
-                        { id: "rental" as StepId, label: "Rental" },
-                        { id: "tax" as StepId, label: "Tax" },
-                      ]
-                    : [
-                        { id: "property" as StepId, label: "Property" },
-                        { id: "loan" as StepId, label: "Loan" },
-                        { id: "costs" as StepId, label: "Costs" },
-                      ]
-                  ).map(t => (
-                    <button
-                      key={t.id}
-                      className={`cf-side-tab ${sideTab === t.id ? "active" : ""}`}
-                      onClick={() => setSideTab(t.id)}
-                    >{t.label}</button>
-                  ))}
                 </div>
               </div>
             </div>
@@ -401,6 +289,7 @@ export default function CashflowCalculator() {
                       hasOffset={s.hasOffset}
                       propertyValue={s.propertyValue}
                       propertyPanel="gearing"
+
                       onSelectYear={s.setSelectedYear}
                       onHoverYear={setHoveredYear}
                     />
@@ -417,6 +306,7 @@ export default function CashflowCalculator() {
                       hasOffset={s.hasOffset}
                       propertyValue={s.propertyValue}
                       propertyPanel="cashflow"
+
                       onSelectYear={s.setSelectedYear}
                       onHoverYear={setHoveredYear}
                     />
@@ -436,6 +326,7 @@ export default function CashflowCalculator() {
                       hasOffset={s.hasOffset}
                       propertyValue={s.propertyValue}
                       equityPanel="property"
+
                       onSelectYear={s.setSelectedYear}
                       onHoverYear={setHoveredYear}
                     />
@@ -452,6 +343,7 @@ export default function CashflowCalculator() {
                       hasOffset={s.hasOffset}
                       propertyValue={s.propertyValue}
                       equityPanel="position"
+
                       onSelectYear={s.setSelectedYear}
                       onHoverYear={setHoveredYear}
                     />
@@ -469,6 +361,7 @@ export default function CashflowCalculator() {
                     isInvestment={s.isInvestment}
                     hasOffset={s.hasOffset}
                     propertyValue={s.propertyValue}
+
                     onSelectYear={s.setSelectedYear}
                     onHoverYear={setHoveredYear}
                   />

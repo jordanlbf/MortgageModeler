@@ -76,6 +76,31 @@
   gap: 24px;
 }
 
+/* ── Back to inputs — inline above chart ── */
+.cf-back-to-inputs {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px 4px 4px;
+  margin-bottom: -16px;
+  background: transparent;
+  color: rgba(161, 161, 170, 0.55);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans, 'Sora', sans-serif);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.cf-back-to-inputs:hover {
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.1);
+}
+
 /* ── Fey outer card — subtle, minimal surface ── */
 .cf-outer-card {
   background: rgba(255, 255, 255, 0.02);
@@ -758,6 +783,12 @@
   color: rgba(45, 212, 191, 0.7);
 }
 
+.cf-kpi-sparkline {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+}
+
 /* ============================================================================
    CHART & TABLE ZONES — sections within outer card
    ============================================================================ */
@@ -773,6 +804,51 @@
 /* Hero number — Fey-inspired compact inline */
 .cf-hero-area {
   padding: 8px 0 12px;
+}
+
+/* Chart header row — 3-column layout */
+.cf-chart-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Center title container */
+.cf-center-title {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Split title — vertical hairline separator */
+.cf-title-split {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cf-title-split-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(161, 161, 170, 0.5);
+  letter-spacing: -0.01em;
+}
+
+.cf-title-split-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(113, 113, 122, 0.2);
+}
+
+.cf-title-split-value {
+  font-size: 17px;
+  font-weight: 600;
+  color: rgba(250, 250, 250, 0.85);
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
 }
 
 /* Hero row */
@@ -828,258 +904,23 @@
   margin-top: 8px;
 }
 
-/* Chart + side card layout — Fey ratio: 67% chart / 33% inputs card */
+/* Chart layout — full width */
 .cf-chart-row {
   display: flex;
-  gap: 20px;
   align-items: stretch;
 }
 
 .cf-chart-main {
   position: relative;
-  flex: 2;
+  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-/* Inputs card — grows to match chart-main height (includes tabs) */
-.cf-chart-side-card {
-  flex: 0 0 364px;
-  width: 364px;
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.4);
-  border-left: 1px solid rgba(113, 113, 122, 0.1);
-}
 
 
 
-.cf-side-header {
-  padding: 16px 20px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-}
-
-.cf-side-header-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(161, 161, 170, 0.7);
-  letter-spacing: 0.02em;
-}
-
-/* Side card content area — fills available space */
-.cf-side-content {
-  flex: 1;
-  padding: 8px 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  overflow-y: auto;
-}
-
-.cf-side-field {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
-}
-
-.cf-side-field:last-child {
-  border-bottom: none;
-}
-
-.cf-side-label {
-  font-size: 12px;
-  color: rgba(161, 161, 170, 0.55);
-}
-
-.cf-side-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(250, 250, 250, 0.95);
-  font-feature-settings: "tnum";
-  cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 6px;
-  transition: background 0.15s, color 0.15s;
-}
-
-.cf-side-value:hover {
-  background: rgba(45, 212, 191, 0.15);
-  color: var(--cf-accent);
-}
-
-.cf-side-value-muted {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(161, 161, 170, 0.45);
-  font-feature-settings: "tnum";
-}
-
-/* Side card tabs — Fey style */
-.cf-side-tabs {
-  display: flex;
-  border-top: 1px solid rgba(0, 0, 0, 0.3);
-  padding: 6px 8px;
-  gap: 2px;
-}
-
-.cf-side-tab {
-  flex: 1;
-  padding: 8px 0;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: rgba(161, 161, 170, 0.35);
-  font-size: 11px;
-  font-weight: 500;
-  font-family: var(--font-sans, 'Sora', sans-serif);
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s;
-}
-
-.cf-side-tab:hover {
-  color: rgba(161, 161, 170, 0.55);
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.cf-side-tab.active {
-  color: var(--cf-text);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-/* ═══════════════════════════════════════════════════════════
-   INPUTS CARD — Expand button and full-screen overlay
-   ═══════════════════════════════════════════════════════════ */
-
-/* Expand button in header */
-.cf-side-expand-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(161, 161, 170, 0.5);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.cf-side-expand-btn:hover {
-  background: rgba(45, 212, 191, 0.15);
-  color: var(--cf-accent);
-}
-
-.cf-side-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* Full-screen inputs overlay */
-.cf-inputs-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 100;
-  background: rgba(9, 9, 11, 0.97);
-  display: flex;
-  flex-direction: column;
-  animation: cf-overlay-fade-in 0.2s ease-out;
-}
-
-@keyframes cf-overlay-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.cf-inputs-overlay-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(113, 113, 122, 0.1);
-}
-
-.cf-inputs-overlay-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: rgba(250, 250, 250, 0.95);
-}
-
-.cf-inputs-overlay-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba(113, 113, 122, 0.15);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  color: rgba(161, 161, 170, 0.6);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.cf-inputs-overlay-close:hover {
-  border-color: rgba(45, 212, 191, 0.3);
-  background: rgba(45, 212, 191, 0.1);
-  color: var(--cf-accent);
-}
-
-.cf-inputs-overlay-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-}
-
-.cf-inputs-overlay-placeholder {
-  text-align: center;
-  max-width: 400px;
-}
-
-.cf-inputs-overlay-placeholder p {
-  color: rgba(161, 161, 170, 0.6);
-  font-size: 16px;
-  margin: 0 0 12px;
-}
-
-.cf-inputs-overlay-hint {
-  font-size: 13px !important;
-  color: rgba(161, 161, 170, 0.4) !important;
-  margin-bottom: 24px !important;
-}
-
-.cf-inputs-overlay-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border: 1px solid rgba(45, 212, 191, 0.3);
-  border-radius: 8px;
-  background: rgba(45, 212, 191, 0.1);
-  color: var(--cf-accent);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.cf-inputs-overlay-back:hover {
-  background: rgba(45, 212, 191, 0.2);
-  border-color: rgba(45, 212, 191, 0.5);
-}
 
 /* View mode tabs — Fey pill style */
 .cf-mode-tabs-row {
@@ -1206,33 +1047,33 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(161, 161, 170, 0.45);
+  color: rgba(161, 161, 170, 0.55);
   position: relative;
 }
 
 /* Per-group color coding for labels and top bars */
 .cft-group-income {
-  color: rgba(45, 212, 191, 0.5);
+  color: rgba(45, 212, 191, 0.65);
 }
 
 .cft-group-tax {
-  color: rgba(245, 158, 11, 0.5);
+  color: rgba(245, 158, 11, 0.65);
 }
 
 .cft-group-costs {
-  color: rgba(161, 161, 170, 0.45);
+  color: rgba(161, 161, 170, 0.55);
 }
 
 .cft-group-net {
-  color: rgba(45, 212, 191, 0.5);
+  color: rgba(45, 212, 191, 0.65);
 }
 
 .cft-group-position {
-  color: rgba(96, 165, 250, 0.5);
+  color: rgba(96, 165, 250, 0.65);
 }
 
 .cft-group-depreciation {
-  color: rgba(167, 139, 250, 0.5);
+  color: rgba(167, 139, 250, 0.65);
 }
 
 /* Color bar indicator at top of each group */
@@ -1245,7 +1086,7 @@
   height: 3px;
   border-radius: 0 0 2px 2px;
   background: currentColor;
-  opacity: 0.6;
+  opacity: 0.75;
 }
 
 .cft-group-divider {
@@ -1254,7 +1095,7 @@
   padding: 0;
   background: transparent;
   position: relative;
-  border-left: 1px solid rgba(113, 113, 122, 0.08);
+  border-left: 1px solid rgba(113, 113, 122, 0.1);
 }
 
 .cft-group-divider::after {
@@ -1263,7 +1104,7 @@
 
 /* ── Column headers (lowercase, light, receding) ── */
 .cft-header-row {
-  border-bottom: 1px solid rgba(113, 113, 122, 0.1);
+  border-bottom: 1px solid rgba(113, 113, 122, 0.12);
 }
 
 .cft-th {
@@ -1272,19 +1113,50 @@
   font-weight: 400;
   letter-spacing: 0.02em;
   text-transform: capitalize;
-  color: rgba(161, 161, 170, 0.5);
+  color: rgba(161, 161, 170, 0.65);
   text-align: right;
   white-space: nowrap;
 }
 
+/* ── Custom tooltip for abbreviated headers ── */
+.cft-tip {
+  position: relative;
+  cursor: default;
+}
+
+.cft-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgba(24, 24, 27, 0.95);
+  border: 1px solid rgba(113, 113, 122, 0.15);
+  color: rgba(244, 244, 245, 0.85);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+.cft-tip:hover::after {
+  opacity: 1;
+}
+
 .cft-th-year {
-  text-align: left;
-  width: 8rem;
-  min-width: 8rem;
-  max-width: 8rem;
+  width: 6rem;
+  min-width: 6rem;
+  max-width: 6rem;
   text-align: center;
-  padding-left: 18px;
-  padding-right: 18px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .cft-th-agg {
@@ -1306,7 +1178,7 @@
   width: 0;
   max-width: 0;
   padding: 0;
-  border-left: 1px solid rgba(113, 113, 122, 0.08);
+  border-left: 1px solid rgba(113, 113, 122, 0.1);
 }
 
 .cft-th-divider::after {
@@ -1339,32 +1211,109 @@
 
 /* ── Data cells ── */
 .cft-td {
-  padding: 14px 18px;
+  padding: 18px 18px;
   text-align: right;
   vertical-align: middle;
-  border-bottom: 1px solid rgba(113, 113, 122, 0.05);
+  border-bottom: 1px solid rgba(113, 113, 122, 0.07);
 }
 
 .cft-td-year {
-  text-align: left;
-  width: 8rem;
-  min-width: 8rem;
-  max-width: 8rem;
+  width: 7rem;
+  min-width: 7rem;
+  max-width: 7rem;
   text-align: center;
-  padding-left: 18px;
-  padding-right: 18px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
+/* Divider columns */
 .cft-td-divider {
   width: 0;
   max-width: 0;
   padding: 0;
-  border-left: 1px solid rgba(113, 113, 122, 0.08);
-  border-bottom: 1px solid rgba(113, 113, 122, 0.05);
+  border-left: 1px solid rgba(113, 113, 122, 0.1);
+  border-bottom: 1px solid rgba(113, 113, 122, 0.07);
 }
 
 .cft-td-result {
   padding-right: 20px;
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXPANSION CONTROLS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cft-expansion-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 0 8px;
+}
+
+.cft-expand-all-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(113, 113, 122, 0.12);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(161, 161, 170, 0.5);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cft-expand-all-btn:hover {
+  background: rgba(45, 212, 191, 0.08);
+  border-color: rgba(45, 212, 191, 0.2);
+  color: var(--cf-accent);
+}
+
+.cft-row-expandable {
+  cursor: pointer;
+}
+
+.cft-row-expandable .cft-td-year {
+  position: relative;
+}
+
+/* ── Expansion indicators ── */
+.cft-expand-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  color: rgba(161, 161, 170, 0.4);
+  transition: transform 0.15s, color 0.15s;
+}
+
+.cft-row-expandable:hover .cft-expand-chevron {
+  color: var(--cf-accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHADOW SEPARATOR STYLE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cft-sep-shadow.cft-row-milestone td {
+  position: relative;
+}
+
+.cft-sep-shadow.cft-row-milestone td::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 8px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12), transparent);
+  pointer-events: none;
+}
+
+.cft-sep-shadow.cft-row-child {
+  background: rgba(0, 0, 0, 0.02);
 }
 
 /* ── Year cell formatting ── */
@@ -1467,6 +1416,78 @@
   color: rgba(113, 113, 122, 0.4);
 }
 
+/* Variant Badge — circle badge + calendar year (active) */
+.cft-year-badge-wrap {
+  gap: 10px;
+  align-items: center;
+}
+
+.cft-year-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.cft-year-badge-hovered {
+  background: rgba(45, 212, 191, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.cft-year-badge-selected {
+  background: var(--cf-accent);
+  color: var(--cf-accent-contrast);
+}
+
+.cft-year-badge-cal {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── 5-year separator rows ── */
+.cft-row-separator {
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.cft-row-separator .cft-td {
+  border-bottom: 1px solid rgba(113, 113, 122, 0.07);
+  padding-top: 18px;
+}
+
+.cft-row-separator .cft-td-year {
+  padding-top: 18px;
+}
+
+.cft-row-separator .cft-td-divider {
+  border-bottom: 1px solid rgba(113, 113, 122, 0.07);
+}
+
+.cft-row-separator .cft-val-dim {
+  color: rgba(240, 253, 250, 0.7);
+  font-weight: 500;
+}
+
+.cft-row-separator .cft-val-outflow {
+  color: rgba(248, 113, 113, 0.7);
+}
+
+.cft-row-separator .cft-val-negative {
+  font-weight: 800;
+}
+
+.cft-row-separator .cft-val-result {
+  font-weight: 800;
+}
+
 /* ── Year variant picker in header ── */
 .cft-year-picker {
   display: flex;
@@ -1507,7 +1528,7 @@
 
 /* Tier 1: Dim — detail data (salary, rent), recedes */
 .cft-val-dim {
-  color: #b4b4bc;
+  color: #ccccd2;
 }
 
 /* Tier 2: Neutral — summary columns (taxable inc.), bold bright */
@@ -1518,7 +1539,7 @@
 
 /* Tier 3: Outflow — muted red for detail expenses (prop ded, holding, principal) */
 .cft-val-outflow {
-  color: rgba(239, 68, 68, 0.5);
+  color: rgba(248, 113, 113, 0.65);
 }
 
 /* Tier 4: Negative result — bold red for summary negatives (tax payable, total costs) */
@@ -1580,7 +1601,7 @@
 
 /* ���─ Depreciation — paper deductions, distinct from cash costs ── */
 .cft-val-dep-dim {
-  color: rgba(167, 139, 250, 0.4);
+  color: rgba(167, 139, 250, 0.55);
 }
 
 .cft-val-dep-agg {
@@ -1600,11 +1621,11 @@
 
 /* ── Depreciation ── */
 .cft-val-dep-dim {
-  color: rgba(167, 139, 250, 0.4);
+  color: rgba(167, 139, 250, 0.55);
 }
 
 .cft-val-dep-agg {
-  color: rgba(167, 139, 250, 0.6);
+  color: rgba(167, 139, 250, 0.7);
   font-weight: 600;
 }
 
@@ -2064,6 +2085,10 @@
     display: none;
   }
 
+  .cf-kpi-sparkline svg {
+    width: 56px;
+  }
+
   .cf-card-header {
     flex-direction: column;
     gap: 12px;
@@ -2077,16 +2102,6 @@
   /* Fey layout responsive */
   .cf-hero-value {
     font-size: 26px;
-  }
-
-  .cf-chart-row {
-    flex-direction: column;
-  }
-
-  .cf-chart-side-card {
-    flex: none;
-    width: 100%;
-    height: 238px;
   }
 
   .cf-mode-tabs-row {

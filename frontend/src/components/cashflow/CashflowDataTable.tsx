@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronDown, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
 import { formatCurrencyCf } from "@/lib/cashflow-calculations";
 
@@ -24,14 +26,77 @@ export default function CashflowDataTable({
   const baseYear = new Date().getFullYear();
   const showOffset = hasOffset && yearData.some(y => y.offsetBalanceAtYear > 0);
 
-  // Format year cell — locked to variant B: "Yr N · YYYY" with monospace alignment
-  const formatYearCell = (year: number, index: number) => {
+  // Expansion state - default all collapsed
+  const [expandedMilestones, setExpandedMilestones] = useState<Set<number>>(new Set());
+
+  // Milestone years: 1, 6, 11, 16, 21, 26
+  const isMilestoneYear = (year: number) => year === 1 || (year - 1) % 5 === 0;
+  const getMilestoneForYear = (year: number) => {
+    if (year === 1) return 1;
+    return Math.floor((year - 1) / 5) * 5 + 1;
+  };
+
+  // Toggle expansion
+  const toggleMilestone = (milestone: number) => {
+    setExpandedMilestones(prev => {
+      const next = new Set(prev);
+      if (next.has(milestone)) next.delete(milestone);
+      else next.add(milestone);
+      return next;
+    });
+  };
+
+  // Determine if a row should be visible - default to collapsed
+  const isRowVisible = (year: number) => {
+    if (isMilestoneYear(year)) return true;
+
+    const milestone = getMilestoneForYear(year);
+
+    // Only show if expanded
+    if (expandedMilestones.has(milestone)) return true;
+
+    return false;
+  };
+
+  // Get years that belong to a milestone group (years 2-5 after the milestone)
+  const getGroupYears = (milestone: number) => {
+    const endYear = milestone + 4;
+    return yearData.filter(y => y.year > milestone && y.year <= endYear);
+  };
+
+  // Generate row handlers - no hover, only click
+  const getRowHandlers = (year: number, isMilestone: boolean) => ({
+    onClick: () => {
+      if (isMilestone) {
+        toggleMilestone(year);
+      }
+      onSelectYear(year);
+    },
+  });
+
+  // Format year cell — circle badge + calendar year + expansion indicator
+  const formatYearCell = (year: number, index: number, isMilestoneRow = false) => {
     const cal = baseYear + index;
+    const isSelected = year === selectedYear;
+    const isHovered = year === hoveredYear && !isSelected;
+    const milestone = getMilestoneForYear(year);
+    const isExpanded = expandedMilestones.has(milestone);
+    const groupYears = getGroupYears(year);
+    const hasGroupYears = groupYears.length > 0;
+
+    const showChevron = isMilestoneRow && hasGroupYears;
+
     return (
-      <span className="cft-year-cell cft-year-b">
-        <span className="cft-year-b-yr">Year {year < 10 ? `\u00A0${year}` : year}</span>
-        <span className="cft-year-b-dot">·</span>
-        <span className="cft-year-b-cal">{cal}</span>
+      <span className="cft-year-cell cft-year-badge-wrap">
+        {showChevron && (
+          <span className="cft-expand-chevron">
+            {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+          </span>
+        )}
+        <span className={`cft-year-badge ${isSelected ? "cft-year-badge-selected" : isHovered ? "cft-year-badge-hovered" : ""}`}>
+          {year}
+        </span>
+        <span className="cft-year-badge-cal">{cal}</span>
       </span>
     );
   };
@@ -54,14 +119,32 @@ export default function CashflowDataTable({
   // Row class helper for selected/hovered states
   const isSecondPanel = propertyPanel === "cashflow" || equityPanel === "position";
 
-  const getRowClass = (year: number) => {
+  const getRowClass = (year: number, isMilestoneRow = false) => {
     const isSelected = year === selectedYear;
-    const isHovered = year === hoveredYear && year !== selectedYear;
-    return `cft-row ${isSelected ? "cft-row-active" : ""} ${isHovered ? "cft-row-hover" : ""}`;
+    const isExpandable = isMilestoneRow;
+    const isChildRow = !isMilestoneRow && !isMilestoneYear(year);
+    return `cft-row cft-sep-shadow ${isSelected ? "cft-row-active" : ""} ${isExpandable ? "cft-row-expandable" : ""} ${isMilestoneRow ? "cft-row-milestone" : ""} ${isChildRow ? "cft-row-child" : ""}`;
   };
 
   return (
     <div className="cft-outer">
+      {/* Expand/collapse all */}
+      <div className="cft-expansion-controls">
+        <button
+          className="cft-expand-all-btn"
+          onClick={() => {
+            if (expandedMilestones.size > 0) {
+              setExpandedMilestones(new Set());
+            } else {
+              setExpandedMilestones(new Set([1, 6, 11, 16, 21, 26]));
+            }
+          }}
+          title={expandedMilestones.size > 0 ? "Collapse all" : "Expand all"}
+        >
+          {expandedMilestones.size > 0 ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+        </button>
+      </div>
+
     <div className="cft-wrap">
       {/* SUMMARY TABLE */}
       {viewMode === "summary" && (
@@ -83,8 +166,8 @@ export default function CashflowDataTable({
               <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
               <th className="cft-th">salary</th>
               {isInvestment && <th className="cft-th">rent</th>}
-              <th className="cft-th">prop. ded.</th>
-              <th className="cft-th cft-th-agg">taxable inc.</th>
+              <th className="cft-th cft-tip" data-tip="Property Deductions">prop. ded.</th>
+              <th className="cft-th cft-th-agg cft-tip" data-tip="Taxable Income">taxable inc.</th>
               <th className="cft-th-divider" />
               <th className="cft-th cft-th-agg">tax payable</th>
               <th className="cft-th-divider" />
@@ -97,15 +180,15 @@ export default function CashflowDataTable({
           </thead>
           <tbody>
             {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
               const holdingCosts = y.interestPortion + y.ongoingCosts;
               const taxableIncome = y.grossIncome - y.totalDeductionsForTax;
               const totalCosts = holdingCosts + y.principalPortion;
+
               return (
-                <tr key={y.year} className={getRowClass(y.year)}
-                  onClick={() => onSelectYear(y.year)}
-                  onMouseEnter={() => onHoverYear(y.year)}
-                  onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
+                <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.salary))}</td>
                   {isInvestment && <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
                   <td className={`cft-td ${getValueClass(-y.totalDeductionsForTax, false, true)}`}>{formatCurrencyCf(Math.round(-y.totalDeductionsForTax))}</td>
@@ -146,13 +229,12 @@ export default function CashflowDataTable({
           </thead>
           <tbody>
             {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
               const holdingCosts = y.interestPortion + y.ongoingCosts;
               return (
-                <tr key={y.year} className={getRowClass(y.year)}
-                  onClick={() => onSelectYear(y.year)}
-                  onMouseEnter={() => onHoverYear(y.year)}
-                  onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
+                <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>
                   <td className={`cft-td ${getValueClass(-holdingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-holdingCosts))}</td>
                   <td className={`cft-td ${getValueClass(y.gearing, true)}`}>{formatCurrencyCf(Math.round(y.gearing))}</td>
@@ -181,13 +263,12 @@ export default function CashflowDataTable({
           </thead>
           <tbody>
             {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
               const holdingCosts = y.interestPortion + y.ongoingCosts;
               const totalCosts = holdingCosts + y.principalPortion;
               return (
-                <tr key={y.year} className={getRowClass(y.year)}
-                  onClick={() => onSelectYear(y.year)}
-                  onMouseEnter={() => onHoverYear(y.year)}
-                  onMouseLeave={() => onHoverYear(null)}>
+                <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>
                   <td className={`cft-td ${getValueClass(-totalCosts, true)}`}>{formatCurrencyCf(Math.round(-totalCosts))}</td>
                   <td className="cft-td cft-val-positive">{y.taxSaved > 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.taxSaved))}</td>
@@ -225,21 +306,24 @@ export default function CashflowDataTable({
             </tr>
           </thead>
           <tbody>
-            {yearData.map((y, i) => (
-              <tr key={y.year} className={`cft-row ${y.year === selectedYear ? "cft-row-active" : ""}`}
-                onClick={() => onSelectYear(y.year)}>
-                <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
-                <td className={`cft-td ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-y.ongoingCosts))}</td>
-                <td className={`cft-td ${getValueClass(-y.interestPortion, false, true)}`}>{formatCurrencyCf(Math.round(-y.interestPortion))}</td>
-                <td className="cft-td-divider" />
-                <td className={`cft-td ${getValueClass(-y.principalPortion, false, true)}`}>{formatCurrencyCf(Math.round(-y.principalPortion))}</td>
-                <td className="cft-td cft-val-neutral">{formatCurrencyCf(Math.round(-(y.interestPortion + y.principalPortion)))}</td>
-                <td className="cft-td-divider" />
-                <td className={`cft-td cft-td-result ${getValueClass(y.propertyCashflow, true)}`}>
-                  {formatCurrencyCf(Math.round(y.propertyCashflow))}
-                </td>
-              </tr>
-            ))}
+            {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
+              return (
+                <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
+                  <td className={`cft-td ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-y.ongoingCosts))}</td>
+                  <td className={`cft-td ${getValueClass(-y.interestPortion, false, true)}`}>{formatCurrencyCf(Math.round(-y.interestPortion))}</td>
+                  <td className="cft-td-divider" />
+                  <td className={`cft-td ${getValueClass(-y.principalPortion, false, true)}`}>{formatCurrencyCf(Math.round(-y.principalPortion))}</td>
+                  <td className="cft-td cft-val-neutral">{formatCurrencyCf(Math.round(-(y.interestPortion + y.principalPortion)))}</td>
+                  <td className="cft-td-divider" />
+                  <td className={`cft-td cft-td-result ${getValueClass(y.propertyCashflow, true)}`}>
+                    {formatCurrencyCf(Math.round(y.propertyCashflow))}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
@@ -257,14 +341,16 @@ export default function CashflowDataTable({
               <th className="cft-th">total growth</th>
               <th className="cft-th">gain %</th>
               <th className="cft-th-divider" />
-              <th className="cft-th">yoy growth</th>
-              <th className="cft-th">yoy %</th>
+              <th className="cft-th cft-tip" data-tip="Year-on-Year Growth">yoy growth</th>
+              <th className="cft-th cft-tip" data-tip="Year-on-Year Growth %">yoy %</th>
               <th className="cft-th-divider" />
               <th className="cft-th cft-th-result">value</th>
             </tr>
           </thead>
           <tbody>
             {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
               const prevValue = i > 0 ? yearData[i - 1].propertyValue : propertyValue;
               const totalGrowth = y.propertyValue - propertyValue;
               const totalGrowthPct = ((y.propertyValue / propertyValue - 1) * 100).toFixed(1);
@@ -273,11 +359,8 @@ export default function CashflowDataTable({
                 ? ((y.propertyValue / prevValue - 1) * 100).toFixed(1)
                 : totalGrowthPct;
               return (
-                <tr key={y.year} className={getRowClass(y.year)}
-                  onClick={() => onSelectYear(y.year)}
-                  onMouseEnter={() => onHoverYear(y.year)}
-                  onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
+                <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
                   <td className="cft-td cft-val-dim">+{formatCurrencyCf(Math.round(totalGrowth))}</td>
                   <td className="cft-td" style={{ color: parseFloat(totalGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{totalGrowthPct}%</td>
                   <td className="cft-td-divider" />
@@ -300,10 +383,10 @@ export default function CashflowDataTable({
               <th className="cft-group-cell cft-group-label cft-group-position" colSpan={showOffset ? 7 : 6}>position</th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th">prop value</th>
+              <th className="cft-th cft-tip" data-tip="Property Value">prop value</th>
               <th className="cft-th">loan balance</th>
-              <th className="cft-th cft-th-agg">prop equity</th>
-              <th className="cft-th cft-th-agg">lvr</th>
+              <th className="cft-th cft-th-agg cft-tip" data-tip="Property Equity">prop equity</th>
+              <th className="cft-th cft-th-agg cft-tip" data-tip="Loan-to-Value Ratio">lvr</th>
               <th className="cft-th-divider" />
               {showOffset && <th className="cft-th">offset</th>}
               <th className="cft-th cft-th-result">net equity</th>
@@ -311,13 +394,12 @@ export default function CashflowDataTable({
           </thead>
           <tbody>
             {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
               const lvr = y.loanBalance / y.propertyValue * 100;
               const propertyEquity = y.propertyValue - y.loanBalance;
               return (
-                <tr key={y.year} className={getRowClass(y.year)}
-                  onClick={() => onSelectYear(y.year)}
-                  onMouseEnter={() => onHoverYear(y.year)}
-                  onMouseLeave={() => onHoverYear(null)}>
+                <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.propertyValue))}</td>
                   <td className={`cft-td ${getValueClass(-y.loanBalance, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanBalance))}</td>
                   <td className="cft-td" style={{ fontWeight: 700, color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(propertyEquity))}</td>
@@ -355,31 +437,30 @@ export default function CashflowDataTable({
               {isInvestment && <th className="cft-th">interest</th>}
               <th className="cft-th">rates</th>
               <th className="cft-th">insurance</th>
-              <th className="cft-th">maint.</th>
+              <th className="cft-th cft-tip" data-tip="Maintenance">maint.</th>
               <th className="cft-th cft-th-agg">subtotal</th>
               {isInvestment && (
                 <>
                   <th className="cft-th-divider" />
-                  <th className="cft-th">div 43</th>
-                  <th className="cft-th">div 40</th>
+                  <th className="cft-th cft-tip" data-tip="Division 43 — Capital Works Deduction">div 43</th>
+                  <th className="cft-th cft-tip" data-tip="Division 40 — Plant & Equipment Depreciation">div 40</th>
                   <th className="cft-th cft-th-agg">subtotal</th>
                 </>
               )}
               <th className="cft-th-divider" />
-              <th className="cft-th cft-th-result">{isInvestment ? "total ded." : "total exp."}</th>
+              <th className="cft-th cft-th-result cft-tip" data-tip={isInvestment ? "Total Deductions" : "Total Expenses"}>{isInvestment ? "total ded." : "total exp."}</th>
             </tr>
           </thead>
           <tbody>
             {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
               const holdingTotal = isInvestment ? y.interestPortion + y.ongoingCosts : y.ongoingCosts;
               const depTotal = y.depDiv43 + y.depDiv40;
               const grandTotal = isInvestment ? holdingTotal + depTotal : holdingTotal;
               return (
-                <tr key={y.year} className={getRowClass(y.year)}
-                  onClick={() => onSelectYear(y.year)}
-                  onMouseEnter={() => onHoverYear(y.year)}
-                  onMouseLeave={() => onHoverYear(null)}>
-                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i)}</td><td className="cft-td-divider" />
+                <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
                   {isInvestment && <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.councilRates + y.waterRates))}</td>
                   <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.insurance))}</td>

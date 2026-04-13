@@ -9,7 +9,6 @@ import {
   ResponsiveContainer,
   Cell,
   ComposedChart,
-  ReferenceLine,
   Area,
 } from "recharts";
 import { TrendingUp, Layers, Target } from "lucide-react";
@@ -166,20 +165,6 @@ export default function CashflowChart({
                   );
                 })}
               </Bar>
-              <ReferenceLine
-                x={`Yr ${selectedYear}`}
-                stroke={barColor}
-                strokeDasharray="3 3"
-                strokeOpacity={0.4}
-              />
-              {hoveredYear && hoveredYear !== selectedYear && (
-                <ReferenceLine
-                  x={`Yr ${hoveredYear}`}
-                  stroke={barColor}
-                  strokeDasharray="2 2"
-                  strokeOpacity={0.25}
-                />
-              )}
             </BarChart>
           ) : chartView === "stacked" ? (
             <ComposedChart
@@ -205,7 +190,6 @@ export default function CashflowChart({
               <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Area type="monotone" dataKey="propertyValue" stroke="#2dd4bf" strokeWidth={2} fill="url(#equityAreaGradient)" />
               <Area type="monotone" dataKey="loanBalance" stroke="#ef4444" strokeWidth={2} fill="url(#loanGradient)" />
-              <ReferenceLine x={`Yr ${selectedYear}`} stroke="#2dd4bf" strokeDasharray="3 3" strokeOpacity={0.5} />
             </ComposedChart>
           ) : viewMode === "deductions" ? (
             /* Deductions compare: Holding Costs (amber) vs Depreciation (purple) */
@@ -235,7 +219,6 @@ export default function CashflowChart({
                   <Cell key={entry.year} fill={entry.year === selectedYear ? "#c4b5fd" : entry.year === hoveredYear ? "#c4b5fd" : "#a78bfa"} opacity={entry.year === selectedYear ? 1 : entry.year === hoveredYear ? 0.85 : 0.5} />
                 ))}
               </Bar>
-              <ReferenceLine x={`Yr ${selectedYear}`} stroke="#2dd4bf" strokeDasharray="3 3" strokeOpacity={0.5} />
             </ComposedChart>
           ) : (
             /* Equity compare: Net Equity (teal) vs Loan Balance (red) */
@@ -265,7 +248,6 @@ export default function CashflowChart({
                   <Cell key={entry.year} fill={entry.year === selectedYear ? "#f87171" : entry.year === hoveredYear ? "#f87171" : "#ef4444"} opacity={entry.year === selectedYear ? 0.8 : entry.year === hoveredYear ? 0.65 : 0.4} />
                 ))}
               </Bar>
-              <ReferenceLine x={`Yr ${selectedYear}`} stroke="#2dd4bf" strokeDasharray="3 3" strokeOpacity={0.5} />
             </ComposedChart>
           )}
         </ResponsiveContainer>
