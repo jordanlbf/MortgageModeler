@@ -724,6 +724,7 @@
 }
 
 .cf-kpi-label {
+  margin-bottom: 4px;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.04em;
@@ -807,20 +808,17 @@
 }
 
 /* Chart header row — 3-column layout */
-.cf-chart-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-/* Center title container */
+/* Center title — absolutely centered over full chart-main width */
 .cf-center-title {
-  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-width: 0;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Split title — vertical hairline separator */
@@ -964,7 +962,7 @@
 }
 
 .cf-table-zone {
-  overflow-x: auto;
+  overflow: hidden;
 }
 
 /* Subtle scrollbar for table zones */
@@ -992,6 +990,7 @@
 
 /* Outer container: fills card width */
 .cft-outer {
+  position: relative;
   width: 100%;
 }
 
@@ -1013,8 +1012,6 @@
   background: transparent;
   border: none;
   border-radius: 0;
-  overflow-x: auto;
-  max-width: 100%;
 }
 
 .cft-table {
@@ -1026,18 +1023,21 @@
   width: 100%;
 }
 
-/* Min-width tiers — prevent column compression */
-.cft-table-narrow { min-width: 480px; }
-.cft-table-mid    { min-width: 600px; }
-.cft-table-wide   { min-width: 900px; }
+/* Width tiers — only enforce min-width on very wide tables */
+.cft-table-narrow { }
+.cft-table-mid    { }
+.cft-table-wide   { }
 
 /* ── Group headers (thin colour-coded labels) ── */
 .cft-group-row {
+  height: 28px;
   border-bottom: none;
 }
 
 .cft-group-cell {
-  padding: 14px 18px 6px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 12px;
   text-align: center;
   vertical-align: bottom;
 }
@@ -1104,11 +1104,14 @@
 
 /* ── Column headers (lowercase, light, receding) ── */
 .cft-header-row {
+  height: 48px;
   border-bottom: 1px solid rgba(113, 113, 122, 0.12);
 }
 
 .cft-th {
-  padding: 6px 18px 14px;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 12px;
   font-size: 11px;
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -1152,8 +1155,6 @@
 
 .cft-th-year {
   width: 6rem;
-  min-width: 6rem;
-  max-width: 6rem;
   text-align: center;
   padding-left: 10px;
   padding-right: 10px;
@@ -1187,6 +1188,7 @@
 
 /* ── Data rows ── */
 .cft-row {
+  height: 52px;
   transition: background 0.1s ease;
   cursor: pointer;
 }
@@ -1211,16 +1213,16 @@
 
 /* ── Data cells ── */
 .cft-td {
-  padding: 18px 18px;
+  height: 52px;
+  box-sizing: border-box;
+  padding: 0 12px;
   text-align: right;
   vertical-align: middle;
   border-bottom: 1px solid rgba(113, 113, 122, 0.07);
 }
 
 .cft-td-year {
-  width: 7rem;
-  min-width: 7rem;
-  max-width: 7rem;
+  width: 6rem;
   text-align: center;
   padding-left: 10px;
   padding-right: 10px;
@@ -1244,30 +1246,26 @@
    EXPANSION CONTROLS
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.cft-expansion-controls {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 0 8px;
-}
-
 .cft-expand-all-btn {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid rgba(113, 113, 122, 0.12);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.02);
-  color: rgba(161, 161, 170, 0.5);
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(161, 161, 170, 0.35);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: color 0.15s, background 0.15s;
 }
 
 .cft-expand-all-btn:hover {
   background: rgba(45, 212, 191, 0.08);
-  border-color: rgba(45, 212, 191, 0.2);
   color: var(--cf-accent);
 }
 
@@ -1460,11 +1458,9 @@
 
 .cft-row-separator .cft-td {
   border-bottom: 1px solid rgba(113, 113, 122, 0.07);
-  padding-top: 18px;
 }
 
 .cft-row-separator .cft-td-year {
-  padding-top: 18px;
 }
 
 .cft-row-separator .cft-td-divider {
@@ -1534,7 +1530,6 @@
 /* Tier 2: Neutral — summary columns (taxable inc.), bold bright */
 .cft-val-neutral {
   color: #f0fdfa;
-  font-weight: 700;
 }
 
 /* Tier 3: Outflow — muted red for detail expenses (prop ded, holding, principal) */
@@ -1550,7 +1545,7 @@
 
 /* Tier 4b: Positive — green for tax saved / positive benefits */
 .cft-val-positive {
-  color: #34d399;
+  color: var(--cf-positive);
   font-weight: 700;
 }
 

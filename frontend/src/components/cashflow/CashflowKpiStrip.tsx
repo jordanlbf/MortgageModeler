@@ -1,7 +1,7 @@
 "use client";
 
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
-import { formatCurrencyCf, formatAbbreviated } from "@/lib/cashflow-calculations";
+import { formatCurrencyCf, formatAbbreviated, getMarginalTaxRate } from "@/lib/cashflow-calculations";
 import KpiSparkline from "./KpiSparkline";
 
 interface KpiItem {
@@ -11,6 +11,7 @@ interface KpiItem {
   sub: string;
   sparkData?: number[];
   sparkColor?: string;
+  sparkStepped?: boolean;
 }
 
 interface Props {
@@ -28,74 +29,107 @@ export default function CashflowKpiStrip({
   viewMode, yearData, selectedYearData: sy,
   selectedYear, isInvestment, marginalRate, hasOffset, isHovered,
 }: Props) {
-  const y1 = yearData[0];
+  const d = sy ?? yearData[0];
   let items: KpiItem[] = [];
 
   if (viewMode === "summary") {
+    const totalIncome = d.salary + (isInvestment ? d.rentalIncome : 0);
+    const totalCosts = d.ongoingCosts + d.loanRepayment + d.incomeTaxCalc;
     items = [
       {
-        label: "Net Cashflow",
-        value: `${formatCurrencyCf(Math.round(y1.netCashflow / 12))}/mo`,
-        color: y1.netCashflow < 0 ? "var(--cf-negative)" : "var(--cf-positive)",
-        sub: `Year 1 · ${formatCurrencyCf(Math.round(y1.netCashflow))} p.a.`,
-        sparkData: yearData.map(y => y.netCashflow),
+        label: "Cashflow",
+        value: `${formatCurrencyCf(Math.round((totalIncome - totalCosts) / 12))} /month`,
+        color: totalIncome - totalCosts >= 0 ? "var(--cf-positive)" : "var(--cf-negative)",
+        sub: `${formatCurrencyCf(Math.round(totalIncome - totalCosts))} p.a.`,
+        sparkData: yearData.map(y => y.salary + (isInvestment ? y.rentalIncome : 0) - y.ongoingCosts - y.loanRepayment - y.incomeTaxCalc),
       },
       {
-        label: "Tax Saved",
-        value: `${y1.taxSaved > 0 ? "+" : ""}${formatCurrencyCf(Math.round(y1.taxSaved))}`,
+        label: "Annual Income",
+        value: formatCurrencyCf(Math.round(totalIncome)),
         color: "var(--cf-positive)",
-        sub: `Year 1 · ${Math.round(marginalRate * 100)}% marginal rate`,
-        sparkData: yearData.map(y => y.taxSaved),
+        sub: isInvestment ? `Salary + Rent` : "Salary",
+        sparkData: yearData.map(y => y.salary + (isInvestment ? y.rentalIncome : 0)),
       },
       {
-        label: "Property Value",
-        value: formatAbbreviated(y1.propertyValue),
-        color: "var(--cf-text)",
-        sub: formatCurrencyCf(Math.round(y1.propertyValue)),
-        sparkData: yearData.map(y => y.propertyValue),
+        label: "Annual Costs",
+        value: formatCurrencyCf(Math.round(totalCosts)),
+        color: "var(--cf-negative)",
+        sub: "Holding + Repayments + Tax",
+        sparkData: yearData.map(y => y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc),
       },
       {
-        label: "LVR",
-        value: `${(y1.loanBalance / y1.propertyValue * 100).toFixed(1)}%`,
-        color: (y1.loanBalance / y1.propertyValue * 100) > 80 ? "var(--cf-negative)" : "var(--cf-text)",
-        sub: "Loan-to-value ratio",
-        sparkData: yearData.map(y => y.loanBalance / y.propertyValue * 100),
+        label: "Tax Paid",
+        value: formatCurrencyCf(Math.round(d.incomeTaxCalc)),
+        color: "var(--cf-negative)",
+        sub: `${Math.round(marginalRate * 100)}% marginal rate`,
+        sparkData: yearData.map(y => y.incomeTaxCalc),
       },
     ];
   } else if (viewMode === "property") {
+    const holdingCosts = d.interestPortion + d.ongoingCosts;
+    const depreciation = d.depDiv43 + d.depDiv40;
+    const netGearing = d.rentalIncome - holdingCosts - depreciation;
     items = [
       {
-        label: "Property Cashflow",
-        value: `${formatCurrencyCf(Math.round(y1.propertyCashflow / 12))}/mo`,
-        color: y1.propertyCashflow < 0 ? "var(--cf-negative)" : "var(--cf-positive)",
-        sub: `Year 1 · ${formatCurrencyCf(Math.round(y1.propertyCashflow))} p.a.`,
+        label: "Holding Cost",
+        value: `${formatCurrencyCf(Math.round(holdingCosts / 12))} /month`,
+        color: "var(--cf-negative)",
+        sub: `${formatCurrencyCf(Math.round(holdingCosts))} p.a.`,
+        sparkData: yearData.map(y => y.interestPortion + y.ongoingCosts),
+      },
+      {
+        label: "Tax Offset",
+        value: `+${formatCurrencyCf(Math.round(d.taxSaved))}`,
+        color: "var(--cf-positive)",
+        sub: `${Math.round(marginalRate * 100)}% marginal rate`,
+        sparkData: yearData.map(y => y.taxSaved),
+      },
+      {
+        label: "After Tax Cashflow",
+        value: `${formatCurrencyCf(Math.round(d.propertyCashflow / 12))} /month`,
+        color: d.propertyCashflow >= 0 ? "var(--cf-positive)" : "var(--cf-negative)",
+        sub: `${formatCurrencyCf(Math.round(d.propertyCashflow))} p.a.`,
         sparkData: yearData.map(y => y.propertyCashflow),
       },
-      ...(isInvestment ? [{
-        label: "Gearing Status",
-        value: formatCurrencyCf(Math.round(y1.gearing)),
-        color: y1.gearing < 0 ? "var(--cf-negative)" : "var(--cf-positive)",
-        sub: y1.gearing < 0 ? "Negatively geared" : "Positively geared",
-        sparkData: yearData.map(y => y.gearing),
-      }] : [{
-        label: "Total Interest",
-        value: formatCurrencyCf(Math.round(yearData.reduce((s, y) => s + y.interestPortion, 0))),
-        color: "var(--cf-negative)",
-        sub: "Over 30 years",
-      }]),
       {
-        label: "Gross Rent",
-        value: formatCurrencyCf(Math.round(y1.grossRent)),
+        label: "Gearing",
+        value: netGearing < 0 ? "Negative" : "Positive",
+        color: netGearing < 0 ? "var(--cf-negative)" : "var(--cf-positive)",
+        sub: formatCurrencyCf(Math.round(netGearing)),
+        sparkData: yearData.map(y => y.rentalIncome - (y.interestPortion + y.ongoingCosts) - (y.depDiv43 + y.depDiv40)),
+        sparkStepped: true,
+      },
+    ];
+  } else if (viewMode === "tax" && d) {
+    const taxableIncome = d.grossIncome - d.totalDeductionsForTax;
+    const bracket = getMarginalTaxRate(taxableIncome);
+    items = [
+      {
+        label: "Taxable Income",
+        value: formatCurrencyCf(Math.round(taxableIncome)),
         color: "var(--cf-text)",
-        sub: `${formatCurrencyCf(Math.round(y1.grossRent / 52))}/wk`,
-        sparkData: yearData.map(y => y.rentalIncome),
+        sub: `Year ${selectedYear}`,
+        sparkData: yearData.map(y => y.grossIncome - y.totalDeductionsForTax),
       },
       {
-        label: "Holding Costs",
-        value: formatCurrencyCf(Math.round(y1.interestPortion + y1.ongoingCosts)),
+        label: "Tax Bracket",
+        value: `${(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%`,
         color: "#f59e0b",
-        sub: "Interest + ongoing",
-        sparkData: yearData.map(y => y.interestPortion + y.ongoingCosts),
+        sub: "Marginal rate",
+      },
+      {
+        label: "Income Tax",
+        value: formatCurrencyCf(Math.round(d.incomeTaxCalc)),
+        color: "var(--cf-negative)",
+        sub: "Incl. Medicare levy",
+        sparkData: yearData.map(y => y.incomeTaxCalc),
+      },
+      {
+        label: "Tax Saved",
+        value: `+${formatCurrencyCf(Math.round(d.taxSaved))}`,
+        color: "var(--cf-positive)",
+        sub: `vs. no property`,
+        sparkData: yearData.map(y => y.taxSaved),
       },
     ];
   } else if (viewMode === "equity" && sy) {
@@ -188,6 +222,7 @@ export default function CashflowKpiStrip({
               data={item.sparkData}
               color={item.sparkColor ?? item.color}
               selectedIndex={selectedIndex}
+              stepped={item.sparkStepped}
             />
           )}
         </div>

@@ -1,7 +1,7 @@
 export type PropertyUse = "investment" | "ppor";
 export type PurchaseMode = "new" | "existing";
 export type LoanType = "principal-interest" | "interest-only";
-export type ViewMode = "summary" | "property" | "equity" | "deductions";
+export type ViewMode = "summary" | "property" | "tax" | "equity" | "deductions";
 
 export interface YearData {
   year: number;

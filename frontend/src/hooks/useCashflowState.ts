@@ -265,7 +265,7 @@ export function useCashflowState(): CashflowState {
       const taxBenefitAmt = (isInvestment && rentalLossOrGain < 0) ? Math.abs(rentalLossOrGain) * taxRate : 0;
       const afterTaxCashflow = preTax + taxBenefitAmt;
 
-      const salaryVal = parseCurrencyCf(taxableIncome);
+      const salaryVal = parseCurrencyCf(taxableIncome) * Math.pow(1 + growth / 100, year - 1);
       const otherIncomeVal = 0;
       const ongoingCostsVal = annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata;
       const gearingVal = rental - interestPaid - ongoingCostsVal - depDiv43 - depDiv40;
@@ -348,6 +348,7 @@ export function useCashflowState(): CashflowState {
       switch (effectiveViewMode) {
         case "summary": return { year: y.year, value: y.netCashflow / 12 };
         case "property": return { year: y.year, value: y.propertyCashflow / 12 };
+        case "tax": return { year: y.year, value: y.taxSaved };
         case "equity": return { year: y.year, value: y.netEquity };
         case "deductions": return { year: y.year, value: isInvestment ? y.totalDeductions : y.ongoingCosts };
       }

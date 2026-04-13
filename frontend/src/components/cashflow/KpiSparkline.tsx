@@ -4,12 +4,13 @@ interface Props {
   data: number[];
   color: string;
   selectedIndex?: number;
+  stepped?: boolean;
   width?: number;
   height?: number;
 }
 
 export default function KpiSparkline({
-  data, color, selectedIndex = 0, width = 100, height = 24,
+  data, color, selectedIndex = 0, stepped = false, width = 100, height = 24,
 }: Props) {
   if (data.length < 2) return null;
 
@@ -24,9 +25,18 @@ export default function KpiSparkline({
     return [x, y] as const;
   });
 
+  const toStepPath = (pts: (readonly [number, number])[]) => {
+    if (pts.length === 0) return "";
+    let d = `M${pts[0][0]},${pts[0][1]}`;
+    for (let i = 1; i < pts.length; i++) {
+      d += ` H${pts[i][0]} V${pts[i][1]}`;
+    }
+    return d;
+  };
+
   const clampedIdx = Math.max(0, Math.min(selectedIndex, points.length - 1));
-  const allPts = points.map(p => `${p[0]},${p[1]}`).join(" ");
-  const activePts = points.slice(0, clampedIdx + 1).map(p => `${p[0]},${p[1]}`).join(" ");
+  const allPts = stepped ? toStepPath(points) : points.map(p => `${p[0]},${p[1]}`).join(" ");
+  const activePts = stepped ? toStepPath(points.slice(0, clampedIdx + 1)) : points.slice(0, clampedIdx + 1).map(p => `${p[0]},${p[1]}`).join(" ");
   const [sx, sy] = points[clampedIdx];
 
   return (
@@ -38,25 +48,17 @@ export default function KpiSparkline({
         style={{ display: "block" }}
       >
         {/* Full trajectory — faded */}
-        <polyline
-          points={allPts}
-          fill="none"
-          stroke={color}
-          strokeWidth={1}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity={0.15}
-        />
+        {stepped ? (
+          <path d={allPts} fill="none" stroke={color} strokeWidth={1} opacity={0.15} />
+        ) : (
+          <polyline points={allPts} fill="none" stroke={color} strokeWidth={1} strokeLinecap="round" strokeLinejoin="round" opacity={0.15} />
+        )}
         {/* Active segment — bright */}
-        <polyline
-          points={activePts}
-          fill="none"
-          stroke={color}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity={1}
-        />
+        {stepped ? (
+          <path d={activePts} fill="none" stroke={color} strokeWidth={1.5} opacity={1} />
+        ) : (
+          <polyline points={activePts} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" opacity={1} />
+        )}
         {/* Position dot */}
         <circle cx={sx} cy={sy} r={1.5} fill={color} />
       </svg>

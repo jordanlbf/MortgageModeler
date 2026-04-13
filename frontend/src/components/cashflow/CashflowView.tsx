@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import Header from "@/components/layout/Header";
@@ -37,6 +37,43 @@ export default function CashflowCalculator() {
   const [editStep, setEditStep] = useState<StepId>("setup");
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
   const [chartView, setChartView] = useState<ChartView>("bars");
+  const [tableExpanded, setTableExpanded] = useState<Set<number>>(new Set());
+  const autoExpandedRef = useRef<Set<number>>(new Set());
+
+  const isMilestoneYear = (year: number) => year === 1 || (year - 1) % 5 === 0;
+  const getMilestoneForYear = (year: number) => year === 1 ? 1 : Math.floor((year - 1) / 5) * 5 + 1;
+
+  const handleSelectYear = useCallback((year: number) => {
+    s.setSelectedYear(year);
+
+    const milestone = getMilestoneForYear(year);
+    const isVisible = isMilestoneYear(year) || tableExpanded.has(milestone);
+
+    // Collapse previously auto-expanded groups that no longer contain selection
+    const toCollapse = [...autoExpandedRef.current].filter(m => m !== milestone);
+    const next = new Set(tableExpanded);
+    let changed = false;
+
+    for (const m of toCollapse) {
+      if (next.has(m)) { next.delete(m); changed = true; }
+      autoExpandedRef.current.delete(m);
+    }
+
+    // Auto-expand if needed
+    if (!isVisible) {
+      next.add(milestone);
+      autoExpandedRef.current.add(milestone);
+      changed = true;
+    }
+
+    if (changed) setTableExpanded(next);
+  }, [s, tableExpanded]);
+
+  // Manual expand/collapse from table — clear auto-tracking for toggled milestones
+  const handleManualExpand = useCallback((expanded: Set<number>) => {
+    autoExpandedRef.current.clear();
+    setTableExpanded(expanded);
+  }, []);
 
 
   const stepOrder = s.isInvestment ? STEP_ORDER_INVESTMENT : STEP_ORDER_BASE;
@@ -139,14 +176,22 @@ export default function CashflowCalculator() {
         const vm = s.effectiveViewMode;
 
         // Title data for hero-value prototypes
+        const summaryCashflow = y1.salary + (s.isInvestment ? y1.rentalIncome : 0) - y1.ongoingCosts - y1.loanRepayment - y1.incomeTaxCalc;
         const heroValue = vm === "equity"
           ? formatCurrencyCf(Math.round(y1.netEquity))
           : vm === "deductions"
           ? formatCurrencyCf(Math.round(y1.totalDeductions))
+          : vm === "tax"
+          ? `+${formatCurrencyCf(Math.round(y1.taxSaved))}`
           : vm === "property"
           ? formatCurrencyCf(Math.round(y1.propertyCashflow))
-          : formatCurrencyCf(Math.round(y1.netCashflow));
-        const heroLabel = vm === "equity" ? "Net Equity" : vm === "deductions" ? "Total Deductions" : vm === "property" ? "Property Cashflow" : "Net Cashflow";
+          : formatCurrencyCf(Math.round(summaryCashflow));
+        const heroLabel = vm === "equity" ? "Net Equity" : vm === "deductions" ? "Total Deductions" : vm === "tax" ? "Tax Saved" : vm === "property" ? "Property Cashflow" : "Net Cashflow";
+        const heroColor = vm === "summary"
+          ? (summaryCashflow >= 0 ? "var(--cf-positive)" : "var(--cf-negative)")
+          : vm === "property"
+          ? (y1.propertyCashflow >= 0 ? "var(--cf-positive)" : "var(--cf-negative)")
+          : null;
 
         // Hero data per view mode — Fey-style: value + label (muted) + secondary + color
         const heroMap: Record<ViewMode, { value: string; label: string; monthly: string; color: string }> = {
@@ -161,6 +206,12 @@ export default function CashflowCalculator() {
             label: "property cashflow",
             monthly: `${formatCurrencyCf(Math.round(y1.propertyCashflow / 12))}/month`,
             color: y1.propertyCashflow >= 0 ? "var(--cf-accent)" : "var(--cf-negative)",
+          },
+          tax: {
+            value: `+${formatCurrencyCf(Math.round(y1.taxSaved))}`,
+            label: "tax saved",
+            monthly: `${Math.round(s.marginalRate * 100)}% marginal rate`,
+            color: "var(--cf-positive)",
           },
           equity: {
             value: formatCurrencyCf(Math.round(y1.netEquity)),
@@ -199,34 +250,31 @@ export default function CashflowCalculator() {
                   <span className="cf-year-overlay-cal">{calendarYear}</span>
                 </div>
 
-                {/* Chart view toggles + Center Title */}
-                <div className="cf-hero-area">
-                  <div className="cf-chart-header-row">
-                    {/* Left: Chart view toggles */}
-                    <div className="cf-mode-toggles">
-                      {(vm === "equity" ? chartViewOptions : vm === "deductions" ? [chartViewOptions[0], chartViewOptions[2]] : [chartViewOptions[0]]).map((view) => {
-                        const Icon = view.icon;
-                        return (
-                          <button
-                            key={view.id}
-                            onClick={() => setChartView(view.id)}
-                            className={`cf-mode-toggle ${((vm === "equity" || vm === "deductions") ? chartView : "bars") === view.id ? "active" : ""}`}
-                          >
-                            <Icon size={14} />
-                            {view.label}
-                          </button>
-                        );
-                      })}
-                    </div>
+                {/* Center title — absolutely centered over chart-main */}
+                <div className="cf-center-title">
+                  <div className="cf-title-split">
+                    <span className="cf-title-split-label">{heroLabel}</span>
+                    <span className="cf-title-split-divider" />
+                    <span className="cf-title-split-value" style={heroColor ? { color: heroColor } : undefined}>{heroValue}</span>
+                  </div>
+                </div>
 
-                    {/* Center: Title */}
-                    <div className="cf-center-title">
-                      <div className="cf-title-split">
-                        <span className="cf-title-split-label">{heroLabel}</span>
-                        <span className="cf-title-split-divider" />
-                        <span className="cf-title-split-value">{heroValue}</span>
-                      </div>
-                    </div>
+                {/* Chart view toggles */}
+                <div className="cf-hero-area">
+                  <div className="cf-mode-toggles">
+                    {(vm === "equity" ? chartViewOptions : vm === "deductions" ? [chartViewOptions[0], chartViewOptions[2]] : [chartViewOptions[0]]).map((view) => {
+                      const Icon = view.icon;
+                      return (
+                        <button
+                          key={view.id}
+                          onClick={() => setChartView(view.id)}
+                          className={`cf-mode-toggle ${((vm === "equity" || vm === "deductions") ? chartView : "bars") === view.id ? "active" : ""}`}
+                        >
+                          <Icon size={14} />
+                          {view.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -239,14 +287,15 @@ export default function CashflowCalculator() {
                     hoveredYear={hoveredYear}
                     isInvestment={s.isInvestment}
                     chartView={(vm === "equity" || vm === "deductions") ? chartView : "bars"}
-                    onSelectYear={s.setSelectedYear}
+                    onSelectYear={handleSelectYear}
                     onHoverYear={setHoveredYear}
                 />
 
                 {/* View mode tabs */}
                 <div className="cf-mode-tabs-row">
-                  {(["summary", "property", "equity", "deductions"] as ViewMode[]).map(m => {
-                    const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
+                  {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map(m => {
+                    if (m === "tax" && !s.isInvestment) return null;
+                    const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "tax" ? "Tax" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
                     return (
                       <button
                         key={m}
@@ -289,8 +338,9 @@ export default function CashflowCalculator() {
                       hasOffset={s.hasOffset}
                       propertyValue={s.propertyValue}
                       propertyPanel="gearing"
-
-                      onSelectYear={s.setSelectedYear}
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
                       onHoverYear={setHoveredYear}
                     />
                   </div>
@@ -306,8 +356,10 @@ export default function CashflowCalculator() {
                       hasOffset={s.hasOffset}
                       propertyValue={s.propertyValue}
                       propertyPanel="cashflow"
-
-                      onSelectYear={s.setSelectedYear}
+                      showExpandButton={false}
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
                       onHoverYear={setHoveredYear}
                     />
                   </div>
@@ -326,8 +378,9 @@ export default function CashflowCalculator() {
                       hasOffset={s.hasOffset}
                       propertyValue={s.propertyValue}
                       equityPanel="property"
-
-                      onSelectYear={s.setSelectedYear}
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
                       onHoverYear={setHoveredYear}
                     />
                   </div>
@@ -343,11 +396,31 @@ export default function CashflowCalculator() {
                       hasOffset={s.hasOffset}
                       propertyValue={s.propertyValue}
                       equityPanel="position"
-
-                      onSelectYear={s.setSelectedYear}
+                      showExpandButton={false}
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
                       onHoverYear={setHoveredYear}
                     />
                   </div>
+                </div>
+              </div>
+            ) : vm === "summary" || vm === "tax" ? (
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
                 </div>
               </div>
             ) : (
@@ -361,8 +434,9 @@ export default function CashflowCalculator() {
                     isInvestment={s.isInvestment}
                     hasOffset={s.hasOffset}
                     propertyValue={s.propertyValue}
-
-                    onSelectYear={s.setSelectedYear}
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
                     onHoverYear={setHoveredYear}
                   />
                 </div>
