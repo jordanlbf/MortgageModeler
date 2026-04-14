@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { ArrowRight, X, Home, Building2, Sparkles, Landmark, Coins, Key, Calculator } from "lucide-react";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyCf, formatCurrencyCf } from "@/lib/cashflow-calculations";
+import { estimateAnnualDepreciation } from "@/lib/depreciation-estimate";
 
 interface Props {
   s: CashflowState;
@@ -298,22 +299,83 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
         </div>
       )}
 
-      {step === "tax" && (
-        <div className="cf-wiz-fields">
-          <div className="cf-wiz-input-field">
-            <label className="cf-wiz-input-label">Taxable income (p.a.)</label>
-            <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.taxableIncome).toLocaleString()}`} onChange={(e) => s.setTaxableIncome(e.target.value)} />
+      {step === "tax" && (() => {
+        const propPrice = s.isNewPurchase ? parseCurrencyCf(s.purchasePrice) : parseCurrencyCf(s.currentValue);
+        const estYear = s.isNewPurchase ? new Date().getFullYear() : parseInt(s.purchaseYear) || new Date().getFullYear();
+        const estAnnual = estimateAnnualDepreciation(propPrice, s.isNewPurchase, estYear);
+
+        return (
+          <div className="cf-wiz-fields">
+            <div className="cf-wiz-input-field">
+              <label className="cf-wiz-input-label">Taxable income (p.a.)</label>
+              <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.taxableIncome).toLocaleString()}`} onChange={(e) => s.setTaxableIncome(e.target.value)} />
+            </div>
+            <div className="cf-wiz-input-field">
+              <label className="cf-wiz-input-label">Capital growth assumption (%)</label>
+              <input type="text" className="cf-wiz-input" value={s.capitalGrowth} onChange={(e) => s.setCapitalGrowth(e.target.value)} />
+            </div>
+
+            <div className="cf-wiz-section-divider" />
+
+            {/* Depreciation mode toggle */}
+            <div className="cf-wiz-field-group">
+              <span className="cf-wiz-field-label">Depreciation</span>
+              <div className="cf-wiz-option-row">
+                <button className={`cf-wiz-opt compact ${s.depreciationMode === "estimate" ? "selected" : ""}`} onClick={() => s.setDepreciationMode("estimate")}>Estimate</button>
+                <button className={`cf-wiz-opt compact ${s.depreciationMode === "detailed" ? "selected" : ""}`} onClick={() => s.setDepreciationMode("detailed")}>Detailed</button>
+              </div>
+            </div>
+
+            {s.depreciationMode === "estimate" && (
+              <div className="cf-wiz-estimate-preview">
+                <span className="cf-wiz-estimate-value">~{formatCurrencyCf(estAnnual)}/yr</span>
+                <span className="cf-wiz-estimate-note">estimated from {formatCurrencyCf(propPrice)} property</span>
+              </div>
+            )}
+
+            {s.depreciationMode === "detailed" && (
+              <>
+                {/* Buildings */}
+                <div className="cf-wiz-field-group">
+                  <span className="cf-wiz-field-label">Buildings (Div 43)</span>
+                  {s.depBuildings.map((b, i) => (
+                    <div key={i} className="cf-wiz-dep-item">
+                      <input type="text" className="cf-wiz-input cf-wiz-input-sm" value={b.name} onChange={(e) => {
+                        const next = [...s.depBuildings]; next[i] = { ...b, name: e.target.value }; s.setDepBuildings(next);
+                      }} placeholder="Name" />
+                      <input type="text" className="cf-wiz-input cf-wiz-input-sm" value={`$${b.construction_cost.toLocaleString()}`} onChange={(e) => {
+                        const next = [...s.depBuildings]; next[i] = { ...b, construction_cost: parseCurrencyCf(e.target.value) }; s.setDepBuildings(next);
+                      }} placeholder="Cost" />
+                      <button className="cf-wiz-dep-remove" onClick={() => { const next = [...s.depBuildings]; next.splice(i, 1); s.setDepBuildings(next); }}>×</button>
+                    </div>
+                  ))}
+                  <button className="cf-wiz-dep-add" onClick={() => s.setDepBuildings([...s.depBuildings, { name: "Building", construction_cost: 0, purchase_date: `${estYear}-07-01`, construction_start_date: `${estYear - 2}-01-01` }])}>+ Add building</button>
+                </div>
+
+                {/* Assets */}
+                <div className="cf-wiz-field-group">
+                  <span className="cf-wiz-field-label">Assets (Div 40)</span>
+                  {s.depAssets.map((a, i) => (
+                    <div key={i} className="cf-wiz-dep-item">
+                      <input type="text" className="cf-wiz-input cf-wiz-input-sm" value={a.name} onChange={(e) => {
+                        const next = [...s.depAssets]; next[i] = { ...a, name: e.target.value }; s.setDepAssets(next);
+                      }} placeholder="Name" />
+                      <input type="text" className="cf-wiz-input cf-wiz-input-sm" value={`$${a.cost.toLocaleString()}`} onChange={(e) => {
+                        const next = [...s.depAssets]; next[i] = { ...a, cost: parseCurrencyCf(e.target.value) }; s.setDepAssets(next);
+                      }} placeholder="Cost" />
+                      <input type="text" className="cf-wiz-input cf-wiz-input-sm" value={String(a.effective_life_years)} onChange={(e) => {
+                        const next = [...s.depAssets]; next[i] = { ...a, effective_life_years: parseInt(e.target.value) || 1 }; s.setDepAssets(next);
+                      }} placeholder="Life (yrs)" />
+                      <button className="cf-wiz-dep-remove" onClick={() => { const next = [...s.depAssets]; next.splice(i, 1); s.setDepAssets(next); }}>×</button>
+                    </div>
+                  ))}
+                  <button className="cf-wiz-dep-add" onClick={() => s.setDepAssets([...s.depAssets, { name: "Asset", cost: 0, effective_life_years: 10, purchase_date: `${estYear}-07-01`, method: "diminishing_value", written_down_value: 0 }])}>+ Add asset</button>
+                </div>
+              </>
+            )}
           </div>
-          <div className="cf-wiz-input-field">
-            <label className="cf-wiz-input-label">Depreciation (p.a.)</label>
-            <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.depreciation).toLocaleString()}`} onChange={(e) => s.setDepreciation(e.target.value)} />
-          </div>
-          <div className="cf-wiz-input-field">
-            <label className="cf-wiz-input-label">Capital growth assumption (%)</label>
-            <input type="text" className="cf-wiz-input" value={s.capitalGrowth} onChange={(e) => s.setCapitalGrowth(e.target.value)} />
-          </div>
-        </div>
-      )}
+        );
+      })()}
     </>
   );
 

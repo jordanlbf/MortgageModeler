@@ -1950,6 +1950,78 @@
   margin: 4px 0;
 }
 
+/* Depreciation estimate preview */
+.cf-wiz-estimate-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  background: rgba(45, 212, 191, 0.05);
+  border: 1px solid rgba(45, 212, 191, 0.12);
+  border-radius: 8px;
+}
+
+.cf-wiz-estimate-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cf-accent);
+  font-feature-settings: "tnum";
+}
+
+.cf-wiz-estimate-note {
+  font-size: 12px;
+  color: var(--cf-text-dim);
+}
+
+/* Depreciation detailed items */
+.cf-wiz-dep-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.cf-wiz-input-sm {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.cf-wiz-dep-remove {
+  background: none;
+  border: none;
+  color: var(--cf-text-dim);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.cf-wiz-dep-remove:hover {
+  color: var(--cf-negative);
+}
+
+.cf-wiz-dep-add {
+  background: none;
+  border: 1px dashed var(--cf-border);
+  color: var(--cf-text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.cf-wiz-dep-add:hover {
+  border-color: var(--cf-accent);
+  color: var(--cf-accent);
+}
+
 /* Checkbox */
 .cf-wiz-checkbox-row {
   padding-top: 2px;

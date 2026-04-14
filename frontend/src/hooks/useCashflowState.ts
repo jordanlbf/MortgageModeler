@@ -69,6 +69,9 @@ export interface CashflowState {
   // Form values – Tax
   taxableIncome: string;
   depreciation: string;
+  depreciationMode: "estimate" | "detailed";
+  depBuildings: Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>;
+  depAssets: Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: "diminishing_value" | "prime_cost"; written_down_value: number }>;
   capitalGrowth: string;
 
   // View state
@@ -116,6 +119,9 @@ export interface CashflowState {
   setManagementFee: (v: string) => void;
   setTaxableIncome: (v: string) => void;
   setDepreciation: (v: string) => void;
+  setDepreciationMode: (v: "estimate" | "detailed") => void;
+  setDepBuildings: (v: Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>) => void;
+  setDepAssets: (v: Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: "diminishing_value" | "prime_cost"; written_down_value: number }>) => void;
   setCapitalGrowth: (v: string) => void;
   setViewMode: (v: ViewMode) => void;
   setSelectedYear: (v: number) => void;
@@ -176,6 +182,9 @@ export function useCashflowState(): CashflowState {
   // Form values - Tax
   const [taxableIncome, setTaxableIncome] = useState("120000");
   const [depreciation, setDepreciation] = useState("8000");
+  const [depreciationMode, setDepreciationMode] = useState<"estimate" | "detailed">("estimate");
+  const [depBuildings, setDepBuildings] = useState<Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>>([]);
+  const [depAssets, setDepAssets] = useState<Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: "diminishing_value" | "prime_cost"; written_down_value: number }>>([]);
   const [capitalGrowth, setCapitalGrowth] = useState("3.5");
 
   // Output view state
@@ -434,7 +443,7 @@ export function useCashflowState(): CashflowState {
     interestRate, loanTerm, loanType, ioPeriod, hasOffset, offsetBalance, extraRepayments,
     councilRates, waterRates, insurance, maintenance, hasStrata, strataFees,
     weeklyRent, vacancyRate, usePropertyManager, managementFee,
-    taxableIncome, depreciation, capitalGrowth,
+    taxableIncome, depreciation, depreciationMode, depBuildings, depAssets, capitalGrowth,
     viewMode, selectedYear, hoveredYear, expandedSections,
     yearData, chartData, selectedYearData,
     setPropertyUse, setPurchaseMode,
@@ -443,7 +452,7 @@ export function useCashflowState(): CashflowState {
     setInterestRate, setLoanTerm, setLoanType, setIoPeriod, setHasOffset, setOffsetBalance, setExtraRepayments,
     setCouncilRates, setWaterRates, setInsurance, setMaintenance, setHasStrata, setStrataFees,
     setWeeklyRent, setVacancyRate, setUsePropertyManager, setManagementFee,
-    setTaxableIncome, setDepreciation, setCapitalGrowth,
+    setTaxableIncome, setDepreciation, setDepreciationMode, setDepBuildings, setDepAssets, setCapitalGrowth,
     setViewMode, setSelectedYear, setHoveredYear, setExpandedSections,
     toggleSection, resetSection,
   };
