@@ -106,10 +106,9 @@ export default function CashflowDataTable({
             {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
           </span>
         )}
-        <span className={`cft-year-badge ${isSelected ? "cft-year-badge-selected" : isHovered ? "cft-year-badge-hovered" : ""}`}>
-          {year}
+        <span className={`cft-year-badge ${isSelected ? "cft-year-badge-selected" : isHovered ? "cft-year-badge-hovered" : ""}`} style={{ color: isMilestoneRow ? "var(--cf-accent)" : "rgba(255, 255, 255, 0.75)" }}>
+          Year {year}
         </span>
-        <span className="cft-year-badge-cal">{cal}</span>
       </span>
     );
   };

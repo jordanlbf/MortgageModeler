@@ -102,6 +102,47 @@
 }
 
 /* ── Fey outer card — subtle, minimal surface ── */
+.cf-year-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  padding: 30px 0 10px;
+}
+
+.cf-year-label-year {
+  font-size: 23px;
+  font-weight: 600;
+  color: var(--cf-accent);
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+}
+
+.cf-year-label-cal {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--cf-text-dim);
+}
+
+.cf-year-label-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(113, 113, 122, 0.25);
+}
+
+.cf-year-label-value {
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+}
+
+.cf-year-label-metric {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--cf-text-dim);
+}
+
 .cf-outer-card {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(113, 113, 122, 0.08);
@@ -863,6 +904,7 @@
   display: flex;
   gap: 6px;
   margin-top: 20px;
+  margin-bottom: 12px;
   padding-right: 24px;
 }
 
@@ -1252,6 +1294,14 @@
   background: rgba(0, 0, 0, 0.02);
 }
 
+.cft-row-child.cft-row-hover {
+  background: rgba(45, 212, 191, 0.015);
+}
+
+.cft-row-child.cft-row-active {
+  background: rgba(45, 212, 191, 0.045);
+}
+
 /* ── Year cell formatting ── */
 .cft-year-cell {
   white-space: nowrap;
@@ -1359,28 +1409,21 @@
 }
 
 .cft-year-badge {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cf-accent);
   transition: all 0.15s ease;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .cft-year-badge-hovered {
-  background: rgba(45, 212, 191, 0.1);
-  color: rgba(255, 255, 255, 0.7);
+  opacity: 0.8;
 }
 
 .cft-year-badge-selected {
-  background: var(--cf-accent);
-  color: var(--cf-accent-contrast);
+  opacity: 1;
 }
 
 .cft-year-badge-cal {

@@ -239,16 +239,21 @@ export default function CashflowCalculator() {
             <div className="cf-chart-row">
               <div className="cf-chart-main">
                 {/* Chart header — title left, year right */}
-                <div className="cf-chart-header">
-                  <div className="cf-title-split">
-                    <span className="cf-title-split-label">{heroLabel}</span>
-                    <span className="cf-title-split-divider" />
-                    <span className="cf-title-split-value" style={heroColor ? { color: heroColor } : undefined}>{heroValue}</span>
-                  </div>
-                  <div className="cf-year-overlay">
-                    <span className="cf-year-overlay-yr" style={{ color: "var(--cf-accent)" }}>Year {displayYear}</span>
-                    <span className="cf-year-overlay-cal">{calendarYear}</span>
-                  </div>
+                {/* View mode tabs — above chart */}
+                <div className="cf-mode-tabs-row">
+                  {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map(m => {
+                    if (m === "tax" && !s.isInvestment) return null;
+                    const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "tax" ? "Tax" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
+                    return (
+                      <button
+                        key={m}
+                        className={`cf-mode-tab ${vm === m ? "active" : ""}`}
+                        onClick={() => { s.setViewMode(m); s.setSelectedYear(1); }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Chart */}
@@ -264,21 +269,13 @@ export default function CashflowCalculator() {
                     onHoverYear={setHoveredYear}
                 />
 
-                {/* View mode tabs */}
-                <div className="cf-mode-tabs-row">
-                  {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map(m => {
-                    if (m === "tax" && !s.isInvestment) return null;
-                    const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "tax" ? "Tax" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
-                    return (
-                      <button
-                        key={m}
-                        className={`cf-mode-tab ${vm === m ? "active" : ""}`}
-                        onClick={() => { s.setViewMode(m); s.setSelectedYear(1); }}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
+                {/* Year + value label — below chart */}
+                <div className="cf-year-label">
+                  <span className="cf-year-label-year">Year {displayYear}</span>
+                  <span className="cf-year-label-cal">{calendarYear}</span>
+                  <span className="cf-year-label-divider" />
+                  <span className="cf-year-label-value" style={heroColor ? { color: heroColor } : undefined}>{heroValue}</span>
+                  <span className="cf-year-label-metric">{heroLabel}</span>
                 </div>
               </div>
             </div>
