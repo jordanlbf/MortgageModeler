@@ -21,6 +21,7 @@ export interface CashflowState {
   isNewPurchase: boolean;
 
   // Completion
+  setupComplete: boolean;
   propertyComplete: boolean;
   loanComplete: boolean;
   costsComplete: boolean;
@@ -39,6 +40,7 @@ export interface CashflowState {
   depositAmount: string;
   currentValue: string;
   originalPurchasePrice: string;
+  purchaseYear: string;
   currentLoanBalance: string;
 
   // Form values – Loan
@@ -83,6 +85,7 @@ export interface CashflowState {
   // Setters
   setPropertyUse: (v: PropertyUse | null) => void;
   setPurchaseMode: (v: PurchaseMode | null) => void;
+  setSetupComplete: (v: boolean) => void;
   setPropertyComplete: (v: boolean) => void;
   setLoanComplete: (v: boolean) => void;
   setCostsComplete: (v: boolean) => void;
@@ -92,6 +95,7 @@ export interface CashflowState {
   setDepositAmount: (v: string) => void;
   setCurrentValue: (v: string) => void;
   setOriginalPurchasePrice: (v: string) => void;
+  setPurchaseYear: (v: string) => void;
   setCurrentLoanBalance: (v: string) => void;
   setInterestRate: (v: string) => void;
   setLoanTerm: (v: string) => void;
@@ -131,6 +135,7 @@ export function useCashflowState(): CashflowState {
   const [purchaseMode, setPurchaseMode] = useState<PurchaseMode | null>(null);
 
   // Progressive form completion
+  const [setupComplete, setSetupComplete] = useState(false);
   const [propertyComplete, setPropertyComplete] = useState(false);
   const [loanComplete, setLoanComplete] = useState(false);
   const [costsComplete, setCostsComplete] = useState(false);
@@ -142,6 +147,7 @@ export function useCashflowState(): CashflowState {
   const [depositAmount, setDepositAmount] = useState("0");
   const [currentValue, setCurrentValue] = useState("850000");
   const [originalPurchasePrice, setOriginalPurchasePrice] = useState("650000");
+  const [purchaseYear, setPurchaseYear] = useState(String(new Date().getFullYear() - 3));
   const [currentLoanBalance, setCurrentLoanBalance] = useState("480000");
 
   // Form values - Loan
@@ -186,8 +192,8 @@ export function useCashflowState(): CashflowState {
   const isNewPurchase = purchaseMode === "new";
 
   const allComplete = isInvestment
-    ? propertyComplete && loanComplete && costsComplete && rentalComplete && taxComplete
-    : propertyComplete && loanComplete && costsComplete;
+    ? setupComplete && propertyComplete && loanComplete && costsComplete && rentalComplete && taxComplete
+    : setupComplete && propertyComplete && loanComplete && costsComplete;
 
   const loanAmount = isNewPurchase
     ? parseCurrencyCf(purchasePrice) - parseCurrencyCf(depositAmount)
@@ -373,6 +379,7 @@ export function useCashflowState(): CashflowState {
       case "propertyUse":
         setPropertyUse(null);
         setPurchaseMode(null);
+        setSetupComplete(false);
         setPropertyComplete(false);
         setLoanComplete(false);
         setCostsComplete(false);
@@ -381,6 +388,7 @@ export function useCashflowState(): CashflowState {
         break;
       case "purchaseMode":
         setPurchaseMode(null);
+        setSetupComplete(false);
         setPropertyComplete(false);
         setLoanComplete(false);
         setCostsComplete(false);
@@ -420,9 +428,9 @@ export function useCashflowState(): CashflowState {
 
   return {
     propertyUse, purchaseMode, isInvestment, isNewPurchase,
-    propertyComplete, loanComplete, costsComplete, rentalComplete, taxComplete, allComplete,
+    setupComplete, propertyComplete, loanComplete, costsComplete, rentalComplete, taxComplete, allComplete,
     loanAmount, propertyValue, effectiveViewMode, marginalRate,
-    purchasePrice, depositAmount, currentValue, originalPurchasePrice, currentLoanBalance,
+    purchasePrice, depositAmount, currentValue, originalPurchasePrice, purchaseYear, currentLoanBalance,
     interestRate, loanTerm, loanType, ioPeriod, hasOffset, offsetBalance, extraRepayments,
     councilRates, waterRates, insurance, maintenance, hasStrata, strataFees,
     weeklyRent, vacancyRate, usePropertyManager, managementFee,
@@ -430,8 +438,8 @@ export function useCashflowState(): CashflowState {
     viewMode, selectedYear, hoveredYear, expandedSections,
     yearData, chartData, selectedYearData,
     setPropertyUse, setPurchaseMode,
-    setPropertyComplete, setLoanComplete, setCostsComplete, setRentalComplete, setTaxComplete,
-    setPurchasePrice, setDepositAmount, setCurrentValue, setOriginalPurchasePrice, setCurrentLoanBalance,
+    setSetupComplete, setPropertyComplete, setLoanComplete, setCostsComplete, setRentalComplete, setTaxComplete,
+    setPurchasePrice, setDepositAmount, setCurrentValue, setOriginalPurchasePrice, setPurchaseYear, setCurrentLoanBalance,
     setInterestRate, setLoanTerm, setLoanType, setIoPeriod, setHasOffset, setOffsetBalance, setExtraRepayments,
     setCouncilRates, setWaterRates, setInsurance, setMaintenance, setHasStrata, setStrataFees,
     setWeeklyRent, setVacancyRate, setUsePropertyManager, setManagementFee,

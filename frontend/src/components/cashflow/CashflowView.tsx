@@ -20,7 +20,7 @@ const STEP_ORDER_INVESTMENT: StepId[] = ["setup", "property", "loan", "costs", "
 const STEP_ORDER_BASE: StepId[] = ["setup", "property", "loan", "costs"];
 
 function getNaturalStep(s: ReturnType<typeof useCashflowState>): StepId | null {
-  if (!s.propertyUse || !s.purchaseMode) return "setup";
+  if (!s.propertyUse || !s.purchaseMode || !s.setupComplete) return "setup";
   if (!s.propertyComplete) return "property";
   if (!s.loanComplete) return "loan";
   if (!s.costsComplete) return "costs";
@@ -88,7 +88,7 @@ export default function CashflowCalculator() {
 
   const handleWizardStepComplete = useCallback(() => {
     switch (currentWizardStep) {
-      case "setup": break;
+      case "setup": s.setSetupComplete(true); break;
       case "property": s.setPropertyComplete(true); break;
       case "loan": s.setLoanComplete(true); break;
       case "costs": s.setCostsComplete(true); break;

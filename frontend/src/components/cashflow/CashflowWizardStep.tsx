@@ -17,12 +17,12 @@ interface Props {
 type StepId = "setup" | "property" | "loan" | "costs" | "rental" | "tax";
 
 const STEP_META: Record<StepId, { title: string; subtitle: string; icon: React.ElementType }> = {
-  setup:    { title: "Property setup",   subtitle: "Define your property type and purchase scenario",  icon: Home       },
-  property: { title: "Property",         subtitle: "Enter your property details",                      icon: Building2  },
-  loan:     { title: "Loan",             subtitle: "Configure your loan structure",                    icon: Landmark   },
-  costs:    { title: "Costs",            subtitle: "Annual holding costs and expenses",                icon: Coins      },
-  rental:   { title: "Rental income",    subtitle: "Expected rental yield and management",             icon: Key        },
-  tax:      { title: "Tax",              subtitle: "Income and depreciation for tax modelling",        icon: Calculator },
+  setup:    { title: "Property Setup",   subtitle: "",  icon: Home       },
+  property: { title: "Property",         subtitle: "",  icon: Building2  },
+  loan:     { title: "Loan",             subtitle: "",  icon: Landmark   },
+  costs:    { title: "Costs",            subtitle: "",  icon: Coins      },
+  rental:   { title: "Rental Income",    subtitle: "",  icon: Key        },
+  tax:      { title: "Tax",              subtitle: "",  icon: Calculator },
 };
 
 function getStepOrder(isInvestment: boolean): StepId[] {
@@ -138,6 +138,10 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
                 <label className="cf-wiz-input-label">Original purchase price</label>
                 <input type="text" className="cf-wiz-input" value={`$${parseCurrencyCf(s.originalPurchasePrice).toLocaleString()}`} onChange={(e) => s.setOriginalPurchasePrice(e.target.value)} />
               </div>
+              <div className="cf-wiz-input-field">
+                <label className="cf-wiz-input-label">Year purchased</label>
+                <input type="text" className="cf-wiz-input" value={s.purchaseYear} onChange={(e) => s.setPurchaseYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="2021" />
+              </div>
               <div className="cf-wiz-summary-strip">
                 <div className="cf-wiz-summary-item">
                   <span className="cf-wiz-summary-label">Equity</span>
@@ -168,13 +172,11 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
         const offset = parseCurrencyCf(s.offsetBalance);
         const effectivePrincipal = Math.max(0, principal - (s.hasOffset ? offset : 0));
         let monthlyRepayment = 0;
-        if (s.loanType === "interest-only") {
-          monthlyRepayment = effectivePrincipal * (parseFloat(s.interestRate) / 100 / 12);
-        } else if (rate > 0 && n > 0) {
+        if (rate > 0 && n > 0) {
           monthlyRepayment = effectivePrincipal * (rate * Math.pow(1 + rate, n)) / (Math.pow(1 + rate, n) - 1);
         }
         const monthlyInterest = effectivePrincipal * (parseFloat(s.interestRate) / 100 / 12);
-        const monthlyPrincipal = s.loanType === "principal-interest" ? monthlyRepayment - monthlyInterest : 0;
+        const monthlyPrincipal = monthlyRepayment - monthlyInterest;
 
         return (
           <div className="cf-wiz-fields">
@@ -186,9 +188,8 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
               </div>
               <div className="cf-wiz-loan-banner-breakdown">
                 <span className="cf-wiz-loan-banner-sub">{formatCurrencyCf(monthlyInterest)} interest</span>
-                {s.loanType === "principal-interest" && (
-                  <><span className="cf-wiz-loan-banner-dot">·</span><span className="cf-wiz-loan-banner-sub">{formatCurrencyCf(monthlyPrincipal)} principal</span></>
-                )}
+                <span className="cf-wiz-loan-banner-dot">·</span>
+                <span className="cf-wiz-loan-banner-sub">{formatCurrencyCf(monthlyPrincipal)} principal</span>
               </div>
             </div>
 
@@ -209,25 +210,6 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
                 </div>
               </div>
             </div>
-
-            {/* Loan type */}
-            <div className="cf-wiz-field-group">
-              <span className="cf-wiz-field-label">Repayment type</span>
-              <div className="cf-wiz-option-row">
-                <button className={`cf-wiz-opt compact ${s.loanType === "principal-interest" ? "selected" : ""}`} onClick={() => s.setLoanType("principal-interest")}>P&amp;I</button>
-                <button className={`cf-wiz-opt compact ${s.loanType === "interest-only" ? "selected" : ""}`} onClick={() => s.setLoanType("interest-only")}>Interest Only</button>
-              </div>
-            </div>
-
-            {s.loanType === "interest-only" && (
-              <div className="cf-wiz-input-field">
-                <label className="cf-wiz-input-label">IO period</label>
-                <div className="cf-wiz-input-wrap">
-                  <input type="text" className="cf-wiz-input cf-wiz-input-suffix" value={s.ioPeriod} onChange={(e) => s.setIoPeriod(e.target.value)} />
-                  <span className="cf-wiz-input-unit">yrs</span>
-                </div>
-              </div>
-            )}
 
             {/* Offset & extras */}
             <div className="cf-wiz-section-divider" />
@@ -362,10 +344,6 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
 
         {/* Card */}
         <div className={`cf-wiz-card ${step === "setup" ? "cf-wiz-card--centered" : ""}`}>
-          <div className="cf-wiz-header">
-            <h2 className="cf-wiz-title">{meta.title}</h2>
-            <p className="cf-wiz-subtitle">{meta.subtitle}</p>
-          </div>
           <div className="cf-wiz-content">{fieldsContent}</div>
           {footerContent}
         </div>

@@ -49,6 +49,8 @@
 }
 
 .cf-wizard-view-inner {
+  --wiz-header-height: 16px;
+  --wiz-header-to-content: 35px;
   display: flex;
   width: 100%;
   max-width: 960px;
@@ -58,7 +60,7 @@
 .cf-wizard-view-main {
   flex: 1;
   min-width: 0;
-  padding: 32px 48px 32px 56px;
+  padding: 8px 48px 32px 56px;
   display: flex;
   align-items: flex-start;
 }
@@ -185,19 +187,23 @@
   flex-direction: column;
 }
 
+/* Row 1 header — shared height with wizard breadcrumb */
+
 /* ── Sidebar Nav ── */
 .cf-sidebar-nav {
   display: flex;
   flex-direction: column;
 }
 
-/* Header with progress */
+/* Header — height shared with wizard breadcrumb via --wiz-row1-height */
 .cf-sidebar-nav-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
+  height: var(--wiz-header-height);
   margin-bottom: 12px;
+  line-height: 1;
 }
 
 .cf-sidebar-nav-head {
@@ -1629,7 +1635,7 @@
 .cf-wiz-wrap {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: var(--wiz-header-to-content);
   width: 100%;
   max-width: 480px;
 }
@@ -1638,11 +1644,15 @@
 .cf-wiz-breadcrumb {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 10px;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--cf-text-muted);
-  margin-bottom: 12px;
+  height: var(--wiz-header-height);
+  line-height: 1;
 }
 
 .cf-wiz-breadcrumb-step {
@@ -1713,7 +1723,7 @@
 
 /* Content area */
 .cf-wiz-content {
-  padding: 32px 0 12px;
+  padding: 15px 0 12px;
 }
 
 /* Fields container */
