@@ -245,8 +245,8 @@ export interface CashflowPropertyRequest {
   annual_appreciation: number;
   purchase_costs: CashflowPurchaseCostsRequest;
   rental: CashflowRentalConfigRequest;
-  depreciable_buildings: [];
-  depreciable_assets: [];
+  depreciable_buildings: Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>;
+  depreciable_assets: Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: string; written_down_value: number }>;
 }
 
 export interface CashflowLoanRequest {
@@ -287,6 +287,28 @@ export interface CashflowRentvestRequest extends CashflowPPORRequest {
 
 // Response types
 
+export interface OngoingCostsDetail {
+  council_rates: number;
+  water_rates: number;
+  building_insurance: number;
+  landlord_insurance: number;
+  strata_fees: number;
+  maintenance_cost: number;
+  management_fee: number;
+}
+
+export interface TaxDeductionDetail {
+  mortgage_interest: number;
+  depreciation_building: number;
+  depreciation_plant: number;
+  deductible_expenses: number;
+  total_deductions: number;
+  net_rental_income: number;
+  is_negatively_geared: boolean;
+  tax_saving: number;
+  borrowing_costs_deduction: number;
+}
+
 export interface CashflowYearRow {
   year: number;
   net_income: number;
@@ -306,6 +328,10 @@ export interface CashflowYearRow {
   loan_balance: number;
   equity: number;
   offset_balance: number;
+  salary: number;
+  income_tax: number;
+  ongoing_costs_detail: OngoingCostsDetail | null;
+  tax_deduction_detail: TaxDeductionDetail | null;
 }
 
 export interface CashflowSummary {
@@ -388,6 +414,70 @@ export async function fetchCashflowRentvest(
   signal?: AbortSignal,
 ): Promise<CashflowRentvestResponse> {
   const res = await fetch(`${API_BASE}/api/cashflow/rentvest`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+    signal,
+  });
+
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+// ── Single property cashflow ────────────────
+
+export interface CashflowSingleExistingPropertyRequest {
+  purchase_date: string;
+  purchase_price: number;
+  purchase_costs?: CashflowPurchaseCostsRequest;
+  is_new_property: boolean;
+  current_value: number;
+  annual_appreciation: number;
+  depreciable_buildings: Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>;
+  depreciable_assets: Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: string; written_down_value: number }>;
+  original_borrowing_costs_total?: number;
+  borrowing_costs_years_elapsed?: number;
+}
+
+export interface CashflowSingleExistingLoanRequest {
+  current_balance: number;
+  remaining_term_years: number;
+  annual_rate: number;
+  frequency?: string;
+  offset_balance?: number;
+  offset_contribution?: number;
+  extra_repayment?: number;
+  rate_changes?: [];
+}
+
+export interface CashflowSingleRequest {
+  mode: "new" | "existing";
+  property_use: "ppor" | "investment";
+  projection_years?: number;
+  tax_profile: CashflowTaxProfileRequest;
+  ongoing_costs: CashflowOngoingCostsRequest;
+  rental?: CashflowRentalConfigRequest | null;
+  property?: CashflowPropertyRequest | null;
+  loan?: CashflowLoanRequest | null;
+  existing_property?: CashflowSingleExistingPropertyRequest | null;
+  existing_loan?: CashflowSingleExistingLoanRequest | null;
+}
+
+export interface CashflowSingleResponse {
+  mode: string;
+  property_use: string;
+  projection_years: number;
+  upfront_costs: CashflowUpfrontCosts | null;
+  years: CashflowYearRow[];
+  cgt: CashflowCGT | null;
+  summary: CashflowSummary;
+}
+
+export async function fetchCashflowSingle(
+  params: CashflowSingleRequest,
+  signal?: AbortSignal,
+): Promise<CashflowSingleResponse> {
+  const res = await fetch(`${API_BASE}/api/cashflow/single`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(params),

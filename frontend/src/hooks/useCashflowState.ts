@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import type { PropertyUse, PurchaseMode, LoanType, ViewMode, YearData } from "@/lib/cashflow-types";
 import {
   parseCurrencyCf,
-  calculateMonthlyRepayment,
-  calculateIOPayment,
-  calculateLoanBalanceAtYear,
   getMarginalTaxRate,
   calculateIncomeTax,
 } from "@/lib/cashflow-calculations";
+import { fetchCashflowSingle, type CashflowSingleRequest, type CashflowYearRow } from "@/lib/api";
+import { generateDepreciationEstimate } from "@/lib/depreciation-estimate";
 
 // ── Public interface ─────────────────────────────────────────────────────────
 
@@ -215,145 +214,229 @@ export function useCashflowState(): CashflowState {
   const effectiveViewMode: ViewMode = viewMode;
   const marginalRate = getMarginalTaxRate(parseCurrencyCf(taxableIncome));
 
-  // ── 30-year projection ─────────────────────────────────────────────────────
+  // ── API-driven 30-year projection ──────────────────────────────────────────
 
-  const yearData = useMemo((): YearData[] => {
-    if (!allComplete) return [];
+  const [yearData, setYearData] = useState<YearData[]>([]);
+  const abortRef = useRef<AbortController | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const data: YearData[] = [];
-    const rate = parseFloat(interestRate) || 6.5;
-    const term = parseInt(loanTerm) || 30;
-    const ioPeriodYears = loanType === "interest-only" ? parseInt(ioPeriod) || 5 : 0;
-    const growth = parseFloat(capitalGrowth) || 3.5;
-    const taxRate = getMarginalTaxRate(parseCurrencyCf(taxableIncome)) + 0.02;
-    const annualRent = parseCurrencyCf(weeklyRent) * 52;
-    const vacRate = parseFloat(vacancyRate) / 100 || 0.038;
-    const mgmtFee = usePropertyManager ? parseFloat(managementFee) / 100 || 0.075 : 0;
-    const annualDepreciation = parseCurrencyCf(depreciation);
-    const annualCouncil = parseCurrencyCf(councilRates);
-    const annualWater = parseCurrencyCf(waterRates);
-    const annualInsurance = parseCurrencyCf(insurance);
+  const buildRequest = useCallback((): CashflowSingleRequest | null => {
+    if (!allComplete) return null;
+
+    const growth = parseFloat(capitalGrowth) / 100 || 0.035;
+    const vacWeeks = Math.round((parseFloat(vacancyRate) || 3.8) / 100 * 52);
+    const mgmtRate = usePropertyManager ? (parseFloat(managementFee) / 100 || 0.075) : 0;
     const maintenanceRate = parseFloat(maintenance) / 100 || 0.005;
-    const annualStrata = hasStrata ? parseCurrencyCf(strataFees) * 4 : 0;
-    const effectiveOffset = hasOffset ? parseCurrencyCf(offsetBalance) : 0;
-    const monthlyExtra = parseCurrencyCf(extraRepayments);
+    const income = parseCurrencyCf(taxableIncome);
+    const estYear = isNewPurchase ? new Date().getFullYear() : parseInt(purchaseYear) || new Date().getFullYear();
+    const purchaseDate = isNewPurchase ? new Date().toISOString().slice(0, 10) : `${estYear}-07-01`;
+    const propPrice = isNewPurchase ? parseCurrencyCf(purchasePrice) : parseCurrencyCf(currentValue);
 
-    for (let year = 1; year <= 30; year++) {
-      const propValue = propertyValue * Math.pow(1 + growth / 100, year);
-      const loanBal = calculateLoanBalanceAtYear(
-        loanAmount - effectiveOffset, rate, term, year, loanType, ioPeriodYears
-      );
-      const equity = propValue - loanBal;
+    // Depreciation schedules
+    let depBuilds = depBuildings;
+    let depAsts = depAssets;
+    if (depreciationMode === "estimate" && isInvestment) {
+      const est = generateDepreciationEstimate(propPrice, isNewPurchase, estYear);
+      depBuilds = est.buildings;
+      depAsts = est.assets;
+    }
 
-      const rental = isInvestment ? annualRent * Math.pow(1 + growth / 100, year - 1) : 0;
-      const vacancy = isInvestment ? rental * vacRate : 0;
-      const mgmt = isInvestment ? (rental - vacancy) * mgmtFee : 0;
-      const netRental = rental - vacancy - mgmt;
+    const base: CashflowSingleRequest = {
+      mode: isNewPurchase ? "new" : "existing",
+      property_use: isInvestment ? "investment" : "ppor",
+      projection_years: 30,
+      tax_profile: {
+        taxable_income: income,
+        repayment_income: income,
+        mls_income: income,
+        hecs_balance: 0,
+        has_private_health: false,
+        income_growth_rate: growth,
+      },
+      ongoing_costs: {
+        council_rates: parseCurrencyCf(councilRates),
+        water_rates: parseCurrencyCf(waterRates),
+        building_insurance: parseCurrencyCf(insurance),
+        strata_fees: hasStrata ? parseCurrencyCf(strataFees) * 4 : 0,
+        maintenance_rate: maintenanceRate,
+        landlord_insurance: 0,
+        management_rate: mgmtRate,
+        annual_cost_growth_rate: 0.03,
+      },
+      rental: isInvestment ? {
+        weekly_rent: parseCurrencyCf(weeklyRent),
+        annual_growth_rate: growth,
+        vacancy_weeks: vacWeeks,
+      } : null,
+    };
 
-      let annualRepayment: number;
-      let interestPaid: number;
-      let principalPaid: number;
+    if (isNewPurchase) {
+      base.property = {
+        purchase_price: parseCurrencyCf(purchasePrice),
+        purchase_date: purchaseDate,
+        is_new_property: true,
+        is_ppor: !isInvestment,
+        annual_appreciation: growth,
+        purchase_costs: { other_costs: 0, capitalise_lmi: false, capitalise_mortgage_registration_fee: false, capitalise_loan_establishment_fee: false } as any,
+        rental: base.rental ?? { weekly_rent: 0, annual_growth_rate: growth, vacancy_weeks: 2 },
+        depreciable_buildings: depBuilds,
+        depreciable_assets: depAsts,
+      };
+      base.loan = {
+        deposit: parseCurrencyCf(depositAmount),
+        annual_rate: parseFloat(interestRate) / 100 || 0.065,
+        loan_term_years: parseInt(loanTerm) || 30,
+        frequency: "monthly",
+        offset_balance: hasOffset ? parseCurrencyCf(offsetBalance) : 0,
+        offset_contribution: 0,
+        extra_repayment: parseCurrencyCf(extraRepayments),
+        rate_changes: [],
+        borrowing_costs: {
+          lmi: 0,
+          mortgage_registration_fee: 0,
+          loan_establishment_fee: 0,
+          capitalise_lmi: false,
+          capitalise_mortgage_registration_fee: false,
+          capitalise_loan_establishment_fee: false,
+        },
+      };
+    } else {
+      base.existing_property = {
+        purchase_date: purchaseDate,
+        purchase_price: parseCurrencyCf(originalPurchasePrice),
+        is_new_property: false,
+        current_value: parseCurrencyCf(currentValue),
+        annual_appreciation: growth,
+        depreciable_buildings: depBuilds,
+        depreciable_assets: depAsts,
+      };
+      base.existing_loan = {
+        current_balance: parseCurrencyCf(currentLoanBalance),
+        remaining_term_years: parseInt(loanTerm) || 25,
+        annual_rate: parseFloat(interestRate) / 100 || 0.065,
+        frequency: "monthly",
+        offset_balance: hasOffset ? parseCurrencyCf(offsetBalance) : 0,
+        offset_contribution: 0,
+        extra_repayment: parseCurrencyCf(extraRepayments),
+        rate_changes: [],
+      };
+    }
 
-      if (loanType === "interest-only" && year <= ioPeriodYears) {
-        const monthlyIO = calculateIOPayment(loanAmount - effectiveOffset, rate);
-        annualRepayment = (monthlyIO + monthlyExtra) * 12;
-        interestPaid = monthlyIO * 12;
-        principalPaid = monthlyExtra * 12;
-      } else {
-        const effectiveTerm = loanType === "interest-only" ? term - ioPeriodYears : term;
-        const monthlyPI = calculateMonthlyRepayment(loanAmount - effectiveOffset, rate, effectiveTerm);
-        annualRepayment = (monthlyPI + monthlyExtra) * 12;
-        const avgBalance = (calculateLoanBalanceAtYear(loanAmount - effectiveOffset, rate, term, year - 1, loanType, ioPeriodYears) + loanBal) / 2;
-        interestPaid = avgBalance * (rate / 100);
-        principalPaid = annualRepayment - interestPaid;
-      }
+    return base;
+  }, [
+    allComplete, isNewPurchase, isInvestment, capitalGrowth, vacancyRate,
+    usePropertyManager, managementFee, maintenance, taxableIncome, purchaseYear,
+    purchasePrice, currentValue, depreciationMode, depBuildings, depAssets,
+    councilRates, waterRates, insurance, hasStrata, strataFees, weeklyRent,
+    depositAmount, interestRate, loanTerm, offsetBalance, hasOffset,
+    extraRepayments, originalPurchasePrice, currentLoanBalance,
+  ]);
 
-      const annualMaintenance = propValue * maintenanceRate;
-      const totalExpenses = interestPaid + annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata;
-      const preTax = netRental - totalExpenses;
-
-      const depDiv43 = isInvestment ? annualDepreciation * 0.5 : 0;
-      const depDiv40 = isInvestment ? annualDepreciation * 0.5 : 0;
-      const otherDeductibles = isInvestment ? (annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata + mgmt) : 0;
-      const totalDeductions = isInvestment ? (interestPaid + depDiv43 + depDiv40 + otherDeductibles) : 0;
-      const rentalLossOrGain = isInvestment ? netRental - totalDeductions : 0;
-      const taxBenefitAmt = (isInvestment && rentalLossOrGain < 0) ? Math.abs(rentalLossOrGain) * taxRate : 0;
-      const afterTaxCashflow = preTax + taxBenefitAmt;
-
-      const salaryVal = parseCurrencyCf(taxableIncome) * Math.pow(1 + growth / 100, year - 1);
-      const otherIncomeVal = 0;
-      const ongoingCostsVal = annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata;
+  const mapResponseToYearData = useCallback((years: CashflowYearRow[]): YearData[] => {
+    return years.map((y) => {
+      const d = y.ongoing_costs_detail;
+      const t = y.tax_deduction_detail;
+      const salary = y.salary;
+      const incomeTaxCalcVal = y.income_tax;
+      const rental = y.rental_income;
+      const interestPaid = y.mortgage_interest;
+      const principalPaid = y.mortgage_principal;
+      const ongoingCostsVal = d ? d.council_rates + d.water_rates + d.building_insurance + d.maintenance_cost + d.strata_fees : y.property_costs;
+      const depDiv43 = t ? t.depreciation_building : 0;
+      const depDiv40 = t ? t.depreciation_plant : 0;
+      const totalDeductionsVal = t ? t.total_deductions : 0;
+      const taxSavedVal = y.tax_saving;
       const gearingVal = rental - interestPaid - ongoingCostsVal - depDiv43 - depDiv40;
-      const totalIncomeAllVal = salaryVal + otherIncomeVal + rental;
-      const totalDeductionsForTaxVal = interestPaid + ongoingCostsVal + depDiv43 + depDiv40;
-      const taxableIncomeCalcVal = totalIncomeAllVal - totalDeductionsForTaxVal;
-      const incomeTaxCalcVal = calculateIncomeTax(taxableIncomeCalcVal);
-      const incomeTaxWithoutVal = calculateIncomeTax(salaryVal + otherIncomeVal);
-      const incomeTaxWithRentalVal = calculateIncomeTax(salaryVal + otherIncomeVal + rental);
-      const taxSavedVal = incomeTaxWithRentalVal - incomeTaxCalcVal;
-      const grossIncomeVal = salaryVal + otherIncomeVal + rental;
-      const afterTaxIncomeVal = grossIncomeVal - incomeTaxCalcVal;
-      const cfTotalIncomeVal = salaryVal + otherIncomeVal + rental - interestPaid - ongoingCostsVal;
-      const netCashflowVal = cfTotalIncomeVal - principalPaid - incomeTaxCalcVal;
+      const incomeTaxWithoutVal = calculateIncomeTax(salary);
+      const grossIncomeVal = salary + rental;
+      const netCashflowVal = salary + rental - ongoingCostsVal - y.mortgage_repayment - incomeTaxCalcVal;
       const propertyCashflowVal = gearingVal - principalPaid;
-      const offsetBalAtYear = effectiveOffset;
-      const propertyEquityVal = propValue - loanBal;
-      const netEquityVal = propValue - loanBal + offsetBalAtYear;
+      const netEquityVal = y.equity + y.offset_balance;
 
-      data.push({
-        year,
-        propertyValue: propValue,
-        loanBalance: loanBal,
-        equity,
+      // Derive vacancy and management from the ongoing costs detail
+      const vacRate = parseFloat(vacancyRate) / 100 || 0.038;
+      const mgmtFee = usePropertyManager ? parseFloat(managementFee) / 100 || 0.075 : 0;
+      const vacancyVal = rental * vacRate;
+      const mgmtVal = (rental - vacancyVal) * mgmtFee;
+
+      return {
+        year: y.year + 1, // backend is 0-indexed, frontend is 1-indexed
+        propertyValue: y.property_value,
+        loanBalance: y.loan_balance,
+        equity: y.equity,
         rentalIncome: rental,
-        vacancy,
-        managementFee: mgmt,
-        netRentalIncome: netRental,
-        loanRepayment: annualRepayment,
+        vacancy: vacancyVal,
+        managementFee: mgmtVal,
+        netRentalIncome: rental - vacancyVal - mgmtVal,
+        loanRepayment: y.mortgage_repayment,
         interestPortion: interestPaid,
         principalPortion: principalPaid,
-        councilRates: annualCouncil,
-        waterRates: annualWater,
-        insurance: annualInsurance,
-        maintenance: annualMaintenance,
-        strataFees: annualStrata,
-        totalExpenses,
-        preTaxCashflow: preTax,
+        councilRates: d?.council_rates ?? 0,
+        waterRates: d?.water_rates ?? 0,
+        insurance: d?.building_insurance ?? 0,
+        maintenance: d?.maintenance_cost ?? 0,
+        strataFees: d?.strata_fees ?? 0,
+        totalExpenses: ongoingCostsVal + interestPaid,
+        preTaxCashflow: (rental - vacancyVal - mgmtVal) - (ongoingCostsVal + interestPaid),
         depDiv43,
         depDiv40,
-        otherDeductibles,
-        totalDeductions,
-        rentalLossOrGain,
-        taxBenefit: taxBenefitAmt,
-        afterTaxCashflow,
-        salary: salaryVal,
-        otherIncome: otherIncomeVal,
+        otherDeductibles: t ? t.deductible_expenses : 0,
+        totalDeductions: totalDeductionsVal,
+        rentalLossOrGain: t ? t.net_rental_income : 0,
+        taxBenefit: taxSavedVal,
+        afterTaxCashflow: (rental - vacancyVal - mgmtVal) - (ongoingCostsVal + interestPaid) + taxSavedVal,
+        salary,
+        otherIncome: 0,
         ongoingCosts: ongoingCostsVal,
         gearing: gearingVal,
-        totalIncomeAll: totalIncomeAllVal,
-        totalDeductionsForTax: totalDeductionsForTaxVal,
-        taxableIncomeCalc: taxableIncomeCalcVal,
+        totalIncomeAll: grossIncomeVal,
+        totalDeductionsForTax: totalDeductionsVal,
+        taxableIncomeCalc: grossIncomeVal - totalDeductionsVal,
         incomeTaxCalc: incomeTaxCalcVal,
         incomeTaxWithout: incomeTaxWithoutVal,
         taxSaved: taxSavedVal,
         grossIncome: grossIncomeVal,
-        afterTaxIncome: afterTaxIncomeVal,
-        cfTotalIncome: cfTotalIncomeVal,
+        afterTaxIncome: grossIncomeVal - incomeTaxCalcVal,
+        cfTotalIncome: salary + rental - interestPaid - ongoingCostsVal,
         netCashflow: netCashflowVal,
         propertyCashflow: propertyCashflowVal,
-        offsetBalanceAtYear: offsetBalAtYear,
-        propertyEquity: propertyEquityVal,
+        offsetBalanceAtYear: y.offset_balance,
+        propertyEquity: y.equity,
         netEquity: netEquityVal,
-      });
+      };
+    });
+  }, [vacancyRate, usePropertyManager, managementFee]);
+
+  // Fetch from API when inputs change (debounced)
+  useEffect(() => {
+    const req = buildRequest();
+    if (!req) {
+      setYearData([]);
+      return;
     }
 
-    return data;
-  }, [
-    allComplete, propertyValue, loanAmount, interestRate, loanTerm, loanType, ioPeriod,
-    capitalGrowth, taxableIncome, weeklyRent, vacancyRate, usePropertyManager, managementFee,
-    depreciation, councilRates, waterRates, insurance, maintenance, hasStrata, strataFees,
-    hasOffset, offsetBalance, extraRepayments, isInvestment
-  ]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (abortRef.current) abortRef.current.abort();
+
+    debounceRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        const response = await fetchCashflowSingle(req, controller.signal);
+        setYearData(mapResponseToYearData(response.years));
+      } catch (err) {
+        if (err instanceof Error && err.name !== "AbortError") {
+          console.error("Cashflow API error:", err);
+        }
+      }
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, [buildRequest, mapResponseToYearData]);
 
   // ── Chart data ─────────────────────────────────────────────────────────────
 
