@@ -148,6 +148,10 @@ class TestPporEndpointStructure:
             "loan_balance",
             "equity",
             "offset_balance",
+            "salary",
+            "income_tax",
+            "ongoing_costs_detail",
+            "tax_deduction_detail",
         }
         assert set(y0.keys()) == expected_fields
 
@@ -648,6 +652,7 @@ class TestSingleEndpointStructure:
             "offset_contributions", "rent_paid", "rental_income", "tax_saving",
             "total_outflows", "net_position", "cumulative_position",
             "property_value", "loan_balance", "equity", "offset_balance",
+            "salary", "income_tax", "ongoing_costs_detail", "tax_deduction_detail",
         }
         assert set(data["years"][0].keys()) == expected
 
