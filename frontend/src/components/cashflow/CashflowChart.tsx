@@ -71,7 +71,7 @@ export default function CashflowChart({
   }));
 
   // Colours per mode
-  const isCashflow = viewMode === "summary" || viewMode === "property" || viewMode === "tax";
+  const isCashflow = viewMode === "summary" || viewMode === "property";
   const barColor = isCashflow ? "#4ade80" : "#2dd4bf";
   const barColorDark = isCashflow ? "#16a34a" : "#0d9488";
   const barColorSelected = isCashflow ? "#86efac" : "#5eead4";

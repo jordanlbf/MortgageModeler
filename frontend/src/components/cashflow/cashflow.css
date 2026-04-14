@@ -579,55 +579,6 @@
    MODE TOGGLES — Growth / Breakdown / Compare (Equity view)
    ═══════════════════════════════════════════════════════════ */
 
-/* Base toggle button style — underline tabs */
-.cf-mode-toggles {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid rgba(113, 113, 122, 0.12);
-}
-
-.cf-mode-toggle {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 14px;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  background: transparent;
-  color: var(--cf-text-dim);
-  transition: all 0.15s;
-}
-
-.cf-mode-toggle:hover {
-  color: var(--cf-text-muted);
-}
-
-.cf-mode-toggle.active {
-  color: var(--cf-accent);
-  border-bottom-color: var(--cf-accent);
-}
-
-/* Final position: bottom-right with mode tabs */
-.cf-mode-toggles--final {
-  margin-left: auto;
-  border-bottom: none;
-  padding: 0;
-  background: none;
-}
-
-.cf-mode-toggles--final .cf-mode-toggle {
-  border-bottom: 2px solid transparent;
-  margin-bottom: 0;
-}
-
-.cf-mode-toggles--final .cf-mode-toggle.active {
-  border-bottom-color: var(--cf-accent);
-}
 
 .cf-play-btn {
   display: flex;
@@ -803,22 +754,13 @@
    ============================================================================ */
 
 /* Hero number — Fey-inspired compact inline */
-.cf-hero-area {
-  padding: 8px 0 12px;
-}
-
-/* Chart header row — 3-column layout */
-/* Center title — absolutely centered over full chart-main width */
-.cf-center-title {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+/* Chart header — title + year in a flex row above chart */
+.cf-chart-header {
+  position: relative;
   display: flex;
+  align-items: baseline;
   justify-content: center;
-  align-items: center;
-  pointer-events: none;
-  z-index: 1;
+  padding: 0 24px 8px 24px;
 }
 
 /* Split title — vertical hairline separator */
@@ -857,13 +799,9 @@
   flex-wrap: nowrap;
 }
 
-/* Year overlay — positioned absolutely at top-right of chart-main, aligned with hero */
-.cf-year-overlay-positioned {
+.cf-year-overlay {
   position: absolute;
-  top: 10px;
   right: 24px;
-  z-index: 20;
-  pointer-events: none;
   display: flex;
   align-items: baseline;
 }
@@ -1581,17 +1519,14 @@
 /* ── LVR conditional styling ── */
 .cft-lvr-danger {
   color: #f87171;
-  font-weight: 600;
 }
 
 .cft-lvr-moderate {
   color: #fbbf24;
-  font-weight: 600;
 }
 
 .cft-lvr-healthy {
   color: #34d399;
-  font-weight: 600;
 }
 
 /* ���─ Depreciation — paper deductions, distinct from cash costs ── */
@@ -1606,12 +1541,10 @@
 
 .cft-lvr-moderate {
   color: #fbbf24;
-  font-weight: 600;
 }
 
 .cft-lvr-healthy {
   color: #4ade80;
-  font-weight: 600;
 }
 
 /* ── Depreciation ── */

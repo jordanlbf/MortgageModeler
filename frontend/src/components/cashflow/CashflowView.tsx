@@ -2,13 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { useCashflowState } from "@/hooks/useCashflowState";
 import { formatCurrencyCf } from "@/lib/cashflow-calculations";
 import type { ViewMode } from "@/lib/cashflow-types";
 import CashflowSidebar from "./CashflowSidebar";
-import CashflowChart, { chartViewOptions, type ChartView } from "./CashflowChart";
+import CashflowChart from "./CashflowChart";
 import CashflowKpiStrip from "./CashflowKpiStrip";
 import CashflowDataTable from "./CashflowDataTable";
 import CashflowWizardStep from "./CashflowWizardStep";
@@ -36,7 +35,6 @@ export default function CashflowCalculator() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("wizard");
   const [editStep, setEditStep] = useState<StepId>("setup");
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
-  const [chartView, setChartView] = useState<ChartView>("bars");
   const [tableExpanded, setTableExpanded] = useState<Set<number>>(new Set());
   const autoExpandedRef = useRef<Set<number>>(new Set());
 
@@ -175,6 +173,8 @@ export default function CashflowCalculator() {
         const sy = displayYearData;
         const vm = s.effectiveViewMode;
 
+        const depColor = "#fbbf24";
+
         // Title data for hero-value prototypes
         const summaryCashflow = y1.salary + (s.isInvestment ? y1.rentalIncome : 0) - y1.ongoingCosts - y1.loanRepayment - y1.incomeTaxCalc;
         const heroValue = vm === "equity"
@@ -182,15 +182,19 @@ export default function CashflowCalculator() {
           : vm === "deductions"
           ? formatCurrencyCf(Math.round(y1.totalDeductions))
           : vm === "tax"
-          ? `+${formatCurrencyCf(Math.round(y1.taxSaved))}`
+          ? formatCurrencyCf(Math.round(-y1.incomeTaxCalc))
           : vm === "property"
           ? formatCurrencyCf(Math.round(y1.propertyCashflow))
           : formatCurrencyCf(Math.round(summaryCashflow));
-        const heroLabel = vm === "equity" ? "Net Equity" : vm === "deductions" ? "Total Deductions" : vm === "tax" ? "Tax Saved" : vm === "property" ? "Property Cashflow" : "Net Cashflow";
+        const heroLabel = vm === "equity" ? "Net Equity" : vm === "deductions" ? "Total Deductions" : vm === "tax" ? "Total Tax" : vm === "property" ? "Property Cashflow" : "Net Cashflow";
         const heroColor = vm === "summary"
           ? (summaryCashflow >= 0 ? "var(--cf-positive)" : "var(--cf-negative)")
           : vm === "property"
           ? (y1.propertyCashflow >= 0 ? "var(--cf-positive)" : "var(--cf-negative)")
+          : vm === "tax"
+          ? "var(--cf-negative)"
+          : vm === "deductions"
+          ? "#a78bfa"
           : null;
 
         // Hero data per view mode — Fey-style: value + label (muted) + secondary + color
@@ -208,10 +212,10 @@ export default function CashflowCalculator() {
             color: y1.propertyCashflow >= 0 ? "var(--cf-accent)" : "var(--cf-negative)",
           },
           tax: {
-            value: `+${formatCurrencyCf(Math.round(y1.taxSaved))}`,
-            label: "tax saved",
+            value: formatCurrencyCf(Math.round(-y1.incomeTaxCalc)),
+            label: "total tax",
             monthly: `${Math.round(s.marginalRate * 100)}% marginal rate`,
-            color: "var(--cf-positive)",
+            color: "var(--cf-negative)",
           },
           equity: {
             value: formatCurrencyCf(Math.round(y1.netEquity)),
@@ -231,50 +235,19 @@ export default function CashflowCalculator() {
         return (
           <main className="cf-dashboard-view">
 
-            {/* ── Back to inputs button — sits in the left gutter ── */}
-            <button
-              className="cf-back-to-inputs"
-              onClick={() => goToStep("property")}
-              aria-label="Back to inputs"
-            >
-              <ChevronLeft size={14} />
-              <span>Inputs</span>
-            </button>
-
             {/* ── Chart + Tabs ── */}
             <div className="cf-chart-row">
               <div className="cf-chart-main">
-                {/* Year overlay — positioned at top-right of chart-main */}
-                <div className="cf-year-overlay-positioned">
-                  <span className="cf-year-overlay-yr" style={{ color: "var(--cf-accent)" }}>Year {displayYear}</span>
-                  <span className="cf-year-overlay-cal">{calendarYear}</span>
-                </div>
-
-                {/* Center title — absolutely centered over chart-main */}
-                <div className="cf-center-title">
+                {/* Chart header — title left, year right */}
+                <div className="cf-chart-header">
                   <div className="cf-title-split">
                     <span className="cf-title-split-label">{heroLabel}</span>
                     <span className="cf-title-split-divider" />
                     <span className="cf-title-split-value" style={heroColor ? { color: heroColor } : undefined}>{heroValue}</span>
                   </div>
-                </div>
-
-                {/* Chart view toggles */}
-                <div className="cf-hero-area">
-                  <div className="cf-mode-toggles">
-                    {(vm === "equity" ? chartViewOptions : vm === "deductions" ? [chartViewOptions[0], chartViewOptions[2]] : [chartViewOptions[0]]).map((view) => {
-                      const Icon = view.icon;
-                      return (
-                        <button
-                          key={view.id}
-                          onClick={() => setChartView(view.id)}
-                          className={`cf-mode-toggle ${((vm === "equity" || vm === "deductions") ? chartView : "bars") === view.id ? "active" : ""}`}
-                        >
-                          <Icon size={14} />
-                          {view.label}
-                        </button>
-                      );
-                    })}
+                  <div className="cf-year-overlay">
+                    <span className="cf-year-overlay-yr" style={{ color: "var(--cf-accent)" }}>Year {displayYear}</span>
+                    <span className="cf-year-overlay-cal">{calendarYear}</span>
                   </div>
                 </div>
 
@@ -286,7 +259,7 @@ export default function CashflowCalculator() {
                     selectedYear={s.selectedYear}
                     hoveredYear={hoveredYear}
                     isInvestment={s.isInvestment}
-                    chartView={(vm === "equity" || vm === "deductions") ? chartView : "bars"}
+                    chartView="bars"
                     onSelectYear={handleSelectYear}
                     onHoverYear={setHoveredYear}
                 />
@@ -321,6 +294,7 @@ export default function CashflowCalculator() {
                 marginalRate={s.marginalRate}
                 hasOffset={s.hasOffset}
                 isHovered={hoveredYear !== null}
+                depColor={depColor}
               />
             </div>
 
@@ -405,22 +379,166 @@ export default function CashflowCalculator() {
                   </div>
                 </div>
               </div>
-            ) : vm === "summary" || vm === "tax" ? (
-              <div className="cf-outer-card">
-                <div className="cf-table-zone">
-                  <CashflowDataTable
-                    yearData={s.yearData}
-                    viewMode={vm}
-                    selectedYear={s.selectedYear}
-                    hoveredYear={hoveredYear}
-                    isInvestment={s.isInvestment}
-                    hasOffset={s.hasOffset}
-                    propertyValue={s.propertyValue}
-                    expandedMilestones={tableExpanded}
-                    onExpandedChange={handleManualExpand}
-                    onSelectYear={handleSelectYear}
-                    onHoverYear={setHoveredYear}
-                  />
+            ) : vm === "tax" && s.isInvestment ? (
+              <div className="cf-property-cards">
+                <div className="cf-outer-card cf-property-card">
+                  <div className="cf-table-zone">
+                    <CashflowDataTable
+                      yearData={s.yearData}
+                      viewMode={vm}
+                      selectedYear={s.selectedYear}
+                      hoveredYear={hoveredYear}
+                      isInvestment={s.isInvestment}
+                      hasOffset={s.hasOffset}
+                      propertyValue={s.propertyValue}
+                      taxPanel="deductions"
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
+                      onHoverYear={setHoveredYear}
+                    />
+                  </div>
+                </div>
+                <div className="cf-outer-card cf-property-card">
+                  <div className="cf-table-zone">
+                    <CashflowDataTable
+                      yearData={s.yearData}
+                      viewMode={vm}
+                      selectedYear={s.selectedYear}
+                      hoveredYear={hoveredYear}
+                      isInvestment={s.isInvestment}
+                      hasOffset={s.hasOffset}
+                      propertyValue={s.propertyValue}
+                      taxPanel="tax"
+                      showExpandButton={false}
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
+                      onHoverYear={setHoveredYear}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : vm === "summary" ? (
+              <div className="cf-property-cards">
+                <div className="cf-outer-card cf-property-card">
+                  <div className="cf-table-zone">
+                    <CashflowDataTable
+                      yearData={s.yearData}
+                      viewMode={vm}
+                      selectedYear={s.selectedYear}
+                      hoveredYear={hoveredYear}
+                      isInvestment={s.isInvestment}
+                      hasOffset={s.hasOffset}
+                      propertyValue={s.propertyValue}
+                      summaryPanel="income"
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
+                      onHoverYear={setHoveredYear}
+                    />
+                  </div>
+                </div>
+                <div className="cf-outer-card cf-property-card">
+                  <div className="cf-table-zone">
+                    <CashflowDataTable
+                      yearData={s.yearData}
+                      viewMode={vm}
+                      selectedYear={s.selectedYear}
+                      hoveredYear={hoveredYear}
+                      isInvestment={s.isInvestment}
+                      hasOffset={s.hasOffset}
+                      propertyValue={s.propertyValue}
+                      summaryPanel="outgoings"
+                      showExpandButton={false}
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
+                      onHoverYear={setHoveredYear}
+                    />
+                  </div>
+                </div>
+                <div className="cf-outer-card cf-property-card">
+                  <div className="cf-table-zone">
+                    <CashflowDataTable
+                      yearData={s.yearData}
+                      viewMode={vm}
+                      selectedYear={s.selectedYear}
+                      hoveredYear={hoveredYear}
+                      isInvestment={s.isInvestment}
+                      hasOffset={s.hasOffset}
+                      propertyValue={s.propertyValue}
+                      summaryPanel="cashflow"
+                      showExpandButton={false}
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
+                      onHoverYear={setHoveredYear}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : vm === "deductions" ? (
+              <div className="cf-property-cards">
+                <div className="cf-outer-card cf-property-card">
+                  <div className="cf-table-zone">
+                    <CashflowDataTable
+                      yearData={s.yearData}
+                      viewMode={vm}
+                      selectedYear={s.selectedYear}
+                      hoveredYear={hoveredYear}
+                      isInvestment={s.isInvestment}
+                      hasOffset={s.hasOffset}
+                      propertyValue={s.propertyValue}
+                      deductionsPanel="holding"
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
+                      onHoverYear={setHoveredYear}
+                    />
+                  </div>
+                </div>
+                {s.isInvestment && (
+                  <div className="cf-outer-card cf-property-card">
+                    <div className="cf-table-zone">
+                      <CashflowDataTable
+                        yearData={s.yearData}
+                        viewMode={vm}
+                        selectedYear={s.selectedYear}
+                        hoveredYear={hoveredYear}
+                        isInvestment={s.isInvestment}
+                        hasOffset={s.hasOffset}
+                        propertyValue={s.propertyValue}
+                        deductionsPanel="depreciation"
+                        depColor={depColor}
+                        showExpandButton={false}
+                        expandedMilestones={tableExpanded}
+                        onExpandedChange={handleManualExpand}
+                        onSelectYear={handleSelectYear}
+                        onHoverYear={setHoveredYear}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="cf-outer-card cf-property-card">
+                  <div className="cf-table-zone">
+                    <CashflowDataTable
+                      yearData={s.yearData}
+                      viewMode={vm}
+                      selectedYear={s.selectedYear}
+                      hoveredYear={hoveredYear}
+                      isInvestment={s.isInvestment}
+                      hasOffset={s.hasOffset}
+                      propertyValue={s.propertyValue}
+                      deductionsPanel="totals"
+                      depColor={depColor}
+                      showExpandButton={false}
+                      expandedMilestones={tableExpanded}
+                      onExpandedChange={handleManualExpand}
+                      onSelectYear={handleSelectYear}
+                      onHoverYear={setHoveredYear}
+                    />
+                  </div>
                 </div>
               </div>
             ) : (

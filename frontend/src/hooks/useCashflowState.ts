@@ -348,7 +348,7 @@ export function useCashflowState(): CashflowState {
       switch (effectiveViewMode) {
         case "summary": return { year: y.year, value: y.netCashflow / 12 };
         case "property": return { year: y.year, value: y.propertyCashflow / 12 };
-        case "tax": return { year: y.year, value: y.taxSaved };
+        case "tax": return { year: y.year, value: -y.incomeTaxCalc };
         case "equity": return { year: y.year, value: y.netEquity };
         case "deductions": return { year: y.year, value: isInvestment ? y.totalDeductions : y.ongoingCosts };
       }
