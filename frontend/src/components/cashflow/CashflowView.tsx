@@ -297,245 +297,99 @@ export default function CashflowCalculator() {
 
             {/* ── Table card(s) ── */}
             {vm === "property" && s.isInvestment ? (
-              <div className="cf-property-cards">
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      propertyPanel="gearing"
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
-                </div>
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      propertyPanel="cashflow"
-                      showExpandButton={false}
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    propertyPanel="unified"
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
                 </div>
               </div>
             ) : vm === "equity" ? (
-              <div className="cf-property-cards">
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      equityPanel="property"
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
-                </div>
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      equityPanel="position"
-                      showExpandButton={false}
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    equityPanel="unified"
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
                 </div>
               </div>
             ) : vm === "tax" && s.isInvestment ? (
-              <div className="cf-property-cards">
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      taxPanel="deductions"
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
-                </div>
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      taxPanel="tax"
-                      showExpandButton={false}
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    taxPanel="unified"
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
                 </div>
               </div>
             ) : vm === "summary" ? (
-              <div className="cf-property-cards">
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      summaryPanel="income"
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
-                </div>
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      summaryPanel="outgoings"
-                      showExpandButton={false}
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
-                </div>
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      summaryPanel="cashflow"
-                      showExpandButton={false}
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    summaryPanel="unified"
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
                 </div>
               </div>
             ) : vm === "deductions" ? (
-              <div className="cf-property-cards">
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      deductionsPanel="holding"
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
-                </div>
-                {s.isInvestment && (
-                  <div className="cf-outer-card cf-property-card">
-                    <div className="cf-table-zone">
-                      <CashflowDataTable
-                        yearData={s.yearData}
-                        viewMode={vm}
-                        selectedYear={s.selectedYear}
-                        hoveredYear={hoveredYear}
-                        isInvestment={s.isInvestment}
-                        hasOffset={s.hasOffset}
-                        propertyValue={s.propertyValue}
-                        deductionsPanel="depreciation"
-                        depColor={depColor}
-                        showExpandButton={false}
-                        expandedMilestones={tableExpanded}
-                        onExpandedChange={handleManualExpand}
-                        onSelectYear={handleSelectYear}
-                        onHoverYear={setHoveredYear}
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className="cf-outer-card cf-property-card">
-                  <div className="cf-table-zone">
-                    <CashflowDataTable
-                      yearData={s.yearData}
-                      viewMode={vm}
-                      selectedYear={s.selectedYear}
-                      hoveredYear={hoveredYear}
-                      isInvestment={s.isInvestment}
-                      hasOffset={s.hasOffset}
-                      propertyValue={s.propertyValue}
-                      deductionsPanel="totals"
-                      depColor={depColor}
-                      showExpandButton={false}
-                      expandedMilestones={tableExpanded}
-                      onExpandedChange={handleManualExpand}
-                      onSelectYear={handleSelectYear}
-                      onHoverYear={setHoveredYear}
-                    />
-                  </div>
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    deductionsPanel="unified"
+                    depColor={depColor}
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
                 </div>
               </div>
             ) : (

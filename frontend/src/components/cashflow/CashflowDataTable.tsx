@@ -13,11 +13,11 @@ interface Props {
   isInvestment: boolean;
   hasOffset: boolean;
   propertyValue: number;
-  propertyPanel?: "gearing" | "cashflow";
-  equityPanel?: "property" | "position";
-  taxPanel?: "deductions" | "tax";
-  summaryPanel?: "income" | "outgoings" | "cashflow";
-  deductionsPanel?: "holding" | "depreciation" | "totals";
+  propertyPanel?: "gearing" | "cashflow" | "unified";
+  equityPanel?: "property" | "position" | "unified";
+  taxPanel?: "deductions" | "tax" | "unified";
+  summaryPanel?: "income" | "outgoings" | "cashflow" | "unified";
+  deductionsPanel?: "holding" | "depreciation" | "totals" | "unified";
   depColor?: string;
   showExpandButton?: boolean;
   expandedMilestones?: Set<number>;
@@ -39,6 +39,18 @@ export default function CashflowDataTable({
   const [localExpanded, setLocalExpanded] = useState<Set<number>>(new Set());
   const expandedMilestones = externalExpanded ?? localExpanded;
   const setExpandedMilestones = onExpandedChange ?? setLocalExpanded;
+
+  // Column group expansion state (for collapsible column groups)
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const toggleGroup = (group: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group);
+      else next.add(group);
+      return next;
+    });
+  };
+  const isGroupExpanded = (group: string) => expandedGroups.has(group);
 
   // Milestone years: 1, 6, 11, 16, 21, 26
   const isMilestoneYear = (year: number) => year === 1 || (year - 1) % 5 === 0;
@@ -157,20 +169,29 @@ export default function CashflowDataTable({
         </button>
       )}
     <div className="cft-wrap">
-      {/* SUMMARY — Income panel */}
+      {/* SUMMARY — Income panel (collapsible columns) */}
       {viewMode === "summary" && summaryPanel === "income" && (
-        <table className="cft-table cft-table-narrow">
+        <table className="cft-table cft-table-narrow cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell" colSpan={2} />
-              <th className="cft-group-cell cft-group-label cft-group-income" colSpan={isInvestment ? 5 : 3}>income</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-income cft-group-clickable"
+                colSpan={isGroupExpanded("income") ? (isInvestment ? 5 : 3) : 1}
+                onClick={() => toggleGroup("income")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("income") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>income</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
               <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
-              <th className="cft-th cft-tip" data-tip="Annual Salary (grows with capital growth rate)">salary</th>
-              <th className="cft-th cft-tip" data-tip="Year-on-Year Salary Growth">gain %</th>
-              {isInvestment && <th className="cft-th cft-tip" data-tip="Annual Rental Income (grows with capital growth rate)">rent</th>}
-              {isInvestment && <th className="cft-th cft-tip" data-tip="Year-on-Year Rent Growth">gain %</th>}
+              {isGroupExpanded("income") && <th className="cft-th cft-tip cft-detail-col" data-tip="Annual Salary (grows with capital growth rate)">salary</th>}
+              {isGroupExpanded("income") && <th className="cft-th cft-tip cft-detail-col" data-tip="Year-on-Year Salary Growth">gain %</th>}
+              {isGroupExpanded("income") && isInvestment && <th className="cft-th cft-tip cft-detail-col" data-tip="Annual Rental Income (grows with capital growth rate)">rent</th>}
+              {isGroupExpanded("income") && isInvestment && <th className="cft-th cft-tip cft-detail-col" data-tip="Year-on-Year Rent Growth">gain %</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip="Salary + Rent">total income</th>
             </tr>
           </thead>
@@ -186,10 +207,10 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.salary))}</td>
-                  <td className="cft-td" style={{ color: parseFloat(salaryGain) > 0 ? "var(--cf-positive)" : "var(--cf-text-dim)" }}>{salaryGain}%</td>
-                  {isInvestment && <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
-                  {isInvestment && <td className="cft-td" style={{ color: parseFloat(rentGain) > 0 ? "var(--cf-positive)" : "var(--cf-text-dim)" }}>{rentGain}%</td>}
+                  {isGroupExpanded("income") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.salary))}</td>}
+                  {isGroupExpanded("income") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(salaryGain) > 0 ? "var(--cf-positive)" : "var(--cf-text-dim)" }}>{salaryGain}%</td>}
+                  {isGroupExpanded("income") && isInvestment && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("income") && isInvestment && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(rentGain) > 0 ? "var(--cf-positive)" : "var(--cf-text-dim)" }}>{rentGain}%</td>}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-text)" }}>
                     {formatCurrencyCf(Math.round(totalIncome))}
                   </td>
@@ -200,17 +221,26 @@ export default function CashflowDataTable({
         </table>
       )}
 
-      {/* SUMMARY — Outgoings panel */}
+      {/* SUMMARY — Outgoings panel (collapsible columns) */}
       {viewMode === "summary" && summaryPanel === "outgoings" && (
-        <table className="cft-table cft-table-narrow">
+        <table className="cft-table cft-table-narrow cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell cft-group-label cft-group-costs" colSpan={4}>outgoings</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-costs cft-group-clickable"
+                colSpan={isGroupExpanded("outgoings") ? 4 : 1}
+                onClick={() => toggleGroup("outgoings")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("outgoings") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>outgoings</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-tip" data-tip="Council, Water, Insurance, Maintenance, Strata">holding</th>
-              <th className="cft-th cft-tip" data-tip="Interest + Principal">repayments</th>
-              <th className="cft-th cft-tip" data-tip="Income Tax (incl. Medicare Levy)">tax</th>
+              {isGroupExpanded("outgoings") && <th className="cft-th cft-tip cft-detail-col" data-tip="Council, Water, Insurance, Maintenance, Strata">holding</th>}
+              {isGroupExpanded("outgoings") && <th className="cft-th cft-tip cft-detail-col" data-tip="Interest + Principal">repayments</th>}
+              {isGroupExpanded("outgoings") && <th className="cft-th cft-tip cft-detail-col" data-tip="Income Tax (incl. Medicare Levy)">tax</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip="Holding + Repayments + Tax">total costs</th>
             </tr>
           </thead>
@@ -221,9 +251,9 @@ export default function CashflowDataTable({
               const totalCosts = y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className={`cft-td ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-y.ongoingCosts))}</td>
-                  <td className={`cft-td ${getValueClass(-y.loanRepayment, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanRepayment))}</td>
-                  <td className={`cft-td ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatCurrencyCf(Math.round(-y.incomeTaxCalc))}</td>
+                  {isGroupExpanded("outgoings") && <td className={`cft-td cft-detail-cell ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-y.ongoingCosts))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`cft-td cft-detail-cell ${getValueClass(-y.loanRepayment, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanRepayment))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`cft-td cft-detail-cell ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatCurrencyCf(Math.round(-y.incomeTaxCalc))}</td>}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-negative)" }}>
                     {formatCurrencyCf(Math.round(-totalCosts))}
                   </td>
@@ -268,19 +298,151 @@ export default function CashflowDataTable({
         </table>
       )}
 
-      {/* TAX — Deductions panel */}
-      {viewMode === "tax" && taxPanel === "deductions" && (
-        <table className="cft-table cft-table-narrow">
+      {/* SUMMARY — Unified table (all columns in one table with collapsible groups) */}
+      {viewMode === "summary" && summaryPanel === "unified" && (
+        <table className="cft-table cft-table-wide cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell" colSpan={2} />
-              <th className="cft-group-cell cft-group-label cft-group-tax" colSpan={4}>deductions</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-income cft-group-clickable"
+                colSpan={isGroupExpanded("income") ? (isInvestment ? 5 : 3) : 1}
+                onClick={() => toggleGroup("income")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("income") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>income</span>
+                </span>
+              </th>
+              <th className="cft-group-cell cft-group-divider" />
+              <th
+                className="cft-group-cell cft-group-label cft-group-costs cft-group-clickable"
+                colSpan={isGroupExpanded("outgoings") ? 4 : 1}
+                onClick={() => toggleGroup("outgoings")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("outgoings") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>outgoings</span>
+                </span>
+              </th>
+              <th className="cft-group-cell cft-group-divider" />
+              <th className="cft-group-cell cft-group-label cft-group-net">cashflow</th>
+            </tr>
+            {(isGroupExpanded("income") || isGroupExpanded("outgoings")) && (
+            <tr className="cft-header-row">
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
+              {/* Income detail columns */}
+              {isGroupExpanded("income") && <th className="cft-th cft-tip cft-detail-col" data-tip="Annual Salary">salary</th>}
+              {isGroupExpanded("income") && <th className="cft-th cft-tip cft-detail-col" data-tip="Year-on-Year Salary Growth">gain %</th>}
+              {isGroupExpanded("income") && isInvestment && <th className="cft-th cft-tip cft-detail-col" data-tip="Annual Rental Income">rent</th>}
+              {isGroupExpanded("income") && isInvestment && <th className="cft-th cft-tip cft-detail-col" data-tip="Year-on-Year Rent Growth">gain %</th>}
+              <th className="cft-th cft-th-agg cft-tip" data-tip="Salary + Rent">total</th>
+              <th className="cft-th-divider" />
+              {/* Outgoings detail columns */}
+              {isGroupExpanded("outgoings") && <th className="cft-th cft-tip cft-detail-col" data-tip="Council, Water, Insurance, Maintenance, Strata">holding</th>}
+              {isGroupExpanded("outgoings") && <th className="cft-th cft-tip cft-detail-col" data-tip="Interest + Principal">repay</th>}
+              {isGroupExpanded("outgoings") && <th className="cft-th cft-tip cft-detail-col" data-tip="Income Tax (incl. Medicare Levy)">tax</th>}
+              <th className="cft-th cft-th-agg cft-tip" data-tip="Holding + Repayments + Tax">total</th>
+              <th className="cft-th-divider" />
+              {/* Cashflow result */}
+              <th className="cft-th cft-th-result cft-tip" data-tip="Total Income − Total Costs">net</th>
+            </tr>
+            )}
+          </thead>
+          <tbody>
+            {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
+              const prevSalary = i > 0 ? yearData[i - 1].salary : y.salary;
+              const prevRent = i > 0 ? yearData[i - 1].rentalIncome : y.rentalIncome;
+              const salaryGain = prevSalary > 0 ? ((y.salary / prevSalary - 1) * 100).toFixed(1) : "0.0";
+              const rentGain = prevRent > 0 ? ((y.rentalIncome / prevRent - 1) * 100).toFixed(1) : "0.0";
+              const totalIncome = y.salary + (isInvestment ? y.rentalIncome : 0);
+              const totalCosts = y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc;
+              const annualCashflow = totalIncome - totalCosts;
+
+              // Calculate YoY changes for collapsed view
+              const prevIncome = i > 0 ? yearData[i - 1].salary + (isInvestment ? yearData[i - 1].rentalIncome : 0) : totalIncome;
+              const prevCosts = i > 0 ? yearData[i - 1].ongoingCosts + yearData[i - 1].loanRepayment + yearData[i - 1].incomeTaxCalc : totalCosts;
+              const incomeYoY = prevIncome > 0 ? ((totalIncome / prevIncome - 1) * 100) : 0;
+              const costsYoY = prevCosts > 0 ? ((totalCosts / prevCosts - 1) * 100) : 0;
+
+              const isCollapsed = !isGroupExpanded("income") && !isGroupExpanded("outgoings");
+
+              return (
+                <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "cft-row-summary-collapsed" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
+                  {/* Income detail cells */}
+                  {isGroupExpanded("income") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.salary))}</td>}
+                  {isGroupExpanded("income") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(salaryGain) > 0 ? "var(--cf-positive)" : "var(--cf-text-dim)" }}>{salaryGain}%</td>}
+                  {isGroupExpanded("income") && isInvestment && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("income") && isInvestment && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(rentGain) > 0 ? "var(--cf-positive)" : "var(--cf-text-dim)" }}>{rentGain}%</td>}
+                  {/* Income total - larger when collapsed, with YoY indicator */}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"}`}>
+                    <span className="cft-summary-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(totalIncome))}</span>
+                    {isCollapsed && (
+                      <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-positive"}`}>
+                        {i === 0 ? `${incomeYoY >= 0 ? "+" : ""}${incomeYoY.toFixed(1)}%` : `${incomeYoY >= 0 ? "+" : ""}${incomeYoY.toFixed(1)}%`}
+                      </span>
+                    )}
+                  </td>
+                  <td className="cft-td-divider" />
+                  {/* Outgoings detail cells */}
+                  {isGroupExpanded("outgoings") && <td className={`cft-td cft-detail-cell ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-y.ongoingCosts))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`cft-td cft-detail-cell ${getValueClass(-y.loanRepayment, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanRepayment))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`cft-td cft-detail-cell ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatCurrencyCf(Math.round(-y.incomeTaxCalc))}</td>}
+                  {/* Outgoings total - larger when collapsed, with YoY indicator */}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"}`}>
+                    <span className="cft-summary-value" style={{ color: "var(--cf-negative)" }}>{formatCurrencyCf(Math.round(-totalCosts))}</span>
+                    {isCollapsed && (
+                      <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>
+                        {i === 0 ? `${costsYoY >= 0 ? "+" : ""}${costsYoY.toFixed(1)}%` : `${costsYoY >= 0 ? "+" : ""}${costsYoY.toFixed(1)}%`}
+                      </span>
+                    )}
+                  </td>
+                  <td className="cft-td-divider" />
+                  {/* Cashflow result */}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-result-lg" : "cft-td-result"} ${annualCashflow >= 0 ? "cft-val-positive" : "cft-val-negative"}`}>
+                    <span className="cft-summary-value">{annualCashflow >= 0 ? "+" : ""}{formatCurrencyCf(Math.round(annualCashflow))}</span>
+                    {isCollapsed && (() => {
+                      const prevCashflow = i > 0 ? (prevIncome - prevCosts) : annualCashflow;
+                      const cashflowYoY = prevCashflow !== 0 ? ((annualCashflow / prevCashflow - 1) * 100) : 0;
+                      return (
+                        <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : annualCashflow >= 0 ? "cft-yoy-positive" : "cft-yoy-negative"}`}>
+                          {i === 0 ? `${cashflowYoY >= 0 ? "+" : ""}${cashflowYoY.toFixed(1)}%` : `${cashflowYoY >= 0 ? "+" : ""}${cashflowYoY.toFixed(1)}%`}
+                        </span>
+                      );
+                    })()}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+
+      {/* TAX — Deductions panel (collapsible columns) */}
+      {viewMode === "tax" && taxPanel === "deductions" && (
+        <table className="cft-table cft-table-narrow cft-collapsible-cols">
+          <thead>
+            <tr className="cft-group-row">
+              <th className="cft-group-cell" colSpan={2} />
+              <th
+                className="cft-group-cell cft-group-label cft-group-tax cft-group-clickable"
+                colSpan={isGroupExpanded("deductions") ? 4 : 1}
+                onClick={() => toggleGroup("deductions")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("deductions") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>deductions</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
               <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
-              <th className="cft-th cft-tip" data-tip="Council, Water, Insurance, Maintenance, Strata">holding</th>
-              <th className="cft-th cft-tip" data-tip="Loan Interest Paid">interest</th>
-              <th className="cft-th cft-tip" data-tip="Div 43 + Div 40 Depreciation">depr.</th>
+              {isGroupExpanded("deductions") && <th className="cft-th cft-tip cft-detail-col" data-tip="Council, Water, Insurance, Maintenance, Strata">holding</th>}
+              {isGroupExpanded("deductions") && <th className="cft-th cft-tip cft-detail-col" data-tip="Loan Interest Paid">interest</th>}
+              {isGroupExpanded("deductions") && <th className="cft-th cft-tip cft-detail-col" data-tip="Div 43 + Div 40 Depreciation">depr.</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip="Total Deductible Expenses">total ded.</th>
             </tr>
           </thead>
@@ -293,9 +455,9 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.ongoingCosts))}</td>
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.interestPortion))}</td>
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(depreciation))}</td>
+                  {isGroupExpanded("deductions") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.ongoingCosts))}</td>}
+                  {isGroupExpanded("deductions") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
+                  {isGroupExpanded("deductions") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(depreciation))}</td>}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-text)" }}>
                     {formatCurrencyCf(Math.round(totalDeductions))}
                   </td>
@@ -306,19 +468,28 @@ export default function CashflowDataTable({
         </table>
       )}
 
-      {/* TAX — Tax panel */}
+      {/* TAX — Tax panel (collapsible columns) */}
       {viewMode === "tax" && taxPanel === "tax" && (
-        <table className="cft-table cft-table-narrow">
+        <table className="cft-table cft-table-narrow cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell cft-group-label cft-group-net" colSpan={6}>tax</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-net cft-group-clickable"
+                colSpan={isGroupExpanded("tax") ? 6 : 1}
+                onClick={() => toggleGroup("tax")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("tax") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>tax</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-tip" data-tip="Salary + Rental Income">total income</th>
-              <th className="cft-th cft-tip" data-tip="Total Deductible Expenses">deductions</th>
-              <th className="cft-th cft-tip" data-tip="Tax Saved From Property Deductions">benefit</th>
-              <th className="cft-th cft-tip" data-tip="Income After Deductions">taxable inc.</th>
-              <th className="cft-th cft-tip" data-tip="Marginal Tax Rate Band">bracket</th>
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Salary + Rental Income">total income</th>}
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Total Deductible Expenses">deductions</th>}
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Tax Saved From Property Deductions">benefit</th>}
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Income After Deductions">taxable inc.</th>}
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Marginal Tax Rate Band">bracket</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip="Income Tax (incl. Medicare Levy)">total tax</th>
             </tr>
           </thead>
@@ -333,13 +504,13 @@ export default function CashflowDataTable({
               const bracket = getMarginalTaxRate(taxableIncome);
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(totalIncome))}</td>
-                  <td className={`cft-td ${getValueClass(-totalDeductions, false, true)}`}>{formatCurrencyCf(Math.round(-totalDeductions))}</td>
-                  <td className="cft-td" style={{ color: "var(--cf-positive)" }}>
+                  {isGroupExpanded("tax") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(totalIncome))}</td>}
+                  {isGroupExpanded("tax") && <td className={`cft-td cft-detail-cell ${getValueClass(-totalDeductions, false, true)}`}>{formatCurrencyCf(Math.round(-totalDeductions))}</td>}
+                  {isGroupExpanded("tax") && <td className="cft-td cft-detail-cell" style={{ color: "var(--cf-positive)" }}>
                     {y.taxSaved > 0 ? `(+${formatCurrencyCf(Math.round(y.taxSaved))})` : "—"}
-                  </td>
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(taxableIncome))}</td>
-                  <td className="cft-td cft-val-dim">{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</td>
+                  </td>}
+                  {isGroupExpanded("tax") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(taxableIncome))}</td>}
+                  {isGroupExpanded("tax") && <td className="cft-td cft-val-dim cft-detail-cell">{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</td>}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-negative)" }}>
                     {formatCurrencyCf(Math.round(-y.incomeTaxCalc))}
                   </td>
@@ -350,20 +521,124 @@ export default function CashflowDataTable({
         </table>
       )}
 
-
-      {/* PROPERTY TABLE — Gearing panel */}
-      {viewMode === "property" && isInvestment && propertyPanel === "gearing" && (
-        <table className="cft-table cft-table-narrow">
+      {/* TAX — Unified (Deductions + Tax in one table) */}
+      {viewMode === "tax" && taxPanel === "unified" && (
+        <table className="cft-table cft-table-wide cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell" colSpan={2} />
-              <th className="cft-group-cell cft-group-label cft-group-tax" colSpan={4}>gearing</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-tax cft-group-clickable"
+                colSpan={isGroupExpanded("deductions") ? 4 : 1}
+                onClick={() => toggleGroup("deductions")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("deductions") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>deductions</span>
+                </span>
+              </th>
+              <th className="cft-group-cell cft-group-divider" />
+              <th
+                className="cft-group-cell cft-group-label cft-group-net cft-group-clickable"
+                colSpan={isGroupExpanded("tax") ? 6 : 1}
+                onClick={() => toggleGroup("tax")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("tax") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>tax</span>
+                </span>
+              </th>
+            </tr>
+            {(isGroupExpanded("deductions") || isGroupExpanded("tax")) && (
+            <tr className="cft-header-row">
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
+              {/* Deductions detail columns */}
+              {isGroupExpanded("deductions") && <th className="cft-th cft-tip cft-detail-col" data-tip="Ongoing Holding Costs">holding</th>}
+              {isGroupExpanded("deductions") && <th className="cft-th cft-tip cft-detail-col" data-tip="Loan Interest Paid">interest</th>}
+              {isGroupExpanded("deductions") && <th className="cft-th cft-tip cft-detail-col" data-tip="Div 43 + Div 40">depr.</th>}
+              <th className="cft-th cft-th-agg cft-tip" data-tip="Total Deductible Expenses">total ded.</th>
+              <th className="cft-th-divider" />
+              {/* Tax detail columns */}
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Salary + Rent">income</th>}
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Total Deductions">ded.</th>}
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Tax Benefit From Deductions">benefit</th>}
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Income After Deductions">taxable</th>}
+              {isGroupExpanded("tax") && <th className="cft-th cft-tip cft-detail-col" data-tip="Marginal Tax Rate">bracket</th>}
+              <th className="cft-th cft-th-result cft-tip" data-tip="Income Tax (incl. Medicare Levy)">total tax</th>
+            </tr>
+            )}
+          </thead>
+          <tbody>
+            {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
+              const depreciation = y.depDiv43 + y.depDiv40;
+              const totalDeductions = y.ongoingCosts + y.interestPortion + depreciation;
+              const totalIncome = y.salary + y.rentalIncome;
+              const taxableIncome = y.grossIncome - y.totalDeductionsForTax;
+              const bracket = getMarginalTaxRate(taxableIncome);
+              const isCollapsed = !isGroupExpanded("deductions") && !isGroupExpanded("tax");
+              return (
+                <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "cft-row-summary-collapsed" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
+                  {/* Deductions detail cells */}
+                  {isGroupExpanded("deductions") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.ongoingCosts))}</td>}
+                  {isGroupExpanded("deductions") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
+                  {isGroupExpanded("deductions") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(depreciation))}</td>}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"}`} style={{ fontWeight: 600, color: "var(--cf-text)" }}>
+                    <span className="cft-summary-value">{formatCurrencyCf(Math.round(totalDeductions))}</span>
+                    {isCollapsed && (() => {
+                      const prevDed = i > 0 ? (() => { const py = yearData[i-1]; return py.ongoingCosts + py.interestPortion + py.depDiv43 + py.depDiv40; })() : totalDeductions;
+                      const dedYoY = prevDed > 0 ? ((totalDeductions / prevDed - 1) * 100) : 0;
+                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${dedYoY >= 0 ? "+" : ""}${dedYoY.toFixed(1)}%` : `${dedYoY >= 0 ? "+" : ""}${dedYoY.toFixed(1)}%`}</span>;
+                    })()}
+                  </td>
+                  <td className="cft-td-divider" />
+                  {/* Tax detail cells */}
+                  {isGroupExpanded("tax") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(totalIncome))}</td>}
+                  {isGroupExpanded("tax") && <td className={`cft-td cft-detail-cell ${getValueClass(-totalDeductions, false, true)}`}>{formatCurrencyCf(Math.round(-totalDeductions))}</td>}
+                  {isGroupExpanded("tax") && <td className="cft-td cft-detail-cell" style={{ color: "var(--cf-positive)" }}>
+                    {y.taxSaved > 0 ? `+${formatCurrencyCf(Math.round(y.taxSaved))}` : "—"}
+                  </td>}
+                  {isGroupExpanded("tax") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(taxableIncome))}</td>}
+                  {isGroupExpanded("tax") && <td className="cft-td cft-val-dim cft-detail-cell">{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</td>}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-result-lg" : "cft-td-result"}`} style={{ fontWeight: 700, color: "var(--cf-negative)" }}>
+                    <span className="cft-summary-value">{formatCurrencyCf(Math.round(-y.incomeTaxCalc))}</span>
+                    {isCollapsed && (() => {
+                      const prevTax = i > 0 ? yearData[i-1].incomeTaxCalc : y.incomeTaxCalc;
+                      const taxYoY = prevTax > 0 ? ((y.incomeTaxCalc / prevTax - 1) * 100) : 0;
+                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${taxYoY >= 0 ? "+" : ""}${taxYoY.toFixed(1)}%` : `${taxYoY >= 0 ? "+" : ""}${taxYoY.toFixed(1)}%`}</span>;
+                    })()}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+
+      {/* PROPERTY TABLE — Gearing panel (collapsible columns) */}
+      {viewMode === "property" && isInvestment && propertyPanel === "gearing" && (
+        <table className="cft-table cft-table-narrow cft-collapsible-cols">
+          <thead>
+            <tr className="cft-group-row">
+              <th className="cft-group-cell" colSpan={2} />
+              <th
+                className="cft-group-cell cft-group-label cft-group-tax cft-group-clickable"
+                colSpan={isGroupExpanded("gearing") ? 4 : 1}
+                onClick={() => toggleGroup("gearing")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("gearing") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>gearing</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
               <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
-              <th className="cft-th cft-tip" data-tip="Annual Rental Income">rent</th>
-              <th className="cft-th cft-tip" data-tip="Interest + Ongoing Costs">holding</th>
-              <th className="cft-th cft-tip" data-tip="Div 43 + Div 40 Depreciation">depreciation</th>
+              {isGroupExpanded("gearing") && <th className="cft-th cft-tip cft-detail-col" data-tip="Annual Rental Income">rent</th>}
+              {isGroupExpanded("gearing") && <th className="cft-th cft-tip cft-detail-col" data-tip="Interest + Ongoing Costs">holding</th>}
+              {isGroupExpanded("gearing") && <th className="cft-th cft-tip cft-detail-col" data-tip="Div 43 + Div 40 Depreciation">depreciation</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip="Rent − Holding − Depreciation (negative = negatively geared)">net gearing</th>
             </tr>
           </thead>
@@ -377,9 +652,9 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>
-                  <td className={`cft-td ${getValueClass(-holdingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-holdingCosts))}</td>
-                  <td className={`cft-td ${getValueClass(-depreciation, false, true)}`}>{formatCurrencyCf(Math.round(-depreciation))}</td>
+                  {isGroupExpanded("gearing") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("gearing") && <td className={`cft-td cft-detail-cell ${getValueClass(-holdingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-holdingCosts))}</td>}
+                  {isGroupExpanded("gearing") && <td className={`cft-td cft-detail-cell ${getValueClass(-depreciation, false, true)}`}>{formatCurrencyCf(Math.round(-depreciation))}</td>}
                   <td className={`cft-td cft-td-result ${netGearing >= 0 ? "cft-val-positive" : "cft-val-negative"}`}>{formatCurrencyCf(Math.round(netGearing))}</td>
                 </tr>
               );
@@ -388,17 +663,26 @@ export default function CashflowDataTable({
         </table>
       )}
 
-      {/* PROPERTY TABLE — Cashflow panel */}
+      {/* PROPERTY TABLE — Cashflow panel (collapsible columns) */}
       {viewMode === "property" && isInvestment && propertyPanel === "cashflow" && (
-        <table className="cft-table cft-table-narrow">
+        <table className="cft-table cft-table-narrow cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell cft-group-label cft-group-net" colSpan={4}>cashflow</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-net cft-group-clickable"
+                colSpan={isGroupExpanded("propertyCashflow") ? 4 : 1}
+                onClick={() => toggleGroup("propertyCashflow")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("propertyCashflow") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>cashflow</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-tip" data-tip="Annual Rental Income">rent</th>
-              <th className="cft-th cft-th-agg cft-tip" data-tip="Holding + Repayments">total costs</th>
-              <th className="cft-th cft-tip" data-tip="Tax Benefit From Property Deductions">tax saved</th>
+              {isGroupExpanded("propertyCashflow") && <th className="cft-th cft-tip cft-detail-col" data-tip="Annual Rental Income">rent</th>}
+              {isGroupExpanded("propertyCashflow") && <th className="cft-th cft-th-agg cft-tip cft-detail-col" data-tip="Holding + Repayments">total costs</th>}
+              {isGroupExpanded("propertyCashflow") && <th className="cft-th cft-tip cft-detail-col" data-tip="Tax Benefit From Property Deductions">tax saved</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip="Rent − Total Costs + Tax Saved">cashflow</th>
             </tr>
           </thead>
@@ -410,11 +694,100 @@ export default function CashflowDataTable({
               const totalCosts = holdingCosts + y.principalPortion;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>
-                  <td className={`cft-td ${getValueClass(-totalCosts, false, true)}`}>{formatCurrencyCf(Math.round(-totalCosts))}</td>
-                  <td className="cft-td" style={{ color: "var(--cf-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.taxSaved))}</td>
+                  {isGroupExpanded("propertyCashflow") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className={`cft-td cft-detail-cell ${getValueClass(-totalCosts, false, true)}`}>{formatCurrencyCf(Math.round(-totalCosts))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className="cft-td cft-detail-cell" style={{ color: "var(--cf-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.taxSaved))}</td>}
                   <td className={`cft-td cft-td-result ${y.propertyCashflow >= 0 ? "cft-val-positive" : "cft-val-negative"}`}>
                     {formatCurrencyCf(Math.round(y.propertyCashflow))}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+
+      {/* PROPERTY TABLE — Unified (Gearing + Cashflow in one table) */}
+      {viewMode === "property" && isInvestment && propertyPanel === "unified" && (
+        <table className="cft-table cft-table-wide cft-collapsible-cols">
+          <thead>
+            <tr className="cft-group-row">
+              <th className="cft-group-cell" colSpan={2} />
+              <th
+                className="cft-group-cell cft-group-label cft-group-tax cft-group-clickable"
+                colSpan={isGroupExpanded("gearing") ? 4 : 1}
+                onClick={() => toggleGroup("gearing")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("gearing") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>gearing</span>
+                </span>
+              </th>
+              <th className="cft-group-cell cft-group-divider" />
+              <th
+                className="cft-group-cell cft-group-label cft-group-net cft-group-clickable"
+                colSpan={isGroupExpanded("propertyCashflow") ? 4 : 1}
+                onClick={() => toggleGroup("propertyCashflow")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("propertyCashflow") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>cashflow</span>
+                </span>
+              </th>
+            </tr>
+            {(isGroupExpanded("gearing") || isGroupExpanded("propertyCashflow")) && (
+            <tr className="cft-header-row">
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
+              {/* Gearing detail columns */}
+              {isGroupExpanded("gearing") && <th className="cft-th cft-tip cft-detail-col" data-tip="Annual Rental Income">rent</th>}
+              {isGroupExpanded("gearing") && <th className="cft-th cft-tip cft-detail-col" data-tip="Interest + Ongoing Costs">holding</th>}
+              {isGroupExpanded("gearing") && <th className="cft-th cft-tip cft-detail-col" data-tip="Div 43 + Div 40 Depreciation">depr.</th>}
+              <th className="cft-th cft-th-agg cft-tip" data-tip="Rent − Holding − Depreciation">net gearing</th>
+              <th className="cft-th-divider" />
+              {/* Cashflow detail columns */}
+              {isGroupExpanded("propertyCashflow") && <th className="cft-th cft-tip cft-detail-col" data-tip="Annual Rental Income">rent</th>}
+              {isGroupExpanded("propertyCashflow") && <th className="cft-th cft-tip cft-detail-col" data-tip="Holding + Repayments">costs</th>}
+              {isGroupExpanded("propertyCashflow") && <th className="cft-th cft-tip cft-detail-col" data-tip="Tax Benefit">tax saved</th>}
+              <th className="cft-th cft-th-result cft-tip" data-tip="Rent − Costs + Tax Saved">cashflow</th>
+            </tr>
+            )}
+          </thead>
+          <tbody>
+            {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
+              const holdingCosts = y.interestPortion + y.ongoingCosts;
+              const depreciation = y.depDiv43 + y.depDiv40;
+              const netGearing = y.rentalIncome - holdingCosts - depreciation;
+              const totalCosts = holdingCosts + y.principalPortion;
+              const isCollapsed = !isGroupExpanded("gearing") && !isGroupExpanded("propertyCashflow");
+              return (
+                <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "cft-row-summary-collapsed" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
+                  {/* Gearing detail cells */}
+                  {isGroupExpanded("gearing") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("gearing") && <td className={`cft-td cft-detail-cell ${getValueClass(-holdingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-holdingCosts))}</td>}
+                  {isGroupExpanded("gearing") && <td className={`cft-td cft-detail-cell ${getValueClass(-depreciation, false, true)}`}>{formatCurrencyCf(Math.round(-depreciation))}</td>}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"} ${netGearing >= 0 ? "cft-val-positive" : "cft-val-negative"}`}>
+                    <span className="cft-summary-value">{netGearing >= 0 ? "+" : ""}{formatCurrencyCf(Math.round(netGearing))}</span>
+                    {isCollapsed && (() => {
+                      const prevGearing = i > 0 ? (() => { const py = yearData[i-1]; return py.rentalIncome - (py.interestPortion + py.ongoingCosts) - (py.depDiv43 + py.depDiv40); })() : netGearing;
+                      const gearYoY = prevGearing !== 0 ? ((netGearing / prevGearing - 1) * 100) : 0;
+                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : netGearing >= 0 ? "cft-yoy-positive" : "cft-yoy-negative"}`}>{i === 0 ? `${gearYoY >= 0 ? "+" : ""}${gearYoY.toFixed(1)}%` : `${gearYoY >= 0 ? "+" : ""}${gearYoY.toFixed(1)}%`}</span>;
+                    })()}
+                  </td>
+                  <td className="cft-td-divider" />
+                  {/* Cashflow detail cells */}
+                  {isGroupExpanded("propertyCashflow") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className={`cft-td cft-detail-cell ${getValueClass(-totalCosts, false, true)}`}>{formatCurrencyCf(Math.round(-totalCosts))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className="cft-td cft-detail-cell" style={{ color: "var(--cf-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.taxSaved))}</td>}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-result-lg" : "cft-td-result"} ${y.propertyCashflow >= 0 ? "cft-val-positive" : "cft-val-negative"}`}>
+                    <span className="cft-summary-value">{y.propertyCashflow >= 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.propertyCashflow))}</span>
+                    {isCollapsed && (() => {
+                      const prevCf = i > 0 ? yearData[i-1].propertyCashflow : y.propertyCashflow;
+                      const cfYoY = prevCf !== 0 ? ((y.propertyCashflow / prevCf - 1) * 100) : 0;
+                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : y.propertyCashflow >= 0 ? "cft-yoy-positive" : "cft-yoy-negative"}`}>{i === 0 ? `${cfYoY >= 0 ? "+" : ""}${cfYoY.toFixed(1)}%` : `${cfYoY >= 0 ? "+" : ""}${cfYoY.toFixed(1)}%`}</span>;
+                    })()}
                   </td>
                 </tr>
               );
@@ -469,22 +842,31 @@ export default function CashflowDataTable({
         </table>
       )}
 
-      {/* EQUITY — Property panel */}
+      {/* EQUITY — Property panel (collapsible columns) */}
       {viewMode === "equity" && equityPanel === "property" && (
-        <table className="cft-table cft-table-mid">
+        <table className="cft-table cft-table-mid cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell" colSpan={2} />
-              <th className="cft-group-cell cft-group-label cft-group-income" colSpan={9}>property</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-income cft-group-clickable"
+                colSpan={isGroupExpanded("property") ? 7 : 1}
+                onClick={() => toggleGroup("property")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("property") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>property</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
               <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
-              <th className="cft-th cft-tip" data-tip="Cumulative Capital Growth From Purchase">total growth</th>
-              <th className="cft-th cft-tip" data-tip="Total Growth as % of Purchase Price">gain %</th>
-              <th className="cft-th-divider" />
-              <th className="cft-th cft-tip" data-tip="Year-on-Year Capital Growth">yoy growth</th>
-              <th className="cft-th cft-tip" data-tip="Year-on-Year Growth %">yoy %</th>
-              <th className="cft-th-divider" />
+              {isGroupExpanded("property") && <th className="cft-th cft-tip cft-detail-col" data-tip="Cumulative Capital Growth From Purchase">total growth</th>}
+              {isGroupExpanded("property") && <th className="cft-th cft-tip cft-detail-col" data-tip="Total Growth as % of Purchase Price">gain %</th>}
+              {isGroupExpanded("property") && <th className="cft-th-divider cft-detail-col" />}
+              {isGroupExpanded("property") && <th className="cft-th cft-tip cft-detail-col" data-tip="Year-on-Year Capital Growth">yoy growth</th>}
+              {isGroupExpanded("property") && <th className="cft-th cft-tip cft-detail-col" data-tip="Year-on-Year Growth %">yoy %</th>}
+              {isGroupExpanded("property") && <th className="cft-th-divider cft-detail-col" />}
               <th className="cft-th cft-th-result cft-tip" data-tip="Current Property Value">value</th>
             </tr>
           </thead>
@@ -502,12 +884,12 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
-                  <td className="cft-td cft-val-dim">+{formatCurrencyCf(Math.round(totalGrowth))}</td>
-                  <td className="cft-td" style={{ color: parseFloat(totalGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{totalGrowthPct}%</td>
-                  <td className="cft-td-divider" />
-                  <td className="cft-td cft-val-dim">+{formatCurrencyCf(Math.round(yoyGrowth))}</td>
-                  <td className="cft-td" style={{ color: parseFloat(yoyGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{yoyGrowthPct}%</td>
-                  <td className="cft-td-divider" />
+                  {isGroupExpanded("property") && <td className="cft-td cft-val-dim cft-detail-cell">+{formatCurrencyCf(Math.round(totalGrowth))}</td>}
+                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(totalGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{totalGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <td className="cft-td-divider cft-detail-cell" />}
+                  {isGroupExpanded("property") && <td className="cft-td cft-val-dim cft-detail-cell">+{formatCurrencyCf(Math.round(yoyGrowth))}</td>}
+                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(yoyGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{yoyGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <td className="cft-td-divider cft-detail-cell" />}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(y.propertyValue))}</td>
                 </tr>
               );
@@ -516,20 +898,29 @@ export default function CashflowDataTable({
         </table>
       )}
 
-      {/* EQUITY — Position panel */}
+      {/* EQUITY — Position panel (collapsible columns) */}
       {viewMode === "equity" && equityPanel === "position" && (
-        <table className="cft-table cft-table-mid">
+        <table className="cft-table cft-table-mid cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell cft-group-label cft-group-position" colSpan={showOffset ? 7 : 4}>position</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-position cft-group-clickable"
+                colSpan={isGroupExpanded("position") ? (showOffset ? 7 : 4) : 1}
+                onClick={() => toggleGroup("position")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("position") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>position</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-tip" data-tip="Current Property Value">prop value</th>
-              <th className="cft-th cft-tip" data-tip="Outstanding Loan Balance">loan balance</th>
-              <th className="cft-th cft-tip" data-tip="Loan-to-Value Ratio">lvr</th>
-              {showOffset && <th className="cft-th cft-th-agg cft-tip" data-tip="Property Value − Loan Balance">prop equity</th>}
-              {showOffset && <th className="cft-th-divider" />}
-              {showOffset && <th className="cft-th cft-tip" data-tip="Offset Account Balance">offset</th>}
+              {isGroupExpanded("position") && <th className="cft-th cft-tip cft-detail-col" data-tip="Current Property Value">prop value</th>}
+              {isGroupExpanded("position") && <th className="cft-th cft-tip cft-detail-col" data-tip="Outstanding Loan Balance">loan balance</th>}
+              {isGroupExpanded("position") && <th className="cft-th cft-tip cft-detail-col" data-tip="Loan-to-Value Ratio">lvr</th>}
+              {isGroupExpanded("position") && showOffset && <th className="cft-th cft-th-agg cft-tip cft-detail-col" data-tip="Property Value − Loan Balance">prop equity</th>}
+              {isGroupExpanded("position") && showOffset && <th className="cft-th-divider cft-detail-col" />}
+              {isGroupExpanded("position") && showOffset && <th className="cft-th cft-tip cft-detail-col" data-tip="Offset Account Balance">offset</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip={showOffset ? "Property Equity + Offset Balance" : "Property Value − Loan Balance"}>net equity</th>
             </tr>
           </thead>
@@ -541,12 +932,12 @@ export default function CashflowDataTable({
               const propertyEquity = y.propertyValue - y.loanBalance;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.propertyValue))}</td>
-                  <td className={`cft-td ${getValueClass(-y.loanBalance, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanBalance))}</td>
-                  <td className={`cft-td ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</td>
-                  {showOffset && <td className="cft-td" style={{ fontWeight: 700, color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(propertyEquity))}</td>}
-                  {showOffset && <td className="cft-td-divider" />}
-                  {showOffset && <td className="cft-td cft-val-dim">{formatCurrencyCf(Math.round(y.offsetBalanceAtYear))}</td>}
+                  {isGroupExpanded("position") && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.propertyValue))}</td>}
+                  {isGroupExpanded("position") && <td className={`cft-td cft-detail-cell ${getValueClass(-y.loanBalance, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanBalance))}</td>}
+                  {isGroupExpanded("position") && <td className={`cft-td cft-detail-cell ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</td>}
+                  {isGroupExpanded("position") && showOffset && <td className="cft-td cft-detail-cell" style={{ fontWeight: 700, color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(propertyEquity))}</td>}
+                  {isGroupExpanded("position") && showOffset && <td className="cft-td-divider cft-detail-cell" />}
+                  {isGroupExpanded("position") && showOffset && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.offsetBalanceAtYear))}</td>}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-text)" }}>
                     {formatCurrencyCf(Math.round(y.netEquity))}
                   </td>
@@ -557,20 +948,129 @@ export default function CashflowDataTable({
         </table>
       )}
 
-      {/* DEDUCTIONS — Holding costs panel */}
-      {viewMode === "deductions" && deductionsPanel === "holding" && (
-        <table className="cft-table cft-table-narrow">
+      {/* EQUITY — Unified (Property + Position in one table) */}
+      {viewMode === "equity" && equityPanel === "unified" && (
+        <table className="cft-table cft-table-wide cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
               <th className="cft-group-cell" colSpan={2} />
-              <th className="cft-group-cell cft-group-label cft-group-tax" colSpan={isInvestment ? 5 : 4}>holding costs</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-income cft-group-clickable"
+                colSpan={isGroupExpanded("property") ? 7 : 1}
+                onClick={() => toggleGroup("property")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("property") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>property</span>
+                </span>
+              </th>
+              <th className="cft-group-cell cft-group-divider" />
+              <th
+                className="cft-group-cell cft-group-label cft-group-position cft-group-clickable"
+                colSpan={isGroupExpanded("position") ? (showOffset ? 6 : 3) : 1}
+                onClick={() => toggleGroup("position")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("position") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>position</span>
+                </span>
+              </th>
+            </tr>
+            {(isGroupExpanded("property") || isGroupExpanded("position")) && (
+            <tr className="cft-header-row">
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
+              {/* Property detail columns */}
+              {isGroupExpanded("property") && <th className="cft-th cft-tip cft-detail-col" data-tip="Cumulative Growth $">total $</th>}
+              {isGroupExpanded("property") && <th className="cft-th cft-tip cft-detail-col" data-tip="Cumulative Growth %">total %</th>}
+              {isGroupExpanded("property") && <th className="cft-th-divider cft-detail-col" />}
+              {isGroupExpanded("property") && <th className="cft-th cft-tip cft-detail-col" data-tip="Year-on-Year Growth $">yoy $</th>}
+              {isGroupExpanded("property") && <th className="cft-th cft-tip cft-detail-col" data-tip="Year-on-Year Growth %">yoy %</th>}
+              {isGroupExpanded("property") && <th className="cft-th-divider cft-detail-col" />}
+              <th className="cft-th cft-th-agg cft-tip" data-tip="Current Property Value">value</th>
+              <th className="cft-th-divider" />
+              {/* Position detail columns */}
+              {isGroupExpanded("position") && <th className="cft-th cft-tip cft-detail-col" data-tip="Outstanding Loan Balance">loan</th>}
+              {isGroupExpanded("position") && <th className="cft-th cft-tip cft-detail-col" data-tip="Loan-to-Value Ratio">lvr</th>}
+              {isGroupExpanded("position") && showOffset && <th className="cft-th cft-tip cft-detail-col" data-tip="Property Equity">prop eq.</th>}
+              {isGroupExpanded("position") && showOffset && <th className="cft-th-divider cft-detail-col" />}
+              {isGroupExpanded("position") && showOffset && <th className="cft-th cft-tip cft-detail-col" data-tip="Offset Balance">offset</th>}
+              <th className="cft-th cft-th-result cft-tip" data-tip={showOffset ? "Property Equity + Offset" : "Property − Loan"}>net equity</th>
+            </tr>
+            )}
+          </thead>
+          <tbody>
+            {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
+              const prevValue = i > 0 ? yearData[i - 1].propertyValue : propertyValue;
+              const totalGrowth = y.propertyValue - propertyValue;
+              const totalGrowthPct = ((y.propertyValue / propertyValue - 1) * 100).toFixed(1);
+              const yoyGrowth = y.propertyValue - prevValue;
+              const yoyGrowthPct = i > 0 ? ((y.propertyValue / prevValue - 1) * 100).toFixed(1) : totalGrowthPct;
+              const lvr = y.loanBalance / y.propertyValue * 100;
+              const propertyEquity = y.propertyValue - y.loanBalance;
+              const isCollapsed = !isGroupExpanded("property") && !isGroupExpanded("position");
+              return (
+                <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "cft-row-summary-collapsed" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
+                  {/* Property detail cells */}
+                  {isGroupExpanded("property") && <td className="cft-td cft-val-dim cft-detail-cell">+{formatCurrencyCf(Math.round(totalGrowth))}</td>}
+                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(totalGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{totalGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <td className="cft-td-divider cft-detail-cell" />}
+                  {isGroupExpanded("property") && <td className="cft-td cft-val-dim cft-detail-cell">+{formatCurrencyCf(Math.round(yoyGrowth))}</td>}
+                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(yoyGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{yoyGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <td className="cft-td-divider cft-detail-cell" />}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"}`} style={{ fontWeight: 600, color: "var(--cf-text)" }}>
+                    <span className="cft-summary-value">{formatCurrencyCf(Math.round(y.propertyValue))}</span>
+                    {isCollapsed && (
+                      <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-positive"}`}>{i === 0 ? `+${yoyGrowthPct}%` : `+${yoyGrowthPct}%`}</span>
+                    )}
+                  </td>
+                  <td className="cft-td-divider" />
+                  {/* Position detail cells */}
+                  {isGroupExpanded("position") && <td className={`cft-td cft-detail-cell ${getValueClass(-y.loanBalance, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanBalance))}</td>}
+                  {isGroupExpanded("position") && <td className={`cft-td cft-detail-cell ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</td>}
+                  {isGroupExpanded("position") && showOffset && <td className="cft-td cft-detail-cell" style={{ fontWeight: 600, color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(propertyEquity))}</td>}
+                  {isGroupExpanded("position") && showOffset && <td className="cft-td-divider cft-detail-cell" />}
+                  {isGroupExpanded("position") && showOffset && <td className="cft-td cft-val-dim cft-detail-cell">{formatCurrencyCf(Math.round(y.offsetBalanceAtYear))}</td>}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-result-lg" : "cft-td-result"}`} style={{ fontWeight: 700, color: "var(--cf-positive)" }}>
+                    <span className="cft-summary-value">{formatCurrencyCf(Math.round(y.netEquity))}</span>
+                    {isCollapsed && (() => {
+                      const prevEquity = i > 0 ? yearData[i-1].netEquity : y.netEquity;
+                      const eqYoY = prevEquity > 0 ? ((y.netEquity / prevEquity - 1) * 100) : 0;
+                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-positive"}`}>{i === 0 ? `${eqYoY >= 0 ? "+" : ""}${eqYoY.toFixed(1)}%` : `${eqYoY >= 0 ? "+" : ""}${eqYoY.toFixed(1)}%`}</span>;
+                    })()}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+
+      {/* DEDUCTIONS — Holding costs panel (collapsible columns) */}
+      {viewMode === "deductions" && deductionsPanel === "holding" && (
+        <table className="cft-table cft-table-narrow cft-collapsible-cols">
+          <thead>
+            <tr className="cft-group-row">
+              <th className="cft-group-cell" colSpan={2} />
+              <th
+                className="cft-group-cell cft-group-label cft-group-tax cft-group-clickable"
+                colSpan={isGroupExpanded("holding") ? (isInvestment ? 5 : 4) : 1}
+                onClick={() => toggleGroup("holding")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("holding") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>holding costs</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
               <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
-              {isInvestment && <th className="cft-th cft-tip" data-tip="Loan Interest Paid">interest</th>}
-              <th className="cft-th cft-tip" data-tip="Council + Water Rates">rates</th>
-              <th className="cft-th cft-tip" data-tip="Building & Landlord Insurance">insurance</th>
-              <th className="cft-th cft-tip" data-tip="Maintenance & Repairs">maint.</th>
+              {isGroupExpanded("holding") && isInvestment && <th className="cft-th cft-tip cft-detail-col" data-tip="Loan Interest Paid">interest</th>}
+              {isGroupExpanded("holding") && <th className="cft-th cft-tip cft-detail-col" data-tip="Council + Water Rates">rates</th>}
+              {isGroupExpanded("holding") && <th className="cft-th cft-tip cft-detail-col" data-tip="Building & Landlord Insurance">insurance</th>}
+              {isGroupExpanded("holding") && <th className="cft-th cft-tip cft-detail-col" data-tip="Maintenance & Repairs">maint.</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip="Holding Costs Subtotal">subtotal</th>
             </tr>
           </thead>
@@ -582,10 +1082,10 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
-                  {isInvestment && <td className="cft-td cft-val-outflow">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
-                  <td className="cft-td cft-val-outflow">{formatCurrencyCf(Math.round(y.councilRates + y.waterRates))}</td>
-                  <td className="cft-td cft-val-outflow">{formatCurrencyCf(Math.round(y.insurance))}</td>
-                  <td className="cft-td cft-val-outflow">{formatCurrencyCf(Math.round(y.maintenance + y.strataFees))}</td>
+                  {isGroupExpanded("holding") && isInvestment && <td className="cft-td cft-val-outflow cft-detail-cell">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
+                  {isGroupExpanded("holding") && <td className="cft-td cft-val-outflow cft-detail-cell">{formatCurrencyCf(Math.round(y.councilRates + y.waterRates))}</td>}
+                  {isGroupExpanded("holding") && <td className="cft-td cft-val-outflow cft-detail-cell">{formatCurrencyCf(Math.round(y.insurance))}</td>}
+                  {isGroupExpanded("holding") && <td className="cft-td cft-val-outflow cft-detail-cell">{formatCurrencyCf(Math.round(y.maintenance + y.strataFees))}</td>}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-negative)" }}>
                     {formatCurrencyCf(Math.round(holdingTotal))}
                   </td>
@@ -596,16 +1096,25 @@ export default function CashflowDataTable({
         </table>
       )}
 
-      {/* DEDUCTIONS — Depreciation panel */}
+      {/* DEDUCTIONS — Depreciation panel (collapsible columns) */}
       {viewMode === "deductions" && deductionsPanel === "depreciation" && (
-        <table className="cft-table cft-table-narrow">
+        <table className="cft-table cft-table-narrow cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell cft-group-label cft-group-depreciation" colSpan={3}>depreciation</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-depreciation cft-group-clickable"
+                colSpan={isGroupExpanded("depreciation") ? 3 : 1}
+                onClick={() => toggleGroup("depreciation")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("depreciation") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>depreciation</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-tip" data-tip="Division 43 — Capital Works Deduction">div 43</th>
-              <th className="cft-th cft-tip" data-tip="Division 40 — Plant & Equipment Depreciation">div 40</th>
+              {isGroupExpanded("depreciation") && <th className="cft-th cft-tip cft-detail-col" data-tip="Division 43 — Capital Works Deduction">div 43</th>}
+              {isGroupExpanded("depreciation") && <th className="cft-th cft-tip cft-detail-col" data-tip="Division 40 — Plant & Equipment Depreciation">div 40</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip="Depreciation Subtotal">subtotal</th>
             </tr>
           </thead>
@@ -616,8 +1125,8 @@ export default function CashflowDataTable({
               const depTotal = y.depDiv43 + y.depDiv40;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="cft-td" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv43))}</td>
-                  <td className="cft-td" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv40))}</td>
+                  {isGroupExpanded("depreciation") && <td className="cft-td cft-detail-cell" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv43))}</td>}
+                  {isGroupExpanded("depreciation") && <td className="cft-td cft-detail-cell" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv40))}</td>}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: depColor }}>
                     {formatCurrencyCf(Math.round(depTotal))}
                   </td>
@@ -628,16 +1137,25 @@ export default function CashflowDataTable({
         </table>
       )}
 
-      {/* DEDUCTIONS — Totals panel */}
+      {/* DEDUCTIONS — Totals panel (collapsible columns) */}
       {viewMode === "deductions" && deductionsPanel === "totals" && (
-        <table className="cft-table cft-table-narrow">
+        <table className="cft-table cft-table-narrow cft-collapsible-cols">
           <thead>
             <tr className="cft-group-row">
-              <th className="cft-group-cell cft-group-label cft-group-net" colSpan={isInvestment ? 3 : 2}>{isInvestment ? "deductions" : "expenses"}</th>
+              <th
+                className="cft-group-cell cft-group-label cft-group-net cft-group-clickable"
+                colSpan={isGroupExpanded("totals") ? (isInvestment ? 3 : 2) : 1}
+                onClick={() => toggleGroup("totals")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("totals") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>{isInvestment ? "deductions" : "expenses"}</span>
+                </span>
+              </th>
             </tr>
             <tr className="cft-header-row">
-              <th className="cft-th cft-tip" data-tip="Interest + Ongoing Costs">holding</th>
-              {isInvestment && <th className="cft-th cft-tip" data-tip="Div 43 + Div 40">depr.</th>}
+              {isGroupExpanded("totals") && <th className="cft-th cft-tip cft-detail-col" data-tip="Interest + Ongoing Costs">holding</th>}
+              {isGroupExpanded("totals") && isInvestment && <th className="cft-th cft-tip cft-detail-col" data-tip="Div 43 + Div 40">depr.</th>}
               <th className="cft-th cft-th-result cft-tip" data-tip={isInvestment ? "Total Deductions" : "Total Expenses"}>{isInvestment ? "total ded." : "total exp."}</th>
             </tr>
           </thead>
@@ -650,10 +1168,115 @@ export default function CashflowDataTable({
               const grandTotal = isInvestment ? holdingTotal + depTotal : holdingTotal;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="cft-td" style={{ color: "var(--cf-negative)" }}>{formatCurrencyCf(Math.round(holdingTotal))}</td>
-                  {isInvestment && <td className="cft-td" style={{ color: depColor }}>{formatCurrencyCf(Math.round(depTotal))}</td>}
+                  {isGroupExpanded("totals") && <td className="cft-td cft-detail-cell" style={{ color: "var(--cf-negative)" }}>{formatCurrencyCf(Math.round(holdingTotal))}</td>}
+                  {isGroupExpanded("totals") && isInvestment && <td className="cft-td cft-detail-cell" style={{ color: depColor }}>{formatCurrencyCf(Math.round(depTotal))}</td>}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: isInvestment ? "#a78bfa" : "var(--cf-negative)" }}>
                     {formatCurrencyCf(Math.round(grandTotal))}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+
+      {/* DEDUCTIONS — Unified (Holding + Depreciation + Totals in one table) */}
+      {viewMode === "deductions" && deductionsPanel === "unified" && (
+        <table className="cft-table cft-table-wide cft-collapsible-cols">
+          <thead>
+            <tr className="cft-group-row">
+              <th className="cft-group-cell" colSpan={2} />
+              <th
+                className="cft-group-cell cft-group-label cft-group-tax cft-group-clickable"
+                colSpan={isGroupExpanded("holding") ? (isInvestment ? 5 : 4) : 1}
+                onClick={() => toggleGroup("holding")}
+              >
+                <span className="cft-group-header-chevron">
+                  {isGroupExpanded("holding") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  <span>holding costs</span>
+                </span>
+              </th>
+              <th className="cft-group-cell cft-group-divider" />
+              {isInvestment && (
+                <th
+                  className="cft-group-cell cft-group-label cft-group-depreciation cft-group-clickable"
+                  colSpan={isGroupExpanded("depreciation") ? 3 : 1}
+                  onClick={() => toggleGroup("depreciation")}
+                >
+                  <span className="cft-group-header-chevron">
+                    {isGroupExpanded("depreciation") ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                    <span>depreciation</span>
+                  </span>
+                </th>
+              )}
+              {isInvestment && <th className="cft-group-cell cft-group-divider" />}
+              <th className="cft-group-cell cft-group-label cft-group-net">{isInvestment ? "deductions" : "expenses"}</th>
+            </tr>
+            {(isGroupExpanded("holding") || isGroupExpanded("depreciation")) && (
+            <tr className="cft-header-row">
+              <th className="cft-th cft-th-year" /><th className="cft-th-divider" />
+              {/* Holding detail columns */}
+              {isGroupExpanded("holding") && isInvestment && <th className="cft-th cft-tip cft-detail-col" data-tip="Loan Interest Paid">interest</th>}
+              {isGroupExpanded("holding") && <th className="cft-th cft-tip cft-detail-col" data-tip="Council + Water Rates">rates</th>}
+              {isGroupExpanded("holding") && <th className="cft-th cft-tip cft-detail-col" data-tip="Building & Landlord Insurance">insurance</th>}
+              {isGroupExpanded("holding") && <th className="cft-th cft-tip cft-detail-col" data-tip="Maintenance & Repairs">maint.</th>}
+              <th className="cft-th cft-th-agg cft-tip" data-tip="Holding Costs Subtotal">subtotal</th>
+              <th className="cft-th-divider" />
+              {/* Depreciation detail columns (investment only) */}
+              {isInvestment && isGroupExpanded("depreciation") && <th className="cft-th cft-tip cft-detail-col" data-tip="Division 43 — Capital Works">div 43</th>}
+              {isInvestment && isGroupExpanded("depreciation") && <th className="cft-th cft-tip cft-detail-col" data-tip="Division 40 — Plant & Equipment">div 40</th>}
+              {isInvestment && <th className="cft-th cft-th-agg cft-tip" data-tip="Depreciation Subtotal">subtotal</th>}
+              {isInvestment && <th className="cft-th-divider" />}
+              {/* Total */}
+              <th className="cft-th cft-th-result cft-tip" data-tip={isInvestment ? "Total Deductions" : "Total Expenses"}>{isInvestment ? "total ded." : "total exp."}</th>
+            </tr>
+            )}
+          </thead>
+          <tbody>
+            {yearData.map((y, i) => {
+              if (!isRowVisible(y.year)) return null;
+              const isMilestone = isMilestoneYear(y.year);
+              const holdingTotal = isInvestment ? y.interestPortion + y.ongoingCosts : y.ongoingCosts;
+              const depTotal = y.depDiv43 + y.depDiv40;
+              const grandTotal = isInvestment ? holdingTotal + depTotal : holdingTotal;
+              const isCollapsed = !isGroupExpanded("holding") && !isGroupExpanded("depreciation");
+              return (
+                <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "cft-row-summary-collapsed" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
+                  <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
+                  {/* Holding detail cells */}
+                  {isGroupExpanded("holding") && isInvestment && <td className="cft-td cft-val-outflow cft-detail-cell">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
+                  {isGroupExpanded("holding") && <td className="cft-td cft-val-outflow cft-detail-cell">{formatCurrencyCf(Math.round(y.councilRates + y.waterRates))}</td>}
+                  {isGroupExpanded("holding") && <td className="cft-td cft-val-outflow cft-detail-cell">{formatCurrencyCf(Math.round(y.insurance))}</td>}
+                  {isGroupExpanded("holding") && <td className="cft-td cft-val-outflow cft-detail-cell">{formatCurrencyCf(Math.round(y.maintenance))}</td>}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"}`} style={{ fontWeight: 600, color: "var(--cf-negative)" }}>
+                    <span className="cft-summary-value">{formatCurrencyCf(Math.round(holdingTotal))}</span>
+                    {isCollapsed && (() => {
+                      const prevHolding = i > 0 ? (isInvestment ? yearData[i-1].interestPortion + yearData[i-1].ongoingCosts : yearData[i-1].ongoingCosts) : holdingTotal;
+                      const holdYoY = prevHolding > 0 ? ((holdingTotal / prevHolding - 1) * 100) : 0;
+                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${holdYoY >= 0 ? "+" : ""}${holdYoY.toFixed(1)}%` : `${holdYoY >= 0 ? "+" : ""}${holdYoY.toFixed(1)}%`}</span>;
+                    })()}
+                  </td>
+                  <td className="cft-td-divider" />
+                  {/* Depreciation detail cells (investment only) */}
+                  {isInvestment && isGroupExpanded("depreciation") && <td className="cft-td cft-detail-cell" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv43))}</td>}
+                  {isInvestment && isGroupExpanded("depreciation") && <td className="cft-td cft-detail-cell" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv40))}</td>}
+                  {isInvestment && <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"}`} style={{ fontWeight: 600, color: depColor }}>
+                    <span className="cft-summary-value">{formatCurrencyCf(Math.round(depTotal))}</span>
+                    {isCollapsed && (() => {
+                      const prevDep = i > 0 ? yearData[i-1].depDiv43 + yearData[i-1].depDiv40 : depTotal;
+                      const depYoY = prevDep > 0 ? ((depTotal / prevDep - 1) * 100) : 0;
+                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${depYoY >= 0 ? "+" : ""}${depYoY.toFixed(1)}%` : `${depYoY >= 0 ? "+" : ""}${depYoY.toFixed(1)}%`}</span>;
+                    })()}
+                  </td>}
+                  {isInvestment && <td className="cft-td-divider" />}
+                  {/* Total */}
+                  <td className={`cft-td ${isCollapsed ? "cft-td-result-lg" : "cft-td-result"}`} style={{ fontWeight: 700, color: isInvestment ? "#a78bfa" : "var(--cf-negative)" }}>
+                    <span className="cft-summary-value">{formatCurrencyCf(Math.round(grandTotal))}</span>
+                    {isCollapsed && (() => {
+                      const prevGrand = i > 0 ? (() => { const py = yearData[i-1]; const ph = isInvestment ? py.interestPortion + py.ongoingCosts : py.ongoingCosts; const pd = py.depDiv43 + py.depDiv40; return isInvestment ? ph + pd : ph; })() : grandTotal;
+                      const grandYoY = prevGrand > 0 ? ((grandTotal / prevGrand - 1) * 100) : 0;
+                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${grandYoY >= 0 ? "+" : ""}${grandYoY.toFixed(1)}%` : `${grandYoY >= 0 ? "+" : ""}${grandYoY.toFixed(1)}%`}</span>;
+                    })()}
                   </td>
                 </tr>
               );

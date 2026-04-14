@@ -106,7 +106,7 @@
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   padding: 30px 0 10px;
 }
 
@@ -1014,6 +1014,16 @@
   border-bottom: none;
 }
 
+.cft-group-row:only-child {
+  height: auto;
+}
+
+.cft-group-row:only-child .cft-group-cell {
+  height: auto;
+  padding-top: 8px;
+  padding-bottom: 10px;
+}
+
 .cft-group-cell {
   height: 28px;
   box-sizing: border-box;
@@ -1224,7 +1234,7 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
    EXPANSION CONTROLS
-   ═══════════════════════════════════════════════════════════════════════════ */
+   ════════════════════════════���══════════════════════════════════════════════ */
 
 .cft-expand-all-btn {
   position: absolute;
@@ -2150,4 +2160,354 @@
   .cf-wiz-footer {
     padding: 16px 0 0;
   }
+}
+
+
+/* ============================================================================
+   COLLAPSIBLE COLUMN GROUPS — Affordance Prototypes
+   ============================================================================ */
+
+/* Collapsible table base */
+.cct-collapsible-table {
+  width: 100%;
+}
+
+/* Detail columns animate in/out */
+.cct-detail-col,
+.cct-detail-cell {
+  animation: cct-col-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cct-col-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Table layout for smooth transitions */
+.cct-collapsible-table {
+  table-layout: auto;
+}
+
+/* Clickable group header */
+.cct-group-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.cct-group-clickable:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── STYLE A: Chevron in group header ── */
+.cct-group-header-chevron {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cct-chevron-icon {
+  opacity: 0.5;
+  transition: opacity 0.15s, transform 0.2s;
+}
+
+.cct-group-clickable:hover .cct-chevron-icon {
+  opacity: 1;
+}
+
+/* ── STYLE B: Plus/Minus in group header ── */
+.cct-group-header-plusminus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cct-plusminus-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(161, 161, 170, 0.6);
+  transition: background 0.15s, color 0.15s;
+}
+
+.cct-group-clickable:hover .cct-plusminus-icon {
+  background: rgba(45, 212, 191, 0.15);
+  color: var(--cf-accent);
+}
+
+/* ── STYLE C: Fade/caret on summary column ── */
+.cct-summary-expandable {
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cct-summary-expandable:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cct-summary-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cct-summary-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.2s;
+  color: var(--cf-text-dim);
+}
+
+.cct-summary-expandable:hover .cct-summary-caret {
+  opacity: 0.6;
+}
+
+.cct-caret-expanded {
+  transform: rotate(-90deg);
+}
+
+/* Summary cell clickable (fade style) */
+.cct-summary-clickable {
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.cct-summary-clickable::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.cct-summary-clickable:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.cct-summary-clickable:hover::before {
+  background: rgba(45, 212, 191, 0.4);
+}
+
+/* Subtle pulsing hint on page load for fade style */
+@keyframes cct-hint-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 12px rgba(45, 212, 191, 0.08); }
+}
+
+.cct-summary-clickable {
+  animation: cct-hint-pulse 2s ease-in-out 0.5s 2;
+}
+
+/* Summary cell - always visible state */
+.cct-summary-cell {
+  position: relative;
+}
+
+/* ── Prototype selector UI ── */
+.cct-prototype-selector {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.08);
+}
+
+.cct-prototype-btn {
+  padding: 8px 16px;
+  border: 1px solid rgba(113, 113, 122, 0.15);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cf-text-dim);
+  font-family: var(--font-sans, 'Sora', sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cct-prototype-btn:hover {
+  border-color: rgba(113, 113, 122, 0.25);
+  color: var(--cf-text);
+}
+
+.cct-prototype-btn.active {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.3);
+  color: var(--cf-accent);
+}
+
+.cct-prototype-label {
+  font-size: 11px;
+  color: var(--cf-text-dim);
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Prototype description ── */
+.cct-prototype-desc {
+  padding: 12px 20px;
+  font-size: 11px;
+  color: var(--cf-text-dim);
+  line-height: 1.5;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.08);
+}
+
+
+/* ============================================================================
+   DATA TABLE — Collapsible Column Styles (cft- prefix)
+   ============================================================================ */
+
+/* Collapsible table layout */
+.cft-collapsible-cols {
+  table-layout: auto;
+}
+
+/* Clickable group header cell */
+.cft-group-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.cft-group-clickable:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Chevron + label container */
+.cft-group-header-chevron {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cft-group-header-chevron svg {
+  opacity: 0.5;
+  transition: opacity 0.15s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.cft-group-clickable:hover .cft-group-header-chevron svg {
+  opacity: 1;
+}
+
+/* Detail columns / cells animate in */
+.cft-detail-col,
+.cft-detail-cell {
+  animation: cft-col-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cft-col-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Wide table for unified summary */
+.cft-table-wide {
+  min-width: 100%;
+}
+
+/* Aggregate column header (always visible summary columns) */
+.cft-th-agg {
+  /* No special styling - matches other tables */
+}
+
+/* Aggregate cell (always visible totals) */
+.cft-td-agg {
+  /* No special styling - matches other tables */
+}
+
+/* Group divider in header */
+.cft-group-divider {
+  width: 1px;
+  background: rgba(113, 113, 122, 0.1);
+  padding: 0 !important;
+}
+
+/* ============================================================================
+   ENHANCED COLLAPSED SUMMARY VIEW
+   ============================================================================ */
+
+/* Row styling when all groups collapsed */
+.cft-row-summary-collapsed {
+  height: 56px;
+}
+
+/* Larger summary cells when collapsed */
+.cft-td-summary-lg {
+  text-align: right;
+  padding: 0 16px;
+}
+
+.cft-td-summary-lg .cft-summary-value {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-feature-settings: "tnum";
+}
+
+/* YoY change badge */
+.cft-yoy-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 0;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  vertical-align: middle;
+  font-feature-settings: "tnum";
+  width: 52px;
+  text-align: center;
+}
+
+.cft-yoy-positive {
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--cf-positive);
+}
+
+.cft-yoy-negative {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--cf-negative);
+}
+
+.cft-yoy-neutral {
+  background: rgba(113, 113, 122, 0.1);
+  color: var(--cf-text-dim);
+}
+
+
+/* Larger result cell when collapsed */
+.cft-td-result-lg {
+  padding-right: 20px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Summary value wrapper for consistent styling */
+.cft-summary-value {
+  font-weight: 600;
 }
