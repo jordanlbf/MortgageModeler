@@ -25,7 +25,7 @@ from app.models.property import (
 )
 from app.models.tax import TaxProfile
 from app.services.amortisation import build_existing_loan, build_loan
-from app.services.cashflow import build_ppor_cashflow, build_rentvest_cashflow
+from app.services.cashflow import build_ppor_cashflow
 from app.services.cashflow_single import build_single_cashflow
 
 # ──────────────────────────────────────────────

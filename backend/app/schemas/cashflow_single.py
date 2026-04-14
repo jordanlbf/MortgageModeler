@@ -10,11 +10,9 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
-from app.models.deductions import DepreciationMethod
 from app.models.loan import RepaymentFrequency
 from app.schemas.amortisation import RateChangeRequest
 from app.schemas.cashflow import (
-    BorrowingCostsRequest,
     CashFlowSummaryResponse,
     CashFlowYearResponse,
     CGTResponse,

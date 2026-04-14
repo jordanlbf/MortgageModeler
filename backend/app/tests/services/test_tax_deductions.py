@@ -1433,11 +1433,15 @@ class TestBorrowingCostYearsElapsed:
         costs = _zero_costs()
 
         result_fresh = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0, _make_loan(borrowing_costs=bc_fresh))),
+            mortgage=_make_mortgage(
+                property=prop, loan=_make_loan_with_interest(0, _make_loan(borrowing_costs=bc_fresh)),
+            ),
             year=0, ongoing_costs=costs, financial_year=FinancialYear(2021),
         )
         result_elapsed = build_tax_deduction_summary(
-            mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0, _make_loan(borrowing_costs=bc_elapsed))),
+            mortgage=_make_mortgage(
+                property=prop, loan=_make_loan_with_interest(0, _make_loan(borrowing_costs=bc_elapsed)),
+            ),
             year=0, ongoing_costs=costs, financial_year=FinancialYear(2021),
         )
         assert result_fresh.total_deductions > result_elapsed.total_deductions
