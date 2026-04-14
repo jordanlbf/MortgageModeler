@@ -53,6 +53,8 @@ class CashFlowYear:
     loan_balance: float
     equity: float
     offset_balance: float
+    salary: float = 0.0
+    income_tax: float = 0.0
     ongoing_costs_detail: YearCost | None = None
     schedule_rows_detail: list[ScheduleRow] = field(default_factory=list)
 

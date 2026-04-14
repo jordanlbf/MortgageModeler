@@ -17,7 +17,9 @@ from app.schemas.cashflow import (
     CashFlowSummaryResponse,
     CashFlowYearResponse,
     CGTResponse,
+    OngoingCostsDetailResponse,
     PurchaseCostsResponse,
+    TaxDeductionDetailResponse,
     UpfrontCostsResponse,
 )
 from app.schemas.cashflow_single import (
@@ -128,6 +130,9 @@ def map_year_response(year) -> CashFlowYearResponse:
     """Map CashFlowYear or CashFlowYearInvestment domain model to response schema."""
     from app.models.cashflow import CashFlowYearInvestment
 
+    d = year.ongoing_costs_detail
+    t = year.tax_deduction_detail if isinstance(year, CashFlowYearInvestment) else None
+
     return CashFlowYearResponse(
         year=year.year,
         net_income=year.net_income,
@@ -147,6 +152,28 @@ def map_year_response(year) -> CashFlowYearResponse:
         loan_balance=year.loan_balance,
         equity=year.equity,
         offset_balance=year.offset_balance,
+        salary=year.salary,
+        income_tax=year.income_tax,
+        ongoing_costs_detail=OngoingCostsDetailResponse(
+            council_rates=d.council_rates,
+            water_rates=d.water_rates,
+            building_insurance=d.building_insurance,
+            landlord_insurance=d.landlord_insurance,
+            strata_fees=d.strata_fees,
+            maintenance_cost=d.maintenance_cost,
+            management_fee=d.management_fee,
+        ) if d else None,
+        tax_deduction_detail=TaxDeductionDetailResponse(
+            mortgage_interest=t.mortgage_interest,
+            depreciation_building=t.depreciation_building,
+            depreciation_plant=t.depreciation_plant,
+            deductible_expenses=t.deductible_expenses,
+            total_deductions=t.total_deductions,
+            net_rental_income=t.net_rental_income,
+            is_negatively_geared=t.is_negatively_geared,
+            tax_saving=t.tax_saving,
+            borrowing_costs_deduction=t.borrowing_costs_deduction,
+        ) if t else None,
     )
 
 

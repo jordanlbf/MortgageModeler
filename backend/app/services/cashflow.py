@@ -159,7 +159,9 @@ def _calculate_cashflow_year(
     """
     from app.engine.tax import calculate_total_tax
 
-    net_income = tax_profile.taxable_income - calculate_total_tax(tax_profile)
+    salary = tax_profile.taxable_income
+    income_tax = calculate_total_tax(tax_profile)
+    net_income = salary - income_tax
 
     mortgage_interest = sum(r.interest for r in schedule_rows)
     mortgage_principal = sum(r.principal_paid + r.extra_paid for r in schedule_rows)
@@ -204,6 +206,8 @@ def _calculate_cashflow_year(
         loan_balance=loan_balance,
         equity=equity,
         offset_balance=offset_balance,
+        salary=salary,
+        income_tax=income_tax,
         ongoing_costs_detail=ongoing_costs,
         schedule_rows_detail=schedule_rows,
     )
@@ -238,7 +242,9 @@ def _calculate_investment_cashflow_year(
     """
     from app.engine.tax import calculate_total_tax
 
-    net_income = tax_profile.taxable_income - calculate_total_tax(tax_profile)
+    salary = tax_profile.taxable_income
+    income_tax = calculate_total_tax(tax_profile)
+    net_income = salary - income_tax
 
     mortgage_interest = sum(r.interest for r in schedule_rows)
     mortgage_principal = sum(r.principal_paid + r.extra_paid for r in schedule_rows)
@@ -286,6 +292,8 @@ def _calculate_investment_cashflow_year(
         loan_balance=loan_balance,
         equity=equity,
         offset_balance=offset_balance,
+        salary=salary,
+        income_tax=income_tax,
         ongoing_costs_detail=ongoing_costs,
         schedule_rows_detail=schedule_rows,
         rental_income=rental_income,
