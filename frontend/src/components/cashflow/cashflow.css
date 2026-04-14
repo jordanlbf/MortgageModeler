@@ -1,24 +1,31 @@
 /* ============================================================================
-   CASHFLOW CALCULATOR - SIDEBAR LAYOUT
+   CASHFLOW CALCULATOR — Fey-inspired design
    ============================================================================ */
 
-/* CSS Variables */
+/* CSS Variables — Graphite Teal design system */
 :root {
-  --cf-bg: #111111;
-  --cf-card: #1a1a1a;
-  --cf-border: rgba(255, 255, 255, 0.1);
-  --cf-text: #e5e5e5;
-  --cf-text-muted: #737373;
-  --cf-text-dim: rgba(255, 255, 255, 0.4);
-  --cf-white: #ffffff;
-  --cf-input-bg: rgba(255, 255, 255, 0.05);
-  --cf-hover: rgba(255, 255, 255, 0.1);
-  --cf-accent: rgba(255, 255, 255, 0.02);
-  --cf-sidebar-width: 380px;
+  --cf-bg: var(--color-background, #111215);
+  --cf-card: var(--color-card, rgba(42, 42, 46, 0.72));
+  --cf-card-elevated: var(--color-card-elevated, rgba(44, 44, 48, 0.82));
+  --cf-border: var(--color-border, rgba(113, 113, 122, 0.08));
+  --cf-border-hover: var(--color-border-hover, rgba(113, 113, 122, 0.15));
+  --cf-text: var(--color-foreground, #f0fdfa);
+  --cf-text-muted: var(--color-subtle, #a1a1aa);
+  --cf-text-dim: var(--color-faint, #71717a);
+  --cf-white: var(--color-muted, #f4f4f5);
+  --cf-accent: var(--color-accent, #2dd4bf);
+  --cf-accent-contrast: var(--color-accent-contrast, #18181b);
+  --cf-accent-border: var(--color-accent-border, rgba(45, 212, 191, 0.35));
+  --cf-input-bg: var(--color-control, rgba(24, 24, 27, 0.60));
+  --cf-hover: var(--color-border-hover, rgba(113, 113, 122, 0.15));
+  --cf-surface-subtle: rgba(255, 255, 255, 0.02);
+  --cf-negative: #f87171;
+  --cf-positive: #4ade80;
+  --cf-sidebar-width: 240px;
 }
 
 /* ============================================================================
-   LAYOUT - SIDEBAR + MAIN
+   LAYOUT
    ============================================================================ */
 
 .cf-layout {
@@ -26,689 +33,2563 @@
   min-height: 100vh;
   background: var(--cf-bg);
   color: var(--cf-text);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-sans, "Sora", system-ui, sans-serif);
 }
 
-/* LEFT SIDEBAR */
+/* ── Wizard view: sidebar + wizard centered as a unit ── */
+.cf-wizard-view {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 100px);
+  background: var(--cf-bg);
+  color: var(--cf-text);
+  font-family: var(--font-sans, "Sora", system-ui, sans-serif);
+  padding: 40px 32px;
+}
+
+.cf-wizard-view-inner {
+  --wiz-header-height: 16px;
+  --wiz-header-to-content: 35px;
+  display: flex;
+  width: 100%;
+  max-width: 960px;
+  gap: 0;
+}
+
+.cf-wizard-view-main {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 48px 32px 56px;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* ── Dashboard view: container for Fey outer cards ── */
+.cf-dashboard-view {
+  background: var(--cf-bg);
+  color: var(--cf-text);
+  font-family: var(--font-sans, "Sora", system-ui, sans-serif);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Back to inputs — inline above chart ── */
+.cf-back-to-inputs {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px 4px 4px;
+  margin-bottom: -16px;
+  background: transparent;
+  color: rgba(161, 161, 170, 0.55);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans, 'Sora', sans-serif);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.cf-back-to-inputs:hover {
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.1);
+}
+
+/* ── Fey outer card — subtle, minimal surface ── */
+.cf-year-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+  padding: 30px 0 10px;
+}
+
+.cf-year-label-year {
+  font-size: 23px;
+  font-weight: 600;
+  color: var(--cf-accent);
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+}
+
+.cf-year-label-cal {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--cf-text-dim);
+}
+
+.cf-year-label-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(113, 113, 122, 0.25);
+}
+
+.cf-year-label-value {
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+}
+
+.cf-year-label-metric {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--cf-text-dim);
+}
+
+.cf-outer-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(113, 113, 122, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ── Card header: title left, mode tabs right ── */
+.cf-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--cf-border);
+}
+
+.cf-card-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ============================================================================
+   LEFT SIDEBAR — Progress stepper with connecting lines
+   ============================================================================ */
+
 .cf-sidebar {
+  --cf-sidebar-width: 300px;
   width: var(--cf-sidebar-width);
   min-width: var(--cf-sidebar-width);
   max-width: var(--cf-sidebar-width);
   border-right: 1px solid var(--cf-border);
   background: var(--cf-bg);
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  overflow-y: auto;
-}
+  flex-shrink: 0;
+} p
 
 .cf-sidebar-inner {
-  padding: 24px;
+  padding: 8px 0 32px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
-/* RIGHT MAIN AREA */
-.cf-main {
-  flex: 1;
-  min-width: 0;
-  padding: 24px 32px;
-  overflow-y: auto;
+/* Row 1 header — shared height with wizard breadcrumb */
+
+/* ── Sidebar Nav ── */
+.cf-sidebar-nav {
+  display: flex;
+  flex-direction: column;
 }
 
-/* ============================================================================
-   INPUT SECTIONS
-   ============================================================================ */
-
-.cf-section {
-  border: 1px solid var(--cf-border);
-  border-radius: 8px;
-  background: var(--cf-card);
-  overflow: hidden;
-}
-
-.cf-section-label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--cf-text-muted);
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.cf-section-header {
+/* Header — height shared with wizard breadcrumb via --wiz-row1-height */
+.cf-sidebar-nav-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  padding: 14px 16px;
-  background: transparent;
-  border: none;
-  color: var(--cf-text);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: left;
+  padding: 0 24px;
+  height: var(--wiz-header-height);
+  margin-bottom: 12px;
+  line-height: 1;
 }
 
-.cf-section-header:hover {
-  background: var(--cf-hover);
-}
-
-.cf-section-header svg {
+.cf-sidebar-nav-head {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--cf-text-muted);
 }
 
-.cf-edit-link {
+.cf-sidebar-progress-text {
   font-size: 12px;
-  font-weight: 400;
-  color: var(--cf-text-muted);
+  font-weight: 600;
+  color: var(--cf-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Progress bar */
+.cf-sidebar-progress-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  margin: 0 24px 20px;
+  overflow: hidden;
+}
+
+.cf-sidebar-progress-fill {
+  height: 100%;
+  background: var(--cf-accent);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cf-sidebar-nav-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Each step item */
+.cf-sidebar-nav-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 24px;
+  position: relative;
   background: none;
   border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: default;
+  transition: background 0.15s ease;
+}
+
+.cf-sidebar-nav-item.clickable {
   cursor: pointer;
+}
+
+.cf-sidebar-nav-item.clickable:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Upcoming state */
+.cf-sidebar-nav-item.upcoming {
+  opacity: 0.5;
+}
+
+/* Active state */
+.cf-sidebar-nav-item.active {
+  background: rgba(45, 212, 191, 0.04);
+}
+
+/* Step indicator wrapper with connector line */
+.cf-step-indicator-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Step indicator circle */
+.cf-step-indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--cf-border);
+  background: var(--cf-bg);
+  color: var(--cf-text-dim);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.cf-step-indicator.current {
+  border-color: var(--cf-accent);
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.08);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+}
+
+.cf-step-indicator.complete {
+  border-color: var(--cf-accent);
+  background: var(--cf-accent);
+  color: var(--cf-accent-contrast);
+}
+
+/* Connector line between steps */
+.cf-step-connector {
+  width: 2px;
+  height: 24px;
+  background: var(--cf-border);
+  margin-top: 6px;
+  border-radius: 1px;
+  transition: background 0.25s ease;
+}
+
+.cf-step-connector.complete {
+  background: var(--cf-accent);
+}
+
+/* Step body text */
+.cf-sidebar-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+  padding-top: 3px;
+}
+
+.cf-sidebar-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cf-sidebar-step-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cf-text-dim);
+  transition: color 0.15s ease;
+  line-height: 1.4;
+}
+
+.cf-sidebar-nav-item.active .cf-sidebar-step-label {
+  color: var(--cf-text);
+  font-weight: 600;
+}
+
+.cf-sidebar-nav-item.done .cf-sidebar-step-label {
+  color: var(--cf-text);
+}
+
+/* Collapse/expand toggle */
+.cf-step-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  color: var(--cf-text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.cf-step-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cf-text);
+}
+
+/* Step detail lines */
+.cf-sidebar-step-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+  max-height: 200px;
+  transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
+}
+
+.cf-sidebar-step-lines.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+}
+
+.cf-sidebar-step-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.cf-sidebar-step-value {
+  color: var(--cf-accent);
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.cf-sidebar-step-descriptor {
+  color: var(--cf-text-dim);
+  font-size: 11px;
+}
+
+/* Counter */
+.cf-sidebar-counter {
+  font-size: 11px;
+  color: var(--cf-text-dim);
+  padding: 0 24px;
+  margin-top: 20px;
+}
+
+/* ============================================================================
+   VIEW TABS — Setup / Dashboard switcher
+   ============================================================================ */
+
+.cf-view-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  border-bottom: 1px solid var(--cf-border);
+  padding: 0 24px;
+  background: var(--cf-bg);
+  font-family: var(--font-sans, "Sora", system-ui, sans-serif);
+}
+
+.cf-view-tab {
+  padding: 12px 20px;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--cf-text-dim);
+  background: none;
+  border: none;
+  border-bottom: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cf-view-tab:hover:not(:disabled) {
+  color: var(--cf-text);
+}
+
+.cf-view-tab.active {
+  color: var(--cf-accent);
+  border-bottom-color: var(--cf-accent);
+}
+
+.cf-view-tab:disabled:not(.active) {
+  color: rgba(113, 113, 122, 0.3);
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+   MODE SELECTOR
+   ============================================================================ */
+
+.cf-mode-bar {
+  display: flex;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--cf-border);
+  border-radius: 9px;
+  padding: 3px;
+  width: fit-content;
+}
+
+.cf-mode-btn {
+  padding: 5px 11px;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+  color: var(--cf-text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cf-mode-btn svg {
+  opacity: 0.6;
+}
+
+.cf-mode-btn:hover {
+  color: var(--cf-text);
+}
+
+.cf-mode-btn:hover svg {
+  opacity: 0.8;
+}
+
+.cf-mode-btn.active {
+  background: rgba(45, 212, 191, 0.08);
+  color: var(--cf-accent);
+  border: 1px solid rgba(45, 212, 191, 0.18);
+  border-radius: 6px;
+}
+
+.cf-mode-btn.active svg {
+  opacity: 1;
+}
+
+.cf-mode-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cf-accent);
+  margin-left: 4px;
+}
+
+/* ============================================================================
+   CHART SECTION
+   ============================================================================ */
+
+.cf-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 238px;
+  outline: none;
+  border: none;
+}
+
+/* Year overlay — "Year 1" (hero-matched) + "2026" (secondary) */
+.cf-year-overlay-yr {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.cf-year-overlay-cal {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--cf-text-dim);
+  margin-left: 12px;
+}
+
+.cf-chart-wrapper:focus,
+.cf-chart-wrapper:focus-visible,
+.cf-chart-wrapper:focus-within {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.cf-chart-wrapper>div {
+  width: 100%;
+  height: 100%;
+  outline: none;
+  border: none;
+}
+
+.cf-chart-wrapper>div:focus,
+.cf-chart-wrapper>div:focus-visible,
+.cf-chart-wrapper>div:focus-within {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.cf-chart-wrapper svg {
+  outline: none;
+  border: none;
+}
+
+.cf-chart-wrapper svg:focus,
+.cf-chart-wrapper svg:focus-visible {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.cf-chart-wrapper *:focus,
+.cf-chart-wrapper *:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.cf-chart-section {
+  overflow: hidden;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  outline: none;
+}
+
+.cf-chart-section:focus,
+.cf-chart-section:focus-visible,
+.cf-chart-section:focus-within {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.cf-chart-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODE TOGGLES — Growth / Breakdown / Compare (Equity view)
+   ═══════════════════════════════════════════════════════════ */
+
+
+.cf-play-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid rgba(113, 113, 122, 0.15);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: rgba(42, 42, 46, 0.30);
+  color: var(--cf-text-dim);
+  transition: all 0.15s;
+}
+
+.cf-play-btn:hover {
+  color: var(--cf-text-muted);
+  border-color: var(--cf-border-hover);
+}
+
+.cf-play-btn.cf-play-active {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: rgba(45, 212, 191, 0.25);
+  color: var(--cf-accent);
+}
+
+
+
+.cf-chart-inline-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--cf-text);
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+}
+
+.cf-chart-inline-year {
+  color: var(--cf-accent);
+  font-weight: 700;
+}
+
+/* ============================================================================
+   DASHBOARD HEADER — title left, mode tabs right
+   ============================================================================ */
+
+.cf-dashboard-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cf-dashboard-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cf-text);
+  letter-spacing: -0.015em;
+}
+
+.cf-dashboard-subtitle {
+  font-size: 11px;
+  color: var(--cf-text-dim);
+}
+
+/* ============================================================================
+   KPI STRIP — Fey minimal horizontal metrics
+   ============================================================================ */
+
+.cf-kpi-strip {
+  display: flex;
   padding: 0;
 }
 
-.cf-edit-link:hover {
+.cf-kpi-cell {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+  position: relative;
+}
+
+.cf-kpi-cell+.cf-kpi-cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 1px;
+  background: rgba(113, 113, 122, 0.08);
+}
+
+.cf-kpi-label {
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(161, 161, 170, 0.4);
+}
+
+.cf-kpi-value {
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
   color: var(--cf-text);
 }
 
-.cf-section-content {
-  padding: 0 16px 16px 16px;
+.cf-kpi-sub {
+  font-size: 10px;
+  color: rgba(161, 161, 170, 0.35);
+}
+
+/* Selected year indicator in KPI strip */
+.cf-kpi-year-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px;
+  gap: 4px;
+  border-right: 1px solid rgba(113, 113, 122, 0.08);
+  min-width: 80px;
+}
+
+.cf-kpi-year-badge {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.1);
+  padding: 4px 12px;
+  border-radius: 6px;
+  letter-spacing: -0.01em;
+}
+
+.cf-kpi-year-cal {
+  font-size: 11px;
+  color: rgba(161, 161, 170, 0.4);
+  font-weight: 500;
+}
+
+/* KPI strip hover state — subtle indicator that values are temporary */
+.cf-kpi-strip--hover .cf-kpi-value {
+  transition: opacity 0.15s ease;
+}
+
+.cf-kpi-year-indicator--hover .cf-kpi-year-badge {
+  background: rgba(45, 212, 191, 0.06);
+  color: rgba(45, 212, 191, 0.7);
+}
+
+.cf-kpi-sparkline {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+/* ============================================================================
+   CHART & TABLE ZONES — sections within outer card
+   ============================================================================ */
+
+.cf-chart-zone {
+  /* Last section in aggregates card — no bottom border */
+}
+
+/* ============================================================================
+   FEY LAYOUT — Clean, minimal hero + chart layout
+   ============================================================================ */
+
+/* Hero number — Fey-inspired compact inline */
+/* Chart header — title + year in a flex row above chart */
+.cf-chart-header {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding: 0 24px 8px 24px;
+}
+
+/* Split title — vertical hairline separator */
+.cf-title-split {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cf-title-split-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(161, 161, 170, 0.5);
+  letter-spacing: -0.01em;
+}
+
+.cf-title-split-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(113, 113, 122, 0.2);
+}
+
+.cf-title-split-value {
+  font-size: 17px;
+  font-weight: 600;
+  color: rgba(250, 250, 250, 0.85);
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+}
+
+/* Hero row */
+.cf-hero-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.cf-year-overlay {
+  position: absolute;
+  right: 24px;
+  display: flex;
+  align-items: baseline;
+}
+
+.cf-hero-value {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-feature-settings: "tnum";
+  line-height: 1;
+  color: rgba(250, 250, 250, 0.95);
+}
+
+.cf-hero-label {
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.6);
+}
+
+.cf-hero-monthly {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cf-positive);
+  font-feature-settings: "tnum";
+}
+
+.cf-hero-context {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.5);
+}
+
+.cf-hero-sub {
+  font-size: 12px;
+  color: rgba(161, 161, 170, 0.25);
+  margin-top: 8px;
+}
+
+/* Chart layout — full width */
+.cf-chart-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.cf-chart-main {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+
+
+/* View mode tabs — Fey pill style */
+.cf-mode-tabs-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 20px;
+  margin-bottom: 12px;
+  padding-right: 24px;
+}
+
+.cf-mode-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: rgba(161, 161, 170, 0.4);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans, 'Sora', sans-serif);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cf-mode-tab:hover {
+  color: rgba(161, 161, 170, 0.6);
+}
+
+.cf-mode-tab.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cf-text);
+}
+
+.cf-mode-tab svg {
+  opacity: 0.5;
+}
+
+.cf-mode-tab.active svg {
+  opacity: 0.8;
+}
+
+.cf-table-zone {
+  overflow: hidden;
+}
+
+/* Subtle scrollbar for table zones */
+.cf-table-zone::-webkit-scrollbar {
+  height: 4px;
+}
+
+.cf-table-zone::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cf-table-zone::-webkit-scrollbar-thumb {
+  background: var(--cf-text-dim);
+  border-radius: 2px;
+}
+
+.cf-table-zone {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cf-text-dim) transparent;
+}
+
+/* ============================================================================
+   DATA TABLE — Refined, restrained, data-dense
+   ============================================================================ */
+
+/* Outer container: fills card width */
+.cft-outer {
+  position: relative;
+  width: 100%;
+}
+
+/* ── Property dual card layout ── */
+.cf-property-cards {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  overflow-x: auto;
+}
+
+.cf-property-card {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cft-wrap {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.cft-table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  width: 100%;
+}
+
+/* Width tiers — only enforce min-width on very wide tables */
+.cft-table-narrow { }
+.cft-table-mid    { }
+.cft-table-wide   { }
+
+/* ── Group headers (thin colour-coded labels) ── */
+.cft-group-row {
+  height: 28px;
+  border-bottom: none;
+}
+
+.cft-group-row:only-child {
+  height: auto;
+}
+
+.cft-group-row:only-child .cft-group-cell {
+  height: auto;
+  padding-top: 8px;
+  padding-bottom: 10px;
+}
+
+.cft-group-cell {
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.cft-group-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(161, 161, 170, 0.55);
+  position: relative;
+}
+
+/* Per-group color coding for labels and top bars */
+.cft-group-income {
+  color: rgba(45, 212, 191, 0.65);
+}
+
+.cft-group-tax {
+  color: rgba(245, 158, 11, 0.65);
+}
+
+.cft-group-costs {
+  color: rgba(161, 161, 170, 0.55);
+}
+
+.cft-group-net {
+  color: rgba(45, 212, 191, 0.65);
+}
+
+.cft-group-position {
+  color: rgba(96, 165, 250, 0.65);
+}
+
+.cft-group-depreciation {
+  color: rgba(167, 139, 250, 0.65);
+}
+
+/* Color bar indicator at top of each group */
+.cft-group-label::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  border-radius: 0 0 2px 2px;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+.cft-group-divider {
+  width: 0;
+  max-width: 0;
+  padding: 0;
+  background: transparent;
+  position: relative;
+  border-left: 1px solid rgba(113, 113, 122, 0.1);
+}
+
+.cft-group-divider::after {
+  display: none;
+}
+
+/* ── Column headers (lowercase, light, receding) ── */
+.cft-header-row {
+  height: 48px;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.12);
+}
+
+.cft-th {
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+  color: rgba(161, 161, 170, 0.65);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── Custom tooltip for abbreviated headers ── */
+.cft-tip {
+  position: relative;
+  cursor: default;
+}
+
+.cft-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgba(24, 24, 27, 0.95);
+  border: 1px solid rgba(113, 113, 122, 0.15);
+  color: rgba(244, 244, 245, 0.85);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+.cft-tip:hover::after {
+  opacity: 1;
+}
+
+.cft-th-year {
+  width: 6rem;
+  text-align: center;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.cft-th-agg {
+  color: rgba(244, 244, 245, 0.7);
+  font-weight: 700;
+}
+
+.cft-th-accent {
+  color: rgba(45, 212, 191, 0.55);
+}
+
+.cft-th-result {
+  color: rgba(244, 244, 245, 0.7);
+  font-weight: 700;
+  padding-right: 20px;
+}
+
+.cft-th-divider {
+  width: 0;
+  max-width: 0;
+  padding: 0;
+  border-left: 1px solid rgba(113, 113, 122, 0.1);
+}
+
+.cft-th-divider::after {
+  display: none;
+}
+
+/* ── Data rows ── */
+.cft-row {
+  height: 52px;
+  transition: background 0.1s ease;
+  cursor: pointer;
+}
+
+.cft-row:hover {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+/* Hover state — duller highlight (from hovering on chart or other table) */
+.cft-row-hover {
+  background: rgba(45, 212, 191, 0.015);
+}
+
+/* Selected state — full highlight */
+.cft-row-active {
+  background: rgba(45, 212, 191, 0.045);
+}
+
+.cft-row-active:hover {
+  background: rgba(45, 212, 191, 0.045);
+}
+
+/* ── Data cells ── */
+.cft-td {
+  height: 52px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  text-align: right;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.07);
+}
+
+.cft-td-year {
+  width: 6rem;
+  text-align: center;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+/* Divider columns */
+.cft-td-divider {
+  width: 0;
+  max-width: 0;
+  padding: 0;
+  border-left: 1px solid rgba(113, 113, 122, 0.1);
+  border-bottom: 1px solid rgba(113, 113, 122, 0.07);
+}
+
+.cft-td-result {
+  padding-right: 20px;
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXPANSION CONTROLS
+   ════════════════════════════���══════════════════════════════════════════════ */
+
+.cft-expand-all-btn {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(161, 161, 170, 0.35);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.cft-expand-all-btn:hover {
+  background: rgba(45, 212, 191, 0.08);
+  color: var(--cf-accent);
+}
+
+.cft-row-expandable {
+  cursor: pointer;
+}
+
+.cft-row-expandable .cft-td-year {
+  position: relative;
+}
+
+/* ── Expansion indicators ── */
+.cft-expand-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  color: rgba(161, 161, 170, 0.4);
+  transition: transform 0.15s, color 0.15s;
+}
+
+.cft-row-expandable:hover .cft-expand-chevron {
+  color: var(--cf-accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHADOW SEPARATOR STYLE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cft-sep-shadow.cft-row-milestone td {
+  position: relative;
+}
+
+.cft-sep-shadow.cft-row-milestone td::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 8px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.12), transparent);
+  pointer-events: none;
+}
+
+.cft-sep-shadow.cft-row-child {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.cft-row-child.cft-row-hover {
+  background: rgba(45, 212, 191, 0.015);
+}
+
+.cft-row-child.cft-row-active {
+  background: rgba(45, 212, 191, 0.045);
+}
+
+/* ── Year cell formatting ── */
+.cft-year-cell {
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Variant A (default) — teal badge + calendar year */
+.cft-year-idx {
+  color: var(--cf-accent);
+  font-weight: 600;
+  font-size: 10px;
+  background: rgba(45, 212, 191, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.8em;
+  text-align: center;
+  line-height: 1.4;
+  margin-right: 8px;
+}
+
+.cft-year-cal {
+  color: rgba(113, 113, 122, 0.7);
+  font-weight: 400;
+  font-size: 13px;
+}
+
+/* Variant B — inline with dot: "Yr N · YYYY" with monospace alignment */
+.cft-year-b {
+  gap: 0;
+  align-items: center;
+  font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.cft-year-b-yr {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(240, 253, 250, 0.75);
+  display: inline-block;
+  width: 3.2em;
+  text-align: right;
+}
+
+.cft-year-b-dot {
+  font-size: 10px;
+  color: rgba(113, 113, 122, 0.3);
+  margin: 0 6px;
+}
+
+.cft-year-b-cal {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.55);
+  display: inline-block;
+}
+
+/* Variant C — stacked: calendar year on top, loan year below */
+.cft-year-c {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.cft-year-c-cal {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(240, 253, 250, 0.75);
+  line-height: 1.2;
+}
+
+.cft-year-c-yr {
+  font-size: 9px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.45);
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+/* Variant D — compact parenthetical: "2026 (1)" */
+.cft-year-d {
+  gap: 3px;
+  align-items: baseline;
+}
+
+.cft-year-d-cal {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(240, 253, 250, 0.75);
+}
+
+.cft-year-d-yr {
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(113, 113, 122, 0.4);
+}
+
+/* Variant Badge — circle badge + calendar year (active) */
+.cft-year-badge-wrap {
+  gap: 10px;
+  align-items: center;
+}
+
+.cft-year-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cf-accent);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cft-year-badge-hovered {
+  opacity: 0.8;
+}
+
+.cft-year-badge-selected {
+  opacity: 1;
+}
+
+.cft-year-badge-cal {
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── 5-year separator rows ── */
+.cft-row-separator {
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.cft-row-separator .cft-td {
+  border-bottom: 1px solid rgba(113, 113, 122, 0.07);
+}
+
+.cft-row-separator .cft-td-year {
+}
+
+.cft-row-separator .cft-td-divider {
+  border-bottom: 1px solid rgba(113, 113, 122, 0.07);
+}
+
+.cft-row-separator .cft-val-dim {
+  color: rgba(240, 253, 250, 0.7);
+  font-weight: 500;
+}
+
+.cft-row-separator .cft-val-outflow {
+  color: rgba(248, 113, 113, 0.7);
+}
+
+.cft-row-separator .cft-val-negative {
+  font-weight: 800;
+}
+
+.cft-row-separator .cft-val-result {
+  font-weight: 800;
+}
+
+/* ── Year variant picker in header ── */
+.cft-year-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cft-year-picker-label {
+  display: block;
+}
+
+.cft-year-picker-btns {
+  display: flex;
+  gap: 2px;
+}
+
+.cft-year-picker-btn {
+  font-size: 8px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid rgba(113, 113, 122, 0.15);
+  background: transparent;
+  color: rgba(113, 113, 122, 0.4);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  line-height: 1.4;
+}
+
+.cft-year-picker-btn.active {
+  border-color: rgba(45, 212, 191, 0.35);
+  background: rgba(45, 212, 191, 0.08);
+  color: var(--cf-accent);
+}
+
+/* ── Three-tier text hierarchy ── */
+
+/* Tier 1: Dim — detail data (salary, rent), recedes */
+.cft-val-dim {
+  color: #ccccd2;
+}
+
+/* Tier 2: Neutral — summary columns (taxable inc.), bold bright */
+.cft-val-neutral {
+  color: #f0fdfa;
+}
+
+/* Tier 3: Outflow — muted red for detail expenses (prop ded, holding, principal) */
+.cft-val-outflow {
+  color: rgba(248, 113, 113, 0.65);
+}
+
+/* Tier 4: Negative result — bold red for summary negatives (tax payable, total costs) */
+.cft-val-negative {
+  color: #f87171;
+  font-weight: 700;
+}
+
+/* Tier 4b: Positive — green for tax saved / positive benefits */
+.cft-val-positive {
+  color: var(--cf-positive);
+  font-weight: 700;
+}
+
+/* Tier 5: Result — teal for positive outcomes (cashflow) */
+.cft-val-result {
+  color: var(--cf-accent);
+  font-weight: 700;
+}
+
+/* Growth percentage */
+.cft-val-growth-pct {
+  text-align: right;
+}
+
+.cft-growth-arrow {
+  color: rgba(74, 222, 128, 0.4);
+  font-size: 10px;
+  margin-right: 4px;
+}
+
+.cft-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 500;
+  border-radius: 999px;
+  background: rgba(74, 222, 128, 0.08);
+  color: rgba(74, 222, 128, 0.6);
+  border: 1px solid rgba(74, 222, 128, 0.12);
+  letter-spacing: 0.02em;
+}
+
+/* ── LVR conditional styling ── */
+.cft-lvr-danger {
+  color: #f87171;
+}
+
+.cft-lvr-moderate {
+  color: #fbbf24;
+}
+
+.cft-lvr-healthy {
+  color: #34d399;
+}
+
+/* ���─ Depreciation — paper deductions, distinct from cash costs ── */
+.cft-val-dep-dim {
+  color: rgba(167, 139, 250, 0.55);
+}
+
+.cft-val-dep-agg {
+  color: rgba(167, 139, 250, 0.7);
+  font-weight: 700;
+}
+
+.cft-lvr-moderate {
+  color: #fbbf24;
+}
+
+.cft-lvr-healthy {
+  color: #4ade80;
+}
+
+/* ── Depreciation ── */
+.cft-val-dep-dim {
+  color: rgba(167, 139, 250, 0.55);
+}
+
+.cft-val-dep-agg {
+  color: rgba(167, 139, 250, 0.7);
+  font-weight: 600;
+}
+
+
+
+/* ============================================================================
+   WIZARD STEP — Fey-inspired flat surface
+   ============================================================================ */
+
+.cf-wiz-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  min-height: 520px;
+  padding: 0;
+  width: 100%;
+}
+
+.cf-wiz-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wiz-header-to-content);
+  width: 100%;
+  max-width: 480px;
+}
+
+/* Breadcrumb progress indicator */
+.cf-wiz-breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cf-text-muted);
+  height: var(--wiz-header-height);
+  line-height: 1;
+}
+
+.cf-wiz-breadcrumb-step {
+  font-weight: 600;
+  color: var(--cf-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-wiz-breadcrumb-divider {
+  color: var(--cf-text-dim);
+}
+
+.cf-wiz-breadcrumb-title {
+  color: var(--cf-text-muted);
+}
+
+/* Card — borderless, content sits directly on the page */
+.cf-wiz-card {
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  position: relative;
+}
+
+/* Header — title + subtitle, no icon badge */
+.cf-wiz-header {
+  padding: 0;
+  text-align: center;
+}
+
+.cf-wiz-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cf-text);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.cf-wiz-subtitle {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--cf-text-muted);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Centered card variant — setup step */
+.cf-wiz-card--centered .cf-wiz-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cf-wiz-card--centered .cf-wiz-fields {
+  width: 100%;
+  align-items: stretch;
+}
+
+.cf-wiz-card--centered .cf-wiz-footer {
+  justify-content: center;
+}
+
+.cf-wiz-card--centered .cf-wiz-continue {
+  flex: unset;
+  min-width: 200px;
+}
+
+/* Content area */
+.cf-wiz-content {
+  padding: 15px 0 12px;
+}
+
+/* Fields container */
+.cf-wiz-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Field group (label + options) */
+.cf-wiz-field-group {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-/* ============================================================================
-   FORM ELEMENTS
-   ============================================================================ */
-
-.cf-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.cf-wiz-field-label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cf-text-dim);
 }
 
-.cf-field-row {
+/* Option buttons — transparent, single border, teal on select */
+.cf-wiz-option-row {
   display: flex;
   gap: 12px;
 }
 
-.cf-field-row > .cf-field {
+.cf-wiz-opt {
   flex: 1;
-}
-
-.cf-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-muted);
-}
-
-.cf-input {
-  width: 100%;
-  padding: 10px 12px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 6px;
-  color: var(--cf-text);
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.cf-input:focus {
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.cf-input-display {
-  padding: 10px 12px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 6px;
-  color: var(--cf-text-muted);
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-/* Button Group */
-.cf-button-group {
-  display: flex;
-  gap: 8px;
-}
-
-.cf-button-option {
-  flex: 1;
-  padding: 12px 16px;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 6px;
-  color: var(--cf-text-muted);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.cf-button-option:hover {
-  background: var(--cf-hover);
-  color: var(--cf-text);
-}
-
-.cf-button-option.active {
-  background: var(--cf-white);
-  border-color: var(--cf-white);
-  color: var(--cf-bg);
-}
-
-/* Toggle */
-.cf-toggle-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.cf-toggle {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  cursor: pointer;
-}
-
-.cf-toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.cf-toggle-slider {
-  position: absolute;
-  inset: 0;
-  background: var(--cf-input-bg);
-  border: 1px solid var(--cf-border);
-  border-radius: 10px;
-  transition: all 0.15s;
-}
-
-.cf-toggle-slider::before {
-  content: "";
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  left: 2px;
-  top: 2px;
-  background: var(--cf-text-muted);
-  border-radius: 50%;
-  transition: all 0.15s;
-}
-
-.cf-toggle input:checked + .cf-toggle-slider {
-  background: var(--cf-white);
-  border-color: var(--cf-white);
-}
-
-.cf-toggle input:checked + .cf-toggle-slider::before {
-  transform: translateX(16px);
-  background: var(--cf-bg);
-}
-
-.cf-toggle-label {
-  font-size: 13px;
-  color: var(--cf-text-muted);
-}
-
-/* Continue Button */
-.cf-continue {
-  width: 100%;
-  padding: 12px;
-  background: var(--cf-white);
-  border: none;
-  border-radius: 6px;
-  color: var(--cf-bg);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  margin-top: 4px;
-}
-
-.cf-continue:hover {
-  opacity: 0.9;
-}
-
-/* ============================================================================
-   OUTPUT PLACEHOLDER
-   ============================================================================ */
-
-.cf-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 48px);
-}
-
-.cf-placeholder-content {
-  text-align: center;
-}
-
-.cf-placeholder-title {
-  font-size: 18px;
-  font-weight: 500;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--cf-border);
+  background: transparent;
   color: var(--cf-text-muted);
-  margin-bottom: 8px;
-}
-
-.cf-placeholder-subtitle {
   font-size: 14px;
-  color: var(--cf-text-dim);
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* ============================================================================
-   OUTPUTS
-   ============================================================================ */
+.cf-wiz-opt:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--cf-text);
+  background: rgba(255, 255, 255, 0.03);
+}
 
-.cf-outputs {
+.cf-wiz-opt.selected {
+  border-color: rgba(45, 212, 191, 0.3);
+  color: var(--cf-accent);
+  background: rgba(45, 212, 191, 0.08);
+}
+
+/* Compact variant (loan type toggle) */
+.cf-wiz-opt.compact {
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+/* Input fields */
+.cf-wiz-input-row {
+  display: flex;
+  gap: 14px;
+}
+
+.cf-wiz-input-row .cf-wiz-input-field {
+  flex: 1;
+}
+
+.cf-wiz-input-field {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  max-width: 900px;
+  gap: 8px;
 }
 
-/* Cards */
-.cf-card {
-  background: var(--cf-card);
+.cf-wiz-input-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cf-text-muted);
+}
+
+.cf-wiz-input {
+  padding: 14px 16px;
+  background: transparent;
   border: 1px solid var(--cf-border);
-  border-radius: 8px;
+  border-radius: 12px;
+  color: var(--cf-text);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.2s ease;
+}
+
+.cf-wiz-input:focus {
+  outline: none;
+  border-color: rgba(45, 212, 191, 0.4);
+}
+
+/* ── Property summary strip ── */
+.cf-wiz-summary-strip {
+  display: flex;
+  align-items: stretch;
+  background: rgba(45, 212, 191, 0.04);
+  border: 1px solid rgba(45, 212, 191, 0.12);
+  border-radius: 14px;
   overflow: hidden;
 }
 
-.cf-card-header {
+.cf-wiz-summary-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+}
+
+.cf-wiz-summary-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(45, 212, 191, 0.5);
+}
+
+.cf-wiz-summary-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--cf-accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.cf-wiz-summary-divider {
+  width: 1px;
+  background: rgba(45, 212, 191, 0.1);
+  flex-shrink: 0;
+  margin: 12px 0;
+}
+
+/* ── Loan banner ── */
+.cf-wiz-loan-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--cf-border);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--cf-text-muted);
+  padding: 20px 24px;
+  background: rgba(45, 212, 191, 0.05);
+  border: 1px solid rgba(45, 212, 191, 0.15);
+  border-radius: 14px;
+  gap: 16px;
 }
 
-.cf-card-header-note {
+.cf-wiz-loan-banner-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.cf-wiz-loan-banner-amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--cf-accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.cf-wiz-loan-banner-label {
+  font-size: 14px;
+  color: rgba(45, 212, 191, 0.6);
+  font-weight: 500;
+}
+
+.cf-wiz-loan-banner-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cf-wiz-loan-banner-sub {
+  font-size: 12px;
+  color: var(--cf-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.cf-wiz-loan-banner-dot {
+  font-size: 12px;
+  color: var(--cf-text-dim);
+  opacity: 0.4;
+}
+
+/* Input with suffix unit */
+.cf-wiz-input-wrap {
+  position: relative;
+}
+
+.cf-wiz-input-suffix {
+  padding-right: 40px;
+}
+
+.cf-wiz-input-unit {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cf-text-dim);
+  pointer-events: none;
+}
+
+/* Section divider within fields */
+.cf-wiz-section-divider {
+  height: 1px;
+  background: var(--cf-border);
+  margin: 4px 0;
+}
+
+/* Depreciation estimate preview */
+.cf-wiz-estimate-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  background: rgba(45, 212, 191, 0.05);
+  border: 1px solid rgba(45, 212, 191, 0.12);
+  border-radius: 8px;
+}
+
+.cf-wiz-estimate-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cf-accent);
+  font-feature-settings: "tnum";
+}
+
+.cf-wiz-estimate-note {
   font-size: 12px;
   color: var(--cf-text-dim);
 }
 
-.cf-card-header-note .cf-tabular {
-  color: var(--cf-text-muted);
-}
-
-.cf-card-title {
-  padding: 16px 20px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--cf-text-muted);
-  border-bottom: 1px solid var(--cf-border);
-}
-
-/* ============================================================================
-   MILESTONES CARD
-   ============================================================================ */
-
-.cf-milestones {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  padding: 24px 20px;
-}
-
-.cf-milestone {
-  text-align: center;
-}
-
-.cf-milestone-year {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-dim);
-  margin-bottom: 12px;
-}
-
-.cf-milestone-values {
+/* Depreciation detailed items */
+.cf-wiz-dep-item {
   display: flex;
-  flex-direction: column;
   gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
 }
 
-.cf-milestone-value {
-  font-size: 24px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-white);
-}
-
-.cf-milestone-label {
-  font-size: 9px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--cf-text-dim);
-}
-
-.cf-milestone-equity {
-  padding-top: 8px;
-  border-top: 1px solid var(--cf-border);
-}
-
-.cf-milestone-equity-value {
-  font-size: 16px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-text-muted);
-}
-
-/* ============================================================================
-   CASHFLOW SECTION
-   ============================================================================ */
-
-.cf-year-selector {
-  display: flex;
-  gap: 4px;
-}
-
-.cf-year-button {
-  padding: 6px 12px;
-  background: var(--cf-input-bg);
-  border: none;
-  border-radius: 4px;
-  color: var(--cf-text-muted);
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.cf-year-button:hover {
-  background: var(--cf-hover);
-}
-
-.cf-year-button.active {
-  background: var(--cf-white);
-  color: var(--cf-bg);
-}
-
-/* Focal KPI */
-.cf-focal {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 24px 20px;
-  background: var(--cf-accent);
-  border-bottom: 1px solid var(--cf-border);
-}
-
-.cf-focal-main {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.cf-focal-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-dim);
-}
-
-.cf-focal-value {
-  font-size: 42px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  color: var(--cf-white);
-  line-height: 1;
-  margin: 8px 0;
-}
-
-.cf-focal-note {
+.cf-wiz-input-sm {
+  flex: 1;
+  min-width: 0;
   font-size: 13px;
+  padding: 6px 10px;
+}
+
+.cf-wiz-dep-remove {
+  background: none;
+  border: none;
   color: var(--cf-text-dim);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.15s;
 }
 
-.cf-focal-total {
-  text-align: right;
+.cf-wiz-dep-remove:hover {
+  color: var(--cf-negative);
 }
 
-.cf-focal-total-value {
-  font-size: 22px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-white);
+.cf-wiz-dep-add {
+  background: none;
+  border: 1px dashed var(--cf-border);
+  color: var(--cf-text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  width: 100%;
   margin-top: 4px;
 }
 
-/* ============================================================================
-   TABLE
-   ============================================================================ */
-
-.cf-table-container {
-  padding: 16px 20px;
+.cf-wiz-dep-add:hover {
+  border-color: var(--cf-accent);
+  color: var(--cf-accent);
 }
 
-.cf-table {
-  width: 100%;
-  border-collapse: collapse;
+/* Checkbox */
+.cf-wiz-checkbox-row {
+  padding-top: 2px;
+}
+
+.cf-wiz-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
   font-size: 13px;
-}
-
-.cf-table th {
-  padding: 12px 0;
-  font-weight: 500;
-  color: var(--cf-text-dim);
-  text-align: left;
-  border-bottom: 1px solid var(--cf-border);
-}
-
-.cf-table th:not(:first-child) {
-  text-align: right;
-}
-
-.cf-table td {
-  padding: 10px 0;
-  color: var(--cf-text);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.cf-table td:not(:first-child) {
-  text-align: right;
-}
-
-.cf-tabular {
-  font-variant-numeric: tabular-nums;
-}
-
-.cf-bold {
-  font-weight: 600;
-}
-
-.cf-muted {
-  color: var(--cf-text-muted) !important;
-}
-
-.cf-muted td {
   color: var(--cf-text-muted);
 }
 
-.cf-indent td:first-child {
-  padding-left: 16px;
+.cf-wiz-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* Section Label Row */
-.cf-table-section td {
-  padding: 16px 0 8px 0;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--cf-text-dim);
-  border-bottom: none;
+.cf-wiz-checkbox-box {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--cf-border-hover);
+  border-radius: 4px;
+  background: transparent;
+  transition: all 0.15s;
+  position: relative;
+  flex-shrink: 0;
 }
 
-/* Subtotal Row */
-.cf-table-subtotal {
+.cf-wiz-checkbox input:checked+.cf-wiz-checkbox-box {
   background: var(--cf-accent);
+  border-color: var(--cf-accent);
 }
 
-.cf-table-subtotal td {
-  font-weight: 500;
-  border-bottom: 1px solid var(--cf-border);
+.cf-wiz-checkbox input:checked+.cf-wiz-checkbox-box::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--cf-accent-contrast);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
-/* Highlight Row */
-.cf-table-highlight td {
-  font-weight: 500;
-  border-bottom: 1px solid var(--cf-border);
+/* Footer — flat teal CTA, ghost back button */
+.cf-wiz-footer {
+  padding: 24px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-/* Total Row */
-.cf-table-total {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.cf-table-total td {
-  padding: 16px 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--cf-white);
-  border-bottom: none;
-}
-
-/* ============================================================================
-   STATS ROW
-   ============================================================================ */
-
-.cf-stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.cf-stat-card {
-  background: var(--cf-card);
+.cf-wiz-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  background: transparent;
   border: 1px solid var(--cf-border);
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.cf-stat-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  border-radius: 12px;
   color: var(--cf-text-dim);
-  margin-bottom: 6px;
-}
-
-.cf-stat-value {
-  font-size: 18px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-white);
-}
-
-/* ============================================================================
-   CGT GRID
-   ============================================================================ */
-
-.cf-cgt-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
-  padding: 20px;
-}
-
-.cf-cgt-label {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--cf-text-dim);
-  margin-bottom: 6px;
-}
-
-.cf-cgt-value {
+  font-family: inherit;
   font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  color: var(--cf-text);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
+
+.cf-wiz-back:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--cf-text-muted);
+}
+
+.cf-wiz-continue {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 32px;
+  background: var(--cf-accent);
+  border: none;
+  border-radius: 12px;
+  color: var(--cf-accent-contrast);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.01em;
+}
+
+.cf-wiz-continue:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.cf-wiz-continue:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 
 /* ============================================================================
    RESPONSIVE
    ============================================================================ */
 
 @media (max-width: 1024px) {
-  .cf-layout {
+  .cf-kpi-strip {
+    flex-wrap: wrap;
+  }
+
+  .cf-kpi-cell {
+    flex: 1 1 50%;
+    min-width: 50%;
+  }
+
+  .cf-kpi-cell+.cf-kpi-cell::before {
+    display: none;
+  }
+
+  .cf-kpi-sparkline svg {
+    width: 56px;
+  }
+
+  .cf-card-header {
     flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .cf-mode-bar {
+    overflow-x: auto;
+  }
+
+  /* Fey layout responsive */
+  .cf-hero-value {
+    font-size: 26px;
+  }
+
+  .cf-mode-tabs-row {
+    overflow-x: auto;
+    flex-wrap: wrap;
+  }
+
+  /* Wizard view responsive */
+  .cf-wizard-view {
+    padding: 24px 16px;
+  }
+
+  .cf-wizard-view-inner {
+    flex-direction: column;
+  }
+
+  .cf-wizard-view-main {
+    padding: 24px 0;
+    align-items: stretch;
   }
 
   .cf-sidebar {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-    height: auto;
-    position: relative;
     border-right: none;
     border-bottom: 1px solid var(--cf-border);
   }
 
-  .cf-main {
-    padding: 20px 16px;
+  .cf-dashboard-view {
+    padding: 16px 8px;
   }
 
-  .cf-milestones {
-    grid-template-columns: repeat(2, 1fr);
+  /* Wizard responsive */
+  .cf-wiz-container {
+    padding: 0;
+    min-height: 400px;
   }
 
-  .cf-stats-row {
-    grid-template-columns: repeat(2, 1fr);
+  .cf-wiz-wrap {
+    max-width: 100%;
+    gap: 24px;
   }
 
-  .cf-cgt-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .cf-wiz-dots {
+    justify-content: center;
+  }
+
+  .cf-wiz-option-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cf-wiz-opt {
+    padding: 16px;
+  }
+
+  /* Sidebar responsive */
+  .cf-sidebar-nav-head {
+    margin-bottom: 16px;
+  }
+
+  .cf-sidebar-nav-item {
+    padding: 10px 24px;
+  }
+
+  .cf-wiz-content {
+    padding: 24px 0 8px;
+  }
+
+  .cf-wiz-fields {
+    gap: 20px;
+  }
+
+  .cf-wiz-footer {
+    padding: 16px 0 0;
   }
 }
 
-@media (max-width: 640px) {
-  .cf-milestones {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
 
-  .cf-milestone-value {
-    font-size: 20px;
-  }
+/* ============================================================================
+   COLLAPSIBLE COLUMN GROUPS — Affordance Prototypes
+   ============================================================================ */
 
-  .cf-focal-value {
-    font-size: 32px;
-  }
+/* Collapsible table base */
+.cct-collapsible-table {
+  width: 100%;
+}
 
-  .cf-focal-total-value {
-    font-size: 18px;
-  }
+/* Detail columns animate in/out */
+.cct-detail-col,
+.cct-detail-cell {
+  animation: cct-col-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-  .cf-stats-row {
-    grid-template-columns: 1fr;
+@keyframes cct-col-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
   }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 
-  .cf-cgt-grid {
-    grid-template-columns: repeat(2, 1fr);
+/* Table layout for smooth transitions */
+.cct-collapsible-table {
+  table-layout: auto;
+}
+
+/* Clickable group header */
+.cct-group-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.cct-group-clickable:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── STYLE A: Chevron in group header ── */
+.cct-group-header-chevron {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cct-chevron-icon {
+  opacity: 0.5;
+  transition: opacity 0.15s, transform 0.2s;
+}
+
+.cct-group-clickable:hover .cct-chevron-icon {
+  opacity: 1;
+}
+
+/* ── STYLE B: Plus/Minus in group header ── */
+.cct-group-header-plusminus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cct-plusminus-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(161, 161, 170, 0.6);
+  transition: background 0.15s, color 0.15s;
+}
+
+.cct-group-clickable:hover .cct-plusminus-icon {
+  background: rgba(45, 212, 191, 0.15);
+  color: var(--cf-accent);
+}
+
+/* ── STYLE C: Fade/caret on summary column ── */
+.cct-summary-expandable {
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cct-summary-expandable:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cct-summary-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cct-summary-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.2s;
+  color: var(--cf-text-dim);
+}
+
+.cct-summary-expandable:hover .cct-summary-caret {
+  opacity: 0.6;
+}
+
+.cct-caret-expanded {
+  transform: rotate(-90deg);
+}
+
+/* Summary cell clickable (fade style) */
+.cct-summary-clickable {
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.cct-summary-clickable::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.cct-summary-clickable:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.cct-summary-clickable:hover::before {
+  background: rgba(45, 212, 191, 0.4);
+}
+
+/* Subtle pulsing hint on page load for fade style */
+@keyframes cct-hint-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 12px rgba(45, 212, 191, 0.08); }
+}
+
+.cct-summary-clickable {
+  animation: cct-hint-pulse 2s ease-in-out 0.5s 2;
+}
+
+/* Summary cell - always visible state */
+.cct-summary-cell {
+  position: relative;
+}
+
+/* ── Prototype selector UI ── */
+.cct-prototype-selector {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.08);
+}
+
+.cct-prototype-btn {
+  padding: 8px 16px;
+  border: 1px solid rgba(113, 113, 122, 0.15);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cf-text-dim);
+  font-family: var(--font-sans, 'Sora', sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cct-prototype-btn:hover {
+  border-color: rgba(113, 113, 122, 0.25);
+  color: var(--cf-text);
+}
+
+.cct-prototype-btn.active {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.3);
+  color: var(--cf-accent);
+}
+
+.cct-prototype-label {
+  font-size: 11px;
+  color: var(--cf-text-dim);
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Prototype description ── */
+.cct-prototype-desc {
+  padding: 12px 20px;
+  font-size: 11px;
+  color: var(--cf-text-dim);
+  line-height: 1.5;
+  border-bottom: 1px solid rgba(113, 113, 122, 0.08);
+}
+
+
+/* ============================================================================
+   DATA TABLE — Collapsible Column Styles (cft- prefix)
+   ============================================================================ */
+
+/* Collapsible table layout */
+.cft-collapsible-cols {
+  table-layout: auto;
+}
+
+/* Clickable group header cell */
+.cft-group-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.cft-group-clickable:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Chevron + label container */
+.cft-group-header-chevron {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cft-group-header-chevron svg {
+  opacity: 0.5;
+  transition: opacity 0.15s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.cft-group-clickable:hover .cft-group-header-chevron svg {
+  opacity: 1;
+}
+
+/* Detail columns / cells animate in */
+.cft-detail-col,
+.cft-detail-cell {
+  animation: cft-col-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cft-col-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
   }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Wide table for unified summary */
+.cft-table-wide {
+  min-width: 100%;
+}
+
+/* Aggregate column header (always visible summary columns) */
+.cft-th-agg {
+  /* No special styling - matches other tables */
+}
+
+/* Aggregate cell (always visible totals) */
+.cft-td-agg {
+  /* No special styling - matches other tables */
+}
+
+/* Group divider in header */
+.cft-group-divider {
+  width: 1px;
+  background: rgba(113, 113, 122, 0.1);
+  padding: 0 !important;
+}
+
+/* ============================================================================
+   ENHANCED COLLAPSED SUMMARY VIEW
+   ============================================================================ */
+
+/* Row styling when all groups collapsed */
+.cft-row-summary-collapsed {
+  height: 56px;
+}
+
+/* Larger summary cells when collapsed */
+.cft-td-summary-lg {
+  text-align: right;
+  padding: 0 16px;
+}
+
+.cft-td-summary-lg .cft-summary-value {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-feature-settings: "tnum";
+}
+
+/* YoY change badge */
+.cft-yoy-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 0;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  vertical-align: middle;
+  font-feature-settings: "tnum";
+  width: 52px;
+  text-align: center;
+}
+
+.cft-yoy-positive {
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--cf-positive);
+}
+
+.cft-yoy-negative {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--cf-negative);
+}
+
+.cft-yoy-neutral {
+  background: rgba(113, 113, 122, 0.1);
+  color: var(--cf-text-dim);
+}
+
+
+/* Larger result cell when collapsed */
+.cft-td-result-lg {
+  padding-right: 20px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Summary value wrapper for consistent styling */
+.cft-summary-value {
+  font-weight: 600;
 }

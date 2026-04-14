@@ -292,6 +292,32 @@ class CashFlowRentvestRequest(CashFlowPPORRequest):
 # ── Responses ──────────────────────────────────
 
 
+class OngoingCostsDetailResponse(BaseModel):
+    """Itemised ongoing property costs for a single year."""
+
+    council_rates: float
+    water_rates: float
+    building_insurance: float
+    landlord_insurance: float
+    strata_fees: float
+    maintenance_cost: float
+    management_fee: float
+
+
+class TaxDeductionDetailResponse(BaseModel):
+    """Tax deduction breakdown for a single year (investment properties only)."""
+
+    mortgage_interest: float
+    depreciation_building: float
+    depreciation_plant: float
+    deductible_expenses: float
+    total_deductions: float
+    net_rental_income: float
+    is_negatively_geared: bool
+    tax_saving: float
+    borrowing_costs_deduction: float = 0.0
+
+
 class CashFlowYearResponse(BaseModel):
     """
     A single year's cash flow breakdown — shared by both scenarios.
@@ -308,6 +334,10 @@ class CashFlowYearResponse(BaseModel):
         rent_paid: Annual rent where the investor lives (rentvesting only, 0 for PPOR)
         rental_income: Annual rental income received (rentvesting only, 0 for PPOR)
         tax_saving: Tax benefit from deductions (rentvesting only, 0 for PPOR)
+        salary: Gross taxable income (grown by income_growth_rate) for this year
+        income_tax: Total tax payable for this year (income tax + Medicare levy)
+        ongoing_costs_detail: Itemised ongoing property costs breakdown
+        tax_deduction_detail: Tax deduction breakdown (investment only)
         total_outflows: Sum of all expenses for the year
         net_position: total_inflows - total_outflows
         cumulative_position: Running total of net_position (year 0 offset by upfront costs)
@@ -335,6 +365,10 @@ class CashFlowYearResponse(BaseModel):
     loan_balance: float
     equity: float
     offset_balance: float
+    salary: float = 0.0
+    income_tax: float = 0.0
+    ongoing_costs_detail: OngoingCostsDetailResponse | None = None
+    tax_deduction_detail: TaxDeductionDetailResponse | None = None
 
 
 class CashFlowSummaryResponse(BaseModel):

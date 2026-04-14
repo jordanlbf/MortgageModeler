@@ -12,7 +12,14 @@ from datetime import timedelta
 
 from app.engine.cgt import calculate_cgt
 from app.engine.property import calculate_property_value
-from app.models.cashflow import CashFlowPPORResult, CashFlowRentvestResult, CashFlowSummary, CashFlowYear
+from app.models.cashflow import (
+    CashFlowPPORResult,
+    CashFlowRentvestResult,
+    CashFlowSummary,
+    CashFlowSummaryInvestment,
+    CashFlowYear,
+    CashFlowYearInvestment,
+)
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
@@ -40,9 +47,6 @@ def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
     total_income = sum(year.net_income for year in years)
     total_outflows = sum(year.total_outflows for year in years)
     total_interest_paid = sum(year.mortgage_interest for year in years)
-    total_rent_paid = sum(year.rent_paid for year in years)
-    total_rental_income = sum(year.rental_income for year in years)
-    total_tax_saving = sum(year.tax_saving for year in years)
 
     last_year = years[-1] if years else None
     final_property_value = last_year.property_value if last_year else 0.0
@@ -56,14 +60,38 @@ def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
         total_income=total_income,
         total_outflows=total_outflows,
         total_interest_paid=total_interest_paid,
-        total_rent_paid=total_rent_paid,
-        total_rental_income=total_rental_income,
-        total_tax_saving=total_tax_saving,
         final_property_value=final_property_value,
         final_loan_balance=final_loan_balance,
         final_equity=final_equity,
         average_annual_net=average_annual_net,
         net_wealth=net_wealth,
+    )
+
+
+def _calculate_investment_cashflow_summary(years: list[CashFlowYearInvestment]) -> CashFlowSummaryInvestment:
+    """
+    Calculate investment summary stats, extending the base summary with
+    rental income, rent paid, and tax saving totals.
+
+    Args:
+        years: Year-by-year investment cash flow breakdown
+
+    Returns:
+        CashFlowSummaryInvestment with base totals plus investment fields
+    """
+    base = _calculate_cashflow_summary(years)
+    return CashFlowSummaryInvestment(
+        total_income=base.total_income,
+        total_outflows=base.total_outflows,
+        total_interest_paid=base.total_interest_paid,
+        final_property_value=base.final_property_value,
+        final_loan_balance=base.final_loan_balance,
+        final_equity=base.final_equity,
+        average_annual_net=base.average_annual_net,
+        net_wealth=base.net_wealth,
+        total_rent_paid=sum(year.rent_paid for year in years),
+        total_rental_income=sum(year.rental_income for year in years),
+        total_tax_saving=sum(year.tax_saving for year in years),
     )
 
 
@@ -112,11 +140,9 @@ def _calculate_cashflow_year(
     schedule_rows: list,
     ongoing_costs: YearCost,
     previous_cumulative: float,
-    rentvest: RentvestConfig | None = None,
-    tax_deduction_detail: PropertyTaxDeductionSummary | None = None,
 ) -> CashFlowYear:
     """
-    Calculate a single year's cash flow breakdown.
+    Calculate a single year's cash flow breakdown for a PPOR scenario.
 
     Expects a pre-grown tax_profile for this year. Calculates net income
     by subtracting total tax from the profile's taxable income.
@@ -125,25 +151,22 @@ def _calculate_cashflow_year(
         year: Projection year (0 = purchase year)
         tax_profile: Pre-grown tax profile for this year (income already adjusted)
         schedule_rows: Pre-sliced amortisation schedule rows for this year
-        ongoing_costs: YearCost breakdown for this year (includes rental_income)
+        ongoing_costs: YearCost breakdown for this year
         previous_cumulative: Cumulative position from the previous year
-        rentvest: Tenant rental config (None for PPOR)
-        tax_deduction_detail: Tax deduction breakdown for this year (None for PPOR)
 
     Returns:
         CashFlowYear with summary and detail breakdowns for this year
     """
-    # Calculate net income from pre-grown tax profile
     from app.engine.tax import calculate_total_tax
 
-    net_income = tax_profile.taxable_income - calculate_total_tax(tax_profile)
+    salary = tax_profile.taxable_income
+    income_tax = calculate_total_tax(tax_profile)
+    net_income = salary - income_tax
 
-    # Sum mortgage payments from this year's rows
     mortgage_interest = sum(r.interest for r in schedule_rows)
     mortgage_principal = sum(r.principal_paid + r.extra_paid for r in schedule_rows)
     mortgage_repayment = mortgage_interest + mortgage_principal
 
-    # Loan balance and offset from last row of this year (or 0 if paid off)
     if schedule_rows:
         loan_balance = schedule_rows[-1].closing_balance
         offset_balance = schedule_rows[-1].offset_balance
@@ -151,14 +174,9 @@ def _calculate_cashflow_year(
         loan_balance = 0.0
         offset_balance = 0.0
 
-    # Derive from domain models
     property_costs = ongoing_costs.total_costs
     property_value = ongoing_costs.property_value
-    rental_income = ongoing_costs.rental_income
-    rent_paid = rentvest.weekly_rent_paid * 52 * (1 + rentvest.annual_rent_paid_growth) ** year if rentvest else 0.0
-    tax_saving = tax_deduction_detail.tax_saving if tax_deduction_detail else 0.0
 
-    # Offset contributions are cash outflows (money moved into offset account)
     if len(schedule_rows) >= 2:
         offset_contributions = schedule_rows[-1].offset_balance - schedule_rows[0].offset_balance
     elif len(schedule_rows) == 1:
@@ -166,9 +184,8 @@ def _calculate_cashflow_year(
     else:
         offset_contributions = 0.0
 
-    # Assemble totals
-    total_inflows = net_income + rental_income + tax_saving
-    total_outflows = mortgage_repayment + property_costs + rent_paid + offset_contributions
+    total_inflows = net_income
+    total_outflows = mortgage_repayment + property_costs + offset_contributions
     net_position = total_inflows - total_outflows
     cumulative_position = previous_cumulative + net_position
     equity = property_value - loan_balance
@@ -182,9 +199,6 @@ def _calculate_cashflow_year(
         mortgage_principal=mortgage_principal,
         property_costs=property_costs,
         offset_contributions=offset_contributions,
-        rent_paid=rent_paid,
-        rental_income=rental_income,
-        tax_saving=tax_saving,
         total_outflows=total_outflows,
         net_position=net_position,
         cumulative_position=cumulative_position,
@@ -192,8 +206,99 @@ def _calculate_cashflow_year(
         loan_balance=loan_balance,
         equity=equity,
         offset_balance=offset_balance,
+        salary=salary,
+        income_tax=income_tax,
         ongoing_costs_detail=ongoing_costs,
         schedule_rows_detail=schedule_rows,
+    )
+
+
+def _calculate_investment_cashflow_year(
+    year: int,
+    tax_profile: TaxProfile,
+    schedule_rows: list,
+    ongoing_costs: YearCost,
+    previous_cumulative: float,
+    rentvest: RentvestConfig | None = None,
+    tax_deduction_detail: PropertyTaxDeductionSummary | None = None,
+) -> CashFlowYearInvestment:
+    """
+    Calculate a single year's cash flow breakdown for an investment scenario.
+
+    Extends the base calculation with rental income, tax deductions, and
+    optionally rent paid (for rentvesting).
+
+    Args:
+        year: Projection year (0 = purchase year)
+        tax_profile: Pre-grown tax profile for this year (income already adjusted)
+        schedule_rows: Pre-sliced amortisation schedule rows for this year
+        ongoing_costs: YearCost breakdown for this year (includes rental_income)
+        previous_cumulative: Cumulative position from the previous year
+        rentvest: Tenant rental config (None unless rentvesting)
+        tax_deduction_detail: Tax deduction breakdown for this year
+
+    Returns:
+        CashFlowYearInvestment with investment-specific fields
+    """
+    from app.engine.tax import calculate_total_tax
+
+    salary = tax_profile.taxable_income
+    income_tax = calculate_total_tax(tax_profile)
+    net_income = salary - income_tax
+
+    mortgage_interest = sum(r.interest for r in schedule_rows)
+    mortgage_principal = sum(r.principal_paid + r.extra_paid for r in schedule_rows)
+    mortgage_repayment = mortgage_interest + mortgage_principal
+
+    if schedule_rows:
+        loan_balance = schedule_rows[-1].closing_balance
+        offset_balance = schedule_rows[-1].offset_balance
+    else:
+        loan_balance = 0.0
+        offset_balance = 0.0
+
+    property_costs = ongoing_costs.total_costs
+    property_value = ongoing_costs.property_value
+    rental_income = ongoing_costs.rental_income
+    rent_paid = rentvest.weekly_rent_paid * 52 * (1 + rentvest.annual_rent_paid_growth) ** year if rentvest else 0.0
+    tax_saving = tax_deduction_detail.tax_saving if tax_deduction_detail else 0.0
+
+    if len(schedule_rows) >= 2:
+        offset_contributions = schedule_rows[-1].offset_balance - schedule_rows[0].offset_balance
+    elif len(schedule_rows) == 1:
+        offset_contributions = 0.0
+    else:
+        offset_contributions = 0.0
+
+    total_inflows = net_income + rental_income + tax_saving
+    total_outflows = mortgage_repayment + property_costs + rent_paid + offset_contributions
+    net_position = total_inflows - total_outflows
+    cumulative_position = previous_cumulative + net_position
+    equity = property_value - loan_balance
+
+    return CashFlowYearInvestment(
+        year=year,
+        net_income=net_income,
+        total_inflows=total_inflows,
+        mortgage_repayment=mortgage_repayment,
+        mortgage_interest=mortgage_interest,
+        mortgage_principal=mortgage_principal,
+        property_costs=property_costs,
+        offset_contributions=offset_contributions,
+        total_outflows=total_outflows,
+        net_position=net_position,
+        cumulative_position=cumulative_position,
+        property_value=property_value,
+        loan_balance=loan_balance,
+        equity=equity,
+        offset_balance=offset_balance,
+        salary=salary,
+        income_tax=income_tax,
+        ongoing_costs_detail=ongoing_costs,
+        schedule_rows_detail=schedule_rows,
+        rental_income=rental_income,
+        tax_saving=tax_saving,
+        rent_paid=rent_paid,
         tax_deduction_detail=tax_deduction_detail,
     )
 
@@ -290,7 +395,7 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
             financial_year=financial_year,
         )
 
-        cashflow_year = _calculate_cashflow_year(
+        cashflow_year = _calculate_investment_cashflow_year(
             year=year,
             tax_profile=grown_profile,
             schedule_rows=year_rows,
@@ -321,5 +426,5 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
         upfront_costs=upfront_costs,
         years=cashflow_years,
         cgt=cgt,
-        summary=_calculate_cashflow_summary(cashflow_years),
+        summary=_calculate_investment_cashflow_summary(cashflow_years),
     )

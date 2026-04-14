@@ -178,11 +178,15 @@ def build_tax_deduction_summary(
     )
     deductible_expenses = _calculate_ongoing_expenses(ongoing_costs)
 
-    # Calculate borrowing costs deduction based on ATO rules
+    # Calculate borrowing costs deduction based on ATO rules.
+    # For existing properties, years_elapsed offsets the deduction year
+    # so already-claimed years are skipped.
+    bc = mortgage.loan.config.borrowing_costs
+    effective_year = year + bc.years_elapsed
     borrowing_costs_deduction = calculate_borrowing_cost_deduction(
-        mortgage.loan.config.borrowing_costs.total,
+        bc.total,
         mortgage.loan.config.loan_term_years,
-        year,
+        effective_year,
     )
 
     # Sum all deductions to get total deduction for the year

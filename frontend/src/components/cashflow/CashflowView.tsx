@@ -1,1301 +1,427 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import Header from "@/components/layout/Header";
+import { useCashflowState } from "@/hooks/useCashflowState";
+import { formatCurrencyCf } from "@/lib/cashflow-calculations";
+import type { ViewMode } from "@/lib/cashflow-types";
+import CashflowSidebar from "./CashflowSidebar";
+import CashflowChart from "./CashflowChart";
+import CashflowKpiStrip from "./CashflowKpiStrip";
+import CashflowDataTable from "./CashflowDataTable";
+import CashflowWizardStep from "./CashflowWizardStep";
 import "./cashflow.css";
 
-// ============================================================================
-// TYPES
-// ============================================================================
+type StepId = "setup" | "property" | "loan" | "costs" | "rental" | "tax";
+type ActiveTab = "wizard" | "dashboard";
 
-type PropertyUse = "investment" | "ppor";
-type PurchaseMode = "new" | "existing";
-type LoanType = "principal-interest" | "interest-only";
-type CashflowView = 1 | 2 | 3 | 5 | 10;
+const STEP_ORDER_INVESTMENT: StepId[] = ["setup", "property", "loan", "costs", "rental", "tax"];
+const STEP_ORDER_BASE: StepId[] = ["setup", "property", "loan", "costs"];
 
-interface YearData {
-  year: number;
-  propertyValue: number;
-  loanBalance: number;
-  equity: number;
-  rentalIncome: number;
-  vacancy: number;
-  managementFee: number;
-  netRentalIncome: number;
-  loanRepayment: number;
-  interestPortion: number;
-  principalPortion: number;
-  councilRates: number;
-  waterRates: number;
-  insurance: number;
-  maintenance: number;
-  strataFees: number;
-  totalExpenses: number;
-  preTaxCashflow: number;
-  interestDeduction: number;
-  depreciationDeduction: number;
-  otherDeductions: number;
-  totalTaxBenefit: number;
-  netCashflow: number;
+function getNaturalStep(s: ReturnType<typeof useCashflowState>): StepId | null {
+  if (!s.propertyUse || !s.purchaseMode || !s.setupComplete) return "setup";
+  if (!s.propertyComplete) return "property";
+  if (!s.loanComplete) return "loan";
+  if (!s.costsComplete) return "costs";
+  if (s.isInvestment && !s.rentalComplete) return "rental";
+  if (s.isInvestment && !s.taxComplete) return "tax";
+  return null;
 }
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-function parseCurrency(value: string): number {
-  return parseFloat(value.replace(/[^0-9.-]/g, "")) || 0;
-}
-
-function formatCurrency(value: number): string {
-  const absValue = Math.abs(value);
-  const formatted = absValue.toLocaleString("en-AU", { maximumFractionDigits: 0 });
-  return value < 0 ? `\u2212$${formatted}` : `$${formatted}`;
-}
-
-function formatAbbreviated(value: number): string {
-  if (value >= 1000000) {
-    return `$${(value / 1000000).toFixed(2)}m`;
-  }
-  return `$${Math.round(value / 1000).toLocaleString()}k`;
-}
-
-function calculateMonthlyRepayment(principal: number, annualRate: number, termYears: number): number {
-  if (annualRate === 0) return principal / (termYears * 12);
-  const monthlyRate = annualRate / 100 / 12;
-  const numPayments = termYears * 12;
-  return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
-         (Math.pow(1 + monthlyRate, numPayments) - 1);
-}
-
-function calculateIOPayment(principal: number, annualRate: number): number {
-  return principal * (annualRate / 100 / 12);
-}
-
-function calculateLoanBalanceAtYear(
-  principal: number,
-  annualRate: number,
-  termYears: number,
-  yearsElapsed: number,
-  loanType: LoanType,
-  ioPeriod: number
-): number {
-  if (loanType === "interest-only" && yearsElapsed < ioPeriod) {
-    return principal;
-  }
-
-  const effectiveYearsElapsed = loanType === "interest-only"
-    ? yearsElapsed - ioPeriod
-    : yearsElapsed;
-  const effectiveTermYears = loanType === "interest-only"
-    ? termYears - ioPeriod
-    : termYears;
-
-  if (effectiveYearsElapsed <= 0) return principal;
-  if (effectiveYearsElapsed >= effectiveTermYears) return 0;
-
-  const monthlyRate = annualRate / 100 / 12;
-  const paymentsMade = effectiveYearsElapsed * 12;
-
-  const monthlyPayment = calculateMonthlyRepayment(principal, annualRate, effectiveTermYears);
-  const balance = principal * Math.pow(1 + monthlyRate, paymentsMade) -
-                  monthlyPayment * ((Math.pow(1 + monthlyRate, paymentsMade) - 1) / monthlyRate);
-
-  return Math.max(0, balance);
-}
-
-function getMarginalTaxRate(income: number): number {
-  if (income <= 18200) return 0;
-  if (income <= 45000) return 0.19;
-  if (income <= 120000) return 0.325;
-  if (income <= 180000) return 0.37;
-  return 0.45;
-}
-
-function calculateStampDuty(purchasePrice: number, isInvestment: boolean): number {
-  // NSW stamp duty brackets (simplified)
-  let duty = 0;
-  if (purchasePrice <= 16000) {
-    duty = purchasePrice * 0.0125;
-  } else if (purchasePrice <= 35000) {
-    duty = 200 + (purchasePrice - 16000) * 0.015;
-  } else if (purchasePrice <= 93000) {
-    duty = 485 + (purchasePrice - 35000) * 0.0175;
-  } else if (purchasePrice <= 351000) {
-    duty = 1500 + (purchasePrice - 93000) * 0.035;
-  } else if (purchasePrice <= 1168000) {
-    duty = 10530 + (purchasePrice - 351000) * 0.045;
-  } else {
-    duty = 47295 + (purchasePrice - 1168000) * 0.055;
-  }
-  // Add investor surcharge (simplified)
-  if (isInvestment) {
-    duty += purchasePrice * 0.005;
-  }
-  return Math.round(duty);
-}
-
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
 
 export default function CashflowCalculator() {
-  // Mode selections
-  const [propertyUse, setPropertyUse] = useState<PropertyUse | null>(null);
-  const [purchaseMode, setPurchaseMode] = useState<PurchaseMode | null>(null);
+  const s = useCashflowState();
+  const [inlineStep, setInlineStep] = useState<StepId | null>(null);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("wizard");
+  const [editStep, setEditStep] = useState<StepId>("setup");
+  const [hoveredYear, setHoveredYear] = useState<number | null>(null);
+  const [tableExpanded, setTableExpanded] = useState<Set<number>>(new Set());
+  const autoExpandedRef = useRef<Set<number>>(new Set());
 
-  // Progressive form completion
-  const [propertyComplete, setPropertyComplete] = useState(false);
-  const [loanComplete, setLoanComplete] = useState(false);
-  const [costsComplete, setCostsComplete] = useState(false);
-  const [rentalComplete, setRentalComplete] = useState(false);
-  const [taxComplete, setTaxComplete] = useState(false);
+  const isMilestoneYear = (year: number) => year === 1 || (year - 1) % 5 === 0;
+  const getMilestoneForYear = (year: number) => year === 1 ? 1 : Math.floor((year - 1) / 5) * 5 + 1;
 
-  // Form values - Property
-  const [purchasePrice, setPurchasePrice] = useState("750000");
-  const [depositAmount, setDepositAmount] = useState("150000");
-  const [currentValue, setCurrentValue] = useState("850000");
-  const [originalPurchasePrice, setOriginalPurchasePrice] = useState("650000");
-  const [currentLoanBalance, setCurrentLoanBalance] = useState("480000");
+  const handleSelectYear = useCallback((year: number) => {
+    s.setSelectedYear(year);
 
-  // Form values - Loan
-  const [interestRate, setInterestRate] = useState("6.5");
-  const [loanTerm, setLoanTerm] = useState("30");
-  const [loanType, setLoanType] = useState<LoanType>("principal-interest");
-  const [ioPeriod, setIoPeriod] = useState("5");
-  const [hasOffset, setHasOffset] = useState(false);
-  const [offsetBalance, setOffsetBalance] = useState("0");
-  const [extraRepayments, setExtraRepayments] = useState("0");
+    const milestone = getMilestoneForYear(year);
+    const isVisible = isMilestoneYear(year) || tableExpanded.has(milestone);
 
-  // Form values - Costs
-  const [councilRates, setCouncilRates] = useState("1800");
-  const [waterRates, setWaterRates] = useState("1200");
-  const [insurance, setInsurance] = useState("2000");
-  const [maintenance, setMaintenance] = useState("0.5");
-  const [hasStrata, setHasStrata] = useState(false);
-  const [strataFees, setStrataFees] = useState("800");
+    // Collapse previously auto-expanded groups that no longer contain selection
+    const toCollapse = [...autoExpandedRef.current].filter(m => m !== milestone);
+    const next = new Set(tableExpanded);
+    let changed = false;
 
-  // Form values - Rental (investment only)
-  const [weeklyRent, setWeeklyRent] = useState("650");
-  const [vacancyRate, setVacancyRate] = useState("3.8");
-  const [usePropertyManager, setUsePropertyManager] = useState(true);
-  const [managementFee, setManagementFee] = useState("7.5");
-
-  // Form values - Tax (investment only)
-  const [taxableIncome, setTaxableIncome] = useState("120000");
-  const [depreciation, setDepreciation] = useState("8000");
-  const [capitalGrowth, setCapitalGrowth] = useState("3.5");
-
-  // Output view state
-  const [cashflowView, setCashflowView] = useState<CashflowView>(1);
-
-  // Collapsible sections
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["property"]));
-
-  // Derived values
-  const isInvestment = propertyUse === "investment";
-  const isPPOR = propertyUse === "ppor";
-  const isNewPurchase = purchaseMode === "new";
-
-  const allComplete = isInvestment
-    ? propertyComplete && loanComplete && costsComplete && rentalComplete && taxComplete
-    : propertyComplete && loanComplete && costsComplete;
-
-  // Calculate loan amount
-  const loanAmount = isNewPurchase
-    ? parseCurrency(purchasePrice) - parseCurrency(depositAmount)
-    : parseCurrency(currentLoanBalance);
-
-  const propertyValue = isNewPurchase
-    ? parseCurrency(purchasePrice)
-    : parseCurrency(currentValue);
-
-  // Calculate all year data
-  const yearData = useMemo((): YearData[] => {
-    if (!allComplete) return [];
-
-    const data: YearData[] = [];
-    const rate = parseFloat(interestRate) || 6.5;
-    const term = parseInt(loanTerm) || 30;
-    const ioPeriodYears = loanType === "interest-only" ? parseInt(ioPeriod) || 5 : 0;
-    const growth = parseFloat(capitalGrowth) || 3.5;
-    const taxRate = getMarginalTaxRate(parseCurrency(taxableIncome));
-    const annualRent = parseCurrency(weeklyRent) * 52;
-    const vacRate = parseFloat(vacancyRate) / 100 || 0.038;
-    const mgmtFee = usePropertyManager ? parseFloat(managementFee) / 100 || 0.075 : 0;
-    const annualDepreciation = parseCurrency(depreciation);
-    const annualCouncil = parseCurrency(councilRates);
-    const annualWater = parseCurrency(waterRates);
-    const annualInsurance = parseCurrency(insurance);
-    const maintenanceRate = parseFloat(maintenance) / 100 || 0.005;
-    const annualStrata = hasStrata ? parseCurrency(strataFees) * 4 : 0;
-    const effectiveOffset = hasOffset ? parseCurrency(offsetBalance) : 0;
-    const monthlyExtra = parseCurrency(extraRepayments);
-
-    for (let year = 1; year <= 30; year++) {
-      const propValue = propertyValue * Math.pow(1 + growth / 100, year);
-      const loanBal = calculateLoanBalanceAtYear(
-        loanAmount - effectiveOffset,
-        rate,
-        term,
-        year,
-        loanType,
-        ioPeriodYears
-      );
-      const equity = propValue - loanBal;
-
-      // Rental income calculations (investment only)
-      const rental = isInvestment ? annualRent : 0;
-      const vacancy = isInvestment ? rental * vacRate : 0;
-      const mgmt = isInvestment ? (rental - vacancy) * mgmtFee : 0;
-      const netRental = rental - vacancy - mgmt;
-
-      // Loan repayment calculations
-      let annualRepayment: number;
-      let interestPaid: number;
-      let principalPaid: number;
-
-      if (loanType === "interest-only" && year <= ioPeriodYears) {
-        const monthlyIO = calculateIOPayment(loanAmount - effectiveOffset, rate);
-        annualRepayment = (monthlyIO + monthlyExtra) * 12;
-        interestPaid = monthlyIO * 12;
-        principalPaid = monthlyExtra * 12;
-      } else {
-        const effectiveTerm = loanType === "interest-only" ? term - ioPeriodYears : term;
-        const monthlyPI = calculateMonthlyRepayment(loanAmount - effectiveOffset, rate, effectiveTerm);
-        annualRepayment = (monthlyPI + monthlyExtra) * 12;
-        // Approximate interest/principal split
-        const avgBalance = (calculateLoanBalanceAtYear(loanAmount - effectiveOffset, rate, term, year - 1, loanType, ioPeriodYears) + loanBal) / 2;
-        interestPaid = avgBalance * (rate / 100);
-        principalPaid = annualRepayment - interestPaid;
-      }
-
-      // Property costs
-      const annualMaintenance = propValue * maintenanceRate;
-      const totalExpenses = annualRepayment + annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata;
-
-      // Pre-tax cashflow
-      const preTax = netRental - totalExpenses;
-
-      // Tax deductions (investment only)
-      const interestDeduct = isInvestment ? interestPaid * taxRate : 0;
-      const deprecDeduct = isInvestment ? annualDepreciation * taxRate : 0;
-      const otherDeduct = isInvestment ? (annualCouncil + annualWater + annualInsurance + annualMaintenance + annualStrata) * taxRate * 0.3 : 0; // Simplified
-      const totalTaxBenefit = interestDeduct + deprecDeduct + otherDeduct;
-
-      // Net cashflow
-      const netCash = preTax + totalTaxBenefit;
-
-      data.push({
-        year,
-        propertyValue: propValue,
-        loanBalance: loanBal,
-        equity,
-        rentalIncome: rental,
-        vacancy,
-        managementFee: mgmt,
-        netRentalIncome: netRental,
-        loanRepayment: annualRepayment,
-        interestPortion: interestPaid,
-        principalPortion: principalPaid,
-        councilRates: annualCouncil,
-        waterRates: annualWater,
-        insurance: annualInsurance,
-        maintenance: annualMaintenance,
-        strataFees: annualStrata,
-        totalExpenses,
-        preTaxCashflow: preTax,
-        interestDeduction: interestDeduct,
-        depreciationDeduction: deprecDeduct,
-        otherDeductions: otherDeduct,
-        totalTaxBenefit,
-        netCashflow: netCash,
-      });
+    for (const m of toCollapse) {
+      if (next.has(m)) { next.delete(m); changed = true; }
+      autoExpandedRef.current.delete(m);
     }
 
-    return data;
-  }, [
-    allComplete, propertyValue, loanAmount, interestRate, loanTerm, loanType, ioPeriod,
-    capitalGrowth, taxableIncome, weeklyRent, vacancyRate, usePropertyManager, managementFee,
-    depreciation, councilRates, waterRates, insurance, maintenance, hasStrata, strataFees,
-    hasOffset, offsetBalance, extraRepayments, isInvestment
-  ]);
-
-  // Aggregate data for selected cashflow view period
-  const aggregatedData = useMemo(() => {
-    if (yearData.length === 0) return null;
-
-    const yearsToSum = Math.min(cashflowView, yearData.length);
-    const relevantYears = yearData.slice(0, yearsToSum);
-
-    return {
-      totalRentalIncome: relevantYears.reduce((sum, y) => sum + y.rentalIncome, 0),
-      totalVacancy: relevantYears.reduce((sum, y) => sum + y.vacancy, 0),
-      totalManagementFee: relevantYears.reduce((sum, y) => sum + y.managementFee, 0),
-      totalNetRentalIncome: relevantYears.reduce((sum, y) => sum + y.netRentalIncome, 0),
-      totalLoanRepayment: relevantYears.reduce((sum, y) => sum + y.loanRepayment, 0),
-      totalInterest: relevantYears.reduce((sum, y) => sum + y.interestPortion, 0),
-      totalPrincipal: relevantYears.reduce((sum, y) => sum + y.principalPortion, 0),
-      totalCouncilRates: relevantYears.reduce((sum, y) => sum + y.councilRates, 0),
-      totalWaterRates: relevantYears.reduce((sum, y) => sum + y.waterRates, 0),
-      totalInsurance: relevantYears.reduce((sum, y) => sum + y.insurance, 0),
-      totalMaintenance: relevantYears.reduce((sum, y) => sum + y.maintenance, 0),
-      totalStrataFees: relevantYears.reduce((sum, y) => sum + y.strataFees, 0),
-      totalExpenses: relevantYears.reduce((sum, y) => sum + y.totalExpenses, 0),
-      totalPreTaxCashflow: relevantYears.reduce((sum, y) => sum + y.preTaxCashflow, 0),
-      totalInterestDeduction: relevantYears.reduce((sum, y) => sum + y.interestDeduction, 0),
-      totalDepreciationDeduction: relevantYears.reduce((sum, y) => sum + y.depreciationDeduction, 0),
-      totalOtherDeductions: relevantYears.reduce((sum, y) => sum + y.otherDeductions, 0),
-      totalTaxBenefit: relevantYears.reduce((sum, y) => sum + y.totalTaxBenefit, 0),
-      totalNetCashflow: relevantYears.reduce((sum, y) => sum + y.netCashflow, 0),
-      years: yearsToSum,
-    };
-  }, [yearData, cashflowView]);
-
-  // Milestone data for property value & equity card
-  const milestones = useMemo(() => {
-    return [5, 10, 20, 30].map(year => {
-      const data = yearData[year - 1];
-      return data ? {
-        year,
-        propertyValue: data.propertyValue,
-        equity: data.equity,
-      } : {
-        year,
-        propertyValue: propertyValue * Math.pow(1.035, year),
-        equity: propertyValue * Math.pow(1.035, year) - Math.max(0, loanAmount - year * 12000),
-      };
-    });
-  }, [yearData, propertyValue, loanAmount]);
-
-  // Toggle section expansion
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => {
-      const next = new Set(prev);
-      if (next.has(section)) {
-        next.delete(section);
-      } else {
-        next.add(section);
-      }
-      return next;
-    });
-  };
-
-  // Reset to edit a completed section
-  const resetSection = (section: string) => {
-    switch (section) {
-      case "property":
-        setPropertyComplete(false);
-        setLoanComplete(false);
-        setCostsComplete(false);
-        setRentalComplete(false);
-        setTaxComplete(false);
-        break;
-      case "loan":
-        setLoanComplete(false);
-        setCostsComplete(false);
-        setRentalComplete(false);
-        setTaxComplete(false);
-        break;
-      case "costs":
-        setCostsComplete(false);
-        setRentalComplete(false);
-        setTaxComplete(false);
-        break;
-      case "rental":
-        setRentalComplete(false);
-        setTaxComplete(false);
-        break;
-      case "tax":
-        setTaxComplete(false);
-        break;
+    // Auto-expand if needed
+    if (!isVisible) {
+      next.add(milestone);
+      autoExpandedRef.current.add(milestone);
+      changed = true;
     }
-    setExpandedSections(prev => new Set([...prev, section]));
-  };
 
-  // ============================================================================
-  // RENDER
-  // ============================================================================
+    if (changed) setTableExpanded(next);
+  }, [s, tableExpanded]);
+
+  // Manual expand/collapse from table — clear auto-tracking for toggled milestones
+  const handleManualExpand = useCallback((expanded: Set<number>) => {
+    autoExpandedRef.current.clear();
+    setTableExpanded(expanded);
+  }, []);
+
+
+  const stepOrder = s.isInvestment ? STEP_ORDER_INVESTMENT : STEP_ORDER_BASE;
+  const naturalStep = getNaturalStep(s);
+  const currentWizardStep = inlineStep ?? naturalStep;
+  const showWizard = !s.allComplete || activeTab === "wizard";
+
+  const goToStep = useCallback((step: StepId) => {
+    if (s.allComplete) {
+      setEditStep(step);
+      setActiveTab("wizard");
+    }
+  }, [s.allComplete]);
+
+  const handleWizardStepComplete = useCallback(() => {
+    switch (currentWizardStep) {
+      case "setup": s.setSetupComplete(true); break;
+      case "property": s.setPropertyComplete(true); break;
+      case "loan": s.setLoanComplete(true); break;
+      case "costs": s.setCostsComplete(true); break;
+      case "rental": s.setRentalComplete(true); break;
+      case "tax": s.setTaxComplete(true); break;
+    }
+    setInlineStep(null);
+  }, [currentWizardStep, s]);
+
+  const handleEditStepComplete = useCallback(() => {
+    switch (editStep) {
+      case "property": s.setPropertyComplete(true); break;
+      case "loan": s.setLoanComplete(true); break;
+      case "costs": s.setCostsComplete(true); break;
+      case "rental": s.setRentalComplete(true); break;
+      case "tax": s.setTaxComplete(true); break;
+    }
+    setActiveTab("dashboard");
+  }, [editStep, s]);
+
+  const handleWizardStepBack = useCallback(() => {
+    const currentIdx = stepOrder.indexOf(currentWizardStep as StepId);
+    if (currentIdx > 0) {
+      setInlineStep(stepOrder[currentIdx - 1]);
+    }
+  }, [currentWizardStep, stepOrder]);
+
+  const sidebarStep = s.allComplete
+    ? (activeTab === "wizard" ? editStep : undefined)
+    : (currentWizardStep ?? undefined);
+
+  // Auto-switch to dashboard when wizard first completes
+  const [wasComplete, setWasComplete] = useState(false);
+  useEffect(() => {
+    if (s.allComplete && !wasComplete) {
+      setWasComplete(true);
+      setActiveTab("dashboard");
+    }
+  }, [s.allComplete, wasComplete]);
 
   return (
-    <div className="cf-layout">
-      {/* LEFT SIDEBAR - INPUTS */}
-      <aside className="cf-sidebar">
-        <div className="cf-sidebar-inner">
-          {/* Mode Selection */}
-          <div className="cf-section">
-            <div className="cf-section-content" style={{ paddingTop: 16 }}>
-              <p className="cf-section-label">Property Use</p>
-              <div className="cf-button-group">
-                <button
-                  className={`cf-button-option ${propertyUse === "investment" ? "active" : ""}`}
-                  onClick={() => {
-                    setPropertyUse("investment");
-                    setPurchaseMode(null);
-                    setPropertyComplete(false);
-                    setLoanComplete(false);
-                    setCostsComplete(false);
-                    setRentalComplete(false);
-                    setTaxComplete(false);
-                  }}
-                >
-                  Investment
-                </button>
-                <button
-                  className={`cf-button-option ${propertyUse === "ppor" ? "active" : ""}`}
-                  onClick={() => {
-                    setPropertyUse("ppor");
-                    setPurchaseMode(null);
-                    setPropertyComplete(false);
-                    setLoanComplete(false);
-                    setCostsComplete(false);
-                    setRentalComplete(false);
-                    setTaxComplete(false);
-                  }}
-                >
-                  PPOR
-                </button>
-              </div>
+    <>
+      <Header />
 
-              {propertyUse && (
-                <>
-                  <p className="cf-section-label" style={{ marginTop: 8 }}>Purchase Mode</p>
-                  <div className="cf-button-group">
-                    <button
-                      className={`cf-button-option ${purchaseMode === "new" ? "active" : ""}`}
-                      onClick={() => {
-                        setPurchaseMode("new");
-                        setPropertyComplete(false);
-                        setLoanComplete(false);
-                        setCostsComplete(false);
-                        setRentalComplete(false);
-                        setTaxComplete(false);
-                      }}
-                    >
-                      New Purchase
-                    </button>
-                    <button
-                      className={`cf-button-option ${purchaseMode === "existing" ? "active" : ""}`}
-                      onClick={() => {
-                        setPurchaseMode("existing");
-                        setPropertyComplete(false);
-                        setLoanComplete(false);
-                        setCostsComplete(false);
-                        setRentalComplete(false);
-                        setTaxComplete(false);
-                      }}
-                    >
-                      Existing Property
-                    </button>
-                  </div>
-                </>
+      {/* ── Wizard view: sidebar + wizard centered together ── */}
+      {showWizard && (
+        <div className="cf-wizard-view">
+          <div className="cf-wizard-view-inner">
+            <CashflowSidebar s={s} currentStep={sidebarStep} onStepClick={goToStep} />
+
+            <div className="cf-wizard-view-main">
+              {!s.allComplete && currentWizardStep && (
+                <CashflowWizardStep
+                  s={s}
+                  currentStep={currentWizardStep}
+                  onStepComplete={handleWizardStepComplete}
+                  onStepBack={handleWizardStepBack}
+                  canGoBack={stepOrder.indexOf(currentWizardStep as StepId) > 0}
+                />
+              )}
+              {s.allComplete && (
+                <CashflowWizardStep
+                  s={s}
+                  currentStep={editStep}
+                  onStepComplete={handleEditStepComplete}
+                  onStepBack={() => setActiveTab("dashboard")}
+                  canGoBack={true}
+                />
               )}
             </div>
           </div>
-
-          {/* Property Details */}
-          {purchaseMode && (
-            <div className="cf-section">
-              <button
-                className="cf-section-header"
-                onClick={() => toggleSection("property")}
-              >
-                <span>Property Details</span>
-                {propertyComplete && (
-                  <button
-                    className="cf-edit-link"
-                    onClick={(e) => { e.stopPropagation(); resetSection("property"); }}
-                  >
-                    Edit
-                  </button>
-                )}
-                {!propertyComplete && (
-                  expandedSections.has("property") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-                )}
-              </button>
-
-              {!propertyComplete && expandedSections.has("property") && (
-                <div className="cf-section-content">
-                  {isNewPurchase ? (
-                    <>
-                      <div className="cf-field">
-                        <label className="cf-label">Purchase Price</label>
-                        <input
-                          type="text"
-                          className="cf-input"
-                          value={`$${parseCurrency(purchasePrice).toLocaleString()}`}
-                          onChange={(e) => setPurchasePrice(e.target.value)}
-                        />
-                      </div>
-                      <div className="cf-field">
-                        <label className="cf-label">Deposit Amount</label>
-                        <input
-                          type="text"
-                          className="cf-input"
-                          value={`$${parseCurrency(depositAmount).toLocaleString()}`}
-                          onChange={(e) => setDepositAmount(e.target.value)}
-                        />
-                      </div>
-                      <div className="cf-field-row">
-                        <div className="cf-field">
-                          <label className="cf-label">Loan Amount</label>
-                          <div className="cf-input-display">
-                            {formatCurrency(parseCurrency(purchasePrice) - parseCurrency(depositAmount))}
-                          </div>
-                        </div>
-                        <div className="cf-field">
-                          <label className="cf-label">LVR</label>
-                          <div className="cf-input-display">
-                            {((1 - parseCurrency(depositAmount) / parseCurrency(purchasePrice)) * 100).toFixed(1)}%
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="cf-field">
-                        <label className="cf-label">Current Value</label>
-                        <input
-                          type="text"
-                          className="cf-input"
-                          value={`$${parseCurrency(currentValue).toLocaleString()}`}
-                          onChange={(e) => setCurrentValue(e.target.value)}
-                        />
-                      </div>
-                      <div className="cf-field">
-                        <label className="cf-label">Original Purchase Price</label>
-                        <input
-                          type="text"
-                          className="cf-input"
-                          value={`$${parseCurrency(originalPurchasePrice).toLocaleString()}`}
-                          onChange={(e) => setOriginalPurchasePrice(e.target.value)}
-                        />
-                      </div>
-                      <div className="cf-field">
-                        <label className="cf-label">Current Loan Balance</label>
-                        <input
-                          type="text"
-                          className="cf-input"
-                          value={`$${parseCurrency(currentLoanBalance).toLocaleString()}`}
-                          onChange={(e) => setCurrentLoanBalance(e.target.value)}
-                        />
-                      </div>
-                    </>
-                  )}
-                  <button
-                    className="cf-continue"
-                    onClick={() => {
-                      setPropertyComplete(true);
-                      setExpandedSections(prev => {
-                        const next = new Set(prev);
-                        next.delete("property");
-                        next.add("loan");
-                        return next;
-                      });
-                    }}
-                  >
-                    Continue
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Loan Details */}
-          {propertyComplete && (
-            <div className="cf-section">
-              <button
-                className="cf-section-header"
-                onClick={() => toggleSection("loan")}
-              >
-                <span>Loan Details</span>
-                {loanComplete && (
-                  <button
-                    className="cf-edit-link"
-                    onClick={(e) => { e.stopPropagation(); resetSection("loan"); }}
-                  >
-                    Edit
-                  </button>
-                )}
-                {!loanComplete && (
-                  expandedSections.has("loan") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-                )}
-              </button>
-
-              {!loanComplete && expandedSections.has("loan") && (
-                <div className="cf-section-content">
-                  <div className="cf-field-row">
-                    <div className="cf-field">
-                      <label className="cf-label">Interest Rate (%)</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={interestRate}
-                        onChange={(e) => setInterestRate(e.target.value)}
-                      />
-                    </div>
-                    <div className="cf-field">
-                      <label className="cf-label">Loan Term (years)</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={loanTerm}
-                        onChange={(e) => setLoanTerm(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="cf-field">
-                    <label className="cf-label">Loan Type</label>
-                    <div className="cf-button-group">
-                      <button
-                        className={`cf-button-option ${loanType === "principal-interest" ? "active" : ""}`}
-                        onClick={() => setLoanType("principal-interest")}
-                      >
-                        Principal & Interest
-                      </button>
-                      <button
-                        className={`cf-button-option ${loanType === "interest-only" ? "active" : ""}`}
-                        onClick={() => setLoanType("interest-only")}
-                      >
-                        Interest Only
-                      </button>
-                    </div>
-                  </div>
-
-                  {loanType === "interest-only" && (
-                    <div className="cf-field">
-                      <label className="cf-label">Interest Only Period (years)</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={ioPeriod}
-                        onChange={(e) => setIoPeriod(e.target.value)}
-                      />
-                    </div>
-                  )}
-
-                  <div className="cf-toggle-row">
-                    <label className="cf-toggle">
-                      <input
-                        type="checkbox"
-                        checked={hasOffset}
-                        onChange={(e) => setHasOffset(e.target.checked)}
-                      />
-                      <span className="cf-toggle-slider"></span>
-                    </label>
-                    <span className="cf-toggle-label">Offset Account</span>
-                  </div>
-
-                  {hasOffset && (
-                    <div className="cf-field">
-                      <label className="cf-label">Offset Balance</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={`$${parseCurrency(offsetBalance).toLocaleString()}`}
-                        onChange={(e) => setOffsetBalance(e.target.value)}
-                      />
-                    </div>
-                  )}
-
-                  <div className="cf-field">
-                    <label className="cf-label">Extra Repayments (monthly)</label>
-                    <input
-                      type="text"
-                      className="cf-input"
-                      value={`$${parseCurrency(extraRepayments).toLocaleString()}`}
-                      onChange={(e) => setExtraRepayments(e.target.value)}
-                    />
-                  </div>
-
-                  <button
-                    className="cf-continue"
-                    onClick={() => {
-                      setLoanComplete(true);
-                      setExpandedSections(prev => {
-                        const next = new Set(prev);
-                        next.delete("loan");
-                        next.add("costs");
-                        return next;
-                      });
-                    }}
-                  >
-                    Continue
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Ongoing Costs */}
-          {loanComplete && (
-            <div className="cf-section">
-              <button
-                className="cf-section-header"
-                onClick={() => toggleSection("costs")}
-              >
-                <span>Ongoing Costs</span>
-                {costsComplete && (
-                  <button
-                    className="cf-edit-link"
-                    onClick={(e) => { e.stopPropagation(); resetSection("costs"); }}
-                  >
-                    Edit
-                  </button>
-                )}
-                {!costsComplete && (
-                  expandedSections.has("costs") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-                )}
-              </button>
-
-              {!costsComplete && expandedSections.has("costs") && (
-                <div className="cf-section-content">
-                  <div className="cf-field-row">
-                    <div className="cf-field">
-                      <label className="cf-label">Council Rates (annual)</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={`$${parseCurrency(councilRates).toLocaleString()}`}
-                        onChange={(e) => setCouncilRates(e.target.value)}
-                      />
-                    </div>
-                    <div className="cf-field">
-                      <label className="cf-label">Water Rates (annual)</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={`$${parseCurrency(waterRates).toLocaleString()}`}
-                        onChange={(e) => setWaterRates(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="cf-field-row">
-                    <div className="cf-field">
-                      <label className="cf-label">Insurance (annual)</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={`$${parseCurrency(insurance).toLocaleString()}`}
-                        onChange={(e) => setInsurance(e.target.value)}
-                      />
-                    </div>
-                    <div className="cf-field">
-                      <label className="cf-label">Maintenance (% of value)</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={maintenance}
-                        onChange={(e) => setMaintenance(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="cf-toggle-row">
-                    <label className="cf-toggle">
-                      <input
-                        type="checkbox"
-                        checked={hasStrata}
-                        onChange={(e) => setHasStrata(e.target.checked)}
-                      />
-                      <span className="cf-toggle-slider"></span>
-                    </label>
-                    <span className="cf-toggle-label">Strata Property</span>
-                  </div>
-
-                  {hasStrata && (
-                    <div className="cf-field">
-                      <label className="cf-label">Strata Fees (quarterly)</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={`$${parseCurrency(strataFees).toLocaleString()}`}
-                        onChange={(e) => setStrataFees(e.target.value)}
-                      />
-                    </div>
-                  )}
-
-                  <button
-                    className="cf-continue"
-                    onClick={() => {
-                      setCostsComplete(true);
-                      if (isInvestment) {
-                        setExpandedSections(prev => {
-                          const next = new Set(prev);
-                          next.delete("costs");
-                          next.add("rental");
-                          return next;
-                        });
-                      }
-                    }}
-                  >
-                    {isPPOR ? "Calculate" : "Continue"}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Rental Income - Investment only */}
-          {isInvestment && costsComplete && (
-            <div className="cf-section">
-              <button
-                className="cf-section-header"
-                onClick={() => toggleSection("rental")}
-              >
-                <span>Rental Income</span>
-                {rentalComplete && (
-                  <button
-                    className="cf-edit-link"
-                    onClick={(e) => { e.stopPropagation(); resetSection("rental"); }}
-                  >
-                    Edit
-                  </button>
-                )}
-                {!rentalComplete && (
-                  expandedSections.has("rental") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-                )}
-              </button>
-
-              {!rentalComplete && expandedSections.has("rental") && (
-                <div className="cf-section-content">
-                  <div className="cf-field">
-                    <label className="cf-label">Weekly Rent</label>
-                    <input
-                      type="text"
-                      className="cf-input"
-                      value={`$${parseCurrency(weeklyRent).toLocaleString()}`}
-                      onChange={(e) => setWeeklyRent(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="cf-field">
-                    <label className="cf-label">Vacancy Rate (%)</label>
-                    <input
-                      type="text"
-                      className="cf-input"
-                      value={vacancyRate}
-                      onChange={(e) => setVacancyRate(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="cf-toggle-row">
-                    <label className="cf-toggle">
-                      <input
-                        type="checkbox"
-                        checked={usePropertyManager}
-                        onChange={(e) => setUsePropertyManager(e.target.checked)}
-                      />
-                      <span className="cf-toggle-slider"></span>
-                    </label>
-                    <span className="cf-toggle-label">Property Manager</span>
-                  </div>
-
-                  {usePropertyManager && (
-                    <div className="cf-field">
-                      <label className="cf-label">Management Fee (%)</label>
-                      <input
-                        type="text"
-                        className="cf-input"
-                        value={managementFee}
-                        onChange={(e) => setManagementFee(e.target.value)}
-                      />
-                    </div>
-                  )}
-
-                  <button
-                    className="cf-continue"
-                    onClick={() => {
-                      setRentalComplete(true);
-                      setExpandedSections(prev => {
-                        const next = new Set(prev);
-                        next.delete("rental");
-                        next.add("tax");
-                        return next;
-                      });
-                    }}
-                  >
-                    Continue
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Tax Profile - Investment only */}
-          {isInvestment && rentalComplete && (
-            <div className="cf-section">
-              <button
-                className="cf-section-header"
-                onClick={() => toggleSection("tax")}
-              >
-                <span>Tax Profile</span>
-                {taxComplete && (
-                  <button
-                    className="cf-edit-link"
-                    onClick={(e) => { e.stopPropagation(); resetSection("tax"); }}
-                  >
-                    Edit
-                  </button>
-                )}
-                {!taxComplete && (
-                  expandedSections.has("tax") ? <ChevronDown size={16} /> : <ChevronRight size={16} />
-                )}
-              </button>
-
-              {!taxComplete && expandedSections.has("tax") && (
-                <div className="cf-section-content">
-                  <div className="cf-field">
-                    <label className="cf-label">Taxable Income</label>
-                    <input
-                      type="text"
-                      className="cf-input"
-                      value={`$${parseCurrency(taxableIncome).toLocaleString()}`}
-                      onChange={(e) => setTaxableIncome(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="cf-field">
-                    <label className="cf-label">Depreciation (annual)</label>
-                    <input
-                      type="text"
-                      className="cf-input"
-                      value={`$${parseCurrency(depreciation).toLocaleString()}`}
-                      onChange={(e) => setDepreciation(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="cf-field">
-                    <label className="cf-label">Capital Growth Assumption (%)</label>
-                    <input
-                      type="text"
-                      className="cf-input"
-                      value={capitalGrowth}
-                      onChange={(e) => setCapitalGrowth(e.target.value)}
-                    />
-                  </div>
-
-                  <button
-                    className="cf-continue"
-                    onClick={() => setTaxComplete(true)}
-                  >
-                    Calculate
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
         </div>
-      </aside>
+      )}
 
-      {/* RIGHT SIDE - OUTPUTS */}
-      <main className="cf-main">
-        {/* Placeholder when not complete */}
-        {!allComplete && (
-          <div className="cf-placeholder">
-            <div className="cf-placeholder-content">
-              <p className="cf-placeholder-title">Complete the form to see your analysis</p>
-              <p className="cf-placeholder-subtitle">
-                {!propertyUse && "Start by selecting property use"}
-                {propertyUse && !purchaseMode && "Select purchase mode"}
-                {purchaseMode && !propertyComplete && "Enter property details"}
-                {propertyComplete && !loanComplete && "Enter loan details"}
-                {loanComplete && !costsComplete && "Enter ongoing costs"}
-                {isInvestment && costsComplete && !rentalComplete && "Enter rental income"}
-                {isInvestment && rentalComplete && !taxComplete && "Enter tax profile"}
-              </p>
-            </div>
-          </div>
-        )}
+      {/* ── Dashboard view: Fey-inspired layout ── */}
+      {s.allComplete && s.yearData.length > 0 && activeTab === "dashboard" && (() => {
+        const displayYear = hoveredYear ?? s.selectedYear;
+        const baseYear = new Date().getFullYear();
+        const calendarYear = baseYear + displayYear - 1;
+        const displayYearData = s.yearData.find(y => y.year === displayYear) ?? s.yearData[0];
+        const y1 = displayYearData;
+        const sy = displayYearData;
+        const vm = s.effectiveViewMode;
 
-        {/* Complete - Show outputs */}
-        {allComplete && aggregatedData && (
-          <div className="cf-outputs">
-            {/* Property Value & Equity Milestones */}
-            <div className="cf-card">
-              <div className="cf-card-header">
-                <span>Property Value & Equity</span>
-                {isNewPurchase && (
-                  <span className="cf-card-header-note">
-                    Starting: <span className="cf-tabular">{formatCurrency(propertyValue)}</span>
-                  </span>
-                )}
-              </div>
-              <div className="cf-milestones">
-                {milestones.map((m) => (
-                  <div key={m.year} className="cf-milestone">
-                    <p className="cf-milestone-year">Year {m.year}</p>
-                    <div className="cf-milestone-values">
-                      <div>
-                        <p className="cf-milestone-value">{formatAbbreviated(m.propertyValue)}</p>
-                        <p className="cf-milestone-label">Value</p>
-                      </div>
-                      <div className="cf-milestone-equity">
-                        <p className="cf-milestone-equity-value">{formatAbbreviated(m.equity)}</p>
-                        <p className="cf-milestone-label">Equity</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        const depColor = "#fbbf24";
 
-            {/* Cashflow Section */}
-            <div className="cf-card">
-              <div className="cf-card-header">
-                <span>Cashflow Breakdown</span>
-                <div className="cf-year-selector">
-                  {([1, 2, 3, 5, 10] as CashflowView[]).map((years) => (
-                    <button
-                      key={years}
-                      className={`cf-year-button ${cashflowView === years ? "active" : ""}`}
-                      onClick={() => setCashflowView(years)}
-                    >
-                      {years === 1 ? "Year 1" : `${years} Years`}
-                    </button>
-                  ))}
+        // Title data for hero-value prototypes
+        const summaryCashflow = y1.salary + (s.isInvestment ? y1.rentalIncome : 0) - y1.ongoingCosts - y1.loanRepayment - y1.incomeTaxCalc;
+        const heroValue = vm === "equity"
+          ? formatCurrencyCf(Math.round(y1.netEquity))
+          : vm === "deductions"
+          ? formatCurrencyCf(Math.round(y1.totalDeductions))
+          : vm === "tax"
+          ? formatCurrencyCf(Math.round(-y1.incomeTaxCalc))
+          : vm === "property"
+          ? formatCurrencyCf(Math.round(y1.propertyCashflow))
+          : formatCurrencyCf(Math.round(summaryCashflow));
+        const heroLabel = vm === "equity" ? "Net Equity" : vm === "deductions" ? "Total Deductions" : vm === "tax" ? "Total Tax" : vm === "property" ? "Property Cashflow" : "Net Cashflow";
+        const heroColor = vm === "summary"
+          ? (summaryCashflow >= 0 ? "var(--cf-positive)" : "var(--cf-negative)")
+          : vm === "property"
+          ? (y1.propertyCashflow >= 0 ? "var(--cf-positive)" : "var(--cf-negative)")
+          : vm === "tax"
+          ? "var(--cf-negative)"
+          : vm === "deductions"
+          ? "#a78bfa"
+          : null;
+
+        // Hero data per view mode — Fey-style: value + label (muted) + secondary + color
+        const heroMap: Record<ViewMode, { value: string; label: string; monthly: string; color: string }> = {
+          summary: {
+            value: formatCurrencyCf(Math.round(y1.netCashflow)),
+            label: "net cashflow",
+            monthly: `${formatCurrencyCf(Math.round(y1.netCashflow / 12))}/month`,
+            color: y1.netCashflow >= 0 ? "var(--cf-accent)" : "var(--cf-negative)",
+          },
+          property: {
+            value: formatCurrencyCf(Math.round(y1.propertyCashflow)),
+            label: "property cashflow",
+            monthly: `${formatCurrencyCf(Math.round(y1.propertyCashflow / 12))}/month`,
+            color: y1.propertyCashflow >= 0 ? "var(--cf-accent)" : "var(--cf-negative)",
+          },
+          tax: {
+            value: formatCurrencyCf(Math.round(-y1.incomeTaxCalc)),
+            label: "total tax",
+            monthly: `${Math.round(s.marginalRate * 100)}% marginal rate`,
+            color: "var(--cf-negative)",
+          },
+          equity: {
+            value: formatCurrencyCf(Math.round(y1.netEquity)),
+            label: "net equity",
+            monthly: `${((y1.loanBalance / y1.propertyValue) * 100).toFixed(1)}% LVR`,
+            color: "var(--cf-accent)",
+          },
+          deductions: {
+            value: formatCurrencyCf(Math.round(s.isInvestment ? y1.totalDeductions : y1.ongoingCosts)),
+            label: s.isInvestment ? "total deductions" : "total expenses",
+            monthly: `+${formatCurrencyCf(Math.round(y1.taxSaved))} tax saved`,
+            color: "#a78bfa",
+          },
+        };
+        const hero = heroMap[vm];
+
+        return (
+          <main className="cf-dashboard-view">
+
+            {/* ── Chart + Tabs ── */}
+            <div className="cf-chart-row">
+              <div className="cf-chart-main">
+                {/* Chart header — title left, year right */}
+                {/* View mode tabs — above chart */}
+                <div className="cf-mode-tabs-row">
+                  {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map(m => {
+                    if (m === "tax" && !s.isInvestment) return null;
+                    const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "tax" ? "Tax" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
+                    return (
+                      <button
+                        key={m}
+                        className={`cf-mode-tab ${vm === m ? "active" : ""}`}
+                        onClick={() => { s.setViewMode(m); s.setSelectedYear(1); }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
 
-              {/* Focal Monthly Cashflow */}
-              <div className="cf-focal">
-                <div className="cf-focal-main">
-                  <p className="cf-focal-label">
-                    {cashflowView === 1 ? "Monthly Cashflow (Year 1 Average)" : `Monthly Cashflow (Year 1-${cashflowView} Average)`}
-                  </p>
-                  <p className="cf-focal-value">
-                    {formatCurrency(Math.round(aggregatedData.totalNetCashflow / (cashflowView * 12)))}
-                  </p>
-                  <p className="cf-focal-note">
-                    {isInvestment ? "After tax benefits and rental income" : "Total holding cost per month"}
-                  </p>
+                {/* Chart */}
+                <CashflowChart
+                    chartData={s.chartData}
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    chartView="bars"
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                />
+
+                {/* Year + value label — below chart */}
+                <div className="cf-year-label">
+                  <span className="cf-year-label-year">Year {displayYear}</span>
+                  <span className="cf-year-label-cal">{calendarYear}</span>
+                  <span className="cf-year-label-divider" />
+                  <span className="cf-year-label-value" style={heroColor ? { color: heroColor } : undefined}>{heroValue}</span>
+                  <span className="cf-year-label-metric">{heroLabel}</span>
                 </div>
-                <div className="cf-focal-total">
-                  <p className="cf-focal-label">Total over {cashflowView} {cashflowView === 1 ? "year" : "years"}</p>
-                  <p className="cf-focal-total-value">{formatCurrency(Math.round(aggregatedData.totalNetCashflow))}</p>
-                </div>
-              </div>
-
-              {/* Breakdown Table */}
-              <div className="cf-table-container">
-                <table className="cf-table">
-                  <thead>
-                    <tr>
-                      <th>Category</th>
-                      <th>Monthly</th>
-                      <th>Annual</th>
-                      <th>{cashflowView === 1 ? "Year 1" : `${cashflowView} Year Total`}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Income Section - Investment only */}
-                    {isInvestment && (
-                      <>
-                        <tr className="cf-table-section">
-                          <td colSpan={4}>Income</td>
-                        </tr>
-                        <tr>
-                          <td>Rental Income</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalRentalIncome / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalRentalIncome / cashflowView))}</td>
-                          <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalRentalIncome))}</td>
-                        </tr>
-                        <tr className="cf-muted">
-                          <td>Less: Vacancy</td>
-                          <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalVacancy / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalVacancy / cashflowView))}</td>
-                          <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalVacancy))}</td>
-                        </tr>
-                        {usePropertyManager && (
-                          <tr className="cf-muted">
-                            <td>Less: Management Fee</td>
-                            <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalManagementFee / (cashflowView * 12)))}</td>
-                            <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalManagementFee / cashflowView))}</td>
-                            <td className="cf-tabular">{formatCurrency(-Math.round(aggregatedData.totalManagementFee))}</td>
-                          </tr>
-                        )}
-                        <tr className="cf-table-subtotal">
-                          <td>Net Rental Income</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetRentalIncome / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetRentalIncome / cashflowView))}</td>
-                          <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalNetRentalIncome))}</td>
-                        </tr>
-                      </>
-                    )}
-
-                    {/* Expenses Section */}
-                    <tr className="cf-table-section">
-                      <td colSpan={4}>Expenses</td>
-                    </tr>
-                    <tr>
-                      <td>Loan Repayment</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalLoanRepayment / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalLoanRepayment / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalLoanRepayment))}</td>
-                    </tr>
-                    <tr className="cf-muted cf-indent">
-                      <td>— Interest portion</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterest / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterest / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterest))}</td>
-                    </tr>
-                    <tr className="cf-muted cf-indent">
-                      <td>— Principal portion</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPrincipal / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPrincipal / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPrincipal))}</td>
-                    </tr>
-                    <tr>
-                      <td>Council Rates</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalCouncilRates / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalCouncilRates / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalCouncilRates))}</td>
-                    </tr>
-                    <tr>
-                      <td>Water Rates</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalWaterRates / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalWaterRates / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalWaterRates))}</td>
-                    </tr>
-                    <tr>
-                      <td>Insurance</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInsurance / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInsurance / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInsurance))}</td>
-                    </tr>
-                    <tr>
-                      <td>Maintenance</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalMaintenance / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalMaintenance / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalMaintenance))}</td>
-                    </tr>
-                    {hasStrata && (
-                      <tr>
-                        <td>Strata Fees</td>
-                        <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalStrataFees / (cashflowView * 12)))}</td>
-                        <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalStrataFees / cashflowView))}</td>
-                        <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalStrataFees))}</td>
-                      </tr>
-                    )}
-                    <tr className="cf-table-subtotal">
-                      <td>Total Expenses</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalExpenses / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalExpenses / cashflowView))}</td>
-                      <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalExpenses))}</td>
-                    </tr>
-
-                    {/* Pre-tax cashflow */}
-                    <tr className="cf-table-highlight">
-                      <td>Pre-Tax Cashflow</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPreTaxCashflow / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalPreTaxCashflow / cashflowView))}</td>
-                      <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalPreTaxCashflow))}</td>
-                    </tr>
-
-                    {/* Tax Benefits - Investment only */}
-                    {isInvestment && aggregatedData.totalTaxBenefit > 0 && (
-                      <>
-                        <tr className="cf-table-section">
-                          <td colSpan={4}>Tax Benefits</td>
-                        </tr>
-                        <tr>
-                          <td>Interest Deduction</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterestDeduction / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterestDeduction / cashflowView))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalInterestDeduction))}</td>
-                        </tr>
-                        {parseCurrency(depreciation) > 0 && (
-                          <tr>
-                            <td>Depreciation Deduction</td>
-                            <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalDepreciationDeduction / (cashflowView * 12)))}</td>
-                            <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalDepreciationDeduction / cashflowView))}</td>
-                            <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalDepreciationDeduction))}</td>
-                          </tr>
-                        )}
-                        <tr className="cf-table-subtotal">
-                          <td>Total Tax Benefit</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalTaxBenefit / (cashflowView * 12)))}</td>
-                          <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalTaxBenefit / cashflowView))}</td>
-                          <td className="cf-tabular cf-bold">{formatCurrency(Math.round(aggregatedData.totalTaxBenefit))}</td>
-                        </tr>
-                      </>
-                    )}
-
-                    {/* Final Net Cashflow */}
-                    <tr className="cf-table-total">
-                      <td>Net Cashflow</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetCashflow / (cashflowView * 12)))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetCashflow / cashflowView))}</td>
-                      <td className="cf-tabular">{formatCurrency(Math.round(aggregatedData.totalNetCashflow))}</td>
-                    </tr>
-                  </tbody>
-                </table>
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="cf-stats-row">
-              {isInvestment && (
-                <>
-                  <div className="cf-stat-card">
-                    <p className="cf-stat-label">Gross Yield</p>
-                    <p className="cf-stat-value">{((parseCurrency(weeklyRent) * 52) / propertyValue * 100).toFixed(2)}%</p>
-                  </div>
-                  <div className="cf-stat-card">
-                    <p className="cf-stat-label">Net Yield</p>
-                    <p className="cf-stat-value">{(aggregatedData.totalNetRentalIncome / cashflowView / propertyValue * 100).toFixed(2)}%</p>
-                  </div>
-                </>
-              )}
-              {isNewPurchase && (
-                <div className="cf-stat-card">
-                  <p className="cf-stat-label">Total Upfront</p>
-                  <p className="cf-stat-value">{formatCurrency(parseCurrency(depositAmount) + calculateStampDuty(parseCurrency(purchasePrice), isInvestment) + 5000)}</p>
-                </div>
-              )}
-              <div className="cf-stat-card">
-                <p className="cf-stat-label">Interest Paid ({cashflowView}yr)</p>
-                <p className="cf-stat-value">{formatCurrency(Math.round(aggregatedData.totalInterest))}</p>
-              </div>
+            {/* ── KPI strip — Fey card ── */}
+            <div className="cf-outer-card">
+              <CashflowKpiStrip
+                viewMode={vm}
+                yearData={s.yearData}
+                selectedYearData={displayYearData}
+                selectedYear={displayYear}
+                isInvestment={s.isInvestment}
+                marginalRate={s.marginalRate}
+                hasOffset={s.hasOffset}
+                isHovered={hoveredYear !== null}
+                depColor={depColor}
+              />
             </div>
 
-            {/* CGT Section - Investment only */}
-            {isInvestment && (
-              <div className="cf-card">
-                <p className="cf-card-title">Capital Gains Tax (if sold at end of Year {cashflowView})</p>
-                <div className="cf-cgt-grid">
-                  <div>
-                    <p className="cf-cgt-label">Cost Base</p>
-                    <p className="cf-cgt-value">{formatCurrency(propertyValue + calculateStampDuty(propertyValue, true) + 5000)}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">Capital Gain</p>
-                    <p className="cf-cgt-value">{formatCurrency(Math.round(milestones.find(m => m.year >= cashflowView)?.propertyValue || propertyValue * Math.pow(1.035, cashflowView)) - propertyValue)}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">CGT Discount</p>
-                    <p className="cf-cgt-value">{cashflowView >= 1 ? "50%" : "0%"}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">Discounted Gain</p>
-                    <p className="cf-cgt-value">{formatCurrency(Math.round(((milestones.find(m => m.year >= cashflowView)?.propertyValue || propertyValue * Math.pow(1.035, cashflowView)) - propertyValue) * 0.5))}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">Est. CGT Payable</p>
-                    <p className="cf-cgt-value">{formatCurrency(Math.round(((milestones.find(m => m.year >= cashflowView)?.propertyValue || propertyValue * Math.pow(1.035, cashflowView)) - propertyValue) * 0.5 * getMarginalTaxRate(parseCurrency(taxableIncome))))}</p>
-                  </div>
-                  <div>
-                    <p className="cf-cgt-label">Net Proceeds</p>
-                    <p className="cf-cgt-value cf-bold">{formatCurrency(Math.round((milestones.find(m => m.year >= cashflowView)?.equity || 0) - ((milestones.find(m => m.year >= cashflowView)?.propertyValue || propertyValue * Math.pow(1.035, cashflowView)) - propertyValue) * 0.5 * getMarginalTaxRate(parseCurrency(taxableIncome))))}</p>
-                  </div>
+            {/* ── Table card(s) ── */}
+            {vm === "property" && s.isInvestment ? (
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    propertyPanel="unified"
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
+                </div>
+              </div>
+            ) : vm === "equity" ? (
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    equityPanel="unified"
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
+                </div>
+              </div>
+            ) : vm === "tax" && s.isInvestment ? (
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    taxPanel="unified"
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
+                </div>
+              </div>
+            ) : vm === "summary" ? (
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    summaryPanel="unified"
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
+                </div>
+              </div>
+            ) : vm === "deductions" ? (
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    deductionsPanel="unified"
+                    depColor={depColor}
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="cf-outer-card">
+                <div className="cf-table-zone">
+                  <CashflowDataTable
+                    yearData={s.yearData}
+                    viewMode={vm}
+                    selectedYear={s.selectedYear}
+                    hoveredYear={hoveredYear}
+                    isInvestment={s.isInvestment}
+                    hasOffset={s.hasOffset}
+                    propertyValue={s.propertyValue}
+                    expandedMilestones={tableExpanded}
+                    onExpandedChange={handleManualExpand}
+                    onSelectYear={handleSelectYear}
+                    onHoverYear={setHoveredYear}
+                  />
                 </div>
               </div>
             )}
-          </div>
-        )}
-      </main>
-    </div>
+          </main>
+        );
+      })()}
+
+      <Link
+        href="/"
+        className="group flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
+      >
+        <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
+        Return to Dashboard
+      </Link>
+    </>
   );
 }

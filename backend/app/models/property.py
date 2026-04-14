@@ -128,7 +128,10 @@ class Property:
 
     Attributes:
         purchase_date: Date the property was purchased
-        purchase_price: Property purchase price
+        purchase_price: Property purchase price (preserved for CGT cost base)
+        value_base: Current market value for existing properties — appreciation and
+            maintenance are calculated from this base instead of purchase_price.
+            None means use purchase_price (new purchases).
         is_new_property: Whether the owner is the first occupant/investor (affects grants, Div 40)
         is_ppor: Whether the property is a primary place of residence (affects tax, CGT, ongoing costs)
         annual_appreciation: Annual property value growth rate as decimal
@@ -142,6 +145,7 @@ class Property:
     purchase_price: float
     is_new_property: bool
     is_ppor: bool = False
+    value_base: float | None = None
     annual_appreciation: float = 0.0
     purchase_costs: PurchaseCosts = field(default_factory=PurchaseCosts)
     depreciable_buildings: list[DepreciableBuilding] = field(default_factory=list)
