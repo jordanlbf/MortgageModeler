@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import type { PropertyUse, PurchaseMode, LoanType, ViewMode, YearData } from "@/lib/cashflow-types";
+import type { PropertyUse, PurchaseMode, ViewMode, YearData } from "@/lib/cashflow-types";
 import {
   parseCurrencyCf,
   getMarginalTaxRate,
@@ -45,8 +45,6 @@ export interface CashflowState {
   // Form values – Loan
   interestRate: string;
   loanTerm: string;
-  loanType: LoanType;
-  ioPeriod: string;
   hasOffset: boolean;
   offsetBalance: string;
   extraRepayments: string;
@@ -101,8 +99,6 @@ export interface CashflowState {
   setCurrentLoanBalance: (v: string) => void;
   setInterestRate: (v: string) => void;
   setLoanTerm: (v: string) => void;
-  setLoanType: (v: LoanType) => void;
-  setIoPeriod: (v: string) => void;
   setHasOffset: (v: boolean) => void;
   setOffsetBalance: (v: string) => void;
   setExtraRepayments: (v: string) => void;
@@ -158,8 +154,6 @@ export function useCashflowState(): CashflowState {
   // Form values - Loan
   const [interestRate, setInterestRate] = useState("6.5");
   const [loanTerm, setLoanTerm] = useState("30");
-  const [loanType, setLoanType] = useState<LoanType>("principal-interest");
-  const [ioPeriod, setIoPeriod] = useState("5");
   const [hasOffset, setHasOffset] = useState(false);
   const [offsetBalance, setOffsetBalance] = useState("0");
   const [extraRepayments, setExtraRepayments] = useState("0");
@@ -523,7 +517,7 @@ export function useCashflowState(): CashflowState {
     setupComplete, propertyComplete, loanComplete, costsComplete, rentalComplete, taxComplete, allComplete,
     loanAmount, propertyValue, effectiveViewMode, marginalRate,
     purchasePrice, depositAmount, currentValue, originalPurchasePrice, purchaseYear, currentLoanBalance,
-    interestRate, loanTerm, loanType, ioPeriod, hasOffset, offsetBalance, extraRepayments,
+    interestRate, loanTerm, hasOffset, offsetBalance, extraRepayments,
     councilRates, waterRates, insurance, maintenance, hasStrata, strataFees,
     weeklyRent, vacancyRate, usePropertyManager, managementFee,
     taxableIncome, depreciation, depreciationMode, depBuildings, depAssets, capitalGrowth,
@@ -532,7 +526,7 @@ export function useCashflowState(): CashflowState {
     setPropertyUse, setPurchaseMode,
     setSetupComplete, setPropertyComplete, setLoanComplete, setCostsComplete, setRentalComplete, setTaxComplete,
     setPurchasePrice, setDepositAmount, setCurrentValue, setOriginalPurchasePrice, setPurchaseYear, setCurrentLoanBalance,
-    setInterestRate, setLoanTerm, setLoanType, setIoPeriod, setHasOffset, setOffsetBalance, setExtraRepayments,
+    setInterestRate, setLoanTerm, setHasOffset, setOffsetBalance, setExtraRepayments,
     setCouncilRates, setWaterRates, setInsurance, setMaintenance, setHasStrata, setStrataFees,
     setWeeklyRent, setVacancyRate, setUsePropertyManager, setManagementFee,
     setTaxableIncome, setDepreciation, setDepreciationMode, setDepBuildings, setDepAssets, setCapitalGrowth,

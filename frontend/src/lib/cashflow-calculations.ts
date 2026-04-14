@@ -1,5 +1,3 @@
-import type { LoanType } from "./cashflow-types";
-
 export function parseCurrencyCf(value: string): number {
   return parseFloat(value.replace(/[^0-9.-]/g, "")) || 0;
 }
@@ -23,50 +21,6 @@ export function formatChartLabel(value: number): string {
   if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}m`;
   if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(0)}k`;
   return `${sign}$${Math.round(abs)}`;
-}
-
-export function calculateMonthlyRepayment(principal: number, annualRate: number, termYears: number): number {
-  if (annualRate === 0) return principal / (termYears * 12);
-  const monthlyRate = annualRate / 100 / 12;
-  const numPayments = termYears * 12;
-  return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
-         (Math.pow(1 + monthlyRate, numPayments) - 1);
-}
-
-export function calculateIOPayment(principal: number, annualRate: number): number {
-  return principal * (annualRate / 100 / 12);
-}
-
-export function calculateLoanBalanceAtYear(
-  principal: number,
-  annualRate: number,
-  termYears: number,
-  yearsElapsed: number,
-  loanType: LoanType,
-  ioPeriod: number
-): number {
-  if (loanType === "interest-only" && yearsElapsed < ioPeriod) {
-    return principal;
-  }
-
-  const effectiveYearsElapsed = loanType === "interest-only"
-    ? yearsElapsed - ioPeriod
-    : yearsElapsed;
-  const effectiveTermYears = loanType === "interest-only"
-    ? termYears - ioPeriod
-    : termYears;
-
-  if (effectiveYearsElapsed <= 0) return principal;
-  if (effectiveYearsElapsed >= effectiveTermYears) return 0;
-
-  const monthlyRate = annualRate / 100 / 12;
-  const paymentsMade = effectiveYearsElapsed * 12;
-
-  const monthlyPayment = calculateMonthlyRepayment(principal, annualRate, effectiveTermYears);
-  const balance = principal * Math.pow(1 + monthlyRate, paymentsMade) -
-                  monthlyPayment * ((Math.pow(1 + monthlyRate, paymentsMade) - 1) / monthlyRate);
-
-  return Math.max(0, balance);
 }
 
 export function getMarginalTaxRate(income: number): number {
