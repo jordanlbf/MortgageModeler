@@ -15,7 +15,7 @@ interface Props {
   isModal?: boolean;
 }
 
-type StepId = "setup" | "property" | "loan" | "costs" | "rental" | "tax";
+import type { StepId } from "@/lib/cashflow-types";
 
 const STEP_META: Record<StepId, { title: string; subtitle: string; icon: React.ElementType }> = {
   setup:    { title: "Property Setup",   subtitle: "",  icon: Home       },

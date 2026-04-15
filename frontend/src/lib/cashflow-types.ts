@@ -2,6 +2,7 @@ export type PropertyUse = "investment" | "ppor";
 export type PurchaseMode = "new" | "existing";
 export type LoanType = "principal-interest" | "interest-only";
 export type ViewMode = "summary" | "property" | "tax" | "equity" | "deductions";
+export type StepId = "setup" | "property" | "loan" | "costs" | "rental" | "tax";
 
 export interface YearData {
   year: number;

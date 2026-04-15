@@ -13,7 +13,7 @@ import CashflowDataTable from "./CashflowDataTable";
 import CashflowWizardStep from "./CashflowWizardStep";
 import "./cashflow.css";
 
-type StepId = "setup" | "property" | "loan" | "costs" | "rental" | "tax";
+import type { StepId } from "@/lib/cashflow-types";
 type ActiveTab = "wizard" | "dashboard";
 
 const STEP_ORDER_INVESTMENT: StepId[] = ["setup", "property", "loan", "costs", "rental", "tax"];

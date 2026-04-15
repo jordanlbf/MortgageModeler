@@ -15,14 +15,15 @@ interface Props {
 export default memo(function KpiSparkline({
   data, color, colors, selectedIndex = 0, stepped = false, width = 100, height = 24,
 }: Props) {
-  if (data.length < 2) return null;
+  const safeData = data.map(v => (Number.isFinite(v) ? v : 0));
+  if (safeData.length < 2) return null;
 
-  const min = Math.min(...data);
-  const max = Math.max(...data);
+  const min = Math.min(...safeData);
+  const max = Math.max(...safeData);
   const range = max - min || 1;
   const pad = 3;
 
-  const points = data.map((v, i) => {
+  const points = safeData.map((v, i) => {
     const x = (i / (data.length - 1)) * (width - 6) + 3;
     const y = height - pad - ((v - min) / range) * (height - pad * 2);
     return [x, y] as const;

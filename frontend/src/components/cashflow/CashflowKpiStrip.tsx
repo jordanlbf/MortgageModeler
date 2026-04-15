@@ -4,6 +4,12 @@ import type { ViewMode, YearData } from "@/lib/cashflow-types";
 import { formatCurrencyCf, formatAbbreviated, getMarginalTaxRate } from "@/lib/cashflow-calculations";
 import KpiSparkline from "./KpiSparkline";
 
+/** Safe division — returns 0 when divisor is 0 or result is non-finite. */
+const safeDiv = (a: number, b: number) => {
+  const r = b !== 0 ? a / b : 0;
+  return Number.isFinite(r) ? r : 0;
+};
+
 interface KpiItem {
   label: string;
   value: string;
@@ -146,7 +152,7 @@ export default function CashflowKpiStrip({
       },
     ];
   } else if (viewMode === "equity" && sy) {
-    const lvr = sy.loanBalance / sy.propertyValue * 100;
+    const lvr = safeDiv(sy.loanBalance, sy.propertyValue) * 100;
     const showOffset = hasOffset && yearData.some(y => y.offsetBalanceAtYear > 0);
     items = [
       {
@@ -168,7 +174,7 @@ export default function CashflowKpiStrip({
         value: `${lvr.toFixed(1)}%`,
         color: lvr > 80 ? "var(--cf-negative)" : lvr > 60 ? "#fbbf24" : "var(--cf-positive)",
         sub: "",
-        sparkData: yearData.map(y => y.loanBalance / y.propertyValue * 100),
+        sparkData: yearData.map(y => safeDiv(y.loanBalance, y.propertyValue) * 100),
       },
       ...(showOffset ? [
         {

@@ -5,6 +5,28 @@ import { ChevronDown, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
 import { formatCurrencyCf, getMarginalTaxRate } from "@/lib/cashflow-calculations";
 
+/** Safe division — returns 0 when divisor is 0 or result is non-finite. */
+const safeDiv = (a: number, b: number) => {
+  const r = b !== 0 ? a / b : 0;
+  return Number.isFinite(r) ? r : 0;
+};
+
+/** Safe YoY % change: ((current / previous) - 1) * 100, returns 0 when previous is 0. */
+const yoyPct = (current: number, previous: number) => previous === 0 ? 0 : (safeDiv(current, previous) - 1) * 100;
+
+/** Safe growth % from base: ((current / base) - 1) * 100, returns 0 when base is 0. */
+const growthPct = (current: number, base: number) => base === 0 ? 0 : (safeDiv(current, base) - 1) * 100;
+
+/** Pick YoY badge class: neutral for zero, otherwise positive/negative. */
+const yoyClass = (value: number, positiveWhen: "positive" | "negative" = "positive") =>
+  value === 0 ? "cft-yoy-neutral"
+    : positiveWhen === "positive"
+      ? (value > 0 ? "cft-yoy-positive" : "cft-yoy-negative")
+      : (value < 0 ? "cft-yoy-positive" : "cft-yoy-negative");
+
+/** Format a YoY badge string. */
+const fmtYoY = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
+
 interface Props {
   yearData: YearData[];
   viewMode: ViewMode;
@@ -199,8 +221,8 @@ export default function CashflowDataTable({
               const isMilestone = isMilestoneYear(y.year);
               const prevSalary = i > 0 ? yearData[i - 1].salary : y.salary;
               const prevRent = i > 0 ? yearData[i - 1].rentalIncome : y.rentalIncome;
-              const salaryGain = prevSalary > 0 ? ((y.salary / prevSalary - 1) * 100).toFixed(1) : "0.0";
-              const rentGain = prevRent > 0 ? ((y.rentalIncome / prevRent - 1) * 100).toFixed(1) : "0.0";
+              const salaryGain = yoyPct(y.salary, prevSalary).toFixed(1);
+              const rentGain = yoyPct(y.rentalIncome, prevRent).toFixed(1);
               const totalIncome = y.salary + (isInvestment ? y.rentalIncome : 0);
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
@@ -353,8 +375,8 @@ export default function CashflowDataTable({
               const isMilestone = isMilestoneYear(y.year);
               const prevSalary = i > 0 ? yearData[i - 1].salary : y.salary;
               const prevRent = i > 0 ? yearData[i - 1].rentalIncome : y.rentalIncome;
-              const salaryGain = prevSalary > 0 ? ((y.salary / prevSalary - 1) * 100).toFixed(1) : "0.0";
-              const rentGain = prevRent > 0 ? ((y.rentalIncome / prevRent - 1) * 100).toFixed(1) : "0.0";
+              const salaryGain = yoyPct(y.salary, prevSalary).toFixed(1);
+              const rentGain = yoyPct(y.rentalIncome, prevRent).toFixed(1);
               const totalIncome = y.salary + (isInvestment ? y.rentalIncome : 0);
               const totalCosts = y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc;
               const annualCashflow = totalIncome - totalCosts;
@@ -362,8 +384,8 @@ export default function CashflowDataTable({
               // Calculate YoY changes for collapsed view
               const prevIncome = i > 0 ? yearData[i - 1].salary + (isInvestment ? yearData[i - 1].rentalIncome : 0) : totalIncome;
               const prevCosts = i > 0 ? yearData[i - 1].ongoingCosts + yearData[i - 1].loanRepayment + yearData[i - 1].incomeTaxCalc : totalCosts;
-              const incomeYoY = prevIncome > 0 ? ((totalIncome / prevIncome - 1) * 100) : 0;
-              const costsYoY = prevCosts > 0 ? ((totalCosts / prevCosts - 1) * 100) : 0;
+              const incomeYoY = yoyPct(totalIncome, prevIncome);
+              const costsYoY = yoyPct(totalCosts, prevCosts);
 
               const isCollapsed = !isGroupExpanded("income") && !isGroupExpanded("outgoings");
 
@@ -379,9 +401,7 @@ export default function CashflowDataTable({
                   <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"}`}>
                     <span className="cft-summary-value" style={{ color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(totalIncome))}</span>
                     {isCollapsed && (
-                      <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-positive"}`}>
-                        {i === 0 ? `${incomeYoY >= 0 ? "+" : ""}${incomeYoY.toFixed(1)}%` : `${incomeYoY >= 0 ? "+" : ""}${incomeYoY.toFixed(1)}%`}
-                      </span>
+                      <span className={`cft-yoy-badge ${yoyClass(incomeYoY)}`}>{fmtYoY(incomeYoY)}</span>
                     )}
                   </td>
                   <td className="cft-td-divider" />
@@ -393,9 +413,7 @@ export default function CashflowDataTable({
                   <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"}`}>
                     <span className="cft-summary-value" style={{ color: "var(--cf-negative)" }}>{formatCurrencyCf(Math.round(-totalCosts))}</span>
                     {isCollapsed && (
-                      <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>
-                        {i === 0 ? `${costsYoY >= 0 ? "+" : ""}${costsYoY.toFixed(1)}%` : `${costsYoY >= 0 ? "+" : ""}${costsYoY.toFixed(1)}%`}
-                      </span>
+                      <span className={`cft-yoy-badge ${yoyClass(costsYoY, "negative")}`}>{fmtYoY(costsYoY)}</span>
                     )}
                   </td>
                   <td className="cft-td-divider" />
@@ -404,11 +422,9 @@ export default function CashflowDataTable({
                     <span className="cft-summary-value">{annualCashflow >= 0 ? "+" : ""}{formatCurrencyCf(Math.round(annualCashflow))}</span>
                     {isCollapsed && (() => {
                       const prevCashflow = i > 0 ? (prevIncome - prevCosts) : annualCashflow;
-                      const cashflowYoY = prevCashflow !== 0 ? ((annualCashflow / prevCashflow - 1) * 100) : 0;
+                      const cashflowYoY = yoyPct(annualCashflow, prevCashflow);
                       return (
-                        <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : annualCashflow >= 0 ? "cft-yoy-positive" : "cft-yoy-negative"}`}>
-                          {i === 0 ? `${cashflowYoY >= 0 ? "+" : ""}${cashflowYoY.toFixed(1)}%` : `${cashflowYoY >= 0 ? "+" : ""}${cashflowYoY.toFixed(1)}%`}
-                        </span>
+                        <span className={`cft-yoy-badge ${yoyClass(cashflowYoY)}`}>{fmtYoY(cashflowYoY)}</span>
                       );
                     })()}
                   </td>
@@ -587,8 +603,8 @@ export default function CashflowDataTable({
                     <span className="cft-summary-value">{formatCurrencyCf(Math.round(totalDeductions))}</span>
                     {isCollapsed && (() => {
                       const prevDed = i > 0 ? (() => { const py = yearData[i-1]; return py.ongoingCosts + py.interestPortion + py.depDiv43 + py.depDiv40; })() : totalDeductions;
-                      const dedYoY = prevDed > 0 ? ((totalDeductions / prevDed - 1) * 100) : 0;
-                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${dedYoY >= 0 ? "+" : ""}${dedYoY.toFixed(1)}%` : `${dedYoY >= 0 ? "+" : ""}${dedYoY.toFixed(1)}%`}</span>;
+                      const dedYoY = yoyPct(totalDeductions, prevDed);
+                      return <span className={`cft-yoy-badge ${yoyClass(dedYoY, "negative")}`}>{fmtYoY(dedYoY)}</span>;
                     })()}
                   </td>
                   <td className="cft-td-divider" />
@@ -604,8 +620,8 @@ export default function CashflowDataTable({
                     <span className="cft-summary-value">{formatCurrencyCf(Math.round(-y.incomeTaxCalc))}</span>
                     {isCollapsed && (() => {
                       const prevTax = i > 0 ? yearData[i-1].incomeTaxCalc : y.incomeTaxCalc;
-                      const taxYoY = prevTax > 0 ? ((y.incomeTaxCalc / prevTax - 1) * 100) : 0;
-                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${taxYoY >= 0 ? "+" : ""}${taxYoY.toFixed(1)}%` : `${taxYoY >= 0 ? "+" : ""}${taxYoY.toFixed(1)}%`}</span>;
+                      const taxYoY = yoyPct(y.incomeTaxCalc, prevTax);
+                      return <span className={`cft-yoy-badge ${yoyClass(taxYoY, "negative")}`}>{fmtYoY(taxYoY)}</span>;
                     })()}
                   </td>
                 </tr>
@@ -770,8 +786,8 @@ export default function CashflowDataTable({
                     <span className="cft-summary-value">{netGearing >= 0 ? "+" : ""}{formatCurrencyCf(Math.round(netGearing))}</span>
                     {isCollapsed && (() => {
                       const prevGearing = i > 0 ? (() => { const py = yearData[i-1]; return py.rentalIncome - (py.interestPortion + py.ongoingCosts) - (py.depDiv43 + py.depDiv40); })() : netGearing;
-                      const gearYoY = prevGearing !== 0 ? ((netGearing / prevGearing - 1) * 100) : 0;
-                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : netGearing >= 0 ? "cft-yoy-positive" : "cft-yoy-negative"}`}>{i === 0 ? `${gearYoY >= 0 ? "+" : ""}${gearYoY.toFixed(1)}%` : `${gearYoY >= 0 ? "+" : ""}${gearYoY.toFixed(1)}%`}</span>;
+                      const gearYoY = yoyPct(netGearing, prevGearing);
+                      return <span className={`cft-yoy-badge ${yoyClass(gearYoY)}`}>{fmtYoY(gearYoY)}</span>;
                     })()}
                   </td>
                   <td className="cft-td-divider" />
@@ -783,8 +799,8 @@ export default function CashflowDataTable({
                     <span className="cft-summary-value">{y.propertyCashflow >= 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.propertyCashflow))}</span>
                     {isCollapsed && (() => {
                       const prevCf = i > 0 ? yearData[i-1].propertyCashflow : y.propertyCashflow;
-                      const cfYoY = prevCf !== 0 ? ((y.propertyCashflow / prevCf - 1) * 100) : 0;
-                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : y.propertyCashflow >= 0 ? "cft-yoy-positive" : "cft-yoy-negative"}`}>{i === 0 ? `${cfYoY >= 0 ? "+" : ""}${cfYoY.toFixed(1)}%` : `${cfYoY >= 0 ? "+" : ""}${cfYoY.toFixed(1)}%`}</span>;
+                      const cfYoY = yoyPct(y.propertyCashflow, prevCf);
+                      return <span className={`cft-yoy-badge ${yoyClass(cfYoY)}`}>{fmtYoY(cfYoY)}</span>;
                     })()}
                   </td>
                 </tr>
@@ -874,19 +890,19 @@ export default function CashflowDataTable({
               const isMilestone = isMilestoneYear(y.year);
               const prevValue = i > 0 ? yearData[i - 1].propertyValue : propertyValue;
               const totalGrowth = y.propertyValue - propertyValue;
-              const totalGrowthPct = ((y.propertyValue / propertyValue - 1) * 100).toFixed(1);
+              const totalGrowthPct = growthPct(y.propertyValue, propertyValue).toFixed(1);
               const yoyGrowth = y.propertyValue - prevValue;
               const yoyGrowthPct = i > 0
-                ? ((y.propertyValue / prevValue - 1) * 100).toFixed(1)
+                ? growthPct(y.propertyValue, prevValue).toFixed(1)
                 : totalGrowthPct;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
                   {isGroupExpanded("property") && <td className="cft-td cft-val-dim cft-detail-cell">+{formatCurrencyCf(Math.round(totalGrowth))}</td>}
-                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(totalGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{totalGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--cf-text-dim)" : parseFloat(totalGrowthPct) > 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{totalGrowthPct}%</td>}
                   {isGroupExpanded("property") && <td className="cft-td-divider cft-detail-cell" />}
                   {isGroupExpanded("property") && <td className="cft-td cft-val-dim cft-detail-cell">+{formatCurrencyCf(Math.round(yoyGrowth))}</td>}
-                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(yoyGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{yoyGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--cf-text-dim)" : parseFloat(yoyGrowthPct) > 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{yoyGrowthPct}%</td>}
                   {isGroupExpanded("property") && <td className="cft-td-divider cft-detail-cell" />}
                   <td className="cft-td cft-td-result" style={{ fontWeight: 700, color: "var(--cf-text)" }}>{formatCurrencyCf(Math.round(y.propertyValue))}</td>
                 </tr>
@@ -926,7 +942,7 @@ export default function CashflowDataTable({
             {yearData.map((y, i) => {
               if (!isRowVisible(y.year)) return null;
               const isMilestone = isMilestoneYear(y.year);
-              const lvr = y.loanBalance / y.propertyValue * 100;
+              const lvr = safeDiv(y.loanBalance, y.propertyValue) * 100;
               const propertyEquity = y.propertyValue - y.loanBalance;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
@@ -1002,10 +1018,10 @@ export default function CashflowDataTable({
               const isMilestone = isMilestoneYear(y.year);
               const prevValue = i > 0 ? yearData[i - 1].propertyValue : propertyValue;
               const totalGrowth = y.propertyValue - propertyValue;
-              const totalGrowthPct = ((y.propertyValue / propertyValue - 1) * 100).toFixed(1);
+              const totalGrowthPct = growthPct(y.propertyValue, propertyValue).toFixed(1);
               const yoyGrowth = y.propertyValue - prevValue;
-              const yoyGrowthPct = i > 0 ? ((y.propertyValue / prevValue - 1) * 100).toFixed(1) : totalGrowthPct;
-              const lvr = y.loanBalance / y.propertyValue * 100;
+              const yoyGrowthPct = i > 0 ? growthPct(y.propertyValue, prevValue).toFixed(1) : totalGrowthPct;
+              const lvr = safeDiv(y.loanBalance, y.propertyValue) * 100;
               const propertyEquity = y.propertyValue - y.loanBalance;
               const isCollapsed = !isGroupExpanded("property") && !isGroupExpanded("position");
               return (
@@ -1013,15 +1029,15 @@ export default function CashflowDataTable({
                   <td className="cft-td cft-td-year">{formatYearCell(y.year, i, isMilestone)}</td><td className="cft-td-divider" />
                   {/* Property detail cells */}
                   {isGroupExpanded("property") && <td className="cft-td cft-val-dim cft-detail-cell">+{formatCurrencyCf(Math.round(totalGrowth))}</td>}
-                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(totalGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{totalGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--cf-text-dim)" : parseFloat(totalGrowthPct) > 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{totalGrowthPct}%</td>}
                   {isGroupExpanded("property") && <td className="cft-td-divider cft-detail-cell" />}
                   {isGroupExpanded("property") && <td className="cft-td cft-val-dim cft-detail-cell">+{formatCurrencyCf(Math.round(yoyGrowth))}</td>}
-                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(yoyGrowthPct) >= 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{yoyGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <td className="cft-td cft-detail-cell" style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--cf-text-dim)" : parseFloat(yoyGrowthPct) > 0 ? "var(--cf-positive)" : "var(--cf-negative)" }}>{yoyGrowthPct}%</td>}
                   {isGroupExpanded("property") && <td className="cft-td-divider cft-detail-cell" />}
                   <td className={`cft-td ${isCollapsed ? "cft-td-summary-lg" : "cft-td-agg"}`} style={{ fontWeight: 600, color: "var(--cf-text)" }}>
                     <span className="cft-summary-value">{formatCurrencyCf(Math.round(y.propertyValue))}</span>
                     {isCollapsed && (
-                      <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-positive"}`}>{i === 0 ? `+${yoyGrowthPct}%` : `+${yoyGrowthPct}%`}</span>
+                      <span className={`cft-yoy-badge ${yoyClass(parseFloat(yoyGrowthPct))}`}>{fmtYoY(parseFloat(yoyGrowthPct))}</span>
                     )}
                   </td>
                   <td className="cft-td-divider" />
@@ -1035,8 +1051,8 @@ export default function CashflowDataTable({
                     <span className="cft-summary-value">{formatCurrencyCf(Math.round(y.netEquity))}</span>
                     {isCollapsed && (() => {
                       const prevEquity = i > 0 ? yearData[i-1].netEquity : y.netEquity;
-                      const eqYoY = prevEquity > 0 ? ((y.netEquity / prevEquity - 1) * 100) : 0;
-                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-positive"}`}>{i === 0 ? `${eqYoY >= 0 ? "+" : ""}${eqYoY.toFixed(1)}%` : `${eqYoY >= 0 ? "+" : ""}${eqYoY.toFixed(1)}%`}</span>;
+                      const eqYoY = yoyPct(y.netEquity, prevEquity);
+                      return <span className={`cft-yoy-badge ${yoyClass(eqYoY)}`}>{fmtYoY(eqYoY)}</span>;
                     })()}
                   </td>
                 </tr>
@@ -1250,8 +1266,8 @@ export default function CashflowDataTable({
                     <span className="cft-summary-value">{formatCurrencyCf(Math.round(holdingTotal))}</span>
                     {isCollapsed && (() => {
                       const prevHolding = i > 0 ? (isInvestment ? yearData[i-1].interestPortion + yearData[i-1].ongoingCosts : yearData[i-1].ongoingCosts) : holdingTotal;
-                      const holdYoY = prevHolding > 0 ? ((holdingTotal / prevHolding - 1) * 100) : 0;
-                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${holdYoY >= 0 ? "+" : ""}${holdYoY.toFixed(1)}%` : `${holdYoY >= 0 ? "+" : ""}${holdYoY.toFixed(1)}%`}</span>;
+                      const holdYoY = yoyPct(holdingTotal, prevHolding);
+                      return <span className={`cft-yoy-badge ${yoyClass(holdYoY, "negative")}`}>{fmtYoY(holdYoY)}</span>;
                     })()}
                   </td>
                   <td className="cft-td-divider" />
@@ -1262,8 +1278,8 @@ export default function CashflowDataTable({
                     <span className="cft-summary-value">{formatCurrencyCf(Math.round(depTotal))}</span>
                     {isCollapsed && (() => {
                       const prevDep = i > 0 ? yearData[i-1].depDiv43 + yearData[i-1].depDiv40 : depTotal;
-                      const depYoY = prevDep > 0 ? ((depTotal / prevDep - 1) * 100) : 0;
-                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${depYoY >= 0 ? "+" : ""}${depYoY.toFixed(1)}%` : `${depYoY >= 0 ? "+" : ""}${depYoY.toFixed(1)}%`}</span>;
+                      const depYoY = yoyPct(depTotal, prevDep);
+                      return <span className={`cft-yoy-badge ${yoyClass(depYoY, "negative")}`}>{fmtYoY(depYoY)}</span>;
                     })()}
                   </td>}
                   {isInvestment && <td className="cft-td-divider" />}
@@ -1272,8 +1288,8 @@ export default function CashflowDataTable({
                     <span className="cft-summary-value">{formatCurrencyCf(Math.round(grandTotal))}</span>
                     {isCollapsed && (() => {
                       const prevGrand = i > 0 ? (() => { const py = yearData[i-1]; const ph = isInvestment ? py.interestPortion + py.ongoingCosts : py.ongoingCosts; const pd = py.depDiv43 + py.depDiv40; return isInvestment ? ph + pd : ph; })() : grandTotal;
-                      const grandYoY = prevGrand > 0 ? ((grandTotal / prevGrand - 1) * 100) : 0;
-                      return <span className={`cft-yoy-badge ${i === 0 ? "cft-yoy-neutral" : "cft-yoy-negative"}`}>{i === 0 ? `${grandYoY >= 0 ? "+" : ""}${grandYoY.toFixed(1)}%` : `${grandYoY >= 0 ? "+" : ""}${grandYoY.toFixed(1)}%`}</span>;
+                      const grandYoY = yoyPct(grandTotal, prevGrand);
+                      return <span className={`cft-yoy-badge ${yoyClass(grandYoY, "negative")}`}>{fmtYoY(grandYoY)}</span>;
                     })()}
                   </td>
                 </tr>

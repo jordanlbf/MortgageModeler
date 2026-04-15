@@ -4,45 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import Header from "@/components/layout/Header";
+import { fetchPurchaseCosts } from "@/lib/api";
+import type { PurchaseCostsResponse } from "@/lib/api";
 import "./purchase-costs.css";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
 
-// ── Types ───────────────────────────────────────
-
-interface GrantApplied {
-  scheme_id: string;
-  scheme_name: string;
-  category: string;
-  effect_type: string;
-  amount: number;
-  description: string;
-}
-
-interface CostsData {
-  stamp_duty_base: number;
-  stamp_duty_concession: number;
-  stamp_duty_payable: number;
-  lmi_base: number;
-  lmi_waived: boolean;
-  lmi_payable: number;
-  legal_fees: number;
-  registration_fee: number;
-  mortgage_registration_fee: number;
-  building_pest_inspection: number;
-  loan_establishment_fee: number;
-  total_fees: number;
-  grants_applied: GrantApplied[];
-  total_grant_savings: number;
-  equity_contribution: number;
-  effective_loan_amount: number;
-  deposit_amount: number;
-  min_deposit_percent: number;
-  total_upfront_cost: number;
-  lvr: number;
-}
+type CostsData = PurchaseCostsResponse;
 
 // ── Helpers ─────────────────────────────────────
 
@@ -159,34 +127,28 @@ export default function PurchaseCostsView() {
       return;
     }
 
+    const controller = new AbortController();
     const timer = setTimeout(() => {
-      const controller = new AbortController();
-
-      fetch(`${API_BASE}/api/purchase-costs/calculate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          state,
-          price,
-          deposit_percent: Math.min(depositPct, 1),
-          property_type: propertyType,
-          buyer_type: couple ? "couple" : "individual",
-          owner_occupier: ownerOcc,
-          first_home_buyer: firstHome,
-          selected_grants: [],
-        }),
-        signal: controller.signal,
-      })
-        .then((r) => r.json())
+      fetchPurchaseCosts({
+        state,
+        price,
+        deposit_percent: Math.min(depositPct, 1),
+        property_type: propertyType,
+        buyer_type: couple ? "couple" : "individual",
+        owner_occupier: ownerOcc,
+        first_home_buyer: firstHome,
+        selected_grants: [],
+      }, controller.signal)
         .then(setData)
         .catch((err) => {
-          if (err.name !== "AbortError") console.error("Purchase costs error:", err);
+          if (err instanceof Error && err.name !== "AbortError") console.error("Purchase costs error:", err);
         });
-
-      return () => controller.abort();
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [state, price, depositPct, propertyType, firstHome, ownerOcc, couple]);
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {

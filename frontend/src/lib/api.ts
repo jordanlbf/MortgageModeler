@@ -488,6 +488,66 @@ export async function fetchCashflowSingle(
   return res.json();
 }
 
+// ── Purchase costs ─────────────────────────
+
+export interface PurchaseCostsRequest {
+  state: string;
+  price: number;
+  deposit_percent: number;
+  property_type: string;
+  buyer_type: string;
+  owner_occupier: boolean;
+  first_home_buyer: boolean;
+  selected_grants: string[];
+}
+
+export interface PurchaseCostsGrantApplied {
+  scheme_id: string;
+  scheme_name: string;
+  category: string;
+  effect_type: string;
+  amount: number;
+  description: string;
+}
+
+export interface PurchaseCostsResponse {
+  stamp_duty_base: number;
+  stamp_duty_concession: number;
+  stamp_duty_payable: number;
+  lmi_base: number;
+  lmi_waived: boolean;
+  lmi_payable: number;
+  legal_fees: number;
+  registration_fee: number;
+  mortgage_registration_fee: number;
+  building_pest_inspection: number;
+  loan_establishment_fee: number;
+  total_fees: number;
+  grants_applied: PurchaseCostsGrantApplied[];
+  total_grant_savings: number;
+  equity_contribution: number;
+  effective_loan_amount: number;
+  deposit_amount: number;
+  min_deposit_percent: number;
+  total_upfront_cost: number;
+  lvr: number;
+}
+
+export async function fetchPurchaseCosts(
+  params: PurchaseCostsRequest,
+  signal?: AbortSignal,
+): Promise<PurchaseCostsResponse> {
+  const res = await fetch(`${API_BASE}/api/purchase-costs/calculate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+    signal,
+  });
+
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
 // ── Amortisation schedule ───────────────────
 
 export async function fetchSchedule(params: ScheduleRequest, signal?: AbortSignal): Promise<ScheduleResponse> {

@@ -15,7 +15,7 @@ import {
   ChevronRight
 } from "lucide-react";
 
-type StepId = "setup" | "property" | "loan" | "costs" | "rental" | "tax";
+import type { StepId } from "@/lib/cashflow-types";
 
 const WIZARD_STEPS: { id: StepId; label: string; icon: typeof Home }[] = [
   { id: "setup", label: "Property Setup", icon: Home },
