@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { formatCurrencyShort } from "@/lib/formatters";
 import { t, mix } from "@/lib/theme";
 import GlassCard from "@/components/ui/GlassCard";
+import { useHighlight } from "@/hooks/useHighlight";
 
 // ── Shared constants ─────────────────────────────
 
@@ -265,16 +265,7 @@ export default function TaxComposition({
   taxableIncome = 0, totalTax, netIncome, effectiveRate, marginalRate,
   incomeTax = 0, medicareLevy = 0, medicareLevySurcharge = 0, hecsRepayment = 0,
 }: TaxCompositionProps) {
-  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
-  const [pinnedKey, setPinnedKey] = useState<string | null>(null);
-  const activeKey = pinnedKey ?? hoveredKey;
-
-  const handleHover = (key: string | null) => {
-    if (pinnedKey == null) setHoveredKey(key);
-  };
-  const handleClick = (key: string) => {
-    setPinnedKey((prev) => (prev === key ? null : key));
-  };
+  const { activeKey, onHover: handleHover, onClick: handleClick, isDimmed } = useHighlight();
 
   // When income tax is negative (franking refund), fold the refund into net income for the donut
   const refund = incomeTax < 0 ? Math.abs(incomeTax) : 0;
@@ -355,15 +346,14 @@ export default function TaxComposition({
           {/* Legend — right */}
           <div className="flex flex-1 flex-col gap-2">
             {allSegments.filter((s) => s.value > 0).map((s) => {
-              const isHovered = activeKey === s.key;
-              const isDimmed = activeKey != null && !isHovered;
+              const highlighted = activeKey === s.key;
               return (
                 <div
                   key={s.key}
                   className="flex items-center gap-2 rounded-md px-2 py-1 transition-all duration-200"
                   style={{
-                    opacity: isDimmed ? 0.3 : 1,
-                    background: isHovered ? mix(s.color, 8) : "transparent",
+                    opacity: isDimmed(s.key) ? 0.3 : 1,
+                    background: highlighted ? mix(s.color, 8) : "transparent",
                     cursor: "pointer",
                   }}
                   onMouseEnter={() => handleHover(s.key)}
