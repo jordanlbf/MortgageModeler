@@ -79,7 +79,9 @@ def run_agent(
     result = call_claude(prompt_file, file_context, model=model)
 
     print("-" * 60)
-    print(result)
+    sys.stdout.buffer.write(result.encode("utf-8", errors="replace"))
+    sys.stdout.buffer.write(b"\n")
+    sys.stdout.buffer.flush()
     print("-" * 60)
 
     if save:

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -40,9 +41,17 @@ export default function CashflowChart({
   isInvestment, chartView = "bars", onSelectYear, onHoverYear,
 }: Props) {
 
+  /* Recharts types `activeTooltipIndex` as string|number and bar data as
+     BarRectangleItem which lacks custom keys — cast helpers keep the JSX clean. */
+  const idxFromState = (s: Record<string, unknown>) => {
+    const idx = Number(s?.activeTooltipIndex);
+    return Number.isFinite(idx) && idx >= 0 && idx < (yearData?.length ?? 0) ? idx : null;
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const yearFromBar = (d: any): number | undefined => d?.year;
 
   // Build recharts-compatible data
-  const rechartsData = yearData.map((y, i) => ({
+  const rechartsData = useMemo(() => yearData.map((y, i) => ({
     name: `Yr ${y.year}`,
     year: y.year,
     value: chartData[i]?.value ?? 0,
@@ -68,7 +77,7 @@ export default function CashflowChart({
     strataFees: y.strataFees,
     holdingCosts: y.interestPortion + y.ongoingCosts,
     depTotal: y.depDiv43 + y.depDiv40,
-  }));
+  })), [yearData, chartData]);
 
   // Colours per mode
   const isCashflow = viewMode === "summary" || viewMode === "property";
@@ -95,10 +104,8 @@ export default function CashflowChart({
               data={rechartsData}
               margin={{ top: 16, right: 24, left: 0, bottom: 0 }}
               onMouseMove={(state: Record<string, unknown>) => {
-                const idx = state?.activeTooltipIndex as number | undefined;
-                if (idx != null && idx >= 0 && idx < rechartsData.length) {
-                  onHoverYear(rechartsData[idx].year);
-                }
+                const idx = idxFromState(state);
+                if (idx != null) onHoverYear(rechartsData[idx].year);
               }}
               onMouseLeave={() => onHoverYear(null)}
             >
@@ -140,9 +147,8 @@ export default function CashflowChart({
                 radius={[3, 3, 0, 0]}
                 className="cursor-pointer"
                 onClick={(data) => {
-                  if (data?.year) {
-                    onSelectYear(data.year);
-                  }
+                  const year = yearFromBar(data);
+                  if (year) onSelectYear(year);
                 }}
               >
                 {rechartsData.map((entry) => {
@@ -170,9 +176,9 @@ export default function CashflowChart({
             <ComposedChart
               data={rechartsData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-              onMouseMove={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onHoverYear(rechartsData[idx].year); }}
+              onMouseMove={(state) => { const idx = idxFromState(state as Record<string, unknown>); if (idx != null) onHoverYear(rechartsData[idx].year); }}
               onMouseLeave={() => onHoverYear(null)}
-              onClick={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onSelectYear(rechartsData[idx].year); }}
+              onClick={(state) => { const idx = idxFromState(state as Record<string, unknown>); if (idx != null) onSelectYear(rechartsData[idx].year); }}
             >
               <defs>
                 <linearGradient id="loanGradient" x1="0" y1="0" x2="0" y2="1">
@@ -196,15 +202,15 @@ export default function CashflowChart({
             <ComposedChart
               data={rechartsData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-              onMouseMove={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onHoverYear(rechartsData[idx].year); }}
+              onMouseMove={(state) => { const idx = idxFromState(state as Record<string, unknown>); if (idx != null) onHoverYear(rechartsData[idx].year); }}
               onMouseLeave={() => onHoverYear(null)}
-              onClick={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onSelectYear(rechartsData[idx].year); }}
+              onClick={(state) => { const idx = idxFromState(state as Record<string, unknown>); if (idx != null) onSelectYear(rechartsData[idx].year); }}
             >
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} interval={4} />
               <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} width={60} />
               <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Bar dataKey="holdingCosts" radius={[4, 4, 0, 0]}
-                onMouseEnter={(data) => { if (data?.year) onHoverYear(data.year); }}
+                onMouseEnter={(data) => { const yr = yearFromBar(data); if (yr) onHoverYear(yr); }}
                 onMouseLeave={() => onHoverYear(null)}
               >
                 {rechartsData.map((entry) => (
@@ -212,7 +218,7 @@ export default function CashflowChart({
                 ))}
               </Bar>
               <Bar dataKey="depTotal" radius={[4, 4, 0, 0]}
-                onMouseEnter={(data) => { if (data?.year) onHoverYear(data.year); }}
+                onMouseEnter={(data) => { const yr = yearFromBar(data); if (yr) onHoverYear(yr); }}
                 onMouseLeave={() => onHoverYear(null)}
               >
                 {rechartsData.map((entry) => (
@@ -225,15 +231,15 @@ export default function CashflowChart({
             <ComposedChart
               data={rechartsData}
               margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-              onMouseMove={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onHoverYear(rechartsData[idx].year); }}
+              onMouseMove={(state) => { const idx = idxFromState(state as Record<string, unknown>); if (idx != null) onHoverYear(rechartsData[idx].year); }}
               onMouseLeave={() => onHoverYear(null)}
-              onClick={(state) => { const idx = state?.activeTooltipIndex; if (idx != null && idx >= 0 && idx < rechartsData.length) onSelectYear(rechartsData[idx].year); }}
+              onClick={(state) => { const idx = idxFromState(state as Record<string, unknown>); if (idx != null) onSelectYear(rechartsData[idx].year); }}
             >
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} interval={4} />
               <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 13 }} width={60} />
               <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Bar dataKey="netEquity" radius={[4, 4, 0, 0]} opacity={0.8}
-                onMouseEnter={(data) => { if (data?.year) onHoverYear(data.year); }}
+                onMouseEnter={(data) => { const yr = yearFromBar(data); if (yr) onHoverYear(yr); }}
                 onMouseLeave={() => onHoverYear(null)}
               >
                 {rechartsData.map((entry) => (
@@ -241,7 +247,7 @@ export default function CashflowChart({
                 ))}
               </Bar>
               <Bar dataKey="loanBalance" radius={[4, 4, 0, 0]} opacity={0.5}
-                onMouseEnter={(data) => { if (data?.year) onHoverYear(data.year); }}
+                onMouseEnter={(data) => { const yr = yearFromBar(data); if (yr) onHoverYear(yr); }}
                 onMouseLeave={() => onHoverYear(null)}
               >
                 {rechartsData.map((entry) => (

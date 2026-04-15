@@ -61,12 +61,10 @@ export default function CashflowDataTable({
 
   // Toggle expansion (manual)
   const toggleMilestone = (milestone: number) => {
-    setExpandedMilestones(prev => {
-      const next = new Set(prev);
-      if (next.has(milestone)) next.delete(milestone);
-      else next.add(milestone);
-      return next;
-    });
+    const next = new Set(expandedMilestones);
+    if (next.has(milestone)) next.delete(milestone);
+    else next.add(milestone);
+    setExpandedMilestones(next);
   };
 
   // Determine if a row should be visible - default to collapsed

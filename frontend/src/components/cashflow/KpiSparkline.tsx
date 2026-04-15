@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+
 interface Props {
   data: number[];
   color: string;
@@ -10,7 +12,7 @@ interface Props {
   height?: number;
 }
 
-export default function KpiSparkline({
+export default memo(function KpiSparkline({
   data, color, colors, selectedIndex = 0, stepped = false, width = 100, height = 24,
 }: Props) {
   if (data.length < 2) return null;
@@ -116,4 +118,4 @@ export default function KpiSparkline({
       </svg>
     </div>
   );
-}
+})

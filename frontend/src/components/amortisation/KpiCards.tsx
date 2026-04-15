@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Frequency } from "@/lib/types";
 import type { ScheduleResponse } from "@/lib/api";
 import { PERIODS_PER_YEAR, FREQ_OPTIONS, FREQ_LABELS, parseCurrency } from "@/lib/constants";
@@ -22,7 +23,7 @@ interface KpiCardsProps {
 const CARD_STYLE = "relative flex flex-col items-center py-2.5 text-center border-accent/20";
 const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated };
 
-export default function KpiCards({
+export default memo(function KpiCards({
   data,
   frequency,
   rate,
@@ -108,4 +109,4 @@ export default function KpiCards({
       </GlassCard>
     </div>
   );
-}
+})

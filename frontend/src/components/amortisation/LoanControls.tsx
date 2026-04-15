@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Frequency } from "@/lib/types";
 import { parseCurrency, parsePercent, parseYears, FREQ_LABELS } from "@/lib/constants";
 import { formatCurrencyShort } from "@/lib/formatters";
@@ -31,7 +32,7 @@ const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.accentBorder };
 const OFFSET_BORDER = { borderTopWidth: 3, borderTopColor: mix(SERIES.offset.color, 35) };
 const EQUITY_BORDER = { borderTopWidth: 3, borderTopColor: mix(SERIES.eq.color, 35) };
 
-export default function LoanControls({
+export default memo(function LoanControls({
   purchasePrice,
   deposit,
   rate,
@@ -170,4 +171,4 @@ export default function LoanControls({
       )}
     </div>
   );
-}
+})

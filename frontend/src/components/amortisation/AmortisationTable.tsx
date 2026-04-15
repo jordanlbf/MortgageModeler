@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { ScheduleRow } from "@/lib/api";
 import { formatCurrency } from "@/lib/formatters";
 import { t } from "@/lib/theme";
@@ -9,7 +10,7 @@ interface AmortisationTableProps {
 
 const COLUMNS = ["#", "Opening", "Payment", "Interest", "Principal", "Closing"];
 
-export default function AmortisationTable({ rows, height }: AmortisationTableProps) {
+export default memo(function AmortisationTable({ rows, height }: AmortisationTableProps) {
   return (
     <>
       <div
@@ -46,4 +47,4 @@ export default function AmortisationTable({ rows, height }: AmortisationTablePro
       </div>
     </>
   );
-}
+})
