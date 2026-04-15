@@ -100,6 +100,7 @@ export function ChartLegend({ visibleSeries, onToggle }: ChartLegendProps) {
           <button
             key={key}
             onClick={() => onToggle(key)}
+            aria-pressed={active}
             className="flex items-center gap-2 rounded-md px-2.5 py-1 text-[13px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
             style={{
               background: active ? `color-mix(in srgb, ${color} 12%, transparent)` : "transparent",

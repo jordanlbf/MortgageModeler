@@ -87,6 +87,8 @@ export default function Slider({
           max={max}
           step="any"
           value={value}
+          aria-label={label}
+          aria-valuetext={display}
           onChange={(e) => {
             const raw = Number(e.target.value);
             const stepped = Math.round(raw / step) * step;

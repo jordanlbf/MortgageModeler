@@ -54,7 +54,7 @@ export default memo(function KpiSparkline({
 
     return (
       <div className="cf-kpi-sparkline">
-        <svg width={width} height={height} overflow="visible" style={{ display: "block" }}>
+        <svg width={width} height={height} overflow="visible" style={{ display: "block" }} role="img" aria-label="Sparkline chart">
           {segments.map((seg, i) => (
             <g key={i}>
               <path d={seg.path} fill="none" stroke={seg.color} strokeWidth={1} opacity={0.15} />
@@ -100,6 +100,8 @@ export default memo(function KpiSparkline({
         height={height}
         overflow="visible"
         style={{ display: "block" }}
+        role="img"
+        aria-label="Sparkline chart"
       >
         {/* Full trajectory — faded */}
         {stepped ? (
