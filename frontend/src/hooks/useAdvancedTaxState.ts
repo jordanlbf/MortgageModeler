@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useReducer, useEffect, useMemo, useCallback, useState } from "react";
 import type { TaxBreakdownResponse } from "@/lib/api";
 import { fetchTaxBreakdown } from "@/lib/api";
 
@@ -45,26 +45,64 @@ export interface AdvancedTaxState {
   error: string | null;
 }
 
+// ── Reducer ────────────────────────────────────
+
+type Action =
+  | { type: "SET_NUMBER"; field: keyof AdvancedTaxInputs; value: number }
+  | { type: "SET_BOOLEAN"; field: keyof AdvancedTaxInputs; value: boolean };
+
+const INITIAL_INPUTS: AdvancedTaxInputs = {
+  salary: 100_000,
+  rental: 0,
+  interest: 0,
+  dividend: 0,
+  franking: 0,
+  capitalGainShort: 0,
+  capitalGainLong: 0,
+  rentalDeductions: 0,
+  workDeductions: 0,
+  salSac: 0,
+  rfb: 0,
+  hecsBal: 35_000,
+  phi: false,
+  sapto: false,
+};
+
+function reducer(state: AdvancedTaxInputs, action: Action): AdvancedTaxInputs {
+  if (state[action.field] === action.value) return state;
+  return { ...state, [action.field]: action.value };
+}
+
+// ── Hook ───────────────────────────────────────
+
 export function useAdvancedTaxState(): AdvancedTaxState {
-  // ── Income ───────────────────────────────────
-  const [salary, setSalary] = useState(100_000);
-  const [rental, setRental] = useState(0);
-  const [interest, setInterest] = useState(0);
-  const [dividend, setDividend] = useState(0);
-  const [franking, setFranking] = useState(0);
-  const [capitalGainShort, setCapitalGainShort] = useState(0);
-  const [capitalGainLong, setCapitalGainLong] = useState(0);
+  const [inputs, dispatch] = useReducer(reducer, INITIAL_INPUTS);
 
-  // ── Deductions ───────────────────────────────
-  const [rentalDeductions, setRentalDeductions] = useState(0);
-  const [workDeductions, setWorkDeductions] = useState(0);
+  const numSetter = useCallback(
+    (field: keyof AdvancedTaxInputs) => (v: number) => dispatch({ type: "SET_NUMBER", field, value: v }),
+    [],
+  );
+  const boolSetter = useCallback(
+    (field: keyof AdvancedTaxInputs) => (v: boolean) => dispatch({ type: "SET_BOOLEAN", field, value: v }),
+    [],
+  );
 
-  // ── Adjustments ──────────────────────────────
-  const [salSac, setSalSac] = useState(0);
-  const [rfb, setRfb] = useState(0);
-  const [hecsBal, setHecsBal] = useState(35_000);
-  const [phi, setPhi] = useState(false);
-  const [sapto, setSapto] = useState(false);
+  const setters: AdvancedTaxSetters = useMemo(() => ({
+    setSalary: numSetter("salary"),
+    setRental: numSetter("rental"),
+    setInterest: numSetter("interest"),
+    setDividend: numSetter("dividend"),
+    setFranking: numSetter("franking"),
+    setCapitalGainShort: numSetter("capitalGainShort"),
+    setCapitalGainLong: numSetter("capitalGainLong"),
+    setRentalDeductions: numSetter("rentalDeductions"),
+    setWorkDeductions: numSetter("workDeductions"),
+    setSalSac: numSetter("salSac"),
+    setRfb: numSetter("rfb"),
+    setHecsBal: numSetter("hecsBal"),
+    setPhi: boolSetter("phi"),
+    setSapto: boolSetter("sapto"),
+  }), [numSetter, boolSetter]);
 
   // ── API fetch ────────────────────────────────
   const [data, setData] = useState<TaxBreakdownResponse | null>(null);
@@ -78,24 +116,24 @@ export function useAdvancedTaxState(): AdvancedTaxState {
         const result = await fetchTaxBreakdown(
           {
             income: {
-              salary,
-              rental,
-              interest,
-              dividend,
-              franking,
-              capital_gain_short: capitalGainShort,
-              capital_gain_long: capitalGainLong,
+              salary: inputs.salary,
+              rental: inputs.rental,
+              interest: inputs.interest,
+              dividend: inputs.dividend,
+              franking: inputs.franking,
+              capital_gain_short: inputs.capitalGainShort,
+              capital_gain_long: inputs.capitalGainLong,
             },
             deductions: {
-              rental_deductions: rentalDeductions,
-              work_deductions: workDeductions,
+              rental_deductions: inputs.rentalDeductions,
+              work_deductions: inputs.workDeductions,
             },
             adjustments: {
-              sal_sac: salSac,
-              rfb,
-              hecs_bal: hecsBal,
-              phi,
-              sapto,
+              sal_sac: inputs.salSac,
+              rfb: inputs.rfb,
+              hecs_bal: inputs.hecsBal,
+              phi: inputs.phi,
+              sapto: inputs.sapto,
             },
           },
           controller.signal,
@@ -110,12 +148,7 @@ export function useAdvancedTaxState(): AdvancedTaxState {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi, sapto]);
+  }, [inputs]);
 
-  return {
-    inputs: { salary, rental, interest, dividend, franking, capitalGainShort, capitalGainLong, rentalDeductions, workDeductions, salSac, rfb, hecsBal, phi, sapto },
-    setters: { setSalary, setRental, setInterest, setDividend, setFranking, setCapitalGainShort, setCapitalGainLong, setRentalDeductions, setWorkDeductions, setSalSac, setRfb, setHecsBal, setPhi, setSapto },
-    data,
-    error,
-  };
+  return { inputs, setters, data, error };
 }
