@@ -5,6 +5,7 @@ import Link from "next/link";
 import { fetchGrantsEligibility } from "@/lib/api";
 import type { GrantSchemeWithEligibility } from "@/lib/api";
 import Header from "@/components/layout/Header";
+import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import DenseSchemeCard, { FEDERAL_COLOR, STATE_COLORS } from "./DenseSchemeCard";
 import "./grants.css";
 
@@ -12,17 +13,6 @@ import "./grants.css";
 
 const ALL_REGIONS = ["Federal", "NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
 type Region = (typeof ALL_REGIONS)[number];
-
-// ── Helpers ─────────────────────────────────────
-
-function parseCurrency(s: string): number {
-  return Number(s.replace(/[^0-9.]/g, "")) || 0;
-}
-
-function formatCurrency(n: number): string {
-  if (n === 0) return "";
-  return "$" + n.toLocaleString("en-AU", { maximumFractionDigits: 0 });
-}
 
 // ── Main component ──────────────────────────────
 
@@ -48,9 +38,9 @@ export default function GrantsView() {
     });
   };
 
-  const price = parseCurrency(priceStr);
-  const income = parseCurrency(incomeStr);
-  const partnerIncome = parseCurrency(partnerIncomeStr);
+  const price = parseCurrencyInput(priceStr);
+  const income = parseCurrencyInput(incomeStr);
+  const partnerIncome = parseCurrencyInput(partnerIncomeStr);
   const showPartnerIncome = buyerType === "couple";
   const showOwnedRecently = regions.has("ACT");
 
@@ -96,17 +86,17 @@ export default function GrantsView() {
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
-    setPriceStr(raw ? formatCurrency(Number(raw)) : "");
+    setPriceStr(raw ? formatDollars(Number(raw)) : "");
   };
 
   const handleIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
-    setIncomeStr(raw ? formatCurrency(Number(raw)) : "");
+    setIncomeStr(raw ? formatDollars(Number(raw)) : "");
   };
 
   const handlePartnerIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
-    setPartnerIncomeStr(raw ? formatCurrency(Number(raw)) : "");
+    setPartnerIncomeStr(raw ? formatDollars(Number(raw)) : "");
   };
 
   return (

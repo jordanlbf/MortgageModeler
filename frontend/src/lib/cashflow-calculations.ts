@@ -1,12 +1,10 @@
-export function parseCurrencyCf(value: string): number {
-  return parseFloat(value.replace(/[^0-9.-]/g, "")) || 0;
-}
+import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 
-export function formatCurrencyCf(value: number): string {
-  const absValue = Math.abs(value);
-  const formatted = absValue.toLocaleString("en-AU", { maximumFractionDigits: 0 });
-  return value < 0 ? `\u2212$${formatted}` : `$${formatted}`;
-}
+/** @deprecated Use `parseCurrencyInput` from `@/lib/formatters` directly. */
+export const parseCurrencyCf = parseCurrencyInput;
+
+/** @deprecated Use `formatDollarsSigned` from `@/lib/formatters` directly. */
+export const formatCurrencyCf = formatDollarsSigned;
 
 export function formatAbbreviated(value: number): string {
   if (value >= 1000000) {

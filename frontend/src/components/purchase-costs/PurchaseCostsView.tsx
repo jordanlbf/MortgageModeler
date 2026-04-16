@@ -6,28 +6,12 @@ import { ChevronRight } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { fetchPurchaseCosts } from "@/lib/api";
 import type { PurchaseCostsResponse } from "@/lib/api";
+import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import "./purchase-costs.css";
 
 const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
 
 type CostsData = PurchaseCostsResponse;
-
-// ── Helpers ─────────────────────────────────────
-
-function parseCurrency(s: string): number {
-  return Number(s.replace(/[^0-9.]/g, "")) || 0;
-}
-
-function formatCurrency(n: number): string {
-  if (n === 0) return "";
-  return "$" + n.toLocaleString("en-AU", { maximumFractionDigits: 0 });
-}
-
-function formatDollars(n: number): string {
-  const abs = Math.abs(n);
-  const formatted = "$" + abs.toLocaleString("en-AU", { maximumFractionDigits: 0 });
-  return n < 0 ? `-${formatted}` : formatted;
-}
 
 // ── Toggle component ────────────────────────────
 
@@ -63,7 +47,7 @@ function BreakdownRow({
   const hasDetails = details && details.length > 0;
 
   const maxDetail = waterfall && details
-    ? Math.max(...details.map(d => parseCurrency(d.value)))
+    ? Math.max(...details.map(d => parseCurrencyInput(d.value)))
     : 0;
 
   return (
@@ -84,7 +68,7 @@ function BreakdownRow({
       {open && details && (
         <div className="pc-detail">
           {details.map((d) => {
-            const val = parseCurrency(d.value);
+            const val = parseCurrencyInput(d.value);
             const pct = waterfall && maxDetail > 0 ? (val / maxDetail) * 100 : 0;
             return (
               <div key={d.label} className={`pc-detail-line ${waterfall ? "pc-detail-line--waterfall" : ""}`}>
@@ -117,7 +101,7 @@ export default function PurchaseCostsView() {
   const [lmiExempt, setLmiExempt] = useState(false);
   const [data, setData] = useState<CostsData | null>(null);
 
-  const price = parseCurrency(priceStr);
+  const price = parseCurrencyInput(priceStr);
   const depositPct = parseFloat(depositStr.replace("%", "")) / 100 || 0;
 
   // Debounced API call
@@ -153,7 +137,7 @@ export default function PurchaseCostsView() {
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
-    setPriceStr(raw ? formatCurrency(Number(raw)) : "");
+    setPriceStr(raw ? formatDollars(Number(raw)) : "");
   };
 
   const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
