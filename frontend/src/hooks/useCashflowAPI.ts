@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback } from "react";
 import type { YearData } from "@/lib/cashflow-types";
 import type { CashflowFormValues } from "./useCashflowFormState";
 import { parseCurrencyCf, calculateIncomeTax, getMarginalTaxRate } from "@/lib/cashflow-calculations";
 import { fetchCashflowSingle, type CashflowSingleRequest, type CashflowYearRow } from "@/lib/api";
 import { generateDepreciationEstimate } from "@/lib/depreciation-estimate";
+import { useApiCall } from "./useApiCall";
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 
-export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean) {
-  const [yearData, setYearData] = useState<YearData[]>([]);
-  const abortRef = useRef<AbortController | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): YearData[] {
   const isInvestment = form.propertyUse === "investment";
   const isNewPurchase = form.purchaseMode === "new";
 
@@ -198,35 +195,16 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean) {
   }, [form.vacancyRate, form.usePropertyManager, form.managementFee]);
 
   // Fetch from API when inputs change (debounced)
-  useEffect(() => {
-    const req = buildRequest();
-    if (!req) {
-      setYearData([]);
-      return;
-    }
+  const { data } = useApiCall<YearData[]>(
+    async (signal) => {
+      const req = buildRequest();
+      if (!req) return null;
+      const response = await fetchCashflowSingle(req, signal);
+      return mapResponseToYearData(response.years);
+    },
+    [buildRequest, mapResponseToYearData],
+    { debounce: 300, enabled: allComplete },
+  );
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (abortRef.current) abortRef.current.abort();
-
-    debounceRef.current = setTimeout(async () => {
-      const controller = new AbortController();
-      abortRef.current = controller;
-
-      try {
-        const response = await fetchCashflowSingle(req, controller.signal);
-        setYearData(mapResponseToYearData(response.years));
-      } catch (err) {
-        if (err instanceof Error && err.name !== "AbortError") {
-          console.error("Cashflow API error:", err);
-        }
-      }
-    }, 300);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      if (abortRef.current) abortRef.current.abort();
-    };
-  }, [buildRequest, mapResponseToYearData]);
-
-  return yearData;
+  return data ?? [];
 }

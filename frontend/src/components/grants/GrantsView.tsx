@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { fetchGrantsEligibility } from "@/lib/api";
 import type { GrantSchemeWithEligibility } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
+import { useApiCall } from "@/hooks/useApiCall";
 import DenseSchemeCard, { FEDERAL_COLOR, STATE_COLORS } from "./DenseSchemeCard";
 import "./grants.css";
 
@@ -28,7 +29,6 @@ export default function GrantsView() {
   const [partnerIncomeStr, setPartnerIncomeStr] = useState("");
   const [ownedPropertyRecently, setOwnedPropertyRecently] = useState<boolean | null>(null);
   const [expandedSchemeId, setExpandedSchemeId] = useState<string | null>(null);
-  const [results, setResults] = useState<GrantSchemeWithEligibility[]>([]);
 
   const toggleRegion = (r: Region) => {
     setRegions((prev) => {
@@ -45,44 +45,31 @@ export default function GrantsView() {
   const showOwnedRecently = regions.has("ACT");
 
   // Fetch eligibility from API whenever inputs change (debounced)
-  useEffect(() => {
-    const states = Array.from(regions);
-    if (states.length === 0) {
-      setResults([]);
-      return;
-    }
+  const states = Array.from(regions);
+  const { data: results, error } = useApiCall<GrantSchemeWithEligibility[]>(
+    async (signal) => {
+      if (states.length === 0) return null;
+      const resp = await fetchGrantsEligibility({
+        states,
+        price,
+        income,
+        partner_income: showPartnerIncome ? partnerIncome : 0,
+        property_type: propertyType === "off-the-plan" ? "new" : propertyType,
+        buyer_type: buyerType,
+        first_home_buyer: firstHomeBuyer,
+        owner_occupier: ownerOccupier,
+        single_parent: singleParent,
+        off_the_plan: propertyType === "off-the-plan" ? true : null,
+        owned_property_in_last_2_years: showOwnedRecently ? ownedPropertyRecently : null,
+      }, signal);
+      return resp.schemes;
+    },
+    [states.join(","), price, income, partnerIncome, propertyType, buyerType, firstHomeBuyer, ownerOccupier, singleParent, ownedPropertyRecently, showPartnerIncome, showOwnedRecently],
+    { debounce: 300 },
+  );
 
-    const timer = setTimeout(() => {
-      const controller = new AbortController();
-
-      fetchGrantsEligibility(
-        {
-          states,
-          price,
-          income,
-          partner_income: showPartnerIncome ? partnerIncome : 0,
-          property_type: propertyType === "off-the-plan" ? "new" : propertyType,
-          buyer_type: buyerType,
-          first_home_buyer: firstHomeBuyer,
-          owner_occupier: ownerOccupier,
-          single_parent: singleParent,
-          off_the_plan: propertyType === "off-the-plan" ? true : null,
-          owned_property_in_last_2_years: showOwnedRecently ? ownedPropertyRecently : null,
-        },
-        controller.signal,
-      )
-        .then((data) => setResults(data.schemes))
-        .catch((err) => {
-          if (err.name !== "AbortError") console.error("Grants API error:", err);
-        });
-
-      return () => controller.abort();
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [regions, price, income, partnerIncome, propertyType, buyerType, firstHomeBuyer, ownerOccupier, singleParent, ownedPropertyRecently, showPartnerIncome, showOwnedRecently]);
-
-  const eligibleCount = results.filter((r) => r.result.eligible).length;
+  const schemes = results ?? [];
+  const eligibleCount = schemes.filter((r) => r.result.eligible).length;
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
@@ -247,9 +234,15 @@ export default function GrantsView() {
           </span>
         </div>
 
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
+            {error}
+          </div>
+        )}
+
         {/* Card grid — only show eligible schemes */}
         <div className="grants-card-grid flex-1 min-h-0 custom-scrollbar">
-          {results.filter((r) => r.result.eligible).map(({ scheme, result }) => (
+          {schemes.filter((r) => r.result.eligible).map(({ scheme, result }) => (
             <DenseSchemeCard
               key={scheme.id}
               scheme={scheme}

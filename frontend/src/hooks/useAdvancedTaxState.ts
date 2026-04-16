@@ -1,8 +1,9 @@
 "use client";
 
-import { useReducer, useEffect, useMemo, useCallback, useState } from "react";
+import { useReducer, useMemo, useCallback } from "react";
 import type { TaxBreakdownResponse } from "@/lib/api";
 import { fetchTaxBreakdown } from "@/lib/api";
+import { useApiCall } from "./useApiCall";
 
 export interface AdvancedTaxInputs {
   salary: number;
@@ -105,50 +106,31 @@ export function useAdvancedTaxState(): AdvancedTaxState {
   }), [numSetter, boolSetter]);
 
   // ── API fetch ────────────────────────────────
-  const [data, setData] = useState<TaxBreakdownResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setError(null);
-      try {
-        const result = await fetchTaxBreakdown(
-          {
-            income: {
-              salary: inputs.salary,
-              rental: inputs.rental,
-              interest: inputs.interest,
-              dividend: inputs.dividend,
-              franking: inputs.franking,
-              capital_gain_short: inputs.capitalGainShort,
-              capital_gain_long: inputs.capitalGainLong,
-            },
-            deductions: {
-              rental_deductions: inputs.rentalDeductions,
-              work_deductions: inputs.workDeductions,
-            },
-            adjustments: {
-              sal_sac: inputs.salSac,
-              rfb: inputs.rfb,
-              hecs_bal: inputs.hecsBal,
-              phi: inputs.phi,
-              sapto: inputs.sapto,
-            },
-          },
-          controller.signal,
-        );
-        if (!controller.signal.aborted) setData(result);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Failed to fetch breakdown");
-      }
-    }, 80);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [inputs]);
+  const { data, error } = useApiCall<TaxBreakdownResponse>(
+    (signal) => fetchTaxBreakdown({
+      income: {
+        salary: inputs.salary,
+        rental: inputs.rental,
+        interest: inputs.interest,
+        dividend: inputs.dividend,
+        franking: inputs.franking,
+        capital_gain_short: inputs.capitalGainShort,
+        capital_gain_long: inputs.capitalGainLong,
+      },
+      deductions: {
+        rental_deductions: inputs.rentalDeductions,
+        work_deductions: inputs.workDeductions,
+      },
+      adjustments: {
+        sal_sac: inputs.salSac,
+        rfb: inputs.rfb,
+        hecs_bal: inputs.hecsBal,
+        phi: inputs.phi,
+        sapto: inputs.sapto,
+      },
+    }, signal),
+    [inputs],
+  );
 
   return { inputs, setters, data, error };
 }

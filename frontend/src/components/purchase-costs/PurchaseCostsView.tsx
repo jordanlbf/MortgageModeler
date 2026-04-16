@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { fetchPurchaseCosts } from "@/lib/api";
 import type { PurchaseCostsResponse } from "@/lib/api";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
+import { useApiCall } from "@/hooks/useApiCall";
 import "./purchase-costs.css";
 
 const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
@@ -99,41 +100,25 @@ export default function PurchaseCostsView() {
   const [ownerOcc, setOwnerOcc] = useState(true);
   const [couple, setCouple] = useState(false);
   const [lmiExempt, setLmiExempt] = useState(false);
-  const [data, setData] = useState<CostsData | null>(null);
 
   const price = parseCurrencyInput(priceStr);
   const depositPct = parseFloat(depositStr.replace("%", "")) / 100 || 0;
 
   // Debounced API call
-  useEffect(() => {
-    if (price <= 0) {
-      setData(null);
-      return;
-    }
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      fetchPurchaseCosts({
-        state,
-        price,
-        deposit_percent: Math.min(depositPct, 1),
-        property_type: propertyType,
-        buyer_type: couple ? "couple" : "individual",
-        owner_occupier: ownerOcc,
-        first_home_buyer: firstHome,
-        selected_grants: [],
-      }, controller.signal)
-        .then(setData)
-        .catch((err) => {
-          if (err instanceof Error && err.name !== "AbortError") console.error("Purchase costs error:", err);
-        });
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [state, price, depositPct, propertyType, firstHome, ownerOcc, couple]);
+  const { data, error } = useApiCall<CostsData>(
+    (signal) => fetchPurchaseCosts({
+      state,
+      price,
+      deposit_percent: Math.min(depositPct, 1),
+      property_type: propertyType,
+      buyer_type: couple ? "couple" : "individual",
+      owner_occupier: ownerOcc,
+      first_home_buyer: firstHome,
+      selected_grants: [],
+    }, signal),
+    [state, price, depositPct, propertyType, firstHome, ownerOcc, couple],
+    { debounce: 300, enabled: price > 0 },
+  );
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
@@ -223,6 +208,12 @@ export default function PurchaseCostsView() {
             <Toggle label="LMI Exempt" active={lmiExempt} onToggle={() => setLmiExempt(!lmiExempt)} />
           </div>
         </div>
+
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
+            {error}
+          </div>
+        )}
 
         {/* Hero total */}
         {data && (

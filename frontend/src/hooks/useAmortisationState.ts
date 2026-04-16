@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { Frequency, ChartDataPoint } from "@/lib/types";
 import type { ScheduleResponse, ScheduleRow } from "@/lib/api";
 import { fetchSchedule } from "@/lib/api";
 import { PERIODS_PER_YEAR } from "@/lib/constants";
+import { useApiCall } from "./useApiCall";
 
 export interface AmortisationInputs {
   purchasePrice: number;
@@ -49,38 +50,19 @@ export function useAmortisationState(): AmortisationState {
   const [frequency, setFrequencyRaw] = useState<Frequency>("weekly");
 
   // ── API fetch ──────────────────────────────────
-  const [data, setData] = useState<ScheduleResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setError(null);
-      try {
-        const result = await fetchSchedule(
-          {
-            purchase_price: purchasePrice,
-            deposit,
-            annual_rate: rate / 100,
-            loan_term_years: years,
-            frequency,
-            annual_appreciation: appreciation / 100,
-            offset_balance: offsetBalance,
-            offset_contribution: offsetContribution,
-          },
-          controller.signal,
-        );
-        if (!controller.signal.aborted) setData(result);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setError(err instanceof Error ? err.message : "Failed to fetch schedule");
-      }
-    }, 80);
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [purchasePrice, deposit, rate, years, frequency, appreciation, offsetBalance, offsetContribution]);
+  const { data, error } = useApiCall<ScheduleResponse>(
+    (signal) => fetchSchedule({
+      purchase_price: purchasePrice,
+      deposit,
+      annual_rate: rate / 100,
+      loan_term_years: years,
+      frequency,
+      annual_appreciation: appreciation / 100,
+      offset_balance: offsetBalance,
+      offset_contribution: offsetContribution,
+    }, signal),
+    [purchasePrice, deposit, rate, years, frequency, appreciation, offsetBalance, offsetContribution],
+  );
 
   // ── Derived data ───────────────────────────────
   const chartData: ChartDataPoint[] = useMemo(() => {
