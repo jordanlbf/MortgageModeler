@@ -7,13 +7,102 @@ import type { GrantSchemeWithEligibility } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import { useApiCall } from "@/hooks/useApiCall";
+import { mix } from "@/lib/theme";
 import DenseSchemeCard, { FEDERAL_COLOR, STATE_COLORS } from "./DenseSchemeCard";
-import "./grants.css";
 
 // ── Types ───────────────────────────────────────
 
 const ALL_REGIONS = ["Federal", "NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
 type Region = (typeof ALL_REGIONS)[number];
+
+// ── Pill button ─────────────────────────────────
+
+function Pill({ label, active, color, onClick }: { label: string; active: boolean; color?: string; onClick: () => void }) {
+  const accent = color ?? "var(--color-accent)";
+  return (
+    <button
+      className="h-[26px] px-2.5 rounded-full border text-[14px] font-semibold cursor-pointer whitespace-nowrap outline-none leading-none transition-all duration-150 min-w-[72px] text-center justify-center"
+      style={active ? {
+        background: mix(accent, 14),
+        color: accent,
+        borderColor: mix(accent, 25),
+        boxShadow: `0 0 8px ${mix(accent, 10)}`,
+      } : {
+        background: "transparent",
+        color: mix("var(--color-muted)", 50),
+        borderColor: "rgba(255,255,255,0.07)",
+      }}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
+
+function TriPill({ label, active, isNo, onClick }: { label: string; active: boolean; isNo?: boolean; onClick: () => void }) {
+  const red = active && isNo;
+  return (
+    <button
+      className="h-[26px] px-2.5 rounded-full border text-[14px] font-semibold cursor-pointer whitespace-nowrap outline-none leading-none transition-all duration-150 min-w-[72px] text-center justify-center"
+      style={red ? {
+        background: "rgba(248,113,113,0.12)",
+        color: "#f87171",
+        borderColor: "rgba(248,113,113,0.25)",
+        boxShadow: "0 0 8px rgba(248,113,113,0.08)",
+      } : active ? {
+        background: mix("var(--color-accent)", 14),
+        color: "var(--color-accent)",
+        borderColor: mix("var(--color-accent)", 25),
+        boxShadow: `0 0 8px ${mix("var(--color-accent)", 10)}`,
+      } : {
+        background: "transparent",
+        color: mix("var(--color-muted)", 50),
+        borderColor: "rgba(255,255,255,0.07)",
+      }}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  );
+}
+
+// ── Compact bar input ───────────────────────────
+
+function BarInput({ label, value, placeholder, onChange }: { label: string; value: string; placeholder: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+  return (
+    <div className="flex flex-col items-center gap-4 flex-1 min-w-0">
+      <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">{label}</label>
+      <input
+        className="w-full h-[30px] px-2.5 text-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-foreground/90 text-[15px] font-semibold tabular-nums outline-none caret-accent transition-all duration-150 hover:border-white/10 hover:bg-white/[0.06] focus:border-accent/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] placeholder:text-subtle/35 placeholder:font-normal"
+        type="text"
+        inputMode="numeric"
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
+
+// ── Divider ─────────────────────────────────────
+
+function Divider({ tight }: { tight?: boolean }) {
+  return <div className={`w-px h-7 bg-white/[0.05] shrink-0 ${tight ? "mx-2" : "mx-4"}`} />;
+}
+
+// ── Tri-state toggle field ──────────────────────
+
+function TriField({ label, value, onToggle, wide }: { label: string; value: boolean | null; onToggle: (v: boolean | null) => void; wide?: boolean }) {
+  return (
+    <div className={`flex flex-col items-center gap-4 shrink-0 ${wide ? "w-[220px]" : "w-[140px]"}`}>
+      <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">{label}</label>
+      <div className="flex gap-1.5">
+        <TriPill label="Yes" active={value === true} onClick={() => onToggle(value === true ? null : true)} />
+        <TriPill label="No" active={value === false} isNo onClick={() => onToggle(value === false ? null : false)} />
+      </div>
+    </div>
+  );
+}
 
 // ── Main component ──────────────────────────────
 
@@ -44,13 +133,12 @@ export default function GrantsView() {
   const showPartnerIncome = buyerType === "couple";
   const showOwnedRecently = regions.has("ACT");
 
-  // Fetch eligibility from API whenever inputs change (debounced)
-  const states = Array.from(regions);
+  const statesArr = Array.from(regions);
   const { data: results, error } = useApiCall<GrantSchemeWithEligibility[]>(
     async (signal) => {
-      if (states.length === 0) return null;
+      if (statesArr.length === 0) return null;
       const resp = await fetchGrantsEligibility({
-        states,
+        states: statesArr,
         price,
         income,
         partner_income: showPartnerIncome ? partnerIncome : 0,
@@ -64,7 +152,7 @@ export default function GrantsView() {
       }, signal);
       return resp.schemes;
     },
-    [states.join(","), price, income, partnerIncome, propertyType, buyerType, firstHomeBuyer, ownerOccupier, singleParent, ownedPropertyRecently, showPartnerIncome, showOwnedRecently],
+    [statesArr.join(","), price, income, partnerIncome, propertyType, buyerType, firstHomeBuyer, ownerOccupier, singleParent, ownedPropertyRecently, showPartnerIncome, showOwnedRecently],
     { debounce: 300 },
   );
 
@@ -75,12 +163,10 @@ export default function GrantsView() {
     const raw = e.target.value.replace(/[^0-9]/g, "");
     setPriceStr(raw ? formatDollars(Number(raw)) : "");
   };
-
   const handleIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
     setIncomeStr(raw ? formatDollars(Number(raw)) : "");
   };
-
   const handlePartnerIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
     setPartnerIncomeStr(raw ? formatDollars(Number(raw)) : "");
@@ -91,146 +177,92 @@ export default function GrantsView() {
       <Header />
 
       <div className="flex flex-col px-9 py-6 overflow-hidden" style={{ height: "calc(100vh - 49px)" }}>
-        {/* Hero + Filter bar wrapper */}
-        <div className="grants-bar-wrapper">
-          <div className="grants-hero">
+        {/* Hero + Filter bar */}
+        <div className="flex flex-col items-center mb-5">
+          <div className="text-center py-2 pb-5 animate-fade-up">
             <h1 className="text-[44px] font-semibold tracking-[-0.04em] text-foreground">
-              Government <span style={{ color: "var(--color-accent)" }}>Grants</span>
+              Government <span className="text-accent">Grants</span>
             </h1>
           </div>
 
           {/* Filter bar */}
-          <div className="grants-bar">
-          <div className="grants-field grants-field--grow">
-            <label className="grants-field-label">Purchase Price</label>
-            <input className="grants-bar-input" type="text" inputMode="numeric" placeholder="$0" value={priceStr} onChange={handlePriceChange} />
-          </div>
+          <div className="flex items-center min-h-[80px] px-6 py-3.5 rounded-[14px] bg-card-elevated border border-border border-t-2 border-t-accent-border shadow-[0_1px_4px_rgba(0,0,0,0.20)] shrink-0 w-full overflow-visible animate-fade-up [animation-delay:0.1s]">
+            <BarInput label="Purchase Price" value={priceStr} placeholder="$0" onChange={handlePriceChange} />
+            <Divider />
+            <BarInput label="Annual Income" value={incomeStr} placeholder="$0" onChange={handleIncomeChange} />
 
-          <div className="grants-bar-divider" />
-
-          <div className="grants-field grants-field--grow">
-            <label className="grants-field-label">Annual Income</label>
-            <input className="grants-bar-input" type="text" inputMode="numeric" placeholder="$0" value={incomeStr} onChange={handleIncomeChange} />
-          </div>
-
-          {showPartnerIncome && (
-            <>
-              <div className="grants-bar-divider" />
-              <div className="grants-field grants-field--grow">
-                <label className="grants-field-label">Partner Income</label>
-                <input className="grants-bar-input" type="text" inputMode="numeric" placeholder="$0" value={partnerIncomeStr} onChange={handlePartnerIncomeChange} />
-              </div>
-            </>
-          )}
-
-          <div className="grants-bar-divider" />
-
-          <div className="grants-field grants-field--regions">
-            <label className="grants-field-label">State</label>
-            <div className="grants-region-grid">
-              {ALL_REGIONS.map((r) => (
-                <button
-                  key={r}
-                  className="grants-pill grants-pill--region"
-                  data-active={regions.has(r)}
-                  style={{ "--region-color": r === "Federal" ? FEDERAL_COLOR : STATE_COLORS[r] } as React.CSSProperties}
-                  onClick={() => toggleRegion(r)}
-                >{r}</button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grants-bar-divider" />
-
-          <div className="grants-toggles">
-            <div className="grants-field grants-field--toggle-wide">
-              <label className="grants-field-label">Property</label>
-              <div className="grants-bar-pills">
-                {([
-                  { value: "new" as const, label: "New" },
-                  { value: "existing" as const, label: "Existing" },
-                  { value: "land" as const, label: "Land" },
-                  { value: "off-the-plan" as const, label: "OTP" },
-                ]).map((o) => (
-                  <button key={o.value} className="grants-pill grants-pill--uniform" data-active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)}>{o.label}</button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grants-bar-divider grants-bar-divider--tight" />
-
-            <div className="grants-field grants-field--toggle-wide">
-              <label className="grants-field-label">Buyer</label>
-              <div className="grants-bar-pills">
-                {([{ value: "individual" as const, label: "Individual" }, { value: "couple" as const, label: "Couple" }]).map((o) => (
-                  <button key={o.value} className="grants-pill grants-pill--uniform" data-active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)}>{o.label}</button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grants-bar-divider grants-bar-divider--tight" />
-
-            <div className="grants-field grants-field--toggle">
-              <label className="grants-field-label">First Home</label>
-              <div className="grants-bar-pills">
-                {([true, false] as const).map((v) => (
-                  <button key={String(v)} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={firstHomeBuyer === v} data-value={String(v)} onClick={() => setFirstHomeBuyer(firstHomeBuyer === v ? null : v)}>
-                    {v ? "Yes" : "No"}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grants-bar-divider grants-bar-divider--tight" />
-
-            <div className="grants-field grants-field--toggle">
-              <label className="grants-field-label">Owner Occupied</label>
-              <div className="grants-bar-pills">
-                {([true, false] as const).map((v) => (
-                  <button key={String(v)} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={ownerOccupier === v} data-value={String(v)} onClick={() => setOwnerOccupier(ownerOccupier === v ? null : v)}>
-                    {v ? "Yes" : "No"}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grants-bar-divider grants-bar-divider--tight" />
-
-            <div className="grants-field grants-field--toggle">
-              <label className="grants-field-label">Single Parent</label>
-              <div className="grants-bar-pills">
-                {([true, false] as const).map((v) => (
-                  <button key={String(v)} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={singleParent === v} data-value={String(v)} onClick={() => setSingleParent(singleParent === v ? null : v)}>
-                    {v ? "Yes" : "No"}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {showOwnedRecently && (
+            {showPartnerIncome && (
               <>
-                <div className="grants-bar-divider grants-bar-divider--tight" />
-
-                <div className="grants-field grants-field--toggle">
-                  <label className="grants-field-label">Owned in 2yr</label>
-                  <div className="grants-bar-pills">
-                    {([true, false] as const).map((v) => (
-                      <button key={String(v)} className="grants-pill grants-pill--uniform grants-pill--tri" data-active={ownedPropertyRecently === v} data-value={String(v)} onClick={() => setOwnedPropertyRecently(ownedPropertyRecently === v ? null : v)}>
-                        {v ? "Yes" : "No"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <Divider />
+                <BarInput label="Partner Income" value={partnerIncomeStr} placeholder="$0" onChange={handlePartnerIncomeChange} />
               </>
             )}
-          </div>
+
+            <Divider />
+
+            {/* Region pills */}
+            <div className="flex flex-col items-center gap-4 shrink-0">
+              <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">State</label>
+              <div className="grid grid-flow-col auto-cols-fr gap-5">
+                {ALL_REGIONS.map((r) => {
+                  const color = r === "Federal" ? FEDERAL_COLOR : STATE_COLORS[r];
+                  return (
+                    <Pill key={r} label={r} active={regions.has(r)} color={color} onClick={() => toggleRegion(r)} />
+                  );
+                })}
+              </div>
+            </div>
+
+            <Divider />
+
+            {/* Toggle fields */}
+            <div className="flex items-center shrink-0 ml-auto">
+              <div className="flex flex-col items-center gap-4 shrink-0 w-[220px]">
+                <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">Property</label>
+                <div className="flex gap-1.5">
+                  {([
+                    { value: "new" as const, label: "New" },
+                    { value: "existing" as const, label: "Existing" },
+                    { value: "land" as const, label: "Land" },
+                    { value: "off-the-plan" as const, label: "OTP" },
+                  ]).map((o) => (
+                    <Pill key={o.value} label={o.label} active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)} />
+                  ))}
+                </div>
+              </div>
+
+              <Divider tight />
+
+              <div className="flex flex-col items-center gap-4 shrink-0 w-[220px]">
+                <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">Buyer</label>
+                <div className="flex gap-1.5">
+                  {([{ value: "individual" as const, label: "Individual" }, { value: "couple" as const, label: "Couple" }]).map((o) => (
+                    <Pill key={o.value} label={o.label} active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)} />
+                  ))}
+                </div>
+              </div>
+
+              <Divider tight />
+              <TriField label="First Home" value={firstHomeBuyer} onToggle={setFirstHomeBuyer} />
+              <Divider tight />
+              <TriField label="Owner Occupied" value={ownerOccupier} onToggle={setOwnerOccupier} />
+              <Divider tight />
+              <TriField label="Single Parent" value={singleParent} onToggle={setSingleParent} />
+
+              {showOwnedRecently && (
+                <>
+                  <Divider tight />
+                  <TriField label="Owned in 2yr" value={ownedPropertyRecently} onToggle={setOwnedPropertyRecently} />
+                </>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Results bar */}
-        <div className="grants-results-bar">
+        <div className="flex justify-center items-center py-4 text-[16px] text-muted/40 animate-fade-up [animation-delay:0.2s]">
           <span>
-            <strong>{eligibleCount}</strong> {eligibleCount === 1 ? "scheme" : "schemes"} matched
+            <strong className="text-accent font-semibold">{eligibleCount}</strong> {eligibleCount === 1 ? "scheme" : "schemes"} matched
           </span>
         </div>
 
@@ -240,8 +272,8 @@ export default function GrantsView() {
           </div>
         )}
 
-        {/* Card grid — only show eligible schemes */}
-        <div className="grants-card-grid flex-1 min-h-0 custom-scrollbar">
+        {/* Card grid */}
+        <div className="grid grid-cols-3 gap-4 flex-1 min-h-0 overflow-y-auto pb-2 custom-scrollbar max-[1100px]:grid-cols-2 max-[700px]:grid-cols-1 animate-fade-up [animation-delay:0.25s]">
           {schemes.filter((r) => r.result.eligible).map(({ scheme, result }) => (
             <DenseSchemeCard
               key={scheme.id}

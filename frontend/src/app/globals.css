@@ -146,8 +146,19 @@ body {
 }
 .animate-fade-up { animation: fade-up 0.5s ease-out both; }
 
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes card-pop-in {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-overlay-in { animation: overlay-in 0.3s ease-out both; }
+.animate-card-pop-in { animation: card-pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-up { animation: none !important; }
+  .animate-fade-up, .animate-overlay-in, .animate-card-pop-in { animation: none !important; }
 }
 
 /* ── Slate Arctic select arrow ── */
