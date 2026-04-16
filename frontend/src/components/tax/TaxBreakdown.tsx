@@ -1,16 +1,16 @@
 import { formatCurrencyShort } from "@/lib/formatters";
-import { t, mix } from "@/lib/theme";
+import { t, mix, TAX_COLORS as TC } from "@/lib/theme";
 import GlassCard from "@/components/ui/GlassCard";
 import { useHighlight } from "@/hooks/useHighlight";
 
 // ── Shared constants ─────────────────────────────
 
 const DONUT_SEGMENTS = [
-  { key: "income_tax", label: "Income Tax", legendLabel: "Income Tax", color: "#f87171" },
-  { key: "medicare_levy", label: "Medicare", legendLabel: "Medicare", color: "#60a5fa" },
-  { key: "medicare_levy_surcharge", label: "MLS", legendLabel: "Medicare Levy Surcharge", color: "#fb923c" },
-  { key: "hecs_repayment", label: "HECS Repayment", legendLabel: "HECS Repayment", color: "#a78bfa" },
-  { key: "net_income", label: "Net Income", legendLabel: "Net Income", color: "#2dd4bf" },
+  { key: "income_tax", label: "Income Tax", legendLabel: "Income Tax", color: TC.incomeTax },
+  { key: "medicare_levy", label: "Medicare", legendLabel: "Medicare", color: TC.medicare },
+  { key: "medicare_levy_surcharge", label: "MLS", legendLabel: "Medicare Levy Surcharge", color: TC.mls },
+  { key: "hecs_repayment", label: "HECS Repayment", legendLabel: "HECS Repayment", color: TC.hecs },
+  { key: "net_income", label: "Net Income", legendLabel: "Net Income", color: TC.netIncome },
 ] as const;
 
 const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated };
@@ -77,7 +77,7 @@ function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick, activeSe
       <text x="80" y={activeSegment ? 68 : 71} textAnchor="middle" className="text-[9px] font-medium uppercase tracking-widest" style={{ transition: "all 0.2s" }} fill={activeSegment ? activeSegment.color : "rgba(161,161,170,0.4)"}>
         {activeSegment ? activeSegment.label : "Total Tax"}
       </text>
-      <text x="80" y={activeSegment ? 88 : 93} textAnchor="middle" className="text-[16px] font-semibold tabular-nums" style={{ transition: "all 0.2s" }} fill={activeSegment ? activeSegment.color : "#f87171"}>
+      <text x="80" y={activeSegment ? 88 : 93} textAnchor="middle" className="text-[16px] font-semibold tabular-nums" style={{ transition: "all 0.2s" }} fill={activeSegment ? activeSegment.color : TC.incomeTax}>
         {activeSegment
           ? `${activeSegment.isDeduction && activeSegment.value >= 0 ? "-" : ""}${formatCurrencyShort(Math.abs(activeSegment.value))}`
           : `${totalTax >= 0 ? "-" : "+"}${formatCurrencyShort(Math.abs(totalTax))}`}
@@ -322,17 +322,17 @@ export default function TaxComposition({
               <>
                 <div
                   className="flex flex-col items-center rounded-full px-5 py-2 text-center"
-                  style={{ background: mix("#fb923c", 10), border: `1px solid ${mix("#fb923c", 25)}` }}
+                  style={{ background: mix(TC.mls, 10), border: `1px solid ${mix(TC.mls, 25)}` }}
                 >
-                  <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: mix("#fb923c", 58) }}>Effective Rate</span>
-                  <span className="text-[18px] font-semibold tabular-nums" style={{ color: "#fb923c" }}>{effectiveRate.toFixed(1)}%</span>
+                  <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: mix(TC.mls, 58) }}>Effective Rate</span>
+                  <span className="text-[18px] font-semibold tabular-nums" style={{ color: TC.mls }}>{effectiveRate.toFixed(1)}%</span>
                 </div>
                 <div
                   className="flex flex-col items-center rounded-full px-5 py-2 text-center"
-                  style={{ background: mix("#a78bfa", 10), border: `1px solid ${mix("#a78bfa", 25)}` }}
+                  style={{ background: mix(TC.hecs, 10), border: `1px solid ${mix(TC.hecs, 25)}` }}
                 >
-                  <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: mix("#a78bfa", 58) }}>Marginal Rate</span>
-                  <span className="text-[18px] font-semibold tabular-nums" style={{ color: "#a78bfa" }}>{marginalRate.toFixed(1)}%</span>
+                  <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: mix(TC.hecs, 58) }}>Marginal Rate</span>
+                  <span className="text-[18px] font-semibold tabular-nums" style={{ color: TC.hecs }}>{marginalRate.toFixed(1)}%</span>
                 </div>
               </>
             )}

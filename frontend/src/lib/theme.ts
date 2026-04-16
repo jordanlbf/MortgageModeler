@@ -74,6 +74,33 @@ export const SERIES = {
   offset: { color: "#facc15", label: "Offset", fill: [0.12, 0.01], stroke: 1.5 },
 } as const;
 
+// ── Cashflow chart palette ────────────────────────
+export const CF_COLORS = {
+  positive:     "#4ade80",
+  positiveDark: "#16a34a",
+  positiveLit:  "#86efac",
+  teal:         "#2dd4bf",
+  tealDark:     "#0d9488",
+  tealLit:      "#5eead4",
+  negative:     "#ef4444",
+  negativeDark: "#dc2626",
+  negativeLit:  "#f87171",
+  amber:        "#f59e0b",
+  amberLit:     "#fcd34d",
+  purple:       "#a78bfa",
+  purpleLit:    "#c4b5fd",
+  axisTick:     "#71717a",
+} as const;
+
+// ── Tax breakdown palette ─────────────────────────
+export const TAX_COLORS = {
+  incomeTax:  "#f87171",
+  medicare:   "#60a5fa",
+  mls:        "#fb923c",
+  hecs:       "#a78bfa",
+  netIncome:  "#2dd4bf",
+} as const;
+
 // Convenience array for legend / toggle iteration
 export const SERIES_LIST = Object.entries(SERIES).map(([key, s]) => ({
   key,
