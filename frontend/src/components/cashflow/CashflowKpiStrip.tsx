@@ -1,14 +1,9 @@
 "use client";
 
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
-import { formatCurrencyCf, formatAbbreviated, getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { formatCurrencyCf, getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { safeDiv } from "@/lib/formatters";
 import KpiSparkline from "./KpiSparkline";
-
-/** Safe division — returns 0 when divisor is 0 or result is non-finite. */
-const safeDiv = (a: number, b: number) => {
-  const r = b !== 0 ? a / b : 0;
-  return Number.isFinite(r) ? r : 0;
-};
 
 interface KpiItem {
   label: string;
@@ -114,8 +109,8 @@ export default function CashflowKpiStrip({
     const bracket = getMarginalTaxRate(taxableIncome);
     const getBracketColor = (rate: number) => {
       if (rate <= 0) return "var(--color-positive)";
-      if (rate <= 0.19) return "#86efac";
-      if (rate <= 0.325) return "#fbbf24";
+      if (rate <= 0.16) return "#86efac";
+      if (rate <= 0.30) return "#fbbf24";
       if (rate <= 0.37) return "#f59e0b";
       return "#ef4444";
     };

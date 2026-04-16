@@ -1,3 +1,9 @@
+/** Safe division — returns 0 when divisor is 0 or result is non-finite. */
+export function safeDiv(a: number, b: number): number {
+  const r = b !== 0 ? a / b : 0;
+  return Number.isFinite(r) ? r : 0;
+}
+
 const audFull = new Intl.NumberFormat("en-AU", {
   style: "currency",
   currency: "AUD",

@@ -3,14 +3,14 @@
 import { useCallback } from "react";
 import type { YearData } from "@/lib/cashflow-types";
 import type { CashflowFormValues } from "./useCashflowFormState";
-import { parseCurrencyCf, calculateIncomeTax, getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { parseCurrencyCf } from "@/lib/cashflow-calculations";
 import { fetchCashflowSingle, type CashflowSingleRequest, type CashflowYearRow } from "@/lib/api";
 import { generateDepreciationEstimate } from "@/lib/depreciation-estimate";
 import { useApiCall } from "./useApiCall";
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 
-export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): YearData[] {
+export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): { yearData: YearData[]; error: string | null; loading: boolean } {
   const isInvestment = form.propertyUse === "investment";
   const isNewPurchase = form.purchaseMode === "new";
 
@@ -71,7 +71,7 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
         is_new_property: true,
         is_ppor: !isInvestment,
         annual_appreciation: growth,
-        purchase_costs: { other_costs: 0, capitalise_lmi: false, capitalise_mortgage_registration_fee: false, capitalise_loan_establishment_fee: false } as any,
+        purchase_costs: { other_costs: 0 },
         rental: base.rental ?? { weekly_rent: 0, annual_growth_rate: growth, vacancy_weeks: 2 },
         depreciable_buildings: depBuilds,
         depreciable_assets: depAsts,
@@ -137,7 +137,6 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
       const totalDeductionsVal = t ? t.total_deductions : 0;
       const taxSavedVal = y.tax_saving;
       const gearingVal = rental - interestPaid - ongoingCostsVal - depDiv43 - depDiv40;
-      const incomeTaxWithoutVal = calculateIncomeTax(salary);
       const grossIncomeVal = salary + rental;
       const netCashflowVal = salary + rental - ongoingCostsVal - y.mortgage_repayment - incomeTaxCalcVal;
       const propertyCashflowVal = gearingVal - principalPaid;
@@ -180,7 +179,7 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
         totalDeductionsForTax: totalDeductionsVal,
         taxableIncomeCalc: grossIncomeVal - totalDeductionsVal,
         incomeTaxCalc: incomeTaxCalcVal,
-        incomeTaxWithout: incomeTaxWithoutVal,
+        incomeTaxWithout: 0,
         taxSaved: taxSavedVal,
         grossIncome: grossIncomeVal,
         afterTaxIncome: grossIncomeVal - incomeTaxCalcVal,
@@ -195,7 +194,7 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
   }, [form.vacancyRate, form.usePropertyManager, form.managementFee]);
 
   // Fetch from API when inputs change (debounced)
-  const { data } = useApiCall<YearData[]>(
+  const { data, error, loading } = useApiCall<YearData[]>(
     async (signal) => {
       const req = buildRequest();
       if (!req) return null;
@@ -206,5 +205,5 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
     { debounce: 300, enabled: allComplete },
   );
 
-  return data ?? [];
+  return { yearData: data ?? [], error, loading };
 }

@@ -12,18 +12,10 @@ import {
   ComposedChart,
   Area,
 } from "recharts";
-import { TrendingUp, Layers, Target } from "lucide-react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
-import { formatCurrencyCf } from "@/lib/cashflow-calculations";
 import { CF_COLORS as C } from "@/lib/theme";
 
 export type ChartView = "bars" | "stacked" | "comparison";
-
-export const chartViewOptions = [
-  { id: "bars" as const, label: "Growth", icon: TrendingUp },
-  { id: "stacked" as const, label: "Breakdown", icon: Layers },
-  { id: "comparison" as const, label: "Compare", icon: Target },
-];
 
 interface Props {
   chartData: { year: number; value: number }[];

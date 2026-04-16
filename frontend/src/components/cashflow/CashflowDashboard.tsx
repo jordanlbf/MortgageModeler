@@ -2,6 +2,7 @@
 
 import { formatCurrencyCf } from "@/lib/cashflow-calculations";
 import type { ViewMode } from "@/lib/cashflow-types";
+import { safeDiv } from "@/lib/formatters";
 import type { useCashflowState } from "@/hooks/useCashflowState";
 import CashflowChart from "./CashflowChart";
 import CashflowKpiStrip from "./CashflowKpiStrip";
@@ -15,12 +16,6 @@ interface Props {
   onSelectYear: (year: number) => void;
   onManualExpand: (expanded: Set<number>) => void;
 }
-
-/** Safe division — returns 0 when divisor is 0 or result is non-finite. */
-const safeDiv = (a: number, b: number) => {
-  const r = b !== 0 ? a / b : 0;
-  return Number.isFinite(r) ? r : 0;
-};
 
 export default function CashflowDashboard({
   s, hoveredYear, tableExpanded, onHoverYear, onSelectYear, onManualExpand,
@@ -55,41 +50,6 @@ export default function CashflowDashboard({
     : vm === "deductions"
     ? "#a78bfa"
     : null;
-
-  // Hero data per view mode
-  const heroMap: Record<ViewMode, { value: string; label: string; monthly: string; color: string }> = {
-    summary: {
-      value: formatCurrencyCf(Math.round(y1.netCashflow)),
-      label: "net cashflow",
-      monthly: `${formatCurrencyCf(Math.round(y1.netCashflow / 12))}/month`,
-      color: y1.netCashflow >= 0 ? "var(--color-accent)" : "var(--color-negative)",
-    },
-    property: {
-      value: formatCurrencyCf(Math.round(y1.propertyCashflow)),
-      label: "property cashflow",
-      monthly: `${formatCurrencyCf(Math.round(y1.propertyCashflow / 12))}/month`,
-      color: y1.propertyCashflow >= 0 ? "var(--color-accent)" : "var(--color-negative)",
-    },
-    tax: {
-      value: formatCurrencyCf(Math.round(-y1.incomeTaxCalc)),
-      label: "total tax",
-      monthly: `${Math.round(s.marginalRate * 100)}% marginal rate`,
-      color: "var(--color-negative)",
-    },
-    equity: {
-      value: formatCurrencyCf(Math.round(y1.netEquity)),
-      label: "net equity",
-      monthly: `${(safeDiv(y1.loanBalance, y1.propertyValue) * 100).toFixed(1)}% LVR`,
-      color: "var(--color-accent)",
-    },
-    deductions: {
-      value: formatCurrencyCf(Math.round(s.isInvestment ? y1.totalDeductions : y1.ongoingCosts)),
-      label: s.isInvestment ? "total deductions" : "total expenses",
-      monthly: `+${formatCurrencyCf(Math.round(y1.taxSaved))} tax saved`,
-      color: "#a78bfa",
-    },
-  };
-  const hero = heroMap[vm];
 
   // Compute the single panel prop for CashflowDataTable
   const panelProp: Record<string, string> = {};

@@ -88,7 +88,7 @@ function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
 
 export default function TaxView() {
   const advanced = useAdvancedTaxState();
-  const { data } = advanced;
+  const { data, error } = advanced;
 
   const gross = data?.assessable_income ?? 0;
   const totalTax = data?.total_tax ?? 0;
@@ -100,6 +100,14 @@ export default function TaxView() {
   return (
     <>
       <Header />
+
+      {error && (
+        <div className="max-w-5xl mx-auto px-6 pt-4">
+          <div className="rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
+            {error}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col px-9 py-6 overflow-hidden" style={{ height: "calc(100vh - 49px)" }}>
         <div className="mb-6 flex flex-col items-center gap-1">

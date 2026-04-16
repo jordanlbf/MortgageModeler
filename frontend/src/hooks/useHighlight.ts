@@ -13,9 +13,7 @@ export function useHighlight() {
   const activeKey = pinnedKey ?? hoveredKey;
 
   const onHover = useCallback(
-    (key: string | null) => {
-      setPinnedKey((p) => { if (p == null) setHoveredKey(key); return p; });
-    },
+    (key: string | null) => setHoveredKey(key),
     [],
   );
 

@@ -1,7 +1,7 @@
 # Frontend Conventions
 
 ### Stack
-- Next.js 19 (App Router), React 19, TypeScript (strict), Tailwind CSS 4
+- Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS 4
 
 ### Directory Structure
 

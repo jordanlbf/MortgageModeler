@@ -78,6 +78,10 @@ export interface CashflowState {
   chartData: { year: number; value: number }[];
   selectedYearData: YearData | null;
 
+  // API state
+  error: string | null;
+  loading: boolean;
+
   // Setters
   setPropertyUse: (v: import("@/lib/cashflow-types").PropertyUse | null) => void;
   setPurchaseMode: (v: import("@/lib/cashflow-types").PurchaseMode | null) => void;
@@ -145,17 +149,16 @@ export function useCashflowState(): CashflowState {
     ? parseCurrencyCf(form.purchasePrice)
     : parseCurrencyCf(form.currentValue);
 
-  const effectiveViewMode: ViewMode = form.viewMode;
   const marginalRate = getMarginalTaxRate(parseCurrencyCf(form.taxableIncome));
 
   // API layer
-  const yearData = useCashflowAPI(form, allComplete);
+  const { yearData, error, loading } = useCashflowAPI(form, allComplete);
 
   // Chart data
   const chartData = useMemo(() => {
     if (yearData.length === 0) return [];
     return yearData.map(y => {
-      switch (effectiveViewMode) {
+      switch (form.viewMode) {
         case "summary": return { year: y.year, value: y.netCashflow / 12 };
         case "property": return { year: y.year, value: y.propertyCashflow / 12 };
         case "tax": return { year: y.year, value: -y.incomeTaxCalc };
@@ -163,7 +166,7 @@ export function useCashflowState(): CashflowState {
         case "deductions": return { year: y.year, value: isInvestment ? y.totalDeductions : y.ongoingCosts };
       }
     });
-  }, [yearData, effectiveViewMode, isInvestment]);
+  }, [yearData, form.viewMode, isInvestment]);
 
   const selectedYearData = yearData[form.selectedYear - 1] || null;
 
@@ -176,7 +179,7 @@ export function useCashflowState(): CashflowState {
     allComplete,
     loanAmount,
     propertyValue,
-    effectiveViewMode,
+    effectiveViewMode: form.viewMode,
     marginalRate,
     // View state
     expandedSections,
@@ -184,6 +187,9 @@ export function useCashflowState(): CashflowState {
     yearData,
     chartData,
     selectedYearData,
+    // API state
+    error,
+    loading,
     // Setters
     ...setters,
     setExpandedSections,

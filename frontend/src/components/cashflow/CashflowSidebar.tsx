@@ -123,9 +123,9 @@ function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
       if (!s.taxComplete) return null;
       const income = parseCurrencyCf(s.taxableIncome);
       const rate =
-        income > 180000 ? "45%" :
-        income > 120000 ? "37%" :
-        income > 45000  ? "32.5%" : "19%";
+        income > 190000 ? "45%" :
+        income > 135000 ? "37%" :
+        income > 45000  ? "30%" : "16%";
       return [
         { primary: true, text: `${formatCurrencyCf(income)} Taxable Income` },
         { value: rate, descriptor: "Tax Bracket" },

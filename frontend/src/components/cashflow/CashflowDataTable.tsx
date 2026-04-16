@@ -5,11 +5,7 @@ import { ChevronDown, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
 import { formatCurrencyCf, getMarginalTaxRate } from "@/lib/cashflow-calculations";
 
-/** Safe division — returns 0 when divisor is 0 or result is non-finite. */
-const safeDiv = (a: number, b: number) => {
-  const r = b !== 0 ? a / b : 0;
-  return Number.isFinite(r) ? r : 0;
-};
+import { safeDiv } from "@/lib/formatters";
 
 /** Safe YoY % change: ((current / previous) - 1) * 100, returns 0 when previous is 0. */
 const yoyPct = (current: number, previous: number) => previous === 0 ? 0 : (safeDiv(current, previous) - 1) * 100;

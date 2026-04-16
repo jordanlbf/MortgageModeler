@@ -31,7 +31,10 @@ export function useAnimatedValue(target: number, duration = 300) {
       }
     };
     raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
+    return () => {
+      cancelAnimationFrame(raf.current);
+      prev.current = target;
+    };
   }, [target, duration]);
 
   return display;
