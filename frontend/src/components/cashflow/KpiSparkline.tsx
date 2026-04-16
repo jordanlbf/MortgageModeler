@@ -54,7 +54,7 @@ export default memo(function KpiSparkline({
     }
 
     return (
-      <div className="cf-kpi-sparkline">
+      <div className="mt-2 flex justify-center">
         <svg width={width} height={height} overflow="visible" style={{ display: "block" }} role="img" aria-label="Sparkline chart">
           {segments.map((seg, i) => (
             <g key={i}>
@@ -95,7 +95,7 @@ export default memo(function KpiSparkline({
   const activePts = stepped ? toStepPath(points.slice(0, clampedIdx + 1)) : points.slice(0, clampedIdx + 1).map(p => `${p[0]},${p[1]}`).join(" ");
 
   return (
-    <div className="cf-kpi-sparkline">
+    <div className="mt-2 flex justify-center">
       <svg
         width={width}
         height={height}

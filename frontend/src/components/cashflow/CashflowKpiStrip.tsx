@@ -47,28 +47,28 @@ export default function CashflowKpiStrip({
       {
         label: "Income (p.a.)",
         value: formatCurrencyCf(Math.round(totalIncome)),
-        color: "var(--cf-positive)",
+        color: "var(--color-positive)",
         sub: isInvestment ? `Salary + Rent` : "Salary",
         sparkData: yearData.map(y => y.salary + (isInvestment ? y.rentalIncome : 0)),
       },
       {
         label: "Costs (p.a.)",
         value: formatCurrencyCf(Math.round(totalCosts)),
-        color: "var(--cf-negative)",
+        color: "var(--color-negative)",
         sub: "Holding + Repayments + Tax",
         sparkData: yearData.map(y => y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc),
       },
       {
         label: "Tax Paid (p.a.)",
         value: formatCurrencyCf(Math.round(d.incomeTaxCalc)),
-        color: "var(--cf-negative)",
+        color: "var(--color-negative)",
         sub: `${Math.round(marginalRate * 100)}% marginal rate`,
         sparkData: yearData.map(y => y.incomeTaxCalc),
       },
       {
         label: "Cashflow (monthly)",
         value: `${formatCurrencyCf(Math.round((totalIncome - totalCosts) / 12))} /month`,
-        color: totalIncome - totalCosts >= 0 ? "var(--cf-positive)" : "var(--cf-negative)",
+        color: totalIncome - totalCosts >= 0 ? "var(--color-positive)" : "var(--color-negative)",
         sub: `${formatCurrencyCf(Math.round(totalIncome - totalCosts))} p.a.`,
         sparkData: yearData.map(y => y.salary + (isInvestment ? y.rentalIncome : 0) - y.ongoingCosts - y.loanRepayment - y.incomeTaxCalc),
       },
@@ -81,31 +81,31 @@ export default function CashflowKpiStrip({
       {
         label: "Holding Cost",
         value: `${formatCurrencyCf(Math.round(holdingCosts / 12))} /month`,
-        color: "var(--cf-negative)",
+        color: "var(--color-negative)",
         sub: `${formatCurrencyCf(Math.round(holdingCosts))} p.a.`,
         sparkData: yearData.map(y => y.interestPortion + y.ongoingCosts),
       },
       {
         label: "Tax Offset",
         value: `+${formatCurrencyCf(Math.round(d.taxSaved))}`,
-        color: "var(--cf-positive)",
+        color: "var(--color-positive)",
         sub: `${Math.round(marginalRate * 100)}% marginal rate`,
         sparkData: yearData.map(y => y.taxSaved),
       },
       {
         label: "After Tax Cashflow",
         value: `${formatCurrencyCf(Math.round(d.propertyCashflow / 12))} /month`,
-        color: d.propertyCashflow >= 0 ? "var(--cf-positive)" : "var(--cf-negative)",
+        color: d.propertyCashflow >= 0 ? "var(--color-positive)" : "var(--color-negative)",
         sub: `${formatCurrencyCf(Math.round(d.propertyCashflow))} p.a.`,
         sparkData: yearData.map(y => y.propertyCashflow),
       },
       {
         label: "Gearing",
         value: netGearing < 0 ? "Negative" : "Positive",
-        color: netGearing < 0 ? "var(--cf-negative)" : "var(--cf-positive)",
+        color: netGearing < 0 ? "var(--color-negative)" : "var(--color-positive)",
         sub: formatCurrencyCf(Math.round(netGearing)),
         sparkData: yearData.map(y => (y.rentalIncome - (y.interestPortion + y.ongoingCosts) - (y.depDiv43 + y.depDiv40)) < 0 ? 0 : 1),
-        sparkColors: yearData.map(y => (y.rentalIncome - (y.interestPortion + y.ongoingCosts) - (y.depDiv43 + y.depDiv40)) < 0 ? "var(--cf-negative)" : "var(--cf-positive)"),
+        sparkColors: yearData.map(y => (y.rentalIncome - (y.interestPortion + y.ongoingCosts) - (y.depDiv43 + y.depDiv40)) < 0 ? "var(--color-negative)" : "var(--color-positive)"),
         sparkStepped: true,
       },
     ];
@@ -113,7 +113,7 @@ export default function CashflowKpiStrip({
     const taxableIncome = d.grossIncome - d.totalDeductionsForTax;
     const bracket = getMarginalTaxRate(taxableIncome);
     const getBracketColor = (rate: number) => {
-      if (rate <= 0) return "var(--cf-positive)";
+      if (rate <= 0) return "var(--color-positive)";
       if (rate <= 0.19) return "#86efac";
       if (rate <= 0.325) return "#fbbf24";
       if (rate <= 0.37) return "#f59e0b";
@@ -123,21 +123,21 @@ export default function CashflowKpiStrip({
       {
         label: "Taxable Income",
         value: formatCurrencyCf(Math.round(taxableIncome)),
-        color: "var(--cf-text)",
+        color: "var(--color-foreground)",
         sub: `Year ${selectedYear}`,
         sparkData: yearData.map(y => y.grossIncome - y.totalDeductionsForTax),
       },
       {
         label: "Total Deductions",
         value: formatCurrencyCf(Math.round(d.totalDeductions)),
-        color: "var(--cf-negative)",
+        color: "var(--color-negative)",
         sub: "Holding + Depreciation",
         sparkData: yearData.map(y => y.totalDeductions),
       },
       {
         label: "Tax Benefit",
         value: `+${formatCurrencyCf(Math.round(d.taxSaved))}`,
-        color: "var(--cf-positive)",
+        color: "var(--color-positive)",
         sub: `vs. no property`,
         sparkData: yearData.map(y => y.taxSaved),
       },
@@ -158,21 +158,21 @@ export default function CashflowKpiStrip({
       {
         label: "Property Value",
         value: formatCurrencyCf(Math.round(sy.propertyValue)),
-        color: "var(--cf-text)",
+        color: "var(--color-foreground)",
         sub: "",
         sparkData: yearData.map(y => y.propertyValue),
       },
       {
         label: "Loan Balance",
         value: `−${formatCurrencyCf(Math.round(sy.loanBalance))}`,
-        color: "var(--cf-negative)",
+        color: "var(--color-negative)",
         sub: "",
         sparkData: yearData.map(y => y.loanBalance),
       },
       {
         label: "LVR",
         value: `${lvr.toFixed(1)}%`,
-        color: lvr > 80 ? "var(--cf-negative)" : lvr > 60 ? "#fbbf24" : "var(--cf-positive)",
+        color: lvr > 80 ? "var(--color-negative)" : lvr > 60 ? "#fbbf24" : "var(--color-positive)",
         sub: "",
         sparkData: yearData.map(y => safeDiv(y.loanBalance, y.propertyValue) * 100),
       },
@@ -180,21 +180,21 @@ export default function CashflowKpiStrip({
         {
           label: "Property Equity",
           value: formatCurrencyCf(Math.round(sy.propertyValue - sy.loanBalance)),
-          color: "var(--cf-text)",
+          color: "var(--color-foreground)",
           sub: "",
           sparkData: yearData.map(y => y.propertyValue - y.loanBalance),
         },
         {
           label: "Offset Value",
           value: formatCurrencyCf(Math.round(sy.offsetBalanceAtYear)),
-          color: "var(--cf-text)",
+          color: "var(--color-foreground)",
           sub: "",
           sparkData: yearData.map(y => y.offsetBalanceAtYear),
         },
         {
           label: "Net Equity",
           value: formatCurrencyCf(Math.round(sy.netEquity)),
-          color: "var(--cf-positive)",
+          color: "var(--color-positive)",
           sub: "",
           sparkData: yearData.map(y => y.netEquity),
         },
@@ -202,7 +202,7 @@ export default function CashflowKpiStrip({
         {
           label: "Net Equity",
           value: formatCurrencyCf(Math.round(sy.netEquity)),
-          color: "var(--cf-positive)",
+          color: "var(--color-positive)",
           sub: "",
           sparkData: yearData.map(y => y.netEquity),
         },
@@ -215,7 +215,7 @@ export default function CashflowKpiStrip({
       {
         label: "Holding Costs",
         value: formatCurrencyCf(Math.round(holdingCosts)),
-        color: "var(--cf-negative)",
+        color: "var(--color-negative)",
         sub: "",
         sparkData: yearData.map(y => isInvestment ? y.interestPortion + y.ongoingCosts : y.ongoingCosts),
       },
@@ -229,7 +229,7 @@ export default function CashflowKpiStrip({
       {
         label: isInvestment ? "Total Deductions" : "Total Expenses",
         value: formatCurrencyCf(Math.round(isInvestment ? sy.totalDeductions : sy.ongoingCosts)),
-        color: isInvestment ? "#a78bfa" : "var(--cf-negative)",
+        color: isInvestment ? "#a78bfa" : "var(--color-negative)",
         sub: "",
         sparkData: yearData.map(y => isInvestment ? y.totalDeductions : y.ongoingCosts),
       },
@@ -239,11 +239,18 @@ export default function CashflowKpiStrip({
   const selectedIndex = selectedYear - 1;
 
   return (
-    <div className={`cf-kpi-strip ${isHovered ? "cf-kpi-strip--hover" : ""}`}>
+    <div className={`flex flex-wrap max-[768px]:flex-wrap ${isHovered ? "[&_.kpi-val]:transition-opacity [&_.kpi-val]:duration-150 [&_.kpi-val]:ease-out" : ""}`}>
       {items.map((item, i) => (
-        <div key={i} className="cf-kpi-cell">
-          <div className="cf-kpi-label">{item.label}</div>
-          <div className="cf-kpi-value" style={{ color: item.color }}>{item.value}</div>
+        <div
+          key={i}
+          className={`flex-1 px-6 py-5 flex flex-col gap-2 text-center relative max-[768px]:flex-[1_1_50%] max-[768px]:min-w-[50%] ${
+            i > 0
+              ? "before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-px before:bg-border max-[768px]:before:hidden"
+              : ""
+          }`}
+        >
+          <div className="mb-1 text-[10px] font-medium tracking-[0.04em] uppercase text-zinc-400/40">{item.label}</div>
+          <div className="kpi-val text-lg font-semibold tabular-nums tracking-tight leading-tight" style={{ color: item.color }}>{item.value}</div>
           {item.sparkData && (
             <KpiSparkline
               data={item.sparkData}

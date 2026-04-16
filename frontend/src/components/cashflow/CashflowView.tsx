@@ -7,8 +7,6 @@ import { useCashflowState } from "@/hooks/useCashflowState";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowDashboard from "./CashflowDashboard";
 import CashflowWizardStep from "./CashflowWizardStep";
-import "./cashflow.css";
-
 import type { StepId } from "@/lib/cashflow-types";
 type ActiveTab = "wizard" | "dashboard";
 
@@ -131,11 +129,11 @@ export default function CashflowCalculator() {
 
       {/* ── Wizard view: sidebar + wizard centered together ── */}
       {showWizard && (
-        <div className="cf-wizard-view">
-          <div className="cf-wizard-view-inner">
+        <div className="flex justify-center items-start min-h-[calc(100vh-100px)] bg-background text-foreground px-8 py-10">
+          <div className="flex w-full max-w-[960px]">
             <CashflowSidebar s={s} currentStep={sidebarStep} onStepClick={goToStep} />
 
-            <div className="cf-wizard-view-main">
+            <div className="flex-1 min-w-0 px-14 py-2 pb-8 flex items-start">
               {!s.allComplete && currentWizardStep && (
                 <CashflowWizardStep
                   s={s}

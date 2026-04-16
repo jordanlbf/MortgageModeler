@@ -95,9 +95,9 @@ export default function CashflowChart({
   };
 
   return (
-    <section className="cf-chart-section">
+    <section className="overflow-hidden bg-transparent w-full min-w-0 outline-none [&:focus]:outline-none">
       {/* Chart — constrained width, centered */}
-      <div className="cf-chart-wrapper" onMouseLeave={() => onHoverYear(null)}>
+      <div className="relative w-full h-[238px] outline-none border-none [&_*:focus]:!outline-none [&_*:focus-visible]:!outline-none [&_*:focus-visible]:!shadow-none" onMouseLeave={() => onHoverYear(null)}>
         <ResponsiveContainer width="100%" height="100%">
           {/* Gradient Bars with hover */}
           {chartView === "bars" ? (

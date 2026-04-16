@@ -157,6 +157,11 @@ body {
 .animate-overlay-in { animation: overlay-in 0.3s ease-out both; }
 .animate-card-pop-in { animation: card-pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
+@keyframes col-fade-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up, .animate-overlay-in, .animate-card-pop-in { animation: none !important; }
 }
