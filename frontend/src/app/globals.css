@@ -4,6 +4,7 @@
 @theme {
   --font-sans: var(--font-sora), "system-ui", "sans-serif";
 
+  /* ── Core palette ── */
   --color-background: #111215;
   --color-foreground: #f0fdfa;
   --color-accent: #2dd4bf;
@@ -12,15 +13,33 @@
   --color-subtle: #a1a1aa;
   --color-faint: #71717a;
 
+  /* ── Surfaces ── */
   --color-card: rgba(42,42,46,0.72);
   --color-card-elevated: rgba(44,44,48,0.82);
   --color-control: rgba(24,24,27,0.60);
   --color-slider-thumb: #1a1c20;
+  --color-surface-subtle: rgba(255,255,255,0.02);
 
+  /* ── Borders ── */
   --color-border: rgba(113,113,122,0.08);
   --color-border-hover: rgba(113,113,122,0.15);
   --color-accent-border: rgba(45,212,191,0.35);
   --color-scrollbar: rgba(148,163,184,0.12);
+
+  /* ── Semantic ── */
+  --color-negative: #f87171;
+  --color-positive: #4ade80;
+  --color-warning: #fbbf24;
+
+  /* ── Chart chrome ── */
+  --color-chart-grid-h: rgba(148,163,184,0.06);
+  --color-chart-grid-v: rgba(148,163,184,0.035);
+  --color-chart-axis: rgba(148,163,184,0.50);
+  --color-chart-axis-muted: rgba(148,163,184,0.40);
+  --color-chart-axis-line: rgba(148,163,184,0.08);
+  --color-chart-cursor: rgba(148,163,184,0.15);
+  --color-chart-legend-inactive: rgba(148,163,184,0.30);
+  --color-chart-legend-dot-inactive: rgba(148,163,184,0.20);
 }
 
 

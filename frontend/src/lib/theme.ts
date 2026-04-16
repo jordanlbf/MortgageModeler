@@ -41,14 +41,14 @@ export const t = {
 
   // ── Chart chrome ─────────────────────────────────
   chart: {
-    gridH: "rgba(148,163,184,0.06)",
-    gridV: "rgba(148,163,184,0.035)",
-    axisTick: "rgba(148,163,184,0.50)",
-    axisTickMuted: "rgba(148,163,184,0.40)",
-    axisLine: "rgba(148,163,184,0.08)",
-    cursor: "rgba(148,163,184,0.15)",
-    legendInactive: "rgba(148,163,184,0.30)",
-    legendDotInactive: "rgba(148,163,184,0.20)",
+    gridH: "var(--color-chart-grid-h)",
+    gridV: "var(--color-chart-grid-v)",
+    axisTick: "var(--color-chart-axis)",
+    axisTickMuted: "var(--color-chart-axis-muted)",
+    axisLine: "var(--color-chart-axis-line)",
+    cursor: "var(--color-chart-cursor)",
+    legendInactive: "var(--color-chart-legend-inactive)",
+    legendDotInactive: "var(--color-chart-legend-dot-inactive)",
   },
 
   // ── Tooltip ──────────────────────────────────────
