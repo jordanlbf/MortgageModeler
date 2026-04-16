@@ -161,6 +161,26 @@ body {
   .animate-fade-up, .animate-overlay-in, .animate-card-pop-in { animation: none !important; }
 }
 
+/* ── Home page background effects ── */
+.home-bg-glow {
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(45,212,191,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 35% at 50% 5%, rgba(45,212,191,0.10) 0%, transparent 65%);
+}
+.home-bg-noise {
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+}
+
+@layer base {
+  [data-theme="arctic"] .home-bg-glow {
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(56,189,248,0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 35% at 50% 5%, rgba(56,189,248,0.10) 0%, transparent 65%);
+  }
+  [data-theme="arctic"] .home-bg-noise { opacity: 0.015; }
+}
+
 /* ── Slate Arctic select arrow ── */
 @layer base {
   [data-theme="arctic"] .form-select {

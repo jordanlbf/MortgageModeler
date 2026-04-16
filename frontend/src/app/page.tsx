@@ -1,9 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { TOOLS, TOOL_COLORS } from "@/lib/constants";
 import type { Tool } from "@/lib/constants";
 import { t, mix } from "@/lib/theme";
 import Header from "@/components/layout/Header";
-import "./home.css";
 
 /* ── SVG Icons ────────────────────────────────────── */
 const icons: Record<string, React.ReactNode> = {
@@ -97,80 +98,162 @@ const icons: Record<string, React.ReactNode> = {
 /* ── ToolCard ─────────────────────────────────────── */
 function ToolCard({ tool }: { tool: Tool }) {
   const color = TOOL_COLORS[tool.id] ?? { primary: "#94a3b8", glow: "rgba(148,163,184,0.08)" };
+  const c = color.primary;
 
-  const inner = (
+  const card = (
     <div
-      className={`home-card ${tool.active ? "home-card--active" : "home-card--inactive"}`}
-      style={{ "--tool-color": color.primary } as React.CSSProperties}
+      className={`group relative overflow-hidden flex flex-col items-center justify-center text-center px-9 py-11 rounded-3xl backdrop-blur-[12px] transition-all duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] max-[480px]:px-5 max-[480px]:py-8 ${
+        tool.active
+          ? "cursor-pointer hover:-translate-y-1 hover:scale-[1.015]"
+          : "cursor-default opacity-50"
+      }`}
+      style={tool.active ? {
+        background: mix(c, 4),
+        border: `1px solid ${mix(c, 28)}`,
+        boxShadow: `0 2px 16px rgba(0,0,0,0.4), 0 0 0 0.5px ${mix(c, 6)}, inset 0 1px 0 rgba(255,255,255,0.03)`,
+      } : {
+        background: "rgba(30,30,34,0.45)",
+        border: "1px solid rgba(255,255,255,0.04)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.02)",
+      }}
+      onMouseEnter={tool.active ? (e) => {
+        e.currentTarget.style.background = mix(c, 6.5);
+        e.currentTarget.style.borderColor = mix(c, 35);
+        e.currentTarget.style.boxShadow = `0 20px 50px -12px rgba(0,0,0,0.6), 0 0 0 0.5px ${mix(c, 12)}, 0 0 30px -8px ${mix(c, 6)}, inset 0 1px 0 rgba(255,255,255,0.04)`;
+      } : undefined}
+      onMouseLeave={tool.active ? (e) => {
+        e.currentTarget.style.background = mix(c, 4);
+        e.currentTarget.style.borderColor = mix(c, 28);
+        e.currentTarget.style.boxShadow = `0 2px 16px rgba(0,0,0,0.4), 0 0 0 0.5px ${mix(c, 6)}, inset 0 1px 0 rgba(255,255,255,0.03)`;
+      } : undefined}
     >
-      <div className="home-card-strip" />
-      <div className="home-card-shine" />
+      {/* Accent strip */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px] scale-x-0 origin-left transition-transform duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-x-100"
+        style={{ background: `linear-gradient(90deg, ${c}, ${mix(c, 15)})` }}
+      />
+      {/* Shine sweep */}
+      <div
+        className="absolute top-0 -left-full w-full h-full opacity-0 pointer-events-none transition-all duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:left-full group-hover:opacity-35"
+        style={{
+          background: `linear-gradient(105deg, transparent 40%, ${mix(c, 4)} 45%, ${mix(c, 8)} 50%, ${mix(c, 4)} 55%, transparent 60%)`,
+        }}
+      />
 
-      <div className="home-card-icon">
-        {icons[tool.id]}
+      {/* Icon */}
+      <div
+        className="mb-6 leading-none w-[88px] h-[88px] flex items-center justify-center rounded-[20px] border transition-transform duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
+        style={tool.active ? {
+          background: mix(c, 6),
+          borderColor: mix(c, 42),
+          boxShadow: `0 0 18px ${mix(c, 18)}`,
+        } : {
+          background: "rgba(255,255,255,0.02)",
+          borderColor: "rgba(255,255,255,0.035)",
+        }}
+      >
+        <div className="w-14 h-14 [&>svg]:w-14 [&>svg]:h-14">{icons[tool.id]}</div>
       </div>
 
-      <h2 className="home-card-title">{tool.title}</h2>
-      <p className="home-card-desc">{tool.desc}</p>
+      {/* Title */}
+      <h2 className={`text-[22px] font-semibold tracking-[-0.01em] m-0 leading-[1.2] ${
+        tool.active ? "text-foreground" : "text-foreground/50"
+      }`}>{tool.title}</h2>
 
+      {/* Description */}
+      <p className={`text-[13px] font-normal mt-2 mb-0 leading-[1.45] tracking-[0.01em] ${
+        tool.active ? "text-[rgba(148,163,184,0.3)]" : "text-[rgba(148,163,184,0.2)]"
+      }`}>{tool.desc}</p>
+
+      {/* Arrow */}
       {tool.active && (
-        <span className="home-card-arrow" aria-hidden="true">
+        <span
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 translate-y-1 flex items-center justify-center w-8 h-8 rounded-full opacity-0 transition-all duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 group-hover:translate-y-0 max-[480px]:hidden"
+          style={{
+            background: mix(c, 8),
+            border: `1px solid ${mix(c, 18)}`,
+            color: mix(c, 65),
+          }}
+          aria-hidden="true"
+        >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
       )}
 
-      <span className={`home-card-badge ${
-        tool.badge === "Beta" ? "home-card-badge--beta"
-        : tool.active ? "home-card-badge--live"
-        : "home-card-badge--soon"
-      }`}>
+      {/* Badge */}
+      <span className={`absolute top-4 right-4 text-[9px] font-semibold uppercase tracking-widest px-2 py-[3px] rounded leading-none max-[480px]:top-2.5 max-[480px]:right-2.5 max-[480px]:text-[8px] max-[480px]:px-1.5 max-[480px]:py-[2px] ${
+        tool.badge === "Beta"
+          ? "text-[rgba(168,139,250,0.95)] bg-[rgba(168,139,250,0.12)] backdrop-blur-[12px]"
+          : tool.active
+            ? "text-[#111]"
+            : "text-[rgba(250,204,21,0.85)] bg-[rgba(250,204,21,0.12)]"
+      }`}
+        style={!tool.badge && tool.active ? {
+          background: `linear-gradient(135deg, ${c}, ${mix(c, 70)})`,
+        } : undefined}
+      >
         {tool.badge ?? (tool.active ? "Live" : "Soon")}
       </span>
     </div>
   );
 
   if (tool.active) {
-    return <Link href={`/${tool.id}`} className="home-card-link">{inner}</Link>;
+    return <Link href={`/${tool.id}`} className="no-underline text-inherit outline-none focus-visible:[&>div]:shadow-[0_0_0_2px_rgba(45,212,191,0.3),0_4px_24px_-4px_rgba(0,0,0,0.4)]">{card}</Link>;
   }
 
-  return inner;
+  return card;
 }
 
 /* ── Page ──────────────────────────────────────────── */
 export default function HomePage() {
   return (
-    <div className="home-wrap">
-      <Header />
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
+      {/* Background effects */}
+      <div className="fixed inset-0 home-bg-glow pointer-events-none z-0" />
+      <div className="fixed inset-0 home-bg-noise pointer-events-none z-0" />
+
+      <div className="relative z-[1]">
+        <Header />
+      </div>
 
       {/* Hero + Cards */}
-      <main className="home-hero">
-        <div className="home-glow" />
+      <main className="relative z-[1] flex flex-col items-center flex-1 px-10 pt-12 pb-10 text-center max-[900px]:px-6 max-[900px]:pt-8 max-[480px]:px-4 max-[480px]:pt-6">
+        {/* Ambient glow */}
+        <div className="absolute -top-[10%] left-1/2 -translate-x-1/2 w-[70%] h-1/2 pointer-events-none z-0"
+          style={{ background: `radial-gradient(ellipse 45% 40% at 50% 40%, ${mix("var(--color-accent)", 2)} 0%, transparent 70%)` }}
+        />
 
-        <h1 className="home-title">Model property decisions with precision.</h1>
+        <h1 className="relative z-[1] text-[3.75rem] font-semibold text-foreground tracking-[-0.035em] m-0 leading-[1.1] whitespace-nowrap animate-fade-up max-[900px]:text-[2.5rem] max-[680px]:text-[1.75rem] max-[680px]:whitespace-normal max-[480px]:text-[1.35rem]">
+          Model property decisions with precision.
+        </h1>
 
-        <div className="home-pills">
-          <span className="home-pill">Daily compounding</span>
-          <span className="home-pill">AUD</span>
-          <span className="home-pill">No sign-up</span>
-          <span className="home-pill">Free forever</span>
+        <div className="relative z-[1] flex flex-wrap justify-center gap-2 mt-5 animate-fade-up [animation-delay:0.2s] max-[480px]:gap-1.5">
+          {["Daily compounding", "AUD", "No sign-up", "Free forever"].map((pill) => (
+            <span key={pill} className="text-[11px] font-medium tracking-[0.04em] text-[rgba(148,163,184,0.4)] px-3 py-1 rounded-full border border-[rgba(148,163,184,0.08)] bg-[rgba(148,163,184,0.03)] max-[480px]:text-[10px] max-[480px]:px-2.5 max-[480px]:py-[3px]">
+              {pill}
+            </span>
+          ))}
         </div>
 
-        <div className="home-cards-center">
-          <div className="home-featured">
+        <div className="relative z-[1] flex-1 flex flex-col items-center justify-center w-full -mt-5 animate-fade-up [animation-delay:0.3s]">
+          {/* Featured (active) cards */}
+          <div className="w-full max-w-[1300px] mb-9 grid grid-cols-4 gap-6 animate-fade-up [animation-delay:0.35s] max-[900px]:grid-cols-3 max-[900px]:gap-3.5 max-[680px]:grid-cols-2 max-[480px]:grid-cols-2 max-[480px]:gap-3">
             {TOOLS.filter((t) => t.active).map((tool) => (
               <ToolCard key={tool.id} tool={tool} />
             ))}
           </div>
 
-          <div className="home-divider">
-            <span className="home-divider-line" />
-            <span className="home-divider-text">Coming soon</span>
-            <span className="home-divider-line" />
+          {/* Divider */}
+          <div className="w-full max-w-[1300px] flex items-center gap-4 mb-5 animate-fade-up [animation-delay:0.5s]">
+            <span className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(148,163,184,0.1)] to-transparent" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-[rgba(148,163,184,0.2)] whitespace-nowrap">Coming soon</span>
+            <span className="flex-1 h-px bg-gradient-to-r from-transparent via-[rgba(148,163,184,0.1)] to-transparent" />
           </div>
 
-          <div className="home-cards">
+          {/* Coming soon cards */}
+          <div className="w-full max-w-[1300px] grid grid-cols-4 gap-6 animate-fade-up [animation-delay:0.6s] max-[900px]:grid-cols-3 max-[900px]:gap-3.5 max-[680px]:grid-cols-2 max-[480px]:grid-cols-2 max-[480px]:gap-3">
             {TOOLS.filter((t) => !t.active).map((tool) => (
               <ToolCard key={tool.id} tool={tool} />
             ))}
@@ -179,10 +262,10 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="home-footer">
-        <div className="home-footer-inner">
-          <span className="home-footer-brand">Mortgage Modeler</span>
-          <span className="home-footer-sep">&middot;</span>
+      <footer className="relative z-[1] px-10 py-5 border-t border-white/[0.04] max-[900px]:px-6 max-[900px]:py-4 max-[480px]:px-4 max-[480px]:py-3">
+        <div className="flex items-center justify-center gap-2 text-[11px] text-[rgba(148,163,184,0.25)]">
+          <span className="font-semibold text-[rgba(148,163,184,0.35)]">Mortgage Modeler</span>
+          <span className="text-[rgba(148,163,184,0.12)]">&middot;</span>
           <span>v0.1</span>
         </div>
       </footer>
