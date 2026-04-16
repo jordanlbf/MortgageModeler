@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  getMarginalTaxRate,
-  formatAbbreviated,
-  formatChartLabel,
-} from "@/lib/cashflow-calculations";
+import { getMarginalTaxRate } from "@/lib/cashflow-calculations";
 
 describe("getMarginalTaxRate (Stage 3 — effective 1 July 2024)", () => {
   it("returns 0 for income at or below tax-free threshold", () => {
@@ -29,37 +25,5 @@ describe("getMarginalTaxRate (Stage 3 — effective 1 July 2024)", () => {
   it("returns 0.45 for income above 190,000", () => {
     expect(getMarginalTaxRate(200000)).toBe(0.45);
     expect(getMarginalTaxRate(1000000)).toBe(0.45);
-  });
-});
-
-describe("formatAbbreviated", () => {
-  it("formats millions with 2 decimal places", () => {
-    expect(formatAbbreviated(1500000)).toBe("$1.50m");
-  });
-
-  it("formats thousands with k suffix", () => {
-    expect(formatAbbreviated(50000)).toBe("$50k");
-  });
-});
-
-describe("formatChartLabel", () => {
-  it("formats positive millions", () => {
-    expect(formatChartLabel(1500000)).toBe("$1.5m");
-  });
-
-  it("formats positive thousands", () => {
-    expect(formatChartLabel(50000)).toBe("$50k");
-  });
-
-  it("formats negative with unicode minus", () => {
-    expect(formatChartLabel(-50000)).toBe("\u2212$50k");
-  });
-
-  it("formats small values", () => {
-    expect(formatChartLabel(500)).toBe("$500");
-  });
-
-  it("formats negative small values", () => {
-    expect(formatChartLabel(-500)).toBe("\u2212$500");
   });
 });

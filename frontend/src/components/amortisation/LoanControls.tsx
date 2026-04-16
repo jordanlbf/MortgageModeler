@@ -1,7 +1,7 @@
 import { memo } from "react";
 import type { Frequency } from "@/lib/types";
-import { parseCurrency, parsePercent, parseYears, FREQ_LABELS } from "@/lib/constants";
-import { formatCurrencyShort } from "@/lib/formatters";
+import { FREQ_LABELS } from "@/lib/constants";
+import { formatCurrencyShort, parseCurrencyInput } from "@/lib/formatters";
 import { t, SERIES, mix } from "@/lib/theme";
 import GlassCard from "@/components/ui/GlassCard";
 import Slider from "@/components/ui/Slider";
@@ -71,7 +71,7 @@ export default memo(function LoanControls({
               step={10_000}
               onChange={onPurchasePriceChange}
               editable
-              parseDisplay={parseCurrency}
+              parseDisplay={parseCurrencyInput}
             />
           </div>
           <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
@@ -84,7 +84,7 @@ export default memo(function LoanControls({
               step={5_000}
               onChange={onDepositChange}
               editable
-              parseDisplay={parseCurrency}
+              parseDisplay={parseCurrencyInput}
             />
           </div>
           <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
@@ -97,7 +97,7 @@ export default memo(function LoanControls({
               step={0.1}
               onChange={onRateChange}
               editable
-              parseDisplay={parsePercent}
+              parseDisplay={parseCurrencyInput}
             />
           </div>
           <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
@@ -110,7 +110,7 @@ export default memo(function LoanControls({
               step={1}
               onChange={onYearsChange}
               editable
-              parseDisplay={parseYears}
+              parseDisplay={parseCurrencyInput}
             />
           </div>
         </div>
@@ -129,7 +129,7 @@ export default memo(function LoanControls({
                 step={5_000}
                 onChange={onOffsetBalanceChange}
                 editable
-                parseDisplay={parseCurrency}
+                parseDisplay={parseCurrencyInput}
                 accent={SERIES.offset.color}
               />
             </div>
@@ -143,7 +143,7 @@ export default memo(function LoanControls({
                 step={50}
                 onChange={onOffsetContributionChange}
                 editable
-                parseDisplay={parseCurrency}
+                parseDisplay={parseCurrencyInput}
                 accent={SERIES.offset.color}
               />
             </div>
@@ -163,7 +163,7 @@ export default memo(function LoanControls({
               step={0.5}
               onChange={onAppreciationChange}
               editable
-              parseDisplay={parsePercent}
+              parseDisplay={parseCurrencyInput}
               accent={SERIES.eq.color}
             />
           </div>

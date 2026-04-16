@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
-import { parseCurrencyCf, getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { parseCurrencyInput } from "@/lib/formatters";
 import { useCashflowFormState } from "./useCashflowFormState";
 import { useCashflowAPI } from "./useCashflowAPI";
 
@@ -142,14 +143,14 @@ export function useCashflowState(): CashflowState {
     : form.setupComplete && form.propertyComplete && form.loanComplete && form.costsComplete;
 
   const loanAmount = isNewPurchase
-    ? parseCurrencyCf(form.purchasePrice) - parseCurrencyCf(form.depositAmount)
-    : parseCurrencyCf(form.currentLoanBalance);
+    ? parseCurrencyInput(form.purchasePrice) - parseCurrencyInput(form.depositAmount)
+    : parseCurrencyInput(form.currentLoanBalance);
 
   const propertyValue = isNewPurchase
-    ? parseCurrencyCf(form.purchasePrice)
-    : parseCurrencyCf(form.currentValue);
+    ? parseCurrencyInput(form.purchasePrice)
+    : parseCurrencyInput(form.currentValue);
 
-  const marginalRate = getMarginalTaxRate(parseCurrencyCf(form.taxableIncome));
+  const marginalRate = getMarginalTaxRate(parseCurrencyInput(form.taxableIncome));
 
   // API layer
   const { yearData, error, loading } = useCashflowAPI(form, allComplete);

@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
 import { CF_COLORS as C } from "@/lib/theme";
+import { formatCompactCurrency } from "@/lib/formatters";
 
 export type ChartView = "bars" | "stacked" | "comparison";
 
@@ -78,13 +79,6 @@ export default function CashflowChart({
   const barColorDark = isCashflow ? C.positiveDark : C.tealDark;
   const barColorSelected = isCashflow ? C.positiveLit : C.tealLit;
 
-  const formatYAxis = (value: number) => {
-    const abs = Math.abs(value);
-    const sign = value < 0 ? "\u2212" : "";
-    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}m`;
-    if (abs >= 1000) return `${sign}$${Math.round(abs / 1000)}k`;
-    return `$${value}`;
-  };
 
   return (
     <section className="overflow-hidden bg-transparent w-full min-w-0 outline-none [&:focus]:outline-none">
@@ -128,7 +122,7 @@ export default function CashflowChart({
                 interval={4}
               />
               <YAxis
-                tickFormatter={formatYAxis}
+                tickFormatter={formatCompactCurrency}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: C.axisTick, fontSize: 11 }}
@@ -184,7 +178,7 @@ export default function CashflowChart({
                 </linearGradient>
               </defs>
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: C.axisTick, fontSize: 13 }} interval={4} />
-              <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: C.axisTick, fontSize: 13 }} width={60} />
+              <YAxis tickFormatter={formatCompactCurrency} axisLine={false} tickLine={false} tick={{ fill: C.axisTick, fontSize: 13 }} width={60} />
 
               <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Area type="monotone" dataKey="propertyValue" stroke={C.teal} strokeWidth={2} fill="url(#equityAreaGradient)" />
@@ -200,7 +194,7 @@ export default function CashflowChart({
               onClick={(state) => { const idx = idxFromState(state as Record<string, unknown>); if (idx != null) onSelectYear(rechartsData[idx].year); }}
             >
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: C.axisTick, fontSize: 13 }} interval={4} />
-              <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: C.axisTick, fontSize: 13 }} width={60} />
+              <YAxis tickFormatter={formatCompactCurrency} axisLine={false} tickLine={false} tick={{ fill: C.axisTick, fontSize: 13 }} width={60} />
               <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Bar dataKey="holdingCosts" radius={[4, 4, 0, 0]}
                 onMouseEnter={(data) => { const yr = yearFromBar(data); if (yr) onHoverYear(yr); }}
@@ -229,7 +223,7 @@ export default function CashflowChart({
               onClick={(state) => { const idx = idxFromState(state as Record<string, unknown>); if (idx != null) onSelectYear(rechartsData[idx].year); }}
             >
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: C.axisTick, fontSize: 13 }} interval={4} />
-              <YAxis tickFormatter={formatYAxis} axisLine={false} tickLine={false} tick={{ fill: C.axisTick, fontSize: 13 }} width={60} />
+              <YAxis tickFormatter={formatCompactCurrency} axisLine={false} tickLine={false} tick={{ fill: C.axisTick, fontSize: 13 }} width={60} />
               <Tooltip content={() => null} cursor={{ fill: "transparent" }} isAnimationActive={false} />
               <Bar dataKey="netEquity" radius={[4, 4, 0, 0]} opacity={0.8}
                 onMouseEnter={(data) => { const yr = yearFromBar(data); if (yr) onHoverYear(yr); }}

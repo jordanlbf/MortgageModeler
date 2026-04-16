@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { useState, useEffect, useMemo, useRef } from "react";
 import type { ChartDataPoint } from "@/lib/types";
-import { formatCurrency, formatCompact } from "@/lib/formatters";
+import { formatCurrency, formatCompactCurrency } from "@/lib/formatters";
 import { t, SERIES, SERIES_LIST } from "@/lib/theme";
 
 const SERIES_KEYS = Object.keys(SERIES) as (keyof typeof SERIES)[];
@@ -250,7 +250,7 @@ export default function AmortisationChart({
               tick={{ fill: t.chart.axisTick, fontSize: 11, fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v) => "$" + formatCompact(v)}
+              tickFormatter={formatCompactCurrency}
               width={48}
             />
             <YAxis

@@ -5,6 +5,7 @@ import {
   formatDollarsSigned,
   formatCurrencyShort,
   formatCompact,
+  formatCompactCurrency,
 } from "@/lib/formatters";
 
 describe("parseCurrencyInput", () => {
@@ -90,5 +91,31 @@ describe("formatCompact", () => {
 
   it("formats exactly 1 thousand", () => {
     expect(formatCompact(1_000)).toBe("1k");
+  });
+});
+
+describe("formatCompactCurrency", () => {
+  it("formats positive millions", () => {
+    expect(formatCompactCurrency(1_500_000)).toBe("$1.5m");
+  });
+
+  it("formats positive thousands", () => {
+    expect(formatCompactCurrency(50_000)).toBe("$50k");
+  });
+
+  it("formats small values", () => {
+    expect(formatCompactCurrency(500)).toBe("$500");
+  });
+
+  it("formats negative with unicode minus", () => {
+    expect(formatCompactCurrency(-50_000)).toBe("\u2212$50k");
+  });
+
+  it("formats negative small values", () => {
+    expect(formatCompactCurrency(-500)).toBe("\u2212$500");
+  });
+
+  it("formats zero", () => {
+    expect(formatCompactCurrency(0)).toBe("$0");
   });
 });

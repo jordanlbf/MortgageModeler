@@ -56,10 +56,20 @@ export function formatDollarsSigned(n: number): string {
   return n < 0 ? `\u2212$${formatted}` : `$${formatted}`;
 }
 
+/** Compact unsigned number: `1.5m`, `50k`, `500`. For axis ticks without currency. */
 export function formatCompact(value: number): string {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}m`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(0)}k`;
   return `${value.toFixed(0)}`;
+}
+
+/** Compact signed currency: `$1.5m`, `−$50k`, `$500`. Unicode minus for negatives. */
+export function formatCompactCurrency(value: number): string {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "\u2212" : "";
+  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(1)}m`;
+  if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(0)}k`;
+  return `${sign}$${Math.round(abs)}`;
 }
 
 

@@ -19,6 +19,28 @@ const DAYS_PER_PERIOD: Record<number, number> = {
  * Reverse-solve: given a desired periodic payment, compute the loan amount
  * using daily compounding (matching the backend exactly).
  */
+/**
+ * Forward-solve: given a loan amount, compute the periodic payment
+ * using daily compounding (matching the backend exactly).
+ */
+export function paymentFromLoanAmount(
+  principal: number,
+  annualRate: number,
+  years: number,
+  periodsPerYear: number,
+): number {
+  const dailyRate = annualRate / 365;
+  const daysPerPeriod = DAYS_PER_PERIOD[periodsPerYear] ?? 365 / periodsPerYear;
+  const r = Math.pow(1 + dailyRate, daysPerPeriod) - 1;
+  const n = years * periodsPerYear;
+  if (r === 0) return principal / n;
+  return principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+}
+
+/**
+ * Reverse-solve: given a desired periodic payment, compute the loan amount
+ * using daily compounding (matching the backend exactly).
+ */
 export function loanAmountFromPayment(
   payment: number,
   annualRate: number,

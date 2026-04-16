@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrencyCf } from "@/lib/cashflow-calculations";
+import { formatDollarsSigned } from "@/lib/formatters";
 import type { ViewMode } from "@/lib/cashflow-types";
 import { safeDiv } from "@/lib/formatters";
 import type { useCashflowState } from "@/hooks/useCashflowState";
@@ -30,13 +30,13 @@ export default function CashflowDashboard({
 
   // Hero value/label/color per view mode
   const summaryCashflow = y1.salary + (s.isInvestment ? y1.rentalIncome : 0) - y1.ongoingCosts - y1.loanRepayment - y1.incomeTaxCalc;
-  const signedCf = (v: number) => `${v >= 0 ? "+" : ""}${formatCurrencyCf(Math.round(v))}`;
+  const signedCf = (v: number) => `${v >= 0 ? "+" : ""}${formatDollarsSigned(Math.round(v))}`;
   const heroValue = vm === "equity"
-    ? formatCurrencyCf(Math.round(y1.netEquity))
+    ? formatDollarsSigned(Math.round(y1.netEquity))
     : vm === "deductions"
-    ? formatCurrencyCf(Math.round(y1.totalDeductions))
+    ? formatDollarsSigned(Math.round(y1.totalDeductions))
     : vm === "tax"
-    ? formatCurrencyCf(Math.round(-y1.incomeTaxCalc))
+    ? formatDollarsSigned(Math.round(-y1.incomeTaxCalc))
     : vm === "property"
     ? signedCf(y1.propertyCashflow)
     : signedCf(summaryCashflow);

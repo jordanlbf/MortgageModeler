@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { CashflowState } from "@/hooks/useCashflowState";
-import { parseCurrencyCf, formatCurrencyCf } from "@/lib/cashflow-calculations";
+import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 import {
   Home,
   DollarSign,
@@ -57,23 +57,23 @@ function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
     case "property": {
       if (!s.propertyComplete) return null;
       if (s.isNewPurchase) {
-        const price = parseCurrencyCf(s.purchasePrice);
-        const deposit = parseCurrencyCf(s.depositAmount);
+        const price = parseCurrencyInput(s.purchasePrice);
+        const deposit = parseCurrencyInput(s.depositAmount);
         const loanAmt = price - deposit;
         const lvr = price > 0 ? Math.round((loanAmt / price) * 100) : 0;
         return [
-          { primary: true, text: `${formatCurrencyCf(price)} Purchase Price` },
-          { value: formatCurrencyCf(loanAmt), descriptor: "Loan Balance" },
+          { primary: true, text: `${formatDollarsSigned(price)} Purchase Price` },
+          { value: formatDollarsSigned(loanAmt), descriptor: "Loan Balance" },
           { value: `${lvr}%`, descriptor: "LVR" },
         ];
       } else {
-        const value = parseCurrencyCf(s.currentValue);
-        const loan = parseCurrencyCf(s.currentLoanBalance);
+        const value = parseCurrencyInput(s.currentValue);
+        const loan = parseCurrencyInput(s.currentLoanBalance);
         const equity = value - loan;
         const lvr = value > 0 ? Math.round((loan / value) * 100) : 0;
         return [
-          { primary: true, text: `${formatCurrencyCf(value)} Current Value` },
-          { value: formatCurrencyCf(equity), descriptor: "Equity" },
+          { primary: true, text: `${formatDollarsSigned(value)} Current Value` },
+          { value: formatDollarsSigned(equity), descriptor: "Equity" },
           { value: `${lvr}%`, descriptor: "LVR" },
         ];
       }
@@ -81,53 +81,53 @@ function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
     case "loan": {
       if (!s.loanComplete) return null;
       const loanAmt = s.isNewPurchase
-        ? parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount)
-        : parseCurrencyCf(s.currentLoanBalance);
+        ? parseCurrencyInput(s.purchasePrice) - parseCurrencyInput(s.depositAmount)
+        : parseCurrencyInput(s.currentLoanBalance);
       const rate = parseFloat(s.interestRate) / 100 / 12;
       const n = parseInt(s.loanTerm) * 12;
       const monthly = rate > 0 ? Math.round((loanAmt * rate) / (1 - Math.pow(1 + rate, -n))) : 0;
       return [
         { primary: true, text: `${s.interestRate}% Interest Rate` },
         { value: `${s.loanTerm} Year`, descriptor: "Loan Term" },
-        { value: formatCurrencyCf(monthly), descriptor: "/ mo Repayment" },
+        { value: formatDollarsSigned(monthly), descriptor: "/ mo Repayment" },
       ];
     }
     case "costs": {
       if (!s.costsComplete) return null;
-      const council = parseCurrencyCf(s.councilRates);
-      const water = parseCurrencyCf(s.waterRates);
-      const insurance = parseCurrencyCf(s.insurance);
-      const strata = s.hasStrata ? parseCurrencyCf(s.strataFees) * 4 : 0;
+      const council = parseCurrencyInput(s.councilRates);
+      const water = parseCurrencyInput(s.waterRates);
+      const insurance = parseCurrencyInput(s.insurance);
+      const strata = s.hasStrata ? parseCurrencyInput(s.strataFees) * 4 : 0;
       const total = council + water + insurance + strata;
       const lines: StepLine[] = [
-        { primary: true, text: `${formatCurrencyCf(total)} Annual Costs` },
-        { value: formatCurrencyCf(council), descriptor: "Council" },
-        { value: formatCurrencyCf(insurance), descriptor: "Insurance" },
+        { primary: true, text: `${formatDollarsSigned(total)} Annual Costs` },
+        { value: formatDollarsSigned(council), descriptor: "Council" },
+        { value: formatDollarsSigned(insurance), descriptor: "Insurance" },
       ];
-      if (s.hasStrata) lines.push({ value: formatCurrencyCf(strata), descriptor: "Strata / yr" });
+      if (s.hasStrata) lines.push({ value: formatDollarsSigned(strata), descriptor: "Strata / yr" });
       return lines;
     }
     case "rental": {
       if (!s.rentalComplete) return null;
-      const weekly = parseCurrencyCf(s.weeklyRent);
+      const weekly = parseCurrencyInput(s.weeklyRent);
       const annual = weekly * 52;
       const mgmt = parseFloat(s.managementFee) || 0;
       const netAnnual = annual * (1 - mgmt / 100);
       return [
-        { primary: true, text: `${formatCurrencyCf(weekly)} / wk Rent` },
-        { value: formatCurrencyCf(Math.round(netAnnual)), descriptor: "Net Annual" },
+        { primary: true, text: `${formatDollarsSigned(weekly)} / wk Rent` },
+        { value: formatDollarsSigned(Math.round(netAnnual)), descriptor: "Net Annual" },
         { value: `${mgmt}%`, descriptor: "Management" },
       ];
     }
     case "tax": {
       if (!s.taxComplete) return null;
-      const income = parseCurrencyCf(s.taxableIncome);
+      const income = parseCurrencyInput(s.taxableIncome);
       const rate =
         income > 190000 ? "45%" :
         income > 135000 ? "37%" :
         income > 45000  ? "30%" : "16%";
       return [
-        { primary: true, text: `${formatCurrencyCf(income)} Taxable Income` },
+        { primary: true, text: `${formatDollarsSigned(income)} Taxable Income` },
         { value: rate, descriptor: "Tax Bracket" },
       ];
     }

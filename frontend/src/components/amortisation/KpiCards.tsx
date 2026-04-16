@@ -1,8 +1,8 @@
 import { memo } from "react";
 import type { Frequency } from "@/lib/types";
 import type { ScheduleResponse } from "@/lib/api";
-import { PERIODS_PER_YEAR, FREQ_OPTIONS, FREQ_LABELS, parseCurrency } from "@/lib/constants";
-import { formatCurrency, formatCurrencyShort } from "@/lib/formatters";
+import { PERIODS_PER_YEAR, FREQ_OPTIONS, FREQ_LABELS } from "@/lib/constants";
+import { formatCurrency, formatCurrencyShort, parseCurrencyInput } from "@/lib/formatters";
 import { loanAmountFromPayment } from "@/lib/calculations";
 import { t, mix } from "@/lib/theme";
 import { useAnimatedValue } from "@/hooks/useAnimatedValue";
@@ -55,7 +55,7 @@ export default memo(function KpiCards({
           {data ? (
             <EditableValue
               display={formatCurrency(animPayment)}
-              parse={parseCurrency}
+              parse={parseCurrencyInput}
               onCommit={handleRepaymentCommit}
               className="w-full text-center text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums"
             />

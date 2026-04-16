@@ -9,6 +9,25 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 // Re-export so existing consumers don't break
 export type { Frequency };
 
+// ── Shared fetch helpers ────────────────────
+
+async function postJson<TReq, TRes>(path: string, body: TReq, signal?: AbortSignal): Promise<TRes> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+async function getJson<TRes>(path: string, signal?: AbortSignal): Promise<TRes> {
+  const res = await fetch(`${API_BASE}${path}`, { signal });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
 // ── Types (match backend response) ───────────
 
 export interface ScheduleRow {
@@ -107,22 +126,11 @@ export interface TaxBreakdownRequest {
   };
 }
 
-export async function fetchTaxBreakdown(
+export function fetchTaxBreakdown(
   params: TaxBreakdownRequest,
   signal?: AbortSignal,
 ): Promise<TaxBreakdownResponse> {
-  const res = await fetch(`${API_BASE}/api/tax/breakdown`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-    signal,
-  });
-
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status}`);
-  }
-
-  return res.json();
+  return postJson("/api/tax/breakdown", params, signal);
 }
 
 // ── Grants eligibility ─────────────────────
@@ -173,34 +181,17 @@ export interface GrantsEligibilityRequest {
   off_the_plan: boolean | null;
 }
 
-export async function fetchGrantSchemes(
+export function fetchGrantSchemes(
   signal?: AbortSignal,
 ): Promise<{ schemes: GrantScheme[] }> {
-  const res = await fetch(`${API_BASE}/api/grants/schemes`, { signal });
-
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status}`);
-  }
-
-  return res.json();
+  return getJson("/api/grants/schemes", signal);
 }
 
-export async function fetchGrantsEligibility(
+export function fetchGrantsEligibility(
   params: GrantsEligibilityRequest,
   signal?: AbortSignal,
 ): Promise<{ schemes: GrantSchemeWithEligibility[] }> {
-  const res = await fetch(`${API_BASE}/api/grants/eligibility`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-    signal,
-  });
-
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status}`);
-  }
-
-  return res.json();
+  return postJson("/api/grants/eligibility", params, signal);
 }
 
 // ── Cashflow projection ─────────────────────
@@ -257,7 +248,7 @@ export interface CashflowLoanRequest {
   offset_balance: number;
   offset_contribution: number;
   extra_repayment: number;
-  rate_changes: [];
+  rate_changes: readonly never[];
   borrowing_costs: CashflowBorrowingCostsRequest;
 }
 
@@ -394,34 +385,18 @@ export interface CashflowRentvestResponse {
 
 export type CashflowResponse = CashflowPPORResponse | CashflowRentvestResponse;
 
-export async function fetchCashflowPPOR(
+export function fetchCashflowPPOR(
   params: CashflowPPORRequest,
   signal?: AbortSignal,
 ): Promise<CashflowPPORResponse> {
-  const res = await fetch(`${API_BASE}/api/cashflow/ppor`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-    signal,
-  });
-
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  return postJson("/api/cashflow/ppor", params, signal);
 }
 
-export async function fetchCashflowRentvest(
+export function fetchCashflowRentvest(
   params: CashflowRentvestRequest,
   signal?: AbortSignal,
 ): Promise<CashflowRentvestResponse> {
-  const res = await fetch(`${API_BASE}/api/cashflow/rentvest`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-    signal,
-  });
-
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  return postJson("/api/cashflow/rentvest", params, signal);
 }
 
 // ── Single property cashflow ────────────────
@@ -447,7 +422,7 @@ export interface CashflowSingleExistingLoanRequest {
   offset_balance?: number;
   offset_contribution?: number;
   extra_repayment?: number;
-  rate_changes?: [];
+  rate_changes?: readonly never[];
 }
 
 export interface CashflowSingleRequest {
@@ -473,19 +448,11 @@ export interface CashflowSingleResponse {
   summary: CashflowSummary;
 }
 
-export async function fetchCashflowSingle(
+export function fetchCashflowSingle(
   params: CashflowSingleRequest,
   signal?: AbortSignal,
 ): Promise<CashflowSingleResponse> {
-  const res = await fetch(`${API_BASE}/api/cashflow/single`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-    signal,
-  });
-
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  return postJson("/api/cashflow/single", params, signal);
 }
 
 // ── Purchase costs ─────────────────────────
@@ -533,34 +500,15 @@ export interface PurchaseCostsResponse {
   lvr: number;
 }
 
-export async function fetchPurchaseCosts(
+export function fetchPurchaseCosts(
   params: PurchaseCostsRequest,
   signal?: AbortSignal,
 ): Promise<PurchaseCostsResponse> {
-  const res = await fetch(`${API_BASE}/api/purchase-costs/calculate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-    signal,
-  });
-
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  return postJson("/api/purchase-costs/calculate", params, signal);
 }
 
 // ── Amortisation schedule ───────────────────
 
-export async function fetchSchedule(params: ScheduleRequest, signal?: AbortSignal): Promise<ScheduleResponse> {
-  const res = await fetch(`${API_BASE}/api/amortisation/schedule`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-    signal,
-  });
-
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status}`);
-  }
-
-  return res.json();
+export function fetchSchedule(params: ScheduleRequest, signal?: AbortSignal): Promise<ScheduleResponse> {
+  return postJson("/api/amortisation/schedule", params, signal);
 }

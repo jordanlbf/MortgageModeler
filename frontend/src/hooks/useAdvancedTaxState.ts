@@ -48,9 +48,7 @@ export interface AdvancedTaxState {
 
 // ── Reducer ────────────────────────────────────
 
-type Action =
-  | { type: "SET_NUMBER"; field: keyof AdvancedTaxInputs; value: number }
-  | { type: "SET_BOOLEAN"; field: keyof AdvancedTaxInputs; value: boolean };
+type Action = { type: "SET"; field: keyof AdvancedTaxInputs; value: AdvancedTaxInputs[keyof AdvancedTaxInputs] };
 
 const INITIAL_INPUTS: AdvancedTaxInputs = {
   salary: 100_000,
@@ -79,31 +77,28 @@ function reducer(state: AdvancedTaxInputs, action: Action): AdvancedTaxInputs {
 export function useAdvancedTaxState(): AdvancedTaxState {
   const [inputs, dispatch] = useReducer(reducer, INITIAL_INPUTS);
 
-  const numSetter = useCallback(
-    (field: keyof AdvancedTaxInputs) => (v: number) => dispatch({ type: "SET_NUMBER", field, value: v }),
-    [],
-  );
-  const boolSetter = useCallback(
-    (field: keyof AdvancedTaxInputs) => (v: boolean) => dispatch({ type: "SET_BOOLEAN", field, value: v }),
+  const set = useCallback(
+    <K extends keyof AdvancedTaxInputs>(field: K) =>
+      (value: AdvancedTaxInputs[K]) => dispatch({ type: "SET", field, value }),
     [],
   );
 
   const setters: AdvancedTaxSetters = useMemo(() => ({
-    setSalary: numSetter("salary"),
-    setRental: numSetter("rental"),
-    setInterest: numSetter("interest"),
-    setDividend: numSetter("dividend"),
-    setFranking: numSetter("franking"),
-    setCapitalGainShort: numSetter("capitalGainShort"),
-    setCapitalGainLong: numSetter("capitalGainLong"),
-    setRentalDeductions: numSetter("rentalDeductions"),
-    setWorkDeductions: numSetter("workDeductions"),
-    setSalSac: numSetter("salSac"),
-    setRfb: numSetter("rfb"),
-    setHecsBal: numSetter("hecsBal"),
-    setPhi: boolSetter("phi"),
-    setSapto: boolSetter("sapto"),
-  }), [numSetter, boolSetter]);
+    setSalary: set("salary"),
+    setRental: set("rental"),
+    setInterest: set("interest"),
+    setDividend: set("dividend"),
+    setFranking: set("franking"),
+    setCapitalGainShort: set("capitalGainShort"),
+    setCapitalGainLong: set("capitalGainLong"),
+    setRentalDeductions: set("rentalDeductions"),
+    setWorkDeductions: set("workDeductions"),
+    setSalSac: set("salSac"),
+    setRfb: set("rfb"),
+    setHecsBal: set("hecsBal"),
+    setPhi: set("phi"),
+    setSapto: set("sapto"),
+  }), [set]);
 
   // ── API fetch ────────────────────────────────
   const { data, error } = useApiCall<TaxBreakdownResponse>(

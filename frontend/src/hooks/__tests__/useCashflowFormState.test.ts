@@ -7,13 +7,13 @@ describe("useCashflowFormState", () => {
     const { result } = renderHook(() => useCashflowFormState());
     const { form } = result.current;
 
-    expect(form.taxableIncome).toBe("120000");
-    expect(form.purchasePrice).toBe("0");
-    expect(form.depositAmount).toBe("0");
+    expect(form.taxableIncome).toBe("$120,000");
+    expect(form.purchasePrice).toBe("");
+    expect(form.depositAmount).toBe("");
     expect(form.interestRate).toBe("6.5");
     expect(form.loanTerm).toBe("30");
     expect(form.hasOffset).toBe(false);
-    expect(form.weeklyRent).toBe("650");
+    expect(form.weeklyRent).toBe("$650");
     expect(form.propertyUse).toBeNull();
     expect(form.purchaseMode).toBeNull();
     expect(form.setupComplete).toBe(false);

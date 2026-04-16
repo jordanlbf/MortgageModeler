@@ -159,17 +159,9 @@ export default function GrantsView() {
   const schemes = results ?? [];
   const eligibleCount = schemes.filter((r) => r.result.eligible).length;
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCurrencyInput = (setter: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/[^0-9]/g, "");
-    setPriceStr(raw ? formatDollars(Number(raw)) : "");
-  };
-  const handleIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/[^0-9]/g, "");
-    setIncomeStr(raw ? formatDollars(Number(raw)) : "");
-  };
-  const handlePartnerIncomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/[^0-9]/g, "");
-    setPartnerIncomeStr(raw ? formatDollars(Number(raw)) : "");
+    setter(raw ? formatDollars(Number(raw)) : "");
   };
 
   return (
@@ -187,14 +179,14 @@ export default function GrantsView() {
 
           {/* Filter bar */}
           <div className="flex items-center min-h-[80px] px-6 py-3.5 rounded-[14px] bg-card-elevated border border-border border-t-2 border-t-accent-border shadow-[0_1px_4px_rgba(0,0,0,0.20)] shrink-0 w-full overflow-visible animate-fade-up [animation-delay:0.1s]">
-            <BarInput label="Purchase Price" value={priceStr} placeholder="$0" onChange={handlePriceChange} />
+            <BarInput label="Purchase Price" value={priceStr} placeholder="$0" onChange={handleCurrencyInput(setPriceStr)} />
             <Divider />
-            <BarInput label="Annual Income" value={incomeStr} placeholder="$0" onChange={handleIncomeChange} />
+            <BarInput label="Annual Income" value={incomeStr} placeholder="$0" onChange={handleCurrencyInput(setIncomeStr)} />
 
             {showPartnerIncome && (
               <>
                 <Divider />
-                <BarInput label="Partner Income" value={partnerIncomeStr} placeholder="$0" onChange={handlePartnerIncomeChange} />
+                <BarInput label="Partner Income" value={partnerIncomeStr} placeholder="$0" onChange={handleCurrencyInput(setPartnerIncomeStr)} />
               </>
             )}
 

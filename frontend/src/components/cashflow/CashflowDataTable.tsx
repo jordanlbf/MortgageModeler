@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
-import { formatCurrencyCf, getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { formatDollarsSigned } from "@/lib/formatters";
 
 import { safeDiv } from "@/lib/formatters";
 
@@ -223,12 +224,12 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  {isGroupExpanded("income") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.salary))}</td>}
+                  {isGroupExpanded("income") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.salary))}</td>}
                   {isGroupExpanded("income") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: parseFloat(salaryGain) > 0 ? "var(--color-positive)" : "var(--color-faint)" }}>{salaryGain}%</td>}
-                  {isGroupExpanded("income") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("income") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
                   {isGroupExpanded("income") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: parseFloat(rentGain) > 0 ? "var(--color-positive)" : "var(--color-faint)" }}>{rentGain}%</td>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>
-                    {formatCurrencyCf(Math.round(totalIncome))}
+                    {formatDollarsSigned(Math.round(totalIncome))}
                   </td>
                 </tr>
               );
@@ -267,11 +268,11 @@ export default function CashflowDataTable({
               const totalCosts = y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-y.ongoingCosts))}</td>}
-                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.loanRepayment, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanRepayment))}</td>}
-                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatCurrencyCf(Math.round(-y.incomeTaxCalc))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-y.ongoingCosts))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.loanRepayment, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanRepayment))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatDollarsSigned(Math.round(-y.incomeTaxCalc))}</td>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-negative)" }}>
-                    {formatCurrencyCf(Math.round(-totalCosts))}
+                    {formatDollarsSigned(Math.round(-totalCosts))}
                   </td>
                 </tr>
               );
@@ -302,10 +303,10 @@ export default function CashflowDataTable({
               const annualCashflow = totalIncome - totalCosts;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2]">{formatCurrencyCf(Math.round(totalIncome))}</td>
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-totalCosts, false, true)}`}>{formatCurrencyCf(Math.round(-totalCosts))}</td>
+                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2]">{formatDollarsSigned(Math.round(totalIncome))}</td>
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-totalCosts, false, true)}`}>{formatDollarsSigned(Math.round(-totalCosts))}</td>
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm ${annualCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
-                    {formatCurrencyCf(Math.round(annualCashflow))}
+                    {formatDollarsSigned(Math.round(annualCashflow))}
                   </td>
                 </tr>
               );
@@ -389,25 +390,25 @@ export default function CashflowDataTable({
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Income detail cells */}
-                  {isGroupExpanded("income") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.salary))}</td>}
+                  {isGroupExpanded("income") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.salary))}</td>}
                   {isGroupExpanded("income") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: parseFloat(salaryGain) > 0 ? "var(--color-positive)" : "var(--color-faint)" }}>{salaryGain}%</td>}
-                  {isGroupExpanded("income") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("income") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
                   {isGroupExpanded("income") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: parseFloat(rentGain) > 0 ? "var(--color-positive)" : "var(--color-faint)" }}>{rentGain}%</td>}
                   {/* Income total - larger when collapsed, with YoY indicator */}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "px-4" : ""}`}>
-                    <span className="font-semibold" style={{ color: "var(--color-foreground)" }}>{formatCurrencyCf(Math.round(totalIncome))}</span>
+                    <span className="font-semibold" style={{ color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(totalIncome))}</span>
                     {isCollapsed && (
                       <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(incomeYoY)}`}>{fmtYoY(incomeYoY)}</span>
                     )}
                   </td>
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Outgoings detail cells */}
-                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-y.ongoingCosts))}</td>}
-                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.loanRepayment, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanRepayment))}</td>}
-                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatCurrencyCf(Math.round(-y.incomeTaxCalc))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-y.ongoingCosts))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.loanRepayment, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanRepayment))}</td>}
+                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatDollarsSigned(Math.round(-y.incomeTaxCalc))}</td>}
                   {/* Outgoings total - larger when collapsed, with YoY indicator */}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "px-4" : ""}`}>
-                    <span className="font-semibold" style={{ color: "var(--color-negative)" }}>{formatCurrencyCf(Math.round(-totalCosts))}</span>
+                    <span className="font-semibold" style={{ color: "var(--color-negative)" }}>{formatDollarsSigned(Math.round(-totalCosts))}</span>
                     {isCollapsed && (
                       <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(costsYoY, "negative")}`}>{fmtYoY(costsYoY)}</span>
                     )}
@@ -415,7 +416,7 @@ export default function CashflowDataTable({
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Cashflow result */}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "pr-5 text-base font-bold tracking-tight" : "pr-5 text-sm"} ${annualCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
-                    <span className="font-semibold">{annualCashflow >= 0 ? "+" : ""}{formatCurrencyCf(Math.round(annualCashflow))}</span>
+                    <span className="font-semibold">{annualCashflow >= 0 ? "+" : ""}{formatDollarsSigned(Math.round(annualCashflow))}</span>
                     {isCollapsed && (() => {
                       const prevCashflow = i > 0 ? (prevIncome - prevCosts) : annualCashflow;
                       const cashflowYoY = yoyPct(annualCashflow, prevCashflow);
@@ -465,11 +466,11 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.ongoingCosts))}</td>}
-                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
-                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(depreciation))}</td>}
+                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.ongoingCosts))}</td>}
+                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.interestPortion))}</td>}
+                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(depreciation))}</td>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>
-                    {formatCurrencyCf(Math.round(totalDeductions))}
+                    {formatDollarsSigned(Math.round(totalDeductions))}
                   </td>
                 </tr>
               );
@@ -514,15 +515,15 @@ export default function CashflowDataTable({
               const bracket = getMarginalTaxRate(taxableIncome);
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(totalIncome))}</td>}
-                  {isGroupExpanded("tax") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-totalDeductions, false, true)}`}>{formatCurrencyCf(Math.round(-totalDeductions))}</td>}
+                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(totalIncome))}</td>}
+                  {isGroupExpanded("tax") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-totalDeductions, false, true)}`}>{formatDollarsSigned(Math.round(-totalDeductions))}</td>}
                   {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: "var(--color-positive)" }}>
-                    {y.taxSaved > 0 ? `(+${formatCurrencyCf(Math.round(y.taxSaved))})` : "—"}
+                    {y.taxSaved > 0 ? `(+${formatDollarsSigned(Math.round(y.taxSaved))})` : "—"}
                   </td>}
-                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(taxableIncome))}</td>}
+                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(taxableIncome))}</td>}
                   {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</td>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-negative)" }}>
-                    {formatCurrencyCf(Math.round(-y.incomeTaxCalc))}
+                    {formatDollarsSigned(Math.round(-y.incomeTaxCalc))}
                   </td>
                 </tr>
               );
@@ -592,11 +593,11 @@ export default function CashflowDataTable({
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Deductions detail cells */}
-                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.ongoingCosts))}</td>}
-                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
-                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(depreciation))}</td>}
+                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.ongoingCosts))}</td>}
+                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.interestPortion))}</td>}
+                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(depreciation))}</td>}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "px-4" : ""}`} style={{ fontWeight: 600, color: "var(--color-foreground)" }}>
-                    <span className="font-semibold">{formatCurrencyCf(Math.round(totalDeductions))}</span>
+                    <span className="font-semibold">{formatDollarsSigned(Math.round(totalDeductions))}</span>
                     {isCollapsed && (() => {
                       const prevDed = i > 0 ? (() => { const py = yearData[i-1]; return py.ongoingCosts + py.interestPortion + py.depDiv43 + py.depDiv40; })() : totalDeductions;
                       const dedYoY = yoyPct(totalDeductions, prevDed);
@@ -605,15 +606,15 @@ export default function CashflowDataTable({
                   </td>
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Tax detail cells */}
-                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(totalIncome))}</td>}
-                  {isGroupExpanded("tax") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-totalDeductions, false, true)}`}>{formatCurrencyCf(Math.round(-totalDeductions))}</td>}
+                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(totalIncome))}</td>}
+                  {isGroupExpanded("tax") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-totalDeductions, false, true)}`}>{formatDollarsSigned(Math.round(-totalDeductions))}</td>}
                   {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: "var(--color-positive)" }}>
-                    {y.taxSaved > 0 ? `+${formatCurrencyCf(Math.round(y.taxSaved))}` : "—"}
+                    {y.taxSaved > 0 ? `+${formatDollarsSigned(Math.round(y.taxSaved))}` : "—"}
                   </td>}
-                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(taxableIncome))}</td>}
+                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(taxableIncome))}</td>}
                   {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</td>}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "pr-5 text-base font-bold tracking-tight" : "pr-5 text-sm"}`} style={{ fontWeight: 700, color: "var(--color-negative)" }}>
-                    <span className="font-semibold">{formatCurrencyCf(Math.round(-y.incomeTaxCalc))}</span>
+                    <span className="font-semibold">{formatDollarsSigned(Math.round(-y.incomeTaxCalc))}</span>
                     {isCollapsed && (() => {
                       const prevTax = i > 0 ? yearData[i-1].incomeTaxCalc : y.incomeTaxCalc;
                       const taxYoY = yoyPct(y.incomeTaxCalc, prevTax);
@@ -662,10 +663,10 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  {isGroupExpanded("gearing") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
-                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-holdingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-holdingCosts))}</td>}
-                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-depreciation, false, true)}`}>{formatCurrencyCf(Math.round(-depreciation))}</td>}
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm ${netGearing >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>{formatCurrencyCf(Math.round(netGearing))}</td>
+                  {isGroupExpanded("gearing") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-holdingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-holdingCosts))}</td>}
+                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-depreciation, false, true)}`}>{formatDollarsSigned(Math.round(-depreciation))}</td>}
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm ${netGearing >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>{formatDollarsSigned(Math.round(netGearing))}</td>
                 </tr>
               );
             })}
@@ -704,11 +705,11 @@ export default function CashflowDataTable({
               const totalCosts = holdingCosts + y.principalPortion;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("propertyCashflow") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
-                  {isGroupExpanded("propertyCashflow") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-totalCosts, false, true)}`}>{formatCurrencyCf(Math.round(-totalCosts))}</td>}
-                  {isGroupExpanded("propertyCashflow") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.taxSaved))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-totalCosts, false, true)}`}>{formatDollarsSigned(Math.round(-totalCosts))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</td>}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm ${y.propertyCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
-                    {formatCurrencyCf(Math.round(y.propertyCashflow))}
+                    {formatDollarsSigned(Math.round(y.propertyCashflow))}
                   </td>
                 </tr>
               );
@@ -775,11 +776,11 @@ export default function CashflowDataTable({
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Gearing detail cells */}
-                  {isGroupExpanded("gearing") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
-                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-holdingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-holdingCosts))}</td>}
-                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-depreciation, false, true)}`}>{formatCurrencyCf(Math.round(-depreciation))}</td>}
+                  {isGroupExpanded("gearing") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-holdingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-holdingCosts))}</td>}
+                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-depreciation, false, true)}`}>{formatDollarsSigned(Math.round(-depreciation))}</td>}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "px-4" : ""} ${netGearing >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
-                    <span className="font-semibold">{netGearing >= 0 ? "+" : ""}{formatCurrencyCf(Math.round(netGearing))}</span>
+                    <span className="font-semibold">{netGearing >= 0 ? "+" : ""}{formatDollarsSigned(Math.round(netGearing))}</span>
                     {isCollapsed && (() => {
                       const prevGearing = i > 0 ? (() => { const py = yearData[i-1]; return py.rentalIncome - (py.interestPortion + py.ongoingCosts) - (py.depDiv43 + py.depDiv40); })() : netGearing;
                       const gearYoY = yoyPct(netGearing, prevGearing);
@@ -788,11 +789,11 @@ export default function CashflowDataTable({
                   </td>
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Cashflow detail cells */}
-                  {isGroupExpanded("propertyCashflow") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.rentalIncome))}</td>}
-                  {isGroupExpanded("propertyCashflow") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-totalCosts, false, true)}`}>{formatCurrencyCf(Math.round(-totalCosts))}</td>}
-                  {isGroupExpanded("propertyCashflow") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.taxSaved))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-totalCosts, false, true)}`}>{formatDollarsSigned(Math.round(-totalCosts))}</td>}
+                  {isGroupExpanded("propertyCashflow") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</td>}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "pr-5 text-base font-bold tracking-tight" : "pr-5 text-sm"} ${y.propertyCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
-                    <span className="font-semibold">{y.propertyCashflow >= 0 ? "+" : ""}{formatCurrencyCf(Math.round(y.propertyCashflow))}</span>
+                    <span className="font-semibold">{y.propertyCashflow >= 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.propertyCashflow))}</span>
                     {isCollapsed && (() => {
                       const prevCf = i > 0 ? yearData[i-1].propertyCashflow : y.propertyCashflow;
                       const cfYoY = yoyPct(y.propertyCashflow, prevCf);
@@ -836,14 +837,14 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatCurrencyCf(Math.round(-y.ongoingCosts))}</td>
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-y.interestPortion, false, true)}`}>{formatCurrencyCf(Math.round(-y.interestPortion))}</td>
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-y.ongoingCosts))}</td>
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-y.interestPortion, false, true)}`}>{formatDollarsSigned(Math.round(-y.interestPortion))}</td>
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-y.principalPortion, false, true)}`}>{formatCurrencyCf(Math.round(-y.principalPortion))}</td>
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#f0fdfa]">{formatCurrencyCf(Math.round(-(y.interestPortion + y.principalPortion)))}</td>
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-y.principalPortion, false, true)}`}>{formatDollarsSigned(Math.round(-y.principalPortion))}</td>
+                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#f0fdfa]">{formatDollarsSigned(Math.round(-(y.interestPortion + y.principalPortion)))}</td>
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm ${getValueClass(y.propertyCashflow, true)}`}>
-                    {formatCurrencyCf(Math.round(y.propertyCashflow))}
+                    {formatDollarsSigned(Math.round(y.propertyCashflow))}
                   </td>
                 </tr>
               );
@@ -894,13 +895,13 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">+{formatCurrencyCf(Math.round(totalGrowth))}</td>}
+                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">+{formatDollarsSigned(Math.round(totalGrowth))}</td>}
                   {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{totalGrowthPct}%</td>}
                   {isGroupExpanded("property") && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" />}
-                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">+{formatCurrencyCf(Math.round(yoyGrowth))}</td>}
+                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">+{formatDollarsSigned(Math.round(yoyGrowth))}</td>}
                   {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{yoyGrowthPct}%</td>}
                   {isGroupExpanded("property") && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" />}
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>{formatCurrencyCf(Math.round(y.propertyValue))}</td>
+                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(y.propertyValue))}</td>
                 </tr>
               );
             })}
@@ -942,14 +943,14 @@ export default function CashflowDataTable({
               const propertyEquity = y.propertyValue - y.loanBalance;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("position") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.propertyValue))}</td>}
-                  {isGroupExpanded("position") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.loanBalance, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanBalance))}</td>}
+                  {isGroupExpanded("position") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.propertyValue))}</td>}
+                  {isGroupExpanded("position") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.loanBalance, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanBalance))}</td>}
                   {isGroupExpanded("position") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</td>}
-                  {isGroupExpanded("position") && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>{formatCurrencyCf(Math.round(propertyEquity))}</td>}
+                  {isGroupExpanded("position") && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(propertyEquity))}</td>}
                   {isGroupExpanded("position") && showOffset && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" />}
-                  {isGroupExpanded("position") && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.offsetBalanceAtYear))}</td>}
+                  {isGroupExpanded("position") && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.offsetBalanceAtYear))}</td>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>
-                    {formatCurrencyCf(Math.round(y.netEquity))}
+                    {formatDollarsSigned(Math.round(y.netEquity))}
                   </td>
                 </tr>
               );
@@ -1024,27 +1025,27 @@ export default function CashflowDataTable({
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Property detail cells */}
-                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">+{formatCurrencyCf(Math.round(totalGrowth))}</td>}
+                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">+{formatDollarsSigned(Math.round(totalGrowth))}</td>}
                   {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{totalGrowthPct}%</td>}
                   {isGroupExpanded("property") && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" />}
-                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">+{formatCurrencyCf(Math.round(yoyGrowth))}</td>}
+                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">+{formatDollarsSigned(Math.round(yoyGrowth))}</td>}
                   {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{yoyGrowthPct}%</td>}
                   {isGroupExpanded("property") && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" />}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "px-4" : ""}`} style={{ fontWeight: 600, color: "var(--color-foreground)" }}>
-                    <span className="font-semibold">{formatCurrencyCf(Math.round(y.propertyValue))}</span>
+                    <span className="font-semibold">{formatDollarsSigned(Math.round(y.propertyValue))}</span>
                     {isCollapsed && (
                       <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(parseFloat(yoyGrowthPct))}`}>{fmtYoY(parseFloat(yoyGrowthPct))}</span>
                     )}
                   </td>
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Position detail cells */}
-                  {isGroupExpanded("position") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.loanBalance, false, true)}`}>{formatCurrencyCf(Math.round(-y.loanBalance))}</td>}
+                  {isGroupExpanded("position") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-y.loanBalance, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanBalance))}</td>}
                   {isGroupExpanded("position") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</td>}
-                  {isGroupExpanded("position") && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ fontWeight: 600, color: "var(--color-foreground)" }}>{formatCurrencyCf(Math.round(propertyEquity))}</td>}
+                  {isGroupExpanded("position") && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ fontWeight: 600, color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(propertyEquity))}</td>}
                   {isGroupExpanded("position") && showOffset && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" />}
-                  {isGroupExpanded("position") && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.offsetBalanceAtYear))}</td>}
+                  {isGroupExpanded("position") && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.offsetBalanceAtYear))}</td>}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "pr-5 text-base font-bold tracking-tight" : "pr-5 text-sm"}`} style={{ fontWeight: 700, color: "var(--color-positive)" }}>
-                    <span className="font-semibold">{formatCurrencyCf(Math.round(y.netEquity))}</span>
+                    <span className="font-semibold">{formatDollarsSigned(Math.round(y.netEquity))}</span>
                     {isCollapsed && (() => {
                       const prevEquity = i > 0 ? yearData[i-1].netEquity : y.netEquity;
                       const eqYoY = yoyPct(y.netEquity, prevEquity);
@@ -1092,12 +1093,12 @@ export default function CashflowDataTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  {isGroupExpanded("holding") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
-                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.councilRates + y.waterRates))}</td>}
-                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.insurance))}</td>}
-                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.maintenance + y.strataFees))}</td>}
+                  {isGroupExpanded("holding") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.interestPortion))}</td>}
+                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.councilRates + y.waterRates))}</td>}
+                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.insurance))}</td>}
+                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.maintenance + y.strataFees))}</td>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-negative)" }}>
-                    {formatCurrencyCf(Math.round(holdingTotal))}
+                    {formatDollarsSigned(Math.round(holdingTotal))}
                   </td>
                 </tr>
               );
@@ -1135,10 +1136,10 @@ export default function CashflowDataTable({
               const depTotal = y.depDiv43 + y.depDiv40;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv43))}</td>}
-                  {isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv40))}</td>}
+                  {isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv43))}</td>}
+                  {isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv40))}</td>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: depColor }}>
-                    {formatCurrencyCf(Math.round(depTotal))}
+                    {formatDollarsSigned(Math.round(depTotal))}
                   </td>
                 </tr>
               );
@@ -1178,10 +1179,10 @@ export default function CashflowDataTable({
               const grandTotal = isInvestment ? holdingTotal + depTotal : holdingTotal;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("totals") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: "var(--color-negative)" }}>{formatCurrencyCf(Math.round(holdingTotal))}</td>}
-                  {isGroupExpanded("totals") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor }}>{formatCurrencyCf(Math.round(depTotal))}</td>}
+                  {isGroupExpanded("totals") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: "var(--color-negative)" }}>{formatDollarsSigned(Math.round(holdingTotal))}</td>}
+                  {isGroupExpanded("totals") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor }}>{formatDollarsSigned(Math.round(depTotal))}</td>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: isInvestment ? "#a78bfa" : "var(--color-negative)" }}>
-                    {formatCurrencyCf(Math.round(grandTotal))}
+                    {formatDollarsSigned(Math.round(grandTotal))}
                   </td>
                 </tr>
               );
@@ -1254,12 +1255,12 @@ export default function CashflowDataTable({
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-center px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Holding detail cells */}
-                  {isGroupExpanded("holding") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.interestPortion))}</td>}
-                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.councilRates + y.waterRates))}</td>}
-                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.insurance))}</td>}
-                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatCurrencyCf(Math.round(y.maintenance))}</td>}
+                  {isGroupExpanded("holding") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.interestPortion))}</td>}
+                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.councilRates + y.waterRates))}</td>}
+                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.insurance))}</td>}
+                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.maintenance))}</td>}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "px-4" : ""}`} style={{ fontWeight: 600, color: "var(--color-negative)" }}>
-                    <span className="font-semibold">{formatCurrencyCf(Math.round(holdingTotal))}</span>
+                    <span className="font-semibold">{formatDollarsSigned(Math.round(holdingTotal))}</span>
                     {isCollapsed && (() => {
                       const prevHolding = i > 0 ? (isInvestment ? yearData[i-1].interestPortion + yearData[i-1].ongoingCosts : yearData[i-1].ongoingCosts) : holdingTotal;
                       const holdYoY = yoyPct(holdingTotal, prevHolding);
@@ -1268,10 +1269,10 @@ export default function CashflowDataTable({
                   </td>
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {/* Depreciation detail cells (investment only) */}
-                  {isInvestment && isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv43))}</td>}
-                  {isInvestment && isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor, opacity: 0.7 }}>{formatCurrencyCf(Math.round(y.depDiv40))}</td>}
+                  {isInvestment && isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv43))}</td>}
+                  {isInvestment && isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv40))}</td>}
                   {isInvestment && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "px-4" : ""}`} style={{ fontWeight: 600, color: depColor }}>
-                    <span className="font-semibold">{formatCurrencyCf(Math.round(depTotal))}</span>
+                    <span className="font-semibold">{formatDollarsSigned(Math.round(depTotal))}</span>
                     {isCollapsed && (() => {
                       const prevDep = i > 0 ? yearData[i-1].depDiv43 + yearData[i-1].depDiv40 : depTotal;
                       const depYoY = yoyPct(depTotal, prevDep);
@@ -1281,7 +1282,7 @@ export default function CashflowDataTable({
                   {isInvestment && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />}
                   {/* Total */}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "pr-5 text-base font-bold tracking-tight" : "pr-5 text-sm"}`} style={{ fontWeight: 700, color: isInvestment ? "#a78bfa" : "var(--color-negative)" }}>
-                    <span className="font-semibold">{formatCurrencyCf(Math.round(grandTotal))}</span>
+                    <span className="font-semibold">{formatDollarsSigned(Math.round(grandTotal))}</span>
                     {isCollapsed && (() => {
                       const prevGrand = i > 0 ? (() => { const py = yearData[i-1]; const ph = isInvestment ? py.interestPortion + py.ongoingCosts : py.ongoingCosts; const pd = py.depDiv43 + py.depDiv40; return isInvestment ? ph + pd : ph; })() : grandTotal;
                       const grandYoY = yoyPct(grandTotal, prevGrand);

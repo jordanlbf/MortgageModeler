@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { t, mix } from "@/lib/theme";
-import { formatCurrencyShort } from "@/lib/formatters";
-import { parseCurrency } from "@/lib/constants";
+import { formatCurrencyShort, parseCurrencyInput } from "@/lib/formatters";
 import type { AdvancedTaxInputs, AdvancedTaxSetters } from "@/hooks/useAdvancedTaxState";
 import { useEditableInput } from "@/hooks/useEditableInput";
 import GlassCard from "@/components/ui/GlassCard";
@@ -166,7 +165,7 @@ function EditableField({
     (parsed: number) => { onTouch(); onChange(Math.min(max, Math.max(min, parsed))); },
     [onChange, onTouch, min, max],
   );
-  const parse = useCallback((d: string) => parseCurrency(d), []);
+  const parse = useCallback((d: string) => parseCurrencyInput(d), []);
   const { editing, draft, inputRef, startEditing, commit, handleKeyDown, handleChange } =
     useEditableInput({ display: formatCurrencyShort(value), onCommit: clampedCommit, parse });
 

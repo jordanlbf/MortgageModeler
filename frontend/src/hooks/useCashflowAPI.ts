@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import type { YearData } from "@/lib/cashflow-types";
 import type { CashflowFormValues } from "./useCashflowFormState";
-import { parseCurrencyCf } from "@/lib/cashflow-calculations";
+import { parseCurrencyInput } from "@/lib/formatters";
 import { fetchCashflowSingle, type CashflowSingleRequest, type CashflowYearRow } from "@/lib/api";
 import { generateDepreciationEstimate } from "@/lib/depreciation-estimate";
 import { useApiCall } from "./useApiCall";
@@ -21,10 +21,10 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
     const vacWeeks = Math.round((parseFloat(form.vacancyRate) || 3.8) / 100 * 52);
     const mgmtRate = form.usePropertyManager ? (parseFloat(form.managementFee) / 100 || 0.075) : 0;
     const maintenanceRate = parseFloat(form.maintenance) / 100 || 0.005;
-    const income = parseCurrencyCf(form.taxableIncome);
+    const income = parseCurrencyInput(form.taxableIncome);
     const estYear = isNewPurchase ? new Date().getFullYear() : parseInt(form.purchaseYear) || new Date().getFullYear();
     const purchaseDate = isNewPurchase ? new Date().toISOString().slice(0, 10) : `${estYear}-07-01`;
-    const propPrice = isNewPurchase ? parseCurrencyCf(form.purchasePrice) : parseCurrencyCf(form.currentValue);
+    const propPrice = isNewPurchase ? parseCurrencyInput(form.purchasePrice) : parseCurrencyInput(form.currentValue);
 
     // Depreciation schedules
     let depBuilds = form.depBuildings;
@@ -48,17 +48,17 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
         income_growth_rate: growth,
       },
       ongoing_costs: {
-        council_rates: parseCurrencyCf(form.councilRates),
-        water_rates: parseCurrencyCf(form.waterRates),
-        building_insurance: parseCurrencyCf(form.insurance),
-        strata_fees: form.hasStrata ? parseCurrencyCf(form.strataFees) * 4 : 0,
+        council_rates: parseCurrencyInput(form.councilRates),
+        water_rates: parseCurrencyInput(form.waterRates),
+        building_insurance: parseCurrencyInput(form.insurance),
+        strata_fees: form.hasStrata ? parseCurrencyInput(form.strataFees) * 4 : 0,
         maintenance_rate: maintenanceRate,
         landlord_insurance: 0,
         management_rate: mgmtRate,
         annual_cost_growth_rate: 0.03,
       },
       rental: isInvestment ? {
-        weekly_rent: parseCurrencyCf(form.weeklyRent),
+        weekly_rent: parseCurrencyInput(form.weeklyRent),
         annual_growth_rate: growth,
         vacancy_weeks: vacWeeks,
       } : null,
@@ -66,7 +66,7 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
 
     if (isNewPurchase) {
       base.property = {
-        purchase_price: parseCurrencyCf(form.purchasePrice),
+        purchase_price: parseCurrencyInput(form.purchasePrice),
         purchase_date: purchaseDate,
         is_new_property: true,
         is_ppor: !isInvestment,
@@ -77,13 +77,13 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
         depreciable_assets: depAsts,
       };
       base.loan = {
-        deposit: parseCurrencyCf(form.depositAmount),
+        deposit: parseCurrencyInput(form.depositAmount),
         annual_rate: parseFloat(form.interestRate) / 100 || 0.065,
         loan_term_years: parseInt(form.loanTerm) || 30,
         frequency: "monthly",
-        offset_balance: form.hasOffset ? parseCurrencyCf(form.offsetBalance) : 0,
+        offset_balance: form.hasOffset ? parseCurrencyInput(form.offsetBalance) : 0,
         offset_contribution: 0,
-        extra_repayment: parseCurrencyCf(form.extraRepayments),
+        extra_repayment: parseCurrencyInput(form.extraRepayments),
         rate_changes: [],
         borrowing_costs: {
           lmi: 0,
@@ -97,21 +97,21 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
     } else {
       base.existing_property = {
         purchase_date: purchaseDate,
-        purchase_price: parseCurrencyCf(form.originalPurchasePrice),
+        purchase_price: parseCurrencyInput(form.originalPurchasePrice),
         is_new_property: false,
-        current_value: parseCurrencyCf(form.currentValue),
+        current_value: parseCurrencyInput(form.currentValue),
         annual_appreciation: growth,
         depreciable_buildings: depBuilds,
         depreciable_assets: depAsts,
       };
       base.existing_loan = {
-        current_balance: parseCurrencyCf(form.currentLoanBalance),
+        current_balance: parseCurrencyInput(form.currentLoanBalance),
         remaining_term_years: parseInt(form.loanTerm) || 25,
         annual_rate: parseFloat(form.interestRate) / 100 || 0.065,
         frequency: "monthly",
-        offset_balance: form.hasOffset ? parseCurrencyCf(form.offsetBalance) : 0,
+        offset_balance: form.hasOffset ? parseCurrencyInput(form.offsetBalance) : 0,
         offset_contribution: 0,
-        extra_repayment: parseCurrencyCf(form.extraRepayments),
+        extra_repayment: parseCurrencyInput(form.extraRepayments),
         rate_changes: [],
       };
     }

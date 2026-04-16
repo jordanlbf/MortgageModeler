@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import { ArrowRight, X, Home, Building2, Sparkles, Landmark, Coins, Key, Calculator } from "lucide-react";
 import type { CashflowState } from "@/hooks/useCashflowState";
-import { parseCurrencyCf, formatCurrencyCf } from "@/lib/cashflow-calculations";
+import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
+import { paymentFromLoanAmount } from "@/lib/calculations";
 import { estimateAnnualDepreciation } from "@/lib/depreciation-estimate";
 
 interface Props {
@@ -44,6 +45,16 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
   };
 
   if (!meta) return null;
+
+  const INPUT_CLS = "py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40";
+
+  /** Format-on-change for currency inputs: store formatted string, parse only for calculations. */
+  const currencyInput = (setter: (v: string) => void) => ({
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/[^0-9]/g, "");
+      setter(raw ? formatDollarsSigned(Number(raw)) : "");
+    },
+  });
 
   const fieldsContent = (
     <>
@@ -99,27 +110,27 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
               <div className="flex gap-3.5">
                 <div className="flex flex-col gap-2 flex-1">
                   <label className="text-xs font-medium text-subtle">Purchase price</label>
-                  <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.purchasePrice).toLocaleString()}`} onChange={(e) => s.setPurchasePrice(e.target.value)} />
+                  <input type="text" className={INPUT_CLS} value={s.purchasePrice} {...currencyInput(s.setPurchasePrice)} />
                 </div>
                 <div className="flex flex-col gap-2 flex-1">
                   <label className="text-xs font-medium text-subtle">Deposit</label>
-                  <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.depositAmount).toLocaleString()}`} onChange={(e) => s.setDepositAmount(e.target.value)} />
+                  <input type="text" className={INPUT_CLS} value={s.depositAmount} {...currencyInput(s.setDepositAmount)} />
                 </div>
               </div>
               <div className="flex items-stretch bg-accent/[0.04] border border-accent/[0.12] rounded-[14px] overflow-hidden">
                 <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
                   <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">Loan amount</span>
-                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{formatCurrencyCf(parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount))}</span>
+                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{formatDollarsSigned(parseCurrencyInput(s.purchasePrice) - parseCurrencyInput(s.depositAmount))}</span>
                 </div>
                 <div className="w-px bg-accent/10 shrink-0 my-3" />
                 <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
                   <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">LVR</span>
-                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{parseCurrencyCf(s.purchasePrice) > 0 ? ((1 - parseCurrencyCf(s.depositAmount) / parseCurrencyCf(s.purchasePrice)) * 100).toFixed(1) : "0.0"}%</span>
+                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{parseCurrencyInput(s.purchasePrice) > 0 ? ((1 - parseCurrencyInput(s.depositAmount) / parseCurrencyInput(s.purchasePrice)) * 100).toFixed(1) : "0.0"}%</span>
                 </div>
                 <div className="w-px bg-accent/10 shrink-0 my-3" />
                 <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
                   <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">Deposit</span>
-                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{parseCurrencyCf(s.purchasePrice) > 0 ? ((parseCurrencyCf(s.depositAmount) / parseCurrencyCf(s.purchasePrice)) * 100).toFixed(1) : "0.0"}%</span>
+                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{parseCurrencyInput(s.purchasePrice) > 0 ? ((parseCurrencyInput(s.depositAmount) / parseCurrencyInput(s.purchasePrice)) * 100).toFixed(1) : "0.0"}%</span>
                 </div>
               </div>
             </div>
@@ -128,35 +139,35 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
               <div className="flex gap-3.5">
                 <div className="flex flex-col gap-2 flex-1">
                   <label className="text-xs font-medium text-subtle">Current value</label>
-                  <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.currentValue).toLocaleString()}`} onChange={(e) => s.setCurrentValue(e.target.value)} />
+                  <input type="text" className={INPUT_CLS} value={s.currentValue} {...currencyInput(s.setCurrentValue)} />
                 </div>
                 <div className="flex flex-col gap-2 flex-1">
                   <label className="text-xs font-medium text-subtle">Loan balance</label>
-                  <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.currentLoanBalance).toLocaleString()}`} onChange={(e) => s.setCurrentLoanBalance(e.target.value)} />
+                  <input type="text" className={INPUT_CLS} value={s.currentLoanBalance} {...currencyInput(s.setCurrentLoanBalance)} />
                 </div>
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-medium text-subtle">Original purchase price</label>
-                <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.originalPurchasePrice).toLocaleString()}`} onChange={(e) => s.setOriginalPurchasePrice(e.target.value)} />
+                <input type="text" className={INPUT_CLS} value={s.originalPurchasePrice} {...currencyInput(s.setOriginalPurchasePrice)} />
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-medium text-subtle">Year purchased</label>
-                <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={s.purchaseYear} onChange={(e) => s.setPurchaseYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="2021" />
+                <input type="text" className={INPUT_CLS} value={s.purchaseYear} onChange={(e) => s.setPurchaseYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="2021" />
               </div>
               <div className="flex items-stretch bg-accent/[0.04] border border-accent/[0.12] rounded-[14px] overflow-hidden">
                 <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
                   <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">Equity</span>
-                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{formatCurrencyCf(parseCurrencyCf(s.currentValue) - parseCurrencyCf(s.currentLoanBalance))}</span>
+                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{formatDollarsSigned(parseCurrencyInput(s.currentValue) - parseCurrencyInput(s.currentLoanBalance))}</span>
                 </div>
                 <div className="w-px bg-accent/10 shrink-0 my-3" />
                 <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
                   <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">LVR</span>
-                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{parseCurrencyCf(s.currentValue) > 0 ? (parseCurrencyCf(s.currentLoanBalance) / parseCurrencyCf(s.currentValue) * 100).toFixed(1) : "0.0"}%</span>
+                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{parseCurrencyInput(s.currentValue) > 0 ? (parseCurrencyInput(s.currentLoanBalance) / parseCurrencyInput(s.currentValue) * 100).toFixed(1) : "0.0"}%</span>
                 </div>
                 <div className="w-px bg-accent/10 shrink-0 my-3" />
                 <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
                   <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">Growth</span>
-                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{parseCurrencyCf(s.originalPurchasePrice) > 0 ? formatCurrencyCf(parseCurrencyCf(s.currentValue) - parseCurrencyCf(s.originalPurchasePrice)) : "—"}</span>
+                  <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{parseCurrencyInput(s.originalPurchasePrice) > 0 ? formatDollarsSigned(parseCurrencyInput(s.currentValue) - parseCurrencyInput(s.originalPurchasePrice)) : "—"}</span>
                 </div>
               </div>
             </div>
@@ -166,17 +177,18 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
 
       {step === "loan" && (() => {
         const principal = s.isNewPurchase
-          ? parseCurrencyCf(s.purchasePrice) - parseCurrencyCf(s.depositAmount)
-          : parseCurrencyCf(s.currentLoanBalance);
-        const rate = parseFloat(s.interestRate) / 100 / 12;
-        const n = parseFloat(s.loanTerm) * 12;
-        const offset = parseCurrencyCf(s.offsetBalance);
+          ? parseCurrencyInput(s.purchasePrice) - parseCurrencyInput(s.depositAmount)
+          : parseCurrencyInput(s.currentLoanBalance);
+        const annualRate = parseFloat(s.interestRate) / 100 || 0;
+        const years = parseFloat(s.loanTerm) || 30;
+        const offset = parseCurrencyInput(s.offsetBalance);
         const effectivePrincipal = Math.max(0, principal - (s.hasOffset ? offset : 0));
-        let monthlyRepayment = 0;
-        if (rate > 0 && n > 0) {
-          monthlyRepayment = effectivePrincipal * (rate * Math.pow(1 + rate, n)) / (Math.pow(1 + rate, n) - 1);
-        }
-        const monthlyInterest = effectivePrincipal * (parseFloat(s.interestRate) / 100 / 12);
+        const monthlyRepayment = annualRate > 0 && years > 0
+          ? paymentFromLoanAmount(effectivePrincipal, annualRate, years, 12)
+          : 0;
+        const dailyRate = annualRate / 365;
+        const monthlyRate = Math.pow(1 + dailyRate, 365 / 12) - 1;
+        const monthlyInterest = effectivePrincipal * monthlyRate;
         const monthlyPrincipal = monthlyRepayment - monthlyInterest;
 
         return (
@@ -184,13 +196,13 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
             {/* Live repayment banner */}
             <div className="flex items-center justify-between py-5 px-6 bg-accent/[0.05] border border-accent/[0.15] rounded-[14px] gap-4">
               <div className="flex items-baseline gap-2">
-                <span className="text-[28px] font-bold text-accent tabular-nums tracking-[-0.03em]">{formatCurrencyCf(monthlyRepayment)}</span>
+                <span className="text-[28px] font-bold text-accent tabular-nums tracking-[-0.03em]">{formatDollarsSigned(monthlyRepayment)}</span>
                 <span className="text-sm text-accent/60 font-medium">/ month</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap justify-end">
-                <span className="text-xs text-faint tabular-nums">{formatCurrencyCf(monthlyInterest)} interest</span>
+                <span className="text-xs text-faint tabular-nums">{formatDollarsSigned(monthlyInterest)} interest</span>
                 <span className="text-xs text-faint opacity-40">·</span>
-                <span className="text-xs text-faint tabular-nums">{formatCurrencyCf(monthlyPrincipal)} principal</span>
+                <span className="text-xs text-faint tabular-nums">{formatDollarsSigned(monthlyPrincipal)} principal</span>
               </div>
             </div>
 
@@ -224,12 +236,12 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
             {s.hasOffset && (
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-medium text-subtle">Offset balance</label>
-                <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.offsetBalance).toLocaleString()}`} onChange={(e) => s.setOffsetBalance(e.target.value)} />
+                <input type="text" className={INPUT_CLS} value={s.offsetBalance} {...currencyInput(s.setOffsetBalance)} />
               </div>
             )}
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-subtle">Extra repayments / month</label>
-              <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.extraRepayments).toLocaleString()}`} onChange={(e) => s.setExtraRepayments(e.target.value)} />
+              <input type="text" className={INPUT_CLS} value={s.extraRepayments} {...currencyInput(s.setExtraRepayments)} />
             </div>
           </div>
         );
@@ -240,21 +252,21 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
           <div className="flex gap-3.5">
             <div className="flex flex-col gap-2 flex-1">
               <label className="text-xs font-medium text-subtle">Council rates (p.a.)</label>
-              <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.councilRates).toLocaleString()}`} onChange={(e) => s.setCouncilRates(e.target.value)} />
+              <input type="text" className={INPUT_CLS} value={s.councilRates} {...currencyInput(s.setCouncilRates)} />
             </div>
             <div className="flex flex-col gap-2 flex-1">
               <label className="text-xs font-medium text-subtle">Water rates (p.a.)</label>
-              <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.waterRates).toLocaleString()}`} onChange={(e) => s.setWaterRates(e.target.value)} />
+              <input type="text" className={INPUT_CLS} value={s.waterRates} {...currencyInput(s.setWaterRates)} />
             </div>
           </div>
           <div className="flex gap-3.5">
             <div className="flex flex-col gap-2 flex-1">
               <label className="text-xs font-medium text-subtle">Insurance (p.a.)</label>
-              <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.insurance).toLocaleString()}`} onChange={(e) => s.setInsurance(e.target.value)} />
+              <input type="text" className={INPUT_CLS} value={s.insurance} {...currencyInput(s.setInsurance)} />
             </div>
             <div className="flex flex-col gap-2 flex-1">
               <label className="text-xs font-medium text-subtle">Maintenance (%)</label>
-              <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={s.maintenance} onChange={(e) => s.setMaintenance(e.target.value)} />
+              <input type="text" className={INPUT_CLS} value={s.maintenance} onChange={(e) => s.setMaintenance(e.target.value)} />
             </div>
           </div>
           <div className="pt-0.5">
@@ -267,7 +279,7 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
           {s.hasStrata && (
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-subtle">Strata fees (quarterly)</label>
-              <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.strataFees).toLocaleString()}`} onChange={(e) => s.setStrataFees(e.target.value)} />
+              <input type="text" className={INPUT_CLS} value={s.strataFees} {...currencyInput(s.setStrataFees)} />
             </div>
           )}
         </div>
@@ -277,11 +289,11 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
         <div className="flex flex-col gap-7">
           <div className="flex flex-col gap-2">
             <label className="text-xs font-medium text-subtle">Weekly rent</label>
-            <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.weeklyRent).toLocaleString()}`} onChange={(e) => s.setWeeklyRent(e.target.value)} />
+            <input type="text" className={INPUT_CLS} value={s.weeklyRent} {...currencyInput(s.setWeeklyRent)} />
           </div>
           <div className="flex flex-col gap-2">
             <label className="text-xs font-medium text-subtle">Vacancy rate (%)</label>
-            <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={s.vacancyRate} onChange={(e) => s.setVacancyRate(e.target.value)} />
+            <input type="text" className={INPUT_CLS} value={s.vacancyRate} onChange={(e) => s.setVacancyRate(e.target.value)} />
           </div>
           <div className="pt-0.5">
             <label className="flex items-center gap-3 cursor-pointer text-[13px] text-subtle">
@@ -293,14 +305,14 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
           {s.usePropertyManager && (
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-subtle">Management fee (%)</label>
-              <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={s.managementFee} onChange={(e) => s.setManagementFee(e.target.value)} />
+              <input type="text" className={INPUT_CLS} value={s.managementFee} onChange={(e) => s.setManagementFee(e.target.value)} />
             </div>
           )}
         </div>
       )}
 
       {step === "tax" && (() => {
-        const propPrice = s.isNewPurchase ? parseCurrencyCf(s.purchasePrice) : parseCurrencyCf(s.currentValue);
+        const propPrice = s.isNewPurchase ? parseCurrencyInput(s.purchasePrice) : parseCurrencyInput(s.currentValue);
         const estYear = s.isNewPurchase ? new Date().getFullYear() : parseInt(s.purchaseYear) || new Date().getFullYear();
         const estAnnual = estimateAnnualDepreciation(propPrice, s.isNewPurchase, estYear);
 
@@ -308,11 +320,11 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
           <div className="flex flex-col gap-7">
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-subtle">Taxable income (p.a.)</label>
-              <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${parseCurrencyCf(s.taxableIncome).toLocaleString()}`} onChange={(e) => s.setTaxableIncome(e.target.value)} />
+              <input type="text" className={INPUT_CLS} value={s.taxableIncome} {...currencyInput(s.setTaxableIncome)} />
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-xs font-medium text-subtle">Capital growth assumption (%)</label>
-              <input type="text" className="py-3.5 px-4 bg-transparent border border-border rounded-xl text-foreground font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={s.capitalGrowth} onChange={(e) => s.setCapitalGrowth(e.target.value)} />
+              <input type="text" className={INPUT_CLS} value={s.capitalGrowth} onChange={(e) => s.setCapitalGrowth(e.target.value)} />
             </div>
 
             <div className="h-px bg-border my-1" />
@@ -328,8 +340,8 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
 
             {s.depreciationMode === "estimate" && (
               <div className="flex flex-col gap-1 py-3 px-4 bg-accent/[0.05] border border-accent/[0.12] rounded-lg">
-                <span className="text-base font-semibold text-accent tabular-nums">~{formatCurrencyCf(estAnnual)}/yr</span>
-                <span className="text-xs text-faint">estimated from {formatCurrencyCf(propPrice)} property</span>
+                <span className="text-base font-semibold text-accent tabular-nums">~{formatDollarsSigned(estAnnual)}/yr</span>
+                <span className="text-xs text-faint">estimated from {formatDollarsSigned(propPrice)} property</span>
               </div>
             )}
 
@@ -344,7 +356,7 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
                         const next = [...s.depBuildings]; next[i] = { ...b, name: e.target.value }; s.setDepBuildings(next);
                       }} placeholder="Name" />
                       <input type="text" className="flex-1 min-w-0 text-[13px] py-1.5 px-2.5 bg-transparent border border-border rounded-xl text-foreground font-[inherit] font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${b.construction_cost.toLocaleString()}`} onChange={(e) => {
-                        const next = [...s.depBuildings]; next[i] = { ...b, construction_cost: parseCurrencyCf(e.target.value) }; s.setDepBuildings(next);
+                        const next = [...s.depBuildings]; next[i] = { ...b, construction_cost: parseCurrencyInput(e.target.value) }; s.setDepBuildings(next);
                       }} placeholder="Cost" />
                       <button className="bg-transparent border-none text-faint cursor-pointer text-base py-1 px-2 rounded hover:text-negative" onClick={() => { const next = [...s.depBuildings]; next.splice(i, 1); s.setDepBuildings(next); }}>×</button>
                     </div>
@@ -361,7 +373,7 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
                         const next = [...s.depAssets]; next[i] = { ...a, name: e.target.value }; s.setDepAssets(next);
                       }} placeholder="Name" />
                       <input type="text" className="flex-1 min-w-0 text-[13px] py-1.5 px-2.5 bg-transparent border border-border rounded-xl text-foreground font-[inherit] font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={`$${a.cost.toLocaleString()}`} onChange={(e) => {
-                        const next = [...s.depAssets]; next[i] = { ...a, cost: parseCurrencyCf(e.target.value) }; s.setDepAssets(next);
+                        const next = [...s.depAssets]; next[i] = { ...a, cost: parseCurrencyInput(e.target.value) }; s.setDepAssets(next);
                       }} placeholder="Cost" />
                       <input type="text" className="flex-1 min-w-0 text-[13px] py-1.5 px-2.5 bg-transparent border border-border rounded-xl text-foreground font-[inherit] font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-accent/40" value={String(a.effective_life_years)} onChange={(e) => {
                         const next = [...s.depAssets]; next[i] = { ...a, effective_life_years: parseInt(e.target.value) || 1 }; s.setDepAssets(next);
