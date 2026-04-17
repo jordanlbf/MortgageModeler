@@ -34,6 +34,20 @@ A sharp, dark instrument for modelling property decisions with precision.
 - `font-bold` (700) reserved for hero numbers only.
 - Hierarchy built entirely with size + weight. Colour reinforces, doesn't create.
 
+### Surface lightness
+
+Elevation is communicated through progressively lighter surfaces, never shadows.
+
+| Token | Hex | Usage |
+|---|---|---|
+| `--color-surface-page` | `#08090a` | Outermost page background |
+| `--color-background` | `#111215` | Card / main app surface (unchanged) |
+| `--color-surface-raised` | `#17181c` | Elevated zones: table headers, card headers |
+| `--color-surface-hover` | `#1a1b1e` | Interactive row hover feedback |
+| `--color-surface-active` | `#1c1d21` | Summary rows, anchors, pressed states |
+
+Each step is ~4–6 hex points lighter. This follows the approach used by Linear and Stripe Dashboard.
+
 ### Cards
 - Barely raised. Transparent overlay on page, not opaque surface.
 - Border: 1px, low-opacity (~8% white or accent-tinted).

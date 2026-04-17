@@ -27,11 +27,14 @@ interface Props {
   hasOffset?: boolean;
   isHovered?: boolean;
   depColor?: string;
+  onHoverYear?: (year: number | null) => void;
+  onSelectYear?: (year: number) => void;
 }
 
 export default function CashflowKpiStrip({
   viewMode, yearData, selectedYearData: sy,
   selectedYear, isInvestment, marginalRate, hasOffset, isHovered, depColor = "#a78bfa",
+  onHoverYear, onSelectYear,
 }: Props) {
   const d = sy ?? yearData[0];
   let items: KpiItem[] = [];
@@ -254,6 +257,8 @@ export default function CashflowKpiStrip({
               colors={item.sparkColors}
               selectedIndex={selectedIndex}
               stepped={item.sparkStepped}
+              onHoverIndex={onHoverYear ? (idx) => onHoverYear(idx === null ? null : idx + 1) : undefined}
+              onSelectIndex={onSelectYear ? (idx) => onSelectYear(idx + 1) : undefined}
             />
           )}
         </div>

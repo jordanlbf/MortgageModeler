@@ -16,12 +16,29 @@ export const yoyClass = (value: number, positiveWhen: "positive" | "negative" = 
 /** Format a YoY badge string. */
 export const fmtYoY = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
 
-/** Determine value styling tier: result (teal), outflow (muted red), or neutral */
+/** Compact dollar format for summary rows: $X.XXM, $XXXK, $XXX. No sign prefix. */
+export const formatCompact = (v: number): string => {
+  const a = Math.abs(v);
+  if (a >= 1_000_000) return "$" + (a / 1_000_000).toFixed(2) + "M";
+  if (a >= 1_000) return "$" + Math.round(a / 1_000) + "K";
+  return "$" + Math.round(a);
+};
+
+/** Compact dollar format with sign prefix: +$X.XXM, −$XXXK. For cashflow/delta values. */
+export const formatCompactSigned = (v: number): string => {
+  const a = Math.abs(v);
+  const sign = v < 0 ? "−" : v > 0 ? "+" : "";
+  if (a >= 1_000_000) return sign + "$" + (a / 1_000_000).toFixed(2) + "M";
+  if (a >= 1_000) return sign + "$" + Math.round(a / 1_000) + "K";
+  return sign + "$" + Math.round(a);
+};
+
+/** Determine value styling tier: result (teal), outflow (red), or neutral */
 export const getValueClass = (value: number, isResult = false, isOutflow = false, isTaxSaved = false) => {
   if (isResult) return value < 0 ? "text-negative font-bold" : "text-accent font-bold";
   if (isTaxSaved && value > 0) return "text-accent font-bold";
-  if (isOutflow) return "text-red-400/65";
-  return "text-[#f0fdfa]";
+  if (isOutflow) return "text-negative";
+  return "text-foreground";
 };
 
 /** LVR conditional styling */

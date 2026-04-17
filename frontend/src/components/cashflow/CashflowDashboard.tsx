@@ -60,7 +60,7 @@ export default function CashflowDashboard({
   else if (vm === "deductions") panelProp.deductionsPanel = "unified";
 
   return (
-    <main className="bg-background text-foreground max-w-[1400px] mx-auto px-4 py-6 flex flex-col gap-6">
+    <main className="text-foreground max-w-[1400px] mx-auto px-4 py-6 flex flex-col gap-6">
       {/* ── Chart + Tabs ── */}
       <div className="flex items-stretch">
         <div className="relative flex-1 min-w-0 flex flex-col">
@@ -114,28 +114,28 @@ export default function CashflowDashboard({
           hasOffset={s.hasOffset}
           isHovered={hoveredYear !== null}
           depColor={depColor}
+          onHoverYear={onHoverYear}
+          onSelectYear={onSelectYear}
         />
       </div>
 
       {/* ── Table ── */}
-      <div className="bg-surface-subtle border border-border rounded-xl overflow-hidden">
-        <div className="overflow-hidden">
-          <CashflowDataTable
-            yearData={s.yearData}
-            viewMode={vm}
-            selectedYear={s.selectedYear}
-            hoveredYear={hoveredYear}
-            isInvestment={s.isInvestment}
-            hasOffset={s.hasOffset}
-            propertyValue={s.propertyValue}
-            expandedMilestones={tableExpanded}
-            onExpandedChange={onManualExpand}
-            onSelectYear={onSelectYear}
-            onHoverYear={onHoverYear}
-            depColor={vm === "deductions" ? depColor : undefined}
-            {...panelProp}
-          />
-        </div>
+      <div className="border border-border rounded-xl overflow-hidden">
+        <CashflowDataTable
+          yearData={s.yearData}
+          viewMode={vm}
+          selectedYear={s.selectedYear}
+          hoveredYear={hoveredYear}
+          isInvestment={s.isInvestment}
+          hasOffset={s.hasOffset}
+          propertyValue={s.propertyValue}
+          expandedMilestones={tableExpanded}
+          onExpandedChange={onManualExpand}
+          onSelectYear={onSelectYear}
+          onHoverYear={onHoverYear}
+          depColor={vm === "deductions" ? depColor : undefined}
+          {...panelProp}
+        />
       </div>
     </main>
   );

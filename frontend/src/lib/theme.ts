@@ -16,9 +16,12 @@ export const mix = (color: string, pct: number) =>
 export const t = {
   // ── Backgrounds ──────────────────────────────────
   bg: {
-    page: "var(--color-background)",
+    page: "var(--color-surface-page)",
     card: "var(--color-card)",
     cardElevated: "var(--color-card-elevated)",
+    raised: "var(--color-surface-raised)",
+    hover: "var(--color-surface-hover)",
+    active: "var(--color-surface-active)",
     control: "var(--color-control)",
     sliderThumb: "var(--color-slider-thumb)",
   },

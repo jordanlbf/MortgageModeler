@@ -20,6 +20,20 @@
   --color-slider-thumb: #1a1c20;
   --color-surface-subtle: rgba(255,255,255,0.02);
 
+  /* ── Surface lightness ramp ── */
+  --color-surface-page: #08090a;
+  --color-surface-raised: #17181c;
+  --color-surface-hover: #1a1b1e;
+  --color-surface-active: #1c1d21;
+
+  /* ── Column group tints ── */
+  --color-out-tint: rgba(255,255,255,0.018);
+  --color-out-tint-hover: rgba(255,255,255,0.038);
+  --color-out-tint-raised: rgba(255,255,255,0.025);
+  --color-cf-wash: rgba(45,212,191,0.05);
+  --color-cf-wash-hover: rgba(45,212,191,0.07);
+  --color-cf-wash-strong: rgba(45,212,191,0.08);
+
   /* ── Borders ── */
   --color-border: rgba(113,113,122,0.08);
   --color-border-hover: rgba(113,113,122,0.15);
@@ -57,6 +71,45 @@
 body {
   background: var(--color-background);
   color: var(--color-foreground);
+}
+
+::selection {
+  background: rgba(45, 212, 191, 0.25);
+  color: var(--color-foreground);
+}
+
+/* ── Cashflow table: column group zones ── */
+.out-zone { background: var(--color-out-tint); }
+.cf-zone { background: var(--color-cf-wash); }
+
+/* Group gap: applied to first cell of a column group */
+.row-gsep { padding-left: 24px !important; }
+
+/* Hover compound: row hover brightens the zone tint */
+tr:hover .out-zone { background: var(--color-out-tint-hover); }
+tr:hover .cf-zone { background: var(--color-cf-wash-hover); }
+
+/* Selected row keeps its accent wash */
+tr.row-selected .out-zone { background: rgba(45,212,191,0.05); }
+tr.row-selected .cf-zone { background: rgba(45,212,191,0.08); }
+
+/* Header and summary rows use the raised/strong tint */
+thead .out-zone,
+.row-summary .out-zone { background: var(--color-out-tint-raised); }
+thead .cf-zone,
+.row-summary .cf-zone { background: var(--color-cf-wash-strong); }
+
+/* Summary row */
+.row-summary {
+  height: 56px;
+  background: var(--color-surface-active);
+  cursor: default;
+}
+.row-summary:hover { background: var(--color-surface-active) !important; }
+.row-summary > td {
+  height: 56px;
+  border-bottom: none;
+  border-top: 0.5px solid rgba(255,255,255,0.10);
 }
 
 @layer base {

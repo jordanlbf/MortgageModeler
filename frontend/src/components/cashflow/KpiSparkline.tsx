@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import type { MouseEvent as ReactMouseEvent } from "react";
 
 interface Props {
   data: number[];
@@ -10,10 +11,13 @@ interface Props {
   stepped?: boolean;
   width?: number;
   height?: number;
+  onHoverIndex?: (i: number | null) => void;
+  onSelectIndex?: (i: number) => void;
 }
 
 export default memo(function KpiSparkline({
   data, color, colors, selectedIndex = 0, stepped = false, width = 100, height = 24,
+  onHoverIndex, onSelectIndex,
 }: Props) {
   const safeData = data.map(v => (Number.isFinite(v) ? v : 0));
   if (safeData.length < 2) return null;
@@ -31,6 +35,29 @@ export default memo(function KpiSparkline({
 
   const clampedIdx = Math.max(0, Math.min(selectedIndex, points.length - 1));
   const [sx, sy] = points[clampedIdx];
+
+  const indexFromEvent = (e: ReactMouseEvent<SVGElement>) => {
+    const rect = (e.currentTarget.ownerSVGElement ?? e.currentTarget as SVGSVGElement).getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const i = Math.round(((x - 3) / (width - 6)) * (data.length - 1));
+    return Math.max(0, Math.min(i, data.length - 1));
+  };
+
+  const interactive = !!(onHoverIndex || onSelectIndex);
+  const overlay = interactive ? (
+    <rect
+      x={0}
+      y={0}
+      width={width}
+      height={height}
+      fill="transparent"
+      pointerEvents="all"
+      onMouseMove={(e) => onHoverIndex?.(indexFromEvent(e))}
+      onMouseLeave={() => onHoverIndex?.(null)}
+      onClick={(e) => onSelectIndex?.(indexFromEvent(e))}
+      style={{ cursor: onSelectIndex ? "pointer" : "default" }}
+    />
+  ) : null;
 
   // Per-segment colored stepped rendering
   if (stepped && colors) {
@@ -77,6 +104,7 @@ export default memo(function KpiSparkline({
             </g>
           ))}
           <circle cx={sx} cy={sy} r={1.5} fill={colors[clampedIdx] ?? color} />
+          {overlay}
         </svg>
       </div>
     );
@@ -118,6 +146,7 @@ export default memo(function KpiSparkline({
         )}
         {/* Position dot */}
         <circle cx={sx} cy={sy} r={1.5} fill={color} />
+        {overlay}
       </svg>
     </div>
   );
