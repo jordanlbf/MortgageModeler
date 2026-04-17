@@ -1,31 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import "./ThemeToggle.css";
 
 type Theme = "dark" | "arctic";
 
-function getStoredTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
+const THEME_EVENT = "theme-change";
+
+function subscribe(callback: () => void) {
+  window.addEventListener(THEME_EVENT, callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener(THEME_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+function getSnapshot(): Theme {
   return (localStorage.getItem("theme") as Theme) === "arctic" ? "arctic" : "dark";
+}
+
+function getServerSnapshot(): Theme {
+  return "dark";
 }
 
 function applyTheme(theme: Theme) {
   document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem("theme", theme);
+  window.dispatchEvent(new Event(THEME_EVENT));
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("dark");
-
-  useEffect(() => {
-    setTheme(getStoredTheme());
-  }, []);
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const toggle = () => {
-    const next: Theme = theme === "dark" ? "arctic" : "dark";
-    applyTheme(next);
-    setTheme(next);
+    applyTheme(theme === "dark" ? "arctic" : "dark");
   };
 
   return (

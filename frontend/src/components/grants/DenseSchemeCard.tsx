@@ -43,7 +43,7 @@ function BulletList({ items, color }: { items: string[]; color: string }) {
 
 // ── Card sections ───────────────────────────────
 
-function CardContent({ scheme, result, color }: { scheme: GrantScheme; result: GrantEligibilityResult; color: string }) {
+function CardContent({ scheme, color }: { scheme: GrantScheme; color: string }) {
   return (
     <>
       <div className="grid grid-cols-3 gap-2 max-[900px]:grid-cols-1">
@@ -217,7 +217,7 @@ export default function DenseSchemeCard({ scheme, result, isExpanded, onToggleEx
         <div className="px-5 pt-5 pb-4 min-h-0 flex-1">
           {header}
           {subheader}
-          <CardContent scheme={scheme} result={result} color={color} />
+          <CardContent scheme={scheme} color={color} />
         </div>
         <CardFooter scheme={scheme} result={result} color={color} />
       </div>
@@ -235,7 +235,7 @@ export default function DenseSchemeCard({ scheme, result, isExpanded, onToggleEx
             <div className="px-5 pt-5 pb-4 min-h-0 flex-1">
               {header}
               {subheader}
-              <CardContent scheme={scheme} result={result} color={color} />
+              <CardContent scheme={scheme} color={color} />
               <ExpandedContent scheme={scheme} result={result} color={color} />
             </div>
             <CardFooter scheme={scheme} result={result} color={color} />

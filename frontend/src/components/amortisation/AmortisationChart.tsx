@@ -161,9 +161,9 @@ export default function AmortisationChart({
 
   // ── Toggle detection ──
   // visibleSeries is a stable Set ref — only changes identity on toggle
-  const prevVisibleRef = useRef(visibleSeries);
-  const isToggle = phase === "steady" && prevVisibleRef.current !== visibleSeries;
-  useEffect(() => { prevVisibleRef.current = visibleSeries; }, [visibleSeries]);
+  const [prevVisible, setPrevVisible] = useState(visibleSeries);
+  const isToggle = phase === "steady" && prevVisible !== visibleSeries;
+  if (prevVisible !== visibleSeries) setPrevVisible(visibleSeries);
 
   // ── Animation params: entrance 800ms, toggle 450ms ease-in-out, slider 200ms ease-out ──
   const animDuration = phase === "entrance" ? ENTRANCE_MS : isToggle ? TOGGLE_MS : SLIDER_MS;
@@ -194,8 +194,13 @@ export default function AmortisationChart({
       timersRef.current[key]?.forEach(clearTimeout);
       timersRef.current[key] = [];
       if (visible) {
-        // Toggle ON → show immediately
-        setDisplayOpacity((prev) => (prev[key] === 1 ? prev : { ...prev, [key]: 1 }));
+        // Toggle ON → show immediately (via setTimeout to defer setState out of effect body)
+        timersRef.current[key] = [
+          setTimeout(
+            () => setDisplayOpacity((prev) => (prev[key] === 1 ? prev : { ...prev, [key]: 1 })),
+            0,
+          ),
+        ];
       } else {
         // Toggle OFF → hold visible during morph, then stepped fade-out
         timersRef.current[key] = [

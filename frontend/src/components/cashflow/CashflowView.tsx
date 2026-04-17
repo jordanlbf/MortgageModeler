@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import { useCashflowState } from "@/hooks/useCashflowState";
@@ -116,12 +116,10 @@ export default function CashflowCalculator() {
 
   // Auto-switch to dashboard when wizard first completes
   const [wasComplete, setWasComplete] = useState(false);
-  useEffect(() => {
-    if (s.allComplete && !wasComplete) {
-      setWasComplete(true);
-      setActiveTab("dashboard");
-    }
-  }, [s.allComplete, wasComplete]);
+  if (s.allComplete && !wasComplete) {
+    setWasComplete(true);
+    setActiveTab("dashboard");
+  }
 
   return (
     <>

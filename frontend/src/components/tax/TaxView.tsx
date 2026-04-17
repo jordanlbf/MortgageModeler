@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAdvancedTaxState } from "@/hooks/useAdvancedTaxState";
 import { formatCurrencyShort } from "@/lib/formatters";
-import { t, mix } from "@/lib/theme";
+import { mix } from "@/lib/theme";
 import Header from "@/components/layout/Header";
 import AdvancedColumn from "@/components/tax/AdvancedColumn";
 import TaxComposition from "@/components/tax/TaxBreakdown";

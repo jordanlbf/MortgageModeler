@@ -56,7 +56,7 @@ describe("useApiCall", () => {
     // The hook checks controller.signal.aborted in the catch block.
     // When a dep changes, the previous controller is aborted before the new
     // fetch starts, so any rejection from the old fetch is silently ignored.
-    let resolvers: Array<{
+    const resolvers: Array<{
       resolve: (v: unknown) => void;
       reject: (e: Error) => void;
       signal: AbortSignal;

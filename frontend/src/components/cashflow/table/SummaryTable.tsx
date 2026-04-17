@@ -99,7 +99,7 @@ export default function SummaryTable({
             </tr>
           </thead>
           <tbody>
-            {yearData.map((y, i) => {
+            {yearData.map((y) => {
               if (!isRowVisible(y.year)) return null;
               const isMilestone = isMilestoneYear(y.year);
               const totalCosts = y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc;
@@ -132,7 +132,7 @@ export default function SummaryTable({
             </tr>
           </thead>
           <tbody>
-            {yearData.map((y, i) => {
+            {yearData.map((y) => {
               if (!isRowVisible(y.year)) return null;
               const isMilestone = isMilestoneYear(y.year);
               const totalIncome = y.salary + (isInvestment ? y.rentalIncome : 0);

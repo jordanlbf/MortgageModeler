@@ -37,7 +37,6 @@ export default function CashflowDataTable({
   expandedMilestones: externalExpanded, onExpandedChange,
   onSelectYear, onHoverYear,
 }: Props) {
-  const baseYear = new Date().getFullYear();
   const showOffset = hasOffset && yearData.some(y => y.offsetBalanceAtYear > 0);
 
   // Expansion state - use external if provided, otherwise local

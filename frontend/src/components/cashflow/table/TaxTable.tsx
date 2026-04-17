@@ -95,7 +95,7 @@ export default function TaxTable({
             </tr>
           </thead>
           <tbody>
-            {yearData.map((y, i) => {
+            {yearData.map((y) => {
               if (!isRowVisible(y.year)) return null;
               const isMilestone = isMilestoneYear(y.year);
               const totalIncome = y.salary + y.rentalIncome;

@@ -2,7 +2,6 @@
 
 import { formatDollarsSigned } from "@/lib/formatters";
 import type { ViewMode } from "@/lib/cashflow-types";
-import { safeDiv } from "@/lib/formatters";
 import type { useCashflowState } from "@/hooks/useCashflowState";
 import CashflowChart from "./CashflowChart";
 import CashflowKpiStrip from "./CashflowKpiStrip";
@@ -86,7 +85,6 @@ export default function CashflowDashboard({
             viewMode={vm}
             selectedYear={s.selectedYear}
             hoveredYear={hoveredYear}
-            isInvestment={s.isInvestment}
             chartView="bars"
             onSelectYear={onSelectYear}
             onHoverYear={onHoverYear}

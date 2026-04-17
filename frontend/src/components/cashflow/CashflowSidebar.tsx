@@ -143,13 +143,11 @@ interface Props {
 }
 
 function StepIndicator({
-  index,
   isComplete,
   isCurrent,
   Icon,
   isLast
 }: {
-  index: number;
   isComplete: boolean;
   isCurrent: boolean;
   Icon: typeof Home;
@@ -315,7 +313,6 @@ export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) 
                   disabled={!isComplete}
                 >
                   <StepIndicator
-                    index={index}
                     isComplete={isComplete}
                     isCurrent={isCurrent}
                     Icon={step.icon}

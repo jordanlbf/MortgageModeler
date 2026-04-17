@@ -8,7 +8,6 @@ import { fetchPurchaseCosts } from "@/lib/api";
 import type { PurchaseCostsResponse } from "@/lib/api";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import { useApiCall } from "@/hooks/useApiCall";
-import { mix } from "@/lib/theme";
 
 const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
 

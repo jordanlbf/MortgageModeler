@@ -59,7 +59,8 @@
       "Bash(node -e ':*)",
       "Bash(py agents/run.py frontend --save)",
       "Bash(npx vitest:*)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(echo \"exit: $?\")"
     ]
   }
 }

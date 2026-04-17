@@ -12,9 +12,6 @@ interface Props extends SubTableProps {
 export default function PropertyTable({
   yearData,
   isInvestment,
-  showOffset,
-  propertyValue,
-  depColor,
   isGroupExpanded,
   toggleGroup,
   isRowVisible,
@@ -95,7 +92,7 @@ export default function PropertyTable({
             </tr>
           </thead>
           <tbody>
-            {yearData.map((y, i) => {
+            {yearData.map((y) => {
               if (!isRowVisible(y.year)) return null;
               const isMilestone = isMilestoneYear(y.year);
               const holdingCosts = y.interestPortion + y.ongoingCosts;

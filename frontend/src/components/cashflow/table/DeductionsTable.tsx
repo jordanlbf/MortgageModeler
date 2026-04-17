@@ -95,7 +95,7 @@ export default function DeductionsTable({
             </tr>
           </thead>
           <tbody>
-            {yearData.map((y, i) => {
+            {yearData.map((y) => {
               if (!isRowVisible(y.year)) return null;
               const isMilestone = isMilestoneYear(y.year);
               const depTotal = y.depDiv43 + y.depDiv40;
@@ -136,7 +136,7 @@ export default function DeductionsTable({
             </tr>
           </thead>
           <tbody>
-            {yearData.map((y, i) => {
+            {yearData.map((y) => {
               if (!isRowVisible(y.year)) return null;
               const isMilestone = isMilestoneYear(y.year);
               const holdingTotal = isInvestment ? y.interestPortion + y.ongoingCosts : y.ongoingCosts;

@@ -24,7 +24,6 @@ interface Props {
   viewMode: ViewMode;
   selectedYear: number;
   hoveredYear: number | null;
-  isInvestment: boolean;
   chartView?: ChartView;
   onSelectYear: (year: number) => void;
   onHoverYear: (year: number | null) => void;
@@ -32,7 +31,7 @@ interface Props {
 
 export default function CashflowChart({
   chartData, yearData, viewMode, selectedYear, hoveredYear,
-  isInvestment, chartView = "bars", onSelectYear, onHoverYear,
+  chartView = "bars", onSelectYear, onHoverYear,
 }: Props) {
 
   /* Recharts types `activeTooltipIndex` as string|number and bar data as

@@ -30,16 +30,18 @@ function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick, activeSe
   const visible = segments.filter((s) => s.value > 0);
   const total = segments.reduce((sum, s) => sum + s.value, 0);
   const circumference = 2 * Math.PI * 60;
-  const totalGap = visible.length > 1 ? GAP * circumference * visible.length : 0;
-  const usable = circumference - totalGap;
-  let offset = 0;
-  const arcs = visible.map((s) => {
+  const gapSize = visible.length > 1 ? GAP * circumference : 0;
+  const usable = circumference - gapSize * visible.length;
+  const arcs = visible.reduce<
+    { arcs: Array<typeof visible[number] & { pct: number; dash: number; offset: number }>; offset: number }
+  >((acc, s) => {
     const pct = total > 0 ? s.value / total : 0;
     const dash = pct * usable;
-    const arc = { ...s, pct, dash, offset: -offset + circumference * 0.25 };
-    offset += dash + (visible.length > 1 ? GAP * circumference : 0);
-    return arc;
-  });
+    return {
+      arcs: [...acc.arcs, { ...s, pct, dash, offset: -acc.offset + circumference * 0.25 }],
+      offset: acc.offset + dash + gapSize,
+    };
+  }, { arcs: [], offset: 0 }).arcs;
 
   return (
     <svg viewBox="0 0 160 160" style={{ width: 300, height: 300, flexShrink: 0 }}>
@@ -116,23 +118,29 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
   const baseline = gross + totalRefund;
 
   // Refund rows start from gross and extend right
-  let refundOffset = gross;
-  const refundRows = refunds.map((r) => {
+  const refundRows = refunds.reduce<
+    { rows: Array<typeof refunds[number] & { startPct: number; widthPct: number; absVal: number }>; offset: number }
+  >((acc, r) => {
     const absVal = Math.abs(r.value);
-    const startPct = (refundOffset / baseline) * 100;
+    const startPct = (acc.offset / baseline) * 100;
     const widthPct = (absVal / baseline) * 100;
-    refundOffset += absVal;
-    return { ...r, startPct, widthPct, absVal };
-  });
+    return {
+      rows: [...acc.rows, { ...r, startPct, widthPct, absVal }],
+      offset: acc.offset + absVal,
+    };
+  }, { rows: [], offset: gross }).rows;
 
   // Deduction rows eat inward from the right of baseline
-  let running = baseline;
-  const rows = deductions.map((d) => {
-    const startPct = ((running - d.value) / baseline) * 100;
+  const rows = deductions.reduce<
+    { rows: Array<typeof deductions[number] & { startPct: number; widthPct: number }>; running: number }
+  >((acc, d) => {
+    const startPct = ((acc.running - d.value) / baseline) * 100;
     const widthPct = (d.value / baseline) * 100;
-    running -= d.value;
-    return { ...d, startPct, widthPct };
-  });
+    return {
+      rows: [...acc.rows, { ...d, startPct, widthPct }],
+      running: acc.running - d.value,
+    };
+  }, { rows: [], running: baseline }).rows;
   const netPct = (netIncome / baseline) * 100;
   const grossPct = (gross / baseline) * 100;
 
@@ -286,7 +294,6 @@ export default function TaxComposition({
   }));
 
   const total = allSegments.reduce((sum, s) => sum + s.value, 0);
-  const taxSegments = allSegments.filter((s) => s.key !== "net_income");
   const gross = taxableIncome > 0 ? taxableIncome : totalTax + netIncome;
 
   // Waterfall uses real (non-donut-adjusted) values so refund bars render correctly
