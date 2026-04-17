@@ -132,6 +132,8 @@ export default function PurchaseCostsView() {
       owner_occupier: ownerOcc,
       first_home_buyer: firstHome,
       selected_grants: [],
+      income: 0,
+      partner_income: 0,
     }, signal),
     [state, price, depositPct, propertyType, firstHome, ownerOcc, couple],
     { debounce: 300, enabled: price > 0 },

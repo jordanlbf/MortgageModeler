@@ -103,6 +103,8 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
         annual_appreciation: growth,
         depreciable_buildings: depBuilds,
         depreciable_assets: depAsts,
+        original_borrowing_costs_total: 0,
+        borrowing_costs_years_elapsed: 0,
       };
       base.existing_loan = {
         current_balance: parseCurrencyInput(form.currentLoanBalance),

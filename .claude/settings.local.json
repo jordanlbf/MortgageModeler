@@ -58,7 +58,8 @@
       "Bash(sed -n '1460,1475p' cashflow.css)",
       "Bash(node -e ':*)",
       "Bash(py agents/run.py frontend --save)",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(curl *)"
     ]
   }
 }

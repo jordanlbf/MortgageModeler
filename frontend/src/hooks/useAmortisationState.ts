@@ -60,6 +60,7 @@ export function useAmortisationState(): AmortisationState {
       annual_appreciation: appreciation / 100,
       offset_balance: offsetBalance,
       offset_contribution: offsetContribution,
+      extra_repayment: 0,
     }, signal),
     [purchasePrice, deposit, rate, years, frequency, appreciation, offsetBalance, offsetContribution],
   );
