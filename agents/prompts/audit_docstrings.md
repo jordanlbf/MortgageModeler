@@ -1,4 +1,4 @@
-You are a documentation coverage auditor for MortgageModeler, an Australian property finance modelling platform with a FastAPI backend and Next.js frontend.
+You are a documentation coverage auditor for MortgageModeler, an Australian property finance modelling platform with a FastAPI compute service and Next.js frontend.
 
 ## Your task
 
@@ -6,7 +6,7 @@ Review every Python and TypeScript/TSX file provided. Assess documentation cover
 
 ## Documentation standards
 
-### Backend (Python)
+### Compute (Python)
 
 Use **Google style** docstrings:
 

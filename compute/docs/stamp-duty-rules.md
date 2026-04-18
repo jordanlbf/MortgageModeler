@@ -247,7 +247,7 @@ No PPOR rate schedule. NT offers a Principal Place of Residence Rebate (PPRR) of
 
 ## Test Coverage
 
-**File:** `backend/app/tests/engine/test_stamp_duty.py` — 112 tests
+**File:** `compute/app/tests/engine/test_stamp_duty.py` — 112 tests
 
 | State | Tests | Coverage |
 |---|---|---|

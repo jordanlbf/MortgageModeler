@@ -6,8 +6,8 @@
  */
 
 /**
- * Days per period matching the backend exactly.
- * Backend: weekly=7, fortnightly=14, monthly=365/12
+ * Days per period matching the compute service exactly.
+ * Compute: weekly=7, fortnightly=14, monthly=365/12
  */
 const DAYS_PER_PERIOD: Record<number, number> = {
   52: 7,
@@ -17,11 +17,11 @@ const DAYS_PER_PERIOD: Record<number, number> = {
 
 /**
  * Reverse-solve: given a desired periodic payment, compute the loan amount
- * using daily compounding (matching the backend exactly).
+ * using daily compounding (matching the compute service exactly).
  */
 /**
  * Forward-solve: given a loan amount, compute the periodic payment
- * using daily compounding (matching the backend exactly).
+ * using daily compounding (matching the compute service exactly).
  */
 export function paymentFromLoanAmount(
   principal: number,
@@ -39,7 +39,7 @@ export function paymentFromLoanAmount(
 
 /**
  * Reverse-solve: given a desired periodic payment, compute the loan amount
- * using daily compounding (matching the backend exactly).
+ * using daily compounding (matching the compute service exactly).
  */
 export function loanAmountFromPayment(
   payment: number,

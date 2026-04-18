@@ -2,7 +2,7 @@ name = "audit_docstrings"
 short_name = "docstrings"
 description = "Checks Python/TypeScript documentation coverage"
 file_patterns = [
-    "backend/**/*.py",
+    "compute/**/*.py",
     "frontend/**/*.ts",
     "frontend/**/*.tsx",
 ]

@@ -51,7 +51,7 @@ https://www.ato.gov.au/tax-rates-and-codes/tax-rates-australian-residents
 
 ### Configuration
 
-**File:** `backend/app/config/tax.py`
+**File:** `compute/app/config/tax.py`
 
 ```python
 TAX_BRACKETS = [
@@ -67,7 +67,7 @@ Each tuple is `(upper_threshold, rate)`. The engine iterates brackets, applying 
 
 ### Engine
 
-**File:** `backend/app/engine/tax.py`
+**File:** `compute/app/engine/tax.py`
 **Function:** `calculate_income_tax(taxable_income: float) -> float`
 
 - Returns 0 for TI <= 0 (guard against negative income)
@@ -76,7 +76,7 @@ Each tuple is `(upper_threshold, rate)`. The engine iterates brackets, applying 
 
 ### Service Integration
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 **Function:** `build_tax_breakdown()`
 
 - Called as `raw_income_tax = calculate_income_tax(profile.taxable_income)`
@@ -86,7 +86,7 @@ Each tuple is `(upper_threshold, rate)`. The engine iterates brackets, applying 
 ### Test Coverage
 
 **Engine tests:**
-**File:** `backend/app/tests/engine/test_tax.py`
+**File:** `compute/app/tests/engine/test_tax.py`
 **Class:** `TestIncomeTax` (8 tests)
 
 | Test | Scenario | Expected |
@@ -113,7 +113,7 @@ Returns the marginal tax rate (the rate on the next dollar of income) for a give
 
 ### Engine
 
-**File:** `backend/app/engine/tax.py`
+**File:** `compute/app/engine/tax.py`
 **Function:** `calculate_marginal_rate(taxable_income: float) -> float`
 
 - Returns 0.0 for TI <= 0
@@ -122,13 +122,13 @@ Returns the marginal tax rate (the rate on the next dollar of income) for a give
 
 ### Service Integration
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 
 - Called in `build_tax_breakdown()` and included in the response as `marginal_rate`
 
 ### Test Coverage
 
-**File:** `backend/app/tests/engine/test_tax.py`
+**File:** `compute/app/tests/engine/test_tax.py`
 **Class:** `TestMarginalRate` (15 tests)
 
 | Test | TI | Expected Rate |
@@ -150,7 +150,7 @@ Returns the marginal tax rate (the rate on the next dollar of income) for a give
 | `test_top_bracket` | $500,000 | 0.45 |
 
 **Service tests:**
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestMarginalRateInBreakdown` (5 tests) — verifies marginal_rate in service response at $15k, $50k, $100k, $150k, $200k.
 
 ### Last Verified
@@ -179,7 +179,7 @@ https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insu
 
 ### Configuration
 
-**File:** `backend/app/config/tax.py`
+**File:** `compute/app/config/tax.py`
 
 | Constant | Value | Description |
 |---|---|---|
@@ -190,7 +190,7 @@ https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insu
 
 ### Engine
 
-**File:** `backend/app/engine/tax.py`
+**File:** `compute/app/engine/tax.py`
 **Function:** `calculate_medicare_levy(taxable_income: float) -> float`
 
 Three branches:
@@ -206,7 +206,7 @@ Called in `build_tax_breakdown()` as a standalone component. Not affected by tax
 
 ### Test Coverage
 
-**File:** `backend/app/tests/engine/test_tax.py`
+**File:** `compute/app/tests/engine/test_tax.py`
 **Class:** `TestMedicareLevyTax` (7 tests)
 
 | Test | Scenario | Expected |
@@ -248,7 +248,7 @@ https://www.ato.gov.au/individuals-and-families/medicare-and-private-health-insu
 
 ### Configuration
 
-**File:** `backend/app/config/tax.py`
+**File:** `compute/app/config/tax.py`
 
 ```python
 MLS_THRESHOLDS = [
@@ -263,7 +263,7 @@ Each tuple is `(upper_threshold, rate)`. The engine finds the first threshold th
 
 ### Engine
 
-**File:** `backend/app/engine/tax.py`
+**File:** `compute/app/engine/tax.py`
 **Function:** `calculate_medicare_levy_surcharge(mls_income: float, has_private_health: bool) -> float`
 
 - Returns 0 immediately if `has_private_health` is True
@@ -278,7 +278,7 @@ Called in `build_tax_breakdown()`. Not affected by tax offsets.
 
 ### Test Coverage
 
-**File:** `backend/app/tests/engine/test_tax.py`
+**File:** `compute/app/tests/engine/test_tax.py`
 **Class:** `TestMedicareLevySurchargeTax` (12 tests)
 
 | Test | Scenario | Expected |
@@ -325,7 +325,7 @@ https://www.ato.gov.au/individuals-and-families/study-and-training-support-loans
 
 ### Configuration
 
-**File:** `backend/app/config/tax.py`
+**File:** `compute/app/config/tax.py`
 
 | Constant | Value | Description |
 |---|---|---|
@@ -343,7 +343,7 @@ HECS_THRESHOLDS = [
 
 ### Engine
 
-**File:** `backend/app/engine/tax.py`
+**File:** `compute/app/engine/tax.py`
 **Function:** `calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> float`
 
 - Iterates marginal thresholds accumulating repayment
@@ -358,7 +358,7 @@ Called in `build_tax_breakdown()`. Not affected by tax offsets.
 
 ### Test Coverage
 
-**File:** `backend/app/tests/engine/test_tax.py`
+**File:** `compute/app/tests/engine/test_tax.py`
 **Class:** `TestHecsTax` (7 tests)
 
 | Test | Scenario | Expected |
@@ -372,7 +372,7 @@ Called in `build_tax_breakdown()`. Not affected by tax offsets.
 | `test_hecs_balance_less_than_owing` | Balance < repayment | Capped at balance |
 
 **Service tests:**
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestHecs` (3 tests) — with balance, balance cap, increases total tax.
 
 ### Last Verified
@@ -402,7 +402,7 @@ https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-re
 
 ### Configuration
 
-**File:** `backend/app/config/tax.py`
+**File:** `compute/app/config/tax.py`
 
 | Constant | Value | Description |
 |---|---|---|
@@ -416,7 +416,7 @@ https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-re
 
 ### Engine
 
-**File:** `backend/app/engine/tax.py`
+**File:** `compute/app/engine/tax.py`
 **Function:** `calculate_lito(taxable_income: float) -> float`
 
 Three-branch calculation:
@@ -427,7 +427,7 @@ Three-branch calculation:
 
 ### Service Integration
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 **Function:** `_apply_offsets(income_tax, profile) -> _OffsetResult`
 
 - Called inside `build_tax_breakdown()` after raw income tax is calculated
@@ -437,7 +437,7 @@ Three-branch calculation:
 ### Test Coverage
 
 **Engine tests:**
-**File:** `backend/app/tests/engine/test_tax.py`
+**File:** `compute/app/tests/engine/test_tax.py`
 **Class:** `TestCalculateLito` (15 tests)
 
 | Test | Scenario | Expected |
@@ -459,7 +459,7 @@ Three-branch calculation:
 | `test_never_negative` | TI 0–200k in $5k steps | Always >= 0 |
 
 **Service tests:**
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestLitoInBreakdown` (8 tests)
 
 | Test | Scenario | Verifies |
@@ -474,7 +474,7 @@ Three-branch calculation:
 | `test_lito_in_total_offsets` | $30k | total_offsets = lito + sapto + franking |
 
 **API tests:**
-**File:** `backend/app/tests/api/test_tax.py`
+**File:** `compute/app/tests/api/test_tax.py`
 
 | Test | Scenario |
 |---|---|
@@ -507,7 +507,7 @@ https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-re
 
 ### Configuration
 
-**File:** `backend/app/config/tax.py`
+**File:** `compute/app/config/tax.py`
 
 | Constant | Value | Description |
 |---|---|---|
@@ -520,7 +520,7 @@ https://www.ato.gov.au/individuals-and-families/income-deductions-offsets-and-re
 
 ### Engine
 
-**File:** `backend/app/engine/tax.py`
+**File:** `compute/app/engine/tax.py`
 **Function:** `calculate_sapto(taxable_income: float) -> float`
 
 Two-branch calculation:
@@ -532,7 +532,7 @@ Two-branch calculation:
 
 ### Service Integration
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 **Function:** `_apply_offsets(income_tax, profile) -> _OffsetResult`
 
 ```python
@@ -546,7 +546,7 @@ sapto_offset = calculate_sapto(profile.taxable_income) if profile.sapto else 0.0
 ### Test Coverage
 
 **Engine tests:**
-**File:** `backend/app/tests/engine/test_tax.py`
+**File:** `compute/app/tests/engine/test_tax.py`
 **Class:** `TestCalculateSapto` (10+ tests)
 
 | Test | Scenario | Expected |
@@ -563,7 +563,7 @@ sapto_offset = calculate_sapto(profile.taxable_income) if profile.sapto else 0.0
 | `test_never_negative` | TI 0–200k in $5k steps | Always >= 0 |
 
 **Service tests:**
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestSaptoInBreakdown` (6 tests)
 
 | Test | Scenario | Verifies |
@@ -576,7 +576,7 @@ sapto_offset = calculate_sapto(profile.taxable_income) if profile.sapto else 0.0
 | `test_sapto_reduces_total_tax` | $40k, with/without | Total tax lower with SAPTO |
 
 **API tests:**
-**File:** `backend/app/tests/api/test_tax.py`
+**File:** `compute/app/tests/api/test_tax.py`
 
 | Test | Scenario |
 |---|---|
@@ -609,7 +609,7 @@ No engine function — the franking amount is used directly as an offset in the 
 
 ### Service Integration
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 
 **In `compute_income_measures()`:**
 - Franking is added to assessable income: `assessable = salary + rental + ... + franking + ...`
@@ -623,7 +623,7 @@ No engine function — the franking amount is used directly as an offset in the 
 ### Test Coverage
 
 **Service tests:**
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestFrankingInBreakdown` (6 tests)
 
 | Test | Scenario | Verifies |
@@ -636,7 +636,7 @@ No engine function — the franking amount is used directly as an offset in the 
 | `test_franking_in_total_offsets` | $100k + $3k franking | total_offsets includes franking |
 
 **API tests:**
-**File:** `backend/app/tests/api/test_tax.py`
+**File:** `compute/app/tests/api/test_tax.py`
 
 | Test | Scenario |
 |---|---|
@@ -657,7 +657,7 @@ Tax offsets are applied to income tax in a specific order. This is a **service-l
 
 ### Application Logic
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 **Function:** `_apply_offsets(income_tax: float, profile: TaxProfile) -> _OffsetResult`
 
 ```
@@ -687,7 +687,7 @@ If franking were applied before the non-refundable floor, the taxpayer could los
 
 ### Test Coverage
 
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestCombinedOffsets` (6 tests)
 
 | Test | Scenario | Verifies |
@@ -713,7 +713,7 @@ Capital gains on assets held for more than 12 months receive a 50% discount. Sho
 
 ### Implementation
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 **Function:** `compute_income_measures()`
 
 ```python
@@ -733,7 +733,7 @@ No config constants — the 50% discount rate is hardcoded in the service layer.
 ### Test Coverage
 
 **Service tests:**
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestComputeIncomeMeasures`
 
 | Test | Scenario | Verifies |
@@ -742,7 +742,7 @@ No config constants — the 50% discount rate is hardcoded in the service layer.
 | `test_long_term_cgt_50_percent_discount` | $80k salary + $40k long CGT | Assessable = $100k (40k × 0.5) |
 
 **API tests:**
-**File:** `backend/app/tests/api/test_tax.py`
+**File:** `compute/app/tests/api/test_tax.py`
 
 | Test | Scenario |
 |---|---|
@@ -763,7 +763,7 @@ When rental deductions exceed rental income, the net investment loss reduces tax
 
 ### Implementation
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 **Function:** `compute_income_measures()`
 
 ```python
@@ -788,7 +788,7 @@ No config constants — this is an ATO rule about how income measures diverge.
 ### Test Coverage
 
 **Service tests:**
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestComputeIncomeMeasures`
 
 | Test | Scenario | Verifies |
@@ -797,7 +797,7 @@ No config constants — this is an ATO rule about how income measures diverge.
 | `test_combined_divergence` | Salary + rental + deductions + sal_sac + rfb | All measures diverge correctly |
 
 **Engine tests:**
-**File:** `backend/app/tests/engine/test_tax.py`
+**File:** `compute/app/tests/engine/test_tax.py`
 **Class:** `TestCalculateTaxSaving`
 
 | Test | Scenario | Verifies |
@@ -805,7 +805,7 @@ No config constants — this is an ATO rule about how income measures diverge.
 | `test_loss_reduces_ti_but_not_ri_or_mlsi` | $120k base, -$30k loss | TI drops, RI/MLSI unchanged |
 
 **API tests:**
-**File:** `backend/app/tests/api/test_tax.py`
+**File:** `compute/app/tests/api/test_tax.py`
 
 | Test | Scenario |
 |---|---|
@@ -831,7 +831,7 @@ The ATO uses three different income measures for different tax components:
 
 ### Implementation
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 **Function:** `compute_income_measures(inputs: TaxInputs) -> TaxProfile`
 
 ```python
@@ -864,7 +864,7 @@ mls_income = repayment_income
 
 ### Test Coverage
 
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestComputeIncomeMeasures` (12 tests)
 
 | Test | Scenario | Verifies |
@@ -897,7 +897,7 @@ Calculates the tax saving (or additional tax) from holding an investment propert
 
 ### Implementation
 
-**File:** `backend/app/engine/tax.py`
+**File:** `compute/app/engine/tax.py`
 **Function:** `calculate_tax_saving(tax_profile: TaxProfile, net_rental_income: float) -> float`
 
 ```python
@@ -922,7 +922,7 @@ return tax_without - tax_with  # positive = saving
 
 ### Test Coverage
 
-**File:** `backend/app/tests/engine/test_tax.py`
+**File:** `compute/app/tests/engine/test_tax.py`
 **Class:** `TestCalculateTaxSaving` (4 tests)
 
 | Test | Scenario | Verifies |
@@ -946,7 +946,7 @@ The effective tax rate represents total tax as a proportion of assessable income
 
 ### Implementation
 
-**File:** `backend/app/services/tax_breakdown.py`
+**File:** `compute/app/services/tax_breakdown.py`
 **Function:** `build_tax_breakdown()`
 
 ```python
@@ -955,7 +955,7 @@ effective_rate = max(0.0, total_tax / profile.assessable_income) if profile.asse
 
 ### Test Coverage
 
-**File:** `backend/app/tests/services/test_tax_breakdown.py`
+**File:** `compute/app/tests/services/test_tax_breakdown.py`
 **Class:** `TestBuildTaxBreakdown`
 
 | Test | Scenario | Verifies |
@@ -993,7 +993,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 
 ### Configuration
 
-**File:** `backend/app/config/deductions.py`
+**File:** `compute/app/config/deductions.py`
 
 | Constant | Value | Description |
 |---|---|---|
@@ -1001,7 +1001,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 
 ### Models
 
-**File:** `backend/app/models/deductions.py`
+**File:** `compute/app/models/deductions.py`
 
 **`DepreciationMethod`** enum:
 - `DIMINISHING_VALUE` — accelerated (2/effective_life)
@@ -1016,7 +1016,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 
 ### Engine
 
-**File:** `backend/app/engine/deductions.py`
+**File:** `compute/app/engine/deductions.py`
 
 | Function | Description |
 |---|---|
@@ -1030,7 +1030,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 
 ### Service Integration
 
-**File:** `backend/app/services/tax_deductions.py`
+**File:** `compute/app/services/tax_deductions.py`
 **Function:** `_calculate_plant_depreciation()`
 
 - Iterates all `DepreciableAsset` entries for the property
@@ -1043,7 +1043,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 ### Test Coverage
 
 **Engine tests:**
-**File:** `backend/app/tests/engine/test_deductions.py`
+**File:** `compute/app/tests/engine/test_deductions.py`
 
 | Class | Tests | Covers |
 |---|---|---|
@@ -1058,7 +1058,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 | `TestIsAssetDepreciable` | Second-hand asset eligibility | Pre/post 2017 cutoff |
 
 **Service tests:**
-**File:** `backend/app/tests/services/test_tax_deductions.py`
+**File:** `compute/app/tests/services/test_tax_deductions.py`
 **Class:** `TestDiv40InService` — Integration tests for Div 40 within the deduction summary.
 
 ### Last Verified
@@ -1089,7 +1089,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 
 ### Configuration
 
-**File:** `backend/app/config/deductions.py`
+**File:** `compute/app/config/deductions.py`
 
 | Constant | Value | Description |
 |---|---|---|
@@ -1097,7 +1097,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 
 ### Models
 
-**File:** `backend/app/models/deductions.py`
+**File:** `compute/app/models/deductions.py`
 
 **`DepreciableBuilding`** dataclass:
 - `name`: Description of building/construction
@@ -1107,7 +1107,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 
 ### Engine
 
-**File:** `backend/app/engine/deductions.py`
+**File:** `compute/app/engine/deductions.py`
 
 | Function | Description |
 |---|---|
@@ -1119,7 +1119,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 
 ### Service Integration
 
-**File:** `backend/app/services/tax_deductions.py`
+**File:** `compute/app/services/tax_deductions.py`
 **Function:** `_calculate_building_depreciation()`
 
 - Iterates all `DepreciableBuilding` entries
@@ -1131,7 +1131,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 ### Test Coverage
 
 **Engine tests:**
-**File:** `backend/app/tests/engine/test_deductions.py`
+**File:** `compute/app/tests/engine/test_deductions.py`
 
 | Class | Tests | Covers |
 |---|---|---|
@@ -1143,7 +1143,7 @@ https://www.ato.gov.au/businesses-and-organisations/income-deductions-and-conces
 | `TestIsBuildingDepreciable` | Construction date eligibility | Pre/post 1987 cutoff |
 
 **Service tests:**
-**File:** `backend/app/tests/services/test_tax_deductions.py`
+**File:** `compute/app/tests/services/test_tax_deductions.py`
 **Class:** `TestDiv43InService` — Integration tests for Div 43 within the deduction summary.
 
 ### Last Verified
@@ -1177,7 +1177,7 @@ No config constants — the $100 threshold and 5-year spread rule are hardcoded 
 
 ### Models
 
-**File:** `backend/app/models/loan.py`
+**File:** `compute/app/models/loan.py`
 
 **`BorrowingCosts`** dataclass:
 - `lmi`: Lenders Mortgage Insurance
@@ -1188,7 +1188,7 @@ No config constants — the $100 threshold and 5-year spread rule are hardcoded 
 
 ### Engine
 
-**File:** `backend/app/engine/deductions.py`
+**File:** `compute/app/engine/deductions.py`
 **Function:** `calculate_borrowing_cost_deduction(total_borrowing_costs, loan_term_years, year)`
 
 - **Year 0 special case:** If total <= $100, fully deductible in year 0 only
@@ -1198,7 +1198,7 @@ No config constants — the $100 threshold and 5-year spread rule are hardcoded 
 
 ### Service Integration
 
-**File:** `backend/app/services/tax_deductions.py`
+**File:** `compute/app/services/tax_deductions.py`
 **Function:** `build_tax_deduction_summary()`
 
 - Calls `calculate_borrowing_cost_deduction()` with the property's borrowing costs total
@@ -1207,7 +1207,7 @@ No config constants — the $100 threshold and 5-year spread rule are hardcoded 
 ### Test Coverage
 
 **Engine tests:**
-**File:** `backend/app/tests/engine/test_deductions.py`
+**File:** `compute/app/tests/engine/test_deductions.py`
 
 | Class | Tests | Covers |
 |---|---|---|
