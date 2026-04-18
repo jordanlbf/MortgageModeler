@@ -275,12 +275,12 @@ These must be resolved before shipping to production. See `project_grants_model_
 
 ## Test Coverage
 
-**Service tests:** `backend/app/tests/services/test_grants.py`
+**Service tests:** `compute/app/tests/services/test_grants.py`
 - 26 predicate unit tests (every predicate type: FHB, owner-occ, price, income, property type, individual only, OTP)
 - 13 integration tests with real config data (known scheme scenarios)
 - 4 registry sanity checks (unique IDs, count, lookups)
 
-**API tests:** `backend/app/tests/api/test_grants.py`
+**API tests:** `compute/app/tests/api/test_grants.py`
 - 6 catalogue endpoint tests (shape, fields, federal/state split)
 - 15 eligibility endpoint tests (filtering, correctness, sorting, validation)
 - 3 validation tests (422 on bad input)

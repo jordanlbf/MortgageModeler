@@ -51,7 +51,7 @@ py agents/run.py all --dry-run       # show which files would be scanned
    short_name = "mine"
    description = "What this agent does"
    file_patterns = [
-       "backend/**/*.py",
+       "compute/**/*.py",
    ]
    ```
 2. Create `prompts/my_agent.md` with the system prompt

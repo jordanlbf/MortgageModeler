@@ -3,9 +3,9 @@ short_name = "readme"
 description = "Compares README.md against actual codebase structure"
 file_patterns = [
     "README.md",
-    "backend/**/*.py",
-    "backend/pyproject.toml",
-    "backend/requirements.txt",
+    "compute/**/*.py",
+    "compute/pyproject.toml",
+    "compute/requirements.txt",
     "frontend/**/*.ts",
     "frontend/**/*.tsx",
     "frontend/package.json",
