@@ -1,9 +1,9 @@
 /**
- * API client for the MortgageModeler backend.
+ * API client for the MortgageModeler compute service.
  *
  * Request/response types are aliased from `api-types.ts`, which is auto-generated
- * from the backend's OpenAPI spec via `npm run generate-api`. Do not hand-edit
- * those types — regenerate them when the backend schema changes.
+ * from the compute service's OpenAPI spec via `npm run generate-api`. Do not hand-edit
+ * those types — regenerate them when the compute service's schema changes.
  */
 
 import type { Frequency } from "@/lib/types";

@@ -6,7 +6,7 @@ PPOR vs Rentvesting comparison engine for Australian property buyers.
 
 ```
 MortgageModeler/
-  backend/
+  compute/
     app/
       config/               # Constants and rate tables
         settings.py         # App config (env, CORS, version)
@@ -102,10 +102,10 @@ API docs available at `http://localhost:8000/docs` when running locally.
 
 ## Setup
 
-### Backend
+### Compute
 
 ```bash
-cd backend
+cd compute
 python -m venv venv
 venv\Scripts\activate        # Windows
 pip install -r requirements.txt
@@ -123,12 +123,12 @@ npm run dev
 ## Run Tests
 
 ```bash
-cd backend
+cd compute
 python -m pytest app/tests/ -v
 ```
 
 ## Tech Stack
 
-- **Backend**: Python 3.12+, FastAPI, Pydantic 2.5
+- **Compute**: Python 3.12+, FastAPI, Pydantic 2.5
 - **Frontend**: Next.js 16, React 19, TypeScript 5, Tailwind CSS 4, Recharts 3
 - **Testing**: Pytest (1,064 tests across engine, service, and API layers)

@@ -17,7 +17,7 @@ AI-powered code review workflows. Each agent scans specific parts of the codebas
 | **Audit README** | `readme` | Compares `README.md` against actual codebase structure, endpoints, tech stack, and test counts |
 | **Audit Docstrings** | `docstrings` | Checks Python (Google style) and TypeScript (JSDoc) documentation coverage |
 | **Lean Frontend** | `frontend` | Flags thick components with too much logic and suggests hook/utility extractions |
-| **Architecture Guard** | `architecture` | Checks for layer violations across the backend and frontend stack |
+| **Architecture Guard** | `architecture` | Checks for layer violations across the compute and frontend stack |
 | **Tax Compliance** | `tax` | Validates tax engine against documented ATO rules, thresholds, and test coverage |
 | **Stamp Duty Compliance** | `stamp_duty` | Validates multi-state stamp duty brackets, engine logic, and test coverage |
 | **Grants Compliance** | `grants` | Validates grant scheme config, eligibility predicates, and financial effects |

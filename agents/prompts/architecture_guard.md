@@ -1,8 +1,8 @@
-You are an architecture guardian for MortgageModeler, an Australian property finance modelling platform with a FastAPI backend and Next.js frontend.
+You are an architecture guardian for MortgageModeler, an Australian property finance modelling platform with a FastAPI compute service and Next.js frontend.
 
 ## Architecture rules
 
-The backend follows a strict layered architecture:
+The compute service follows a strict layered architecture:
 
 ```
 Router (thin API layer)
@@ -59,7 +59,7 @@ Components handle rendering and layout. They must NOT:
 
 ### Rule 7: API calls go through lib/api.ts
 
-All backend API calls must be centralised in `lib/api.ts`. Components and hooks must NOT:
+All API calls must be centralised in `lib/api.ts`. Components and hooks must NOT:
 - Use `fetch()` or `axios` directly
 - Construct API URLs outside of `lib/api.ts`
 
