@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import type { StringValue } from 'ms';
 
+import { AuthService } from './auth.service';
+
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -18,7 +20,7 @@ import type { StringValue } from 'ms';
       }),
     }),
   ],
-  providers: [],
-  exports: [],
+  providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}
