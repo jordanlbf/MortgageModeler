@@ -6,22 +6,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen" style={{ background: "var(--color-background)" }}>
       <Sidebar />
       <main
-        className="flex-1 min-w-0 flex flex-col"
+        className="flex-1 min-w-0 relative"
         style={{ background: "var(--color-background)" }}
       >
+        <GlobalsTray />
         <div
-          className="flex justify-end items-center shrink-0"
-          style={{
-            paddingLeft: "var(--layout-page-padding-x)",
-            paddingRight: "var(--layout-page-padding-x)",
-            paddingTop: "20px",
-            paddingBottom: "12px",
-          }}
-        >
-          <GlobalsTray />
-        </div>
-        <div
-          className="mx-auto w-full"
+          className="mx-auto"
           style={{
             maxWidth: "var(--layout-content-max)",
             paddingLeft: "var(--layout-page-padding-x)",
