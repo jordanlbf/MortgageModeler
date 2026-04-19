@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import Link from "next/link";
 import { t, mix } from "@/lib/theme";
 import { useAmortisationState } from "@/hooks/useAmortisationState";
 import { useFillHeight } from "@/hooks/useFillHeight";
 import { useFocusMode } from "@/hooks/useFocusMode";
-import Header from "@/components/layout/Header";
 import KpiCards from "@/components/amortisation/KpiCards";
 import LoanControls from "@/components/amortisation/LoanControls";
 import AmortisationChart, { ChartLegend } from "@/components/amortisation/AmortisationChart";
@@ -55,9 +53,7 @@ export default function AmortisationView() {
   // ── Render ─────────────────────────────────────
   return (
     <>
-      <Header />
-
-      <div className="px-9 py-5">
+      <div>
         {/* Collapsible: KPIs + Controls */}
         <div
           className={COLLAPSE_STYLE}
@@ -228,25 +224,6 @@ export default function AmortisationView() {
           </div>
         </GlassCard>
 
-        {/* Collapsible: footer */}
-        <div
-          className={COLLAPSE_STYLE}
-          style={{
-            gridTemplateRows: focused ? "0fr" : "1fr",
-            opacity: focused ? 0 : 1,
-            transitionDuration: `${TRANSITION_MS}ms`,
-          }}
-        >
-          <div className="overflow-hidden min-h-0">
-            <Link
-              href="/"
-              className="group flex items-center justify-center gap-2 py-3 text-[12px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
-            >
-              <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
-              Return to Dashboard
-            </Link>
-          </div>
-        </div>
       </div>
     </>
   );

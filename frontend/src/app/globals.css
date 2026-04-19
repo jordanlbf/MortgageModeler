@@ -60,6 +60,14 @@
   /* ── Tool card defaults ── */
   --color-tool-default: #94a3b8;
   --color-tool-default-glow: rgba(148,163,184,0.08);
+
+  /* ── Layout ── */
+  --layout-sidebar-width: 240px;
+  --layout-content-max: 1200px;
+  --layout-page-padding-x: 36px;
+  --layout-page-padding-y: 32px;
+  --layout-nav-item-height: 36px;
+  --layout-global-btn-size: 34px;
 }
 
 

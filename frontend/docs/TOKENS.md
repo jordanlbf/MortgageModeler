@@ -50,3 +50,14 @@ Utility classes in `globals.css`:
 |---|---|---|
 | `--color-tool-default` | `#94a3b8` | Fallback tool card accent when no category assigned |
 | `--color-tool-default-glow` | `rgba(148,163,184,0.08)` | Fallback tool card glow |
+
+## Layout
+
+| Token | Value | Usage |
+|---|---|---|
+| `--layout-sidebar-width` | `240px` | Fixed sidebar width |
+| `--layout-content-max` | `1200px` | Maximum width for main content area |
+| `--layout-page-padding-x` | `36px` | Horizontal page padding |
+| `--layout-page-padding-y` | `32px` | Vertical page padding |
+| `--layout-nav-item-height` | `36px` | Sidebar nav item row height |
+| `--layout-global-btn-size` | `34px` | Globals tray icon button size |

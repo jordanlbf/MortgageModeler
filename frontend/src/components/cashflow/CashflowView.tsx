@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import Link from "next/link";
-import Header from "@/components/layout/Header";
 import { useCashflowState } from "@/hooks/useCashflowState";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowDashboard from "./CashflowDashboard";
@@ -123,11 +121,9 @@ export default function CashflowCalculator() {
 
   return (
     <>
-      <Header />
-
       {/* ── Wizard view: sidebar + wizard centered together ── */}
       {showWizard && (
-        <div className="flex justify-center items-start min-h-[calc(100vh-100px)] bg-background text-foreground px-8 py-10">
+        <div className="flex justify-center items-start bg-background text-foreground">
           <div className="flex w-full max-w-[960px]">
             <CashflowSidebar s={s} currentStep={sidebarStep} onStepClick={goToStep} />
 
@@ -156,7 +152,7 @@ export default function CashflowCalculator() {
       )}
 
       {s.error && (
-        <div className="max-w-[1400px] mx-auto px-4 pt-6">
+        <div className="mb-4">
           <div className="rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
             {s.error}
           </div>
@@ -174,14 +170,6 @@ export default function CashflowCalculator() {
           onManualExpand={handleManualExpand}
         />
       )}
-
-      <Link
-        href="/"
-        className="group flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
-      >
-        <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
-        Return to Dashboard
-      </Link>
     </>
   );
 }

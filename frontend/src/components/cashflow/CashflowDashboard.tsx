@@ -59,7 +59,7 @@ export default function CashflowDashboard({
   else if (vm === "deductions") panelProp.deductionsPanel = "unified";
 
   return (
-    <main className="text-foreground max-w-[1400px] mx-auto px-4 py-6 flex flex-col gap-6">
+    <main className="text-foreground flex flex-col gap-6">
       {/* ── Chart + Tabs ── */}
       <div className="flex items-stretch">
         <div className="relative flex-1 min-w-0 flex flex-col">
