@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Sora } from "next/font/google";
+import AppShell from "@/components/layout/AppShell";
 import "./globals.css";
 
 const sora = Sora({
@@ -28,7 +29,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${sora.variable} font-sans antialiased`}>
-        {children}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

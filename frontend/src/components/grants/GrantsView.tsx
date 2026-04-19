@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { fetchGrantsEligibility } from "@/lib/api";
 import type { GrantSchemeWithEligibility } from "@/lib/api";
-import Header from "@/components/layout/Header";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import { useApiCall } from "@/hooks/useApiCall";
 import { mix, STATE_COLORS } from "@/lib/theme";
@@ -166,17 +165,9 @@ export default function GrantsView() {
 
   return (
     <>
-      <Header />
-
-      <div className="flex flex-col px-9 py-6 overflow-hidden" style={{ height: "calc(100vh - 49px)" }}>
+      <div className="flex flex-col">
         {/* Hero + Filter bar */}
         <div className="flex flex-col items-center mb-5">
-          <div className="text-center py-2 pb-5 animate-fade-up">
-            <h1 className="text-[44px] font-semibold tracking-[-0.04em] text-foreground">
-              Government <span className="text-accent">Grants</span>
-            </h1>
-          </div>
-
           {/* Filter bar */}
           <div className="flex items-center min-h-[80px] px-6 py-3.5 rounded-[14px] bg-card-elevated border border-border border-t-2 border-t-accent-border shadow-[0_1px_4px_rgba(0,0,0,0.20)] shrink-0 w-full overflow-visible animate-fade-up [animation-delay:0.1s]">
             <BarInput label="Purchase Price" value={priceStr} placeholder="$0" onChange={handleCurrencyInput(setPriceStr)} />

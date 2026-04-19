@@ -68,7 +68,10 @@
       "Bash(where gh *)",
       "Read(//c/Program Files \\(x86\\)/**)",
       "Read(//c/Users/Jordan/AppData/Local/Programs/**)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/Jordan/AppData/Local/**)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }

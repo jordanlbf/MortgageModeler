@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import Header from "@/components/layout/Header";
 import { fetchPurchaseCosts } from "@/lib/api";
 import type { PurchaseCostsResponse } from "@/lib/api";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
@@ -186,9 +185,7 @@ export default function PurchaseCostsView() {
 
   return (
     <>
-      <Header />
-
-      <div className="flex flex-col items-center gap-7 px-9 py-6 pb-4 overflow-y-auto custom-scrollbar" style={{ height: "calc(100vh - 49px)" }}>
+      <div className="flex flex-col items-center gap-7">
         {/* Section label */}
         <div className="text-[11px] font-semibold uppercase tracking-widest text-accent/60 text-center">
           Property Details

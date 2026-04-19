@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useAdvancedTaxState } from "@/hooks/useAdvancedTaxState";
 import { formatCurrencyShort } from "@/lib/formatters";
 import { mix } from "@/lib/theme";
-import Header from "@/components/layout/Header";
 import AdvancedColumn from "@/components/tax/AdvancedColumn";
 import TaxComposition from "@/components/tax/TaxBreakdown";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
@@ -99,23 +97,15 @@ export default function TaxView() {
 
   return (
     <>
-      <Header />
-
       {error && (
-        <div className="max-w-5xl mx-auto px-6 pt-4">
+        <div className="mb-4">
           <div className="rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
             {error}
           </div>
         </div>
       )}
 
-      <div className="flex flex-col px-9 py-6 overflow-hidden" style={{ height: "calc(100vh - 49px)" }}>
-        <div className="mb-6 flex flex-col items-center gap-1">
-          <h1 className="text-[44px] font-semibold tracking-[-0.04em] text-foreground">
-            Income Tax <span style={{ color: "var(--color-accent)" }}>Calculator</span>
-          </h1>
-        </div>
-
+      <div className="flex flex-col">
         <ProgressiveStepsDivider />
 
         <ErrorBoundary>
@@ -157,14 +147,6 @@ export default function TaxView() {
             </div>
           </div>
 
-          {/* Footer link */}
-          <Link
-            href="/"
-            className="group mt-auto flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
-          >
-            <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
-            Return to Dashboard
-          </Link>
         </ErrorBoundary>
       </div>
     </>
