@@ -40,9 +40,10 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(AuthGuard)
-  me(
-    @CurrentUser() user: { userId: string; email: string },
-  ): { userId: string; email: string } {
+  me(@CurrentUser() user: { userId: string; email: string }): {
+    userId: string;
+    email: string;
+  } {
     return user;
   }
 }
