@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatDollarsSigned } from "@/lib/formatters";
+import TableCell from "@/components/ui/TableCell";
 import { getMarginalTaxRate } from "@/lib/cashflow-calculations";
 import { yoyPct, yoyClass, fmtYoY, getValueClass } from "./helpers";
 import type { SubTableProps } from "./types";
@@ -56,9 +57,9 @@ export default function TaxTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.ongoingCosts))}</td>}
-                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(y.interestPortion))}</td>}
-                  {isGroupExpanded("deductions") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(depreciation))}</td>}
+                  {isGroupExpanded("deductions") && <TableCell>{formatDollarsSigned(Math.round(y.ongoingCosts))}</TableCell>}
+                  {isGroupExpanded("deductions") && <TableCell>{formatDollarsSigned(Math.round(y.interestPortion))}</TableCell>}
+                  {isGroupExpanded("deductions") && <TableCell>{formatDollarsSigned(Math.round(depreciation))}</TableCell>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>
                     {formatDollarsSigned(Math.round(totalDeductions))}
                   </td>
@@ -105,13 +106,13 @@ export default function TaxTable({
               const bracket = getMarginalTaxRate(taxableIncome);
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(totalIncome))}</td>}
+                  {isGroupExpanded("tax") && <TableCell>{formatDollarsSigned(Math.round(totalIncome))}</TableCell>}
                   {isGroupExpanded("tax") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)] ${getValueClass(-totalDeductions, false, true)}`}>{formatDollarsSigned(Math.round(-totalDeductions))}</td>}
                   {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]" style={{ color: "var(--color-positive)" }}>
                     {y.taxSaved > 0 ? `(+${formatDollarsSigned(Math.round(y.taxSaved))})` : "—"}
                   </td>}
-                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{formatDollarsSigned(Math.round(taxableIncome))}</td>}
-                  {isGroupExpanded("tax") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</td>}
+                  {isGroupExpanded("tax") && <TableCell>{formatDollarsSigned(Math.round(taxableIncome))}</TableCell>}
+                  {isGroupExpanded("tax") && <TableCell>{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</TableCell>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-negative)" }}>
                     {formatDollarsSigned(Math.round(-y.incomeTaxCalc))}
                   </td>

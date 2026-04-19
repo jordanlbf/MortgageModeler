@@ -1,0 +1,448 @@
+# Design Token Cleanup — Pre Claude Design Extraction
+
+## Context
+
+MortgageModeler frontend is at `frontend/` within the repo. The design system is the Graphite Teal dark glassmorphic theme, documented in `frontend/docs/DESIGN.md` and `frontend/docs/TOKENS.md`, with tokens declared in `frontend/src/app/globals.css` (`@theme` block) and mirrored as typed references in `frontend/src/lib/theme.ts`.
+
+An audit has identified token drift: colours and patterns that belong in the global system or in scoped palettes have leaked into components as inline hex literals and repeated Tailwind arbitrary values. The goal of this refactor is to reverse that drift without changing any visual output, so the extracted design system fed into Claude Design reflects the real design intent cleanly.
+
+## Non-negotiables
+
+1. **No visual changes.** Every fix must produce identical rendered output. If a substitution would change a colour even slightly, flag it rather than applying it.
+2. **Source of truth is code.** All changes happen in `globals.css`, `theme.ts`, and component files. `docs/DESIGN.md` and `docs/TOKENS.md` get updated at the end to reflect the new tokens.
+3. **Stay within existing conventions.** The project uses Tailwind 4 `@theme` for global CSS variables, `t.*` references from `theme.ts` for code, and named palette exports (`SERIES`, `TAX_COLORS`, `CF_COLORS`) in `theme.ts` for scoped palettes. Match these patterns exactly.
+4. **Tests must still pass.** Run `npm test` (Vitest) after the refactor and before finishing.
+
+## Classification principles
+
+Before moving a value, classify it:
+
+- **Global (`@theme` in `globals.css`)** — if the value is semantically system-wide: foreground/background/accent/warning/positive/negative, elevation ramp, or used across unrelated features.
+- **Scoped palette (`theme.ts` named export)** — if the value is feature-specific but part of a named set: tax brackets, state governments, chart series, depreciation.
+- **Local literal** — if the value appears once and has no abstraction value. Leave it.
+
+## Step 1 — Add new global tokens to `globals.css`
+
+File: `frontend/src/app/globals.css`
+
+Inside the `@theme { ... }` block, **add** the following tokens. Insert `--color-fg-table` immediately after the existing `--color-faint` line so it continues the foreground ramp. Insert `--color-tool-default` and `--color-tool-default-glow` in a new commented section near the bottom of the `@theme` block.
+
+```css
+  /* Foreground ramp continuation — softer than --color-muted, for tabular data */
+  --color-fg-table: #ccccd2;
+
+  /* ── Tool card defaults ── */
+  --color-tool-default: #94a3b8;
+  --color-tool-default-glow: rgba(148,163,184,0.08);
+```
+
+Do not add a separate `--color-warning-soft`. The existing `--color-warning: #fbbf24` already covers the "moderate warning" amber and the LVR/bracket-medium use case. We will consolidate onto `--color-warning`.
+
+## Step 2 — Extend `theme.ts` with scoped palettes
+
+File: `frontend/src/lib/theme.ts`
+
+**Extend the `t` object** with a `tableText` accessor so code can reference the new token without raw CSS variable strings:
+
+```ts
+  // ── Text ──────────────────────────────────────────
+  fg: "var(--color-foreground)",
+  muted: "var(--color-muted)",
+  subtle: "var(--color-subtle)",
+  faint: "var(--color-faint)",
+  fgTable: "var(--color-fg-table)",  // ADD THIS LINE
+```
+
+**Add three new named palette exports** alongside the existing `SERIES`, `CF_COLORS`, and `TAX_COLORS` exports. Place them in this order, after `TAX_COLORS`:
+
+```ts
+// ── Tax bracket severity ladder ───────────────────
+// Used for colour-coding tax bracket tiers on KPI strips.
+export const TAX_BRACKET_COLORS = {
+  zero:   "var(--color-positive)",
+  low:    "#86efac",
+  medium: "var(--color-warning)",
+  high:   "#f59e0b",
+  top:    "#ef4444",
+} as const;
+
+// ── LVR severity thresholds ───────────────────────
+// Used for LVR indicator colouring. Medium tier reuses the warning token.
+export const LVR_COLORS = {
+  safe:     "var(--color-positive)",
+  moderate: "var(--color-warning)",
+  high:     "var(--color-negative)",
+} as const;
+
+// ── Depreciation series colour ────────────────────
+// Single source for the depreciation purple used across Cashflow views.
+export const DEPRECIATION_COLOR = "#a78bfa";
+
+// ── Australian state / federal grant palette ──────
+// Scoped to the Government Grants feature — each jurisdiction has its own
+// recognition colour. Not part of the general design vocabulary.
+export const STATE_COLORS = {
+  FEDERAL: "#A78BFA",
+  NSW: "#6BB5E8",
+  VIC: "#5B8DBE",
+  QLD: "#C06080",
+  WA:  "#D4A843",
+  SA:  "#E06060",
+  TAS: "#4AAF82",
+  ACT: "#6A9FD8",
+  NT:  "#D87A58",
+} as const;
+```
+
+## Step 3 — Add the `col-fade-in` animation utility class
+
+File: `frontend/src/app/globals.css`
+
+The `col-fade-in` keyframe is declared but no utility class exists for it, so components reference it inline with the full animation string. Add the utility class next to the existing `.animate-fade-up`, `.animate-overlay-in`, and `.animate-card-pop-in` declarations:
+
+```css
+.animate-col-fade-in { animation: col-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+```
+
+Also extend the `prefers-reduced-motion` rule to include it:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up, .animate-overlay-in, .animate-card-pop-in, .animate-col-fade-in { animation: none !important; }
+}
+```
+
+## Step 4 — Create the `TableCell` primitive
+
+File: `frontend/src/components/ui/TableCell.tsx` (new file)
+
+The table files under `frontend/src/components/cashflow/table/` repeat this exact cell template many times:
+
+```
+h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]
+```
+
+Extract this into a primitive:
+
+```tsx
+import type { TdHTMLAttributes } from "react";
+
+interface TableCellProps extends TdHTMLAttributes<HTMLTableCellElement> {
+  children: React.ReactNode;
+  tone?: "default" | "muted";
+  animated?: boolean;
+  className?: string;
+}
+
+/**
+ * Standard data cell for Cashflow tables.
+ * - Default tone uses --color-fg-table (softer than foreground, for tabular data).
+ * - `tone="default"` uses the full foreground colour.
+ * - `animated` applies the col-fade-in entrance animation (default: true).
+ */
+export default function TableCell({
+  children,
+  tone = "muted",
+  animated = true,
+  className = "",
+  ...rest
+}: TableCellProps) {
+  const toneClass =
+    tone === "muted"
+      ? "text-[var(--color-fg-table)]"
+      : "text-[var(--color-foreground)]";
+  const animClass = animated ? "animate-col-fade-in" : "";
+
+  return (
+    <td
+      className={[
+        "h-[52px] box-border px-3 text-right align-middle",
+        "border-b border-b-white/[0.07]",
+        toneClass,
+        animClass,
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      {...rest}
+    >
+      {children}
+    </td>
+  );
+}
+```
+
+## Step 5 — Sweep-replace table cell literals
+
+Files:
+- `frontend/src/components/cashflow/table/EquityTable.tsx`
+- `frontend/src/components/cashflow/table/TaxTable.tsx`
+- `frontend/src/components/cashflow/table/PropertyTable.tsx`
+- `frontend/src/components/cashflow/table/DeductionsTable.tsx`
+- `frontend/src/components/cashflow/table/SummaryTable.tsx` (if it has the same pattern)
+
+For each `<td>` element matching the full repeated class string, replace with `<TableCell>`. Add the import at the top of each file:
+
+```tsx
+import TableCell from "@/components/ui/TableCell";
+```
+
+**Example transformation:**
+
+```tsx
+// Before
+<td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#ccccd2] animate-[col-fade-in_0.25s_cubic-bezier(0.16,1,0.3,1)]">
+  {formatDollarsSigned(Math.round(totalGrowth))}
+</td>
+
+// After
+<TableCell>{formatDollarsSigned(Math.round(totalGrowth))}</TableCell>
+```
+
+Any `<td>` that uses a *different* class structure (header cells, summary row cells, cells with extra utility classes) — leave alone or pass the additional classes through `className`. Only replace exact matches of the repeated pattern.
+
+After this sweep, no occurrences of the literal string `text-[#ccccd2]` should remain anywhere in the codebase. Verify with:
+
+```bash
+grep -rn 'text-\[#ccccd2\]' frontend/src
+```
+
+## Step 6 — Fix `CashflowKpiStrip.tsx` colour literals
+
+File: `frontend/src/components/cashflow/CashflowKpiStrip.tsx`
+
+**Import the new palettes** at the top:
+
+```tsx
+import { TAX_BRACKET_COLORS, LVR_COLORS, DEPRECIATION_COLOR } from "@/lib/theme";
+```
+
+(You may already have other imports from `@/lib/theme` — merge these into the existing import statement.)
+
+**Replace the `getBracketColor` function** (around line 114) to use `TAX_BRACKET_COLORS`:
+
+```tsx
+const getBracketColor = (rate: number) => {
+  if (rate <= 0) return TAX_BRACKET_COLORS.zero;
+  if (rate <= 0.16) return TAX_BRACKET_COLORS.low;
+  if (rate <= 0.30) return TAX_BRACKET_COLORS.medium;
+  if (rate <= 0.37) return TAX_BRACKET_COLORS.high;
+  return TAX_BRACKET_COLORS.top;
+};
+```
+
+**Replace the LVR colour ternary** (around line 174):
+
+```tsx
+// Before
+color: lvr > 80 ? "var(--color-negative)" : lvr > 60 ? "#fbbf24" : "var(--color-positive)",
+
+// After
+color: lvr > 80 ? LVR_COLORS.high : lvr > 60 ? LVR_COLORS.moderate : LVR_COLORS.safe,
+```
+
+**Replace the `depColor` default parameter** (around line 36):
+
+```tsx
+// Before
+selectedYear, isInvestment, marginalRate, hasOffset, isHovered, depColor = "#a78bfa",
+
+// After
+selectedYear, isInvestment, marginalRate, hasOffset, isHovered, depColor = DEPRECIATION_COLOR,
+```
+
+**Replace the hardcoded `"#a78bfa"` on line 231** with `DEPRECIATION_COLOR`.
+
+## Step 7 — Fix `CashflowDataTable.tsx`
+
+File: `frontend/src/components/cashflow/CashflowDataTable.tsx`
+
+Import `DEPRECIATION_COLOR` and replace the default parameter:
+
+```tsx
+// Before
+hasOffset, propertyValue, propertyPanel, equityPanel, taxPanel, summaryPanel, deductionsPanel, depColor = "#a78bfa", showExpandButton = true,
+
+// After
+hasOffset, propertyValue, propertyPanel, equityPanel, taxPanel, summaryPanel, deductionsPanel, depColor = DEPRECIATION_COLOR, showExpandButton = true,
+```
+
+Import update:
+
+```tsx
+import { DEPRECIATION_COLOR } from "@/lib/theme";
+```
+
+## Step 8 — Fix `CashflowDashboard.tsx`
+
+File: `frontend/src/components/cashflow/CashflowDashboard.tsx`
+
+The file defines `depColor` twice (lines 28 and 50) with two different values — `"#fbbf24"` and `"#a78bfa"`. Investigate: is this intentional (two different dep views), or drift?
+
+- If intentional: move both to named constants in `theme.ts` (e.g. `DEPRECIATION_COLOR` and a second named constant like `DEPRECIATION_ALT_COLOR` with a comment explaining the distinction), then import and reference.
+- If drift: consolidate to `DEPRECIATION_COLOR`.
+
+Do not guess — read the surrounding logic first. If ambiguous, flag for me to decide rather than choosing arbitrarily.
+
+## Step 9 — Fix `AdvancedColumn.tsx`
+
+File: `frontend/src/components/tax/AdvancedColumn.tsx`
+
+**Lines 259 and 268** use `"#111215"` as a literal — this is `--color-background`. Replace with `"var(--color-background)"`.
+
+**Lines 49, 79, 94** use `"#6b9fcc"`, `"#c97070"`, `"#bfa75a"` — these appear to be category tints for specific tax concepts. Investigate their use: if they're part of a named set (e.g. "income", "deductions", "offsets" colour scheme), extract to a named palette in `theme.ts` called `TAX_CATEGORY_COLORS` or similar. If they're one-off decorative values with no semantic set membership, leave them as local literals but add a comment explaining they're intentionally local.
+
+Flag your classification decision in the diff description so I can validate.
+
+## Step 10 — Fix `DenseSchemeCard.tsx`
+
+File: `frontend/src/components/grants/DenseSchemeCard.tsx`
+
+Currently defines `FEDERAL_COLOR` and a `STATE_COLORS`-like object locally (lines 10–20). Remove the local definitions and import from `theme.ts`:
+
+```tsx
+import { STATE_COLORS } from "@/lib/theme";
+```
+
+Update references throughout the file. The local `FEDERAL_COLOR` becomes `STATE_COLORS.FEDERAL`. Any reference to the local state map becomes `STATE_COLORS`.
+
+## Step 11 — Fix `page.tsx` (home)
+
+File: `frontend/src/app/page.tsx`
+
+**Line 100** — the `TOOL_COLORS` fallback:
+
+```tsx
+// Before
+const color = TOOL_COLORS[tool.id] ?? { primary: "#94a3b8", glow: "rgba(148,163,184,0.08)" };
+
+// After
+const color = TOOL_COLORS[tool.id] ?? { primary: "var(--color-tool-default)", glow: "var(--color-tool-default-glow)" };
+```
+
+**Line 190** — `"text-[#111]"`:
+
+This is the page background hex truncated. Check the surrounding context: if the intent is the page background (`--color-background: #111215`), replace with `text-[var(--color-background)]` or a Tailwind theme class. If it's specifically a 3-digit hex for its own reasons, flag.
+
+## Step 12 — Update `GlassCard.tsx` (optional polish)
+
+File: `frontend/src/components/ui/GlassCard.tsx`
+
+The component has `hover:-translate-y-[1px]` inline, while the hover shadow lives in the `.glass-card` CSS class. Move the translate into the CSS class for symmetry:
+
+```css
+/* In globals.css, extending the existing .glass-card:hover rule */
+.glass-card {
+  /* ...existing rules... */
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-card:hover {
+  transform: translateY(-1px);
+  /* ...existing box-shadow rules... */
+}
+```
+
+Then in `GlassCard.tsx`, remove `hover:-translate-y-[1px]` and `transition-all duration-300 ease-out` from the className.
+
+Verify no other component is using `.glass-card` without also being a `GlassCard` wrapper (they probably aren't, but check).
+
+## Step 13 — Update documentation
+
+File: `frontend/docs/TOKENS.md`
+
+Add a new section documenting the new global tokens:
+
+```markdown
+## Foreground ramp
+
+| Token | Value | Usage |
+|---|---|---|
+| `--color-foreground` | `#f0fdfa` | Primary text, headers, values |
+| `--color-muted` | `#f4f4f5` | Near-foreground variant |
+| `--color-subtle` | `#a1a1aa` | Secondary text, labels |
+| `--color-faint` | `#71717a` | Tertiary text, metadata |
+| `--color-fg-table` | `#ccccd2` | Tabular data rows — softer than foreground so numbers breathe |
+
+## Tool card defaults
+
+| Token | Value | Usage |
+|---|---|---|
+| `--color-tool-default` | `#94a3b8` | Fallback tool card accent when no category assigned |
+| `--color-tool-default-glow` | `rgba(148,163,184,0.08)` | Fallback tool card glow |
+```
+
+File: `frontend/docs/DESIGN.md`
+
+Under the **Colour Tokens** section, add a note after the semantic tokens table:
+
+```markdown
+**Scoped palettes (in `src/lib/theme.ts`, not global):**
+
+| Palette | Purpose |
+|---|---|
+| `SERIES` | Chart series colours (balance, interest, equity, etc.) |
+| `CF_COLORS` | Cashflow chart palette variants |
+| `TAX_COLORS` | Tax breakdown donut segments |
+| `TAX_BRACKET_COLORS` | Five-tier severity ramp for marginal tax rate tiers |
+| `LVR_COLORS` | Three-tier LVR safety thresholds |
+| `STATE_COLORS` | Australian state / federal recognition colours for the Grants feature |
+| `DEPRECIATION_COLOR` | Single source for depreciation purple |
+
+Scoped palettes are feature-specific vocabulary. They do not belong in the global `@theme` block because their meaning is tied to a specific domain concept (tax, LVR, grants) rather than the general design language.
+```
+
+## Step 14 — Verification
+
+Run these checks in order:
+
+```bash
+# 1. No banned literals remain
+grep -rn 'text-\[#ccccd2\]' frontend/src                  # expect: no results
+grep -rn '"#a78bfa"' frontend/src/components              # expect: no results
+grep -rn '"#fbbf24"' frontend/src/components/cashflow     # expect: no results (lives in theme.ts now)
+grep -rn '"#111215"' frontend/src/components              # expect: no results
+
+# 2. Full animation string no longer inlined
+grep -rn 'animate-\[col-fade-in' frontend/src             # expect: no results
+
+# 3. Tests pass
+cd frontend && npm test
+
+# 4. Dev build succeeds
+cd frontend && npm run build
+
+# 5. Type check clean
+cd frontend && npx tsc --noEmit
+```
+
+After all checks pass, spot-check each of the four live pages visually (Cashflow, Tax Calculator, Purchase Costs, Government Grants) — colours and table rows should look pixel-identical to before the refactor.
+
+## Step 15 — Commit
+
+Single commit, message:
+
+```
+refactor(frontend): consolidate design tokens ahead of Claude Design extraction
+
+- Promote #ccccd2 row text to --color-fg-table global token
+- Extract TAX_BRACKET_COLORS, LVR_COLORS, STATE_COLORS, DEPRECIATION_COLOR to theme.ts
+- Add TableCell primitive for cashflow tables; eliminate repeated Tailwind arbitrary-value strings
+- Add .animate-col-fade-in utility class; eliminate inline animation strings
+- Replace hardcoded #111215 with var(--color-background) in AdvancedColumn
+- Replace TOOL_COLORS fallback literals with --color-tool-default tokens
+- Move DenseSchemeCard state palette into theme.ts as STATE_COLORS
+- Move GlassCard hover translate into .glass-card CSS class
+- Update TOKENS.md and DESIGN.md to reflect new structure
+
+No visual changes. All tests pass.
+```
+
+## What to flag rather than auto-fix
+
+Raise these explicitly for review rather than making a call:
+
+1. The two different `depColor` values in `CashflowDashboard.tsx` (Step 8) — intentional distinction or drift?
+2. The three AdvancedColumn category tints (Step 9) — named palette or local?
+3. `"text-[#111]"` in `page.tsx` (Step 11) — background reference or intentional literal?
+
+For each, stop and ask before proceeding. Everything else in this file should be applied directly.
