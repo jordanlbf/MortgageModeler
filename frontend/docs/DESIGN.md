@@ -168,6 +168,21 @@ Defined as CSS custom properties in `globals.css` via `@theme`. Two themes remap
 | LVR | #fb923c |
 | Offset | #facc15 |
 
+**Scoped palettes (in `src/lib/theme.ts`, not global):**
+
+| Palette | Purpose |
+|---|---|
+| `SERIES` | Chart series colours (balance, interest, equity, etc.) |
+| `CF_COLORS` | Cashflow chart palette variants |
+| `TAX_COLORS` | Tax breakdown donut segments |
+| `TAX_BRACKET_COLORS` | Five-tier severity ramp for marginal tax rate tiers |
+| `TAX_CATEGORY_COLORS` | Per-section tints for the Advanced tax inputs (income / deductions / adjustments) |
+| `LVR_COLORS` | Three-tier LVR safety thresholds |
+| `STATE_COLORS` | Australian state / federal recognition colours for the Grants feature |
+| `DEPRECIATION_COLOR` | Single source for depreciation purple |
+
+Scoped palettes are feature-specific vocabulary. They live in `theme.ts` rather than the global `@theme` block because their meaning is tied to a specific domain (tax brackets, LVR thresholds, jurisdictions) rather than the general design language.
+
 ---
 
 See [DESIGN-PROCESS.md](DESIGN-PROCESS.md) for the step-by-step design workflow.

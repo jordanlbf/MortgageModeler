@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
+import { DEPRECIATION_COLOR } from "@/lib/theme";
 
 import SummaryTable from "./table/SummaryTable";
 import TaxTable from "./table/TaxTable";
@@ -33,7 +34,7 @@ interface Props {
 
 export default function CashflowDataTable({
   yearData, viewMode, selectedYear, hoveredYear, isInvestment,
-  hasOffset, propertyValue, propertyPanel, equityPanel, taxPanel, summaryPanel, deductionsPanel, depColor = "#a78bfa", showExpandButton = true,
+  hasOffset, propertyValue, propertyPanel, equityPanel, taxPanel, summaryPanel, deductionsPanel, depColor = DEPRECIATION_COLOR, showExpandButton = true,
   expandedMilestones: externalExpanded, onExpandedChange,
   onSelectYear, onHoverYear,
 }: Props) {

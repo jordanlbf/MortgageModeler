@@ -1,9 +1,10 @@
 "use client";
 
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
-import { getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { getMarginalTaxRate, getBracketColor } from "@/lib/cashflow-calculations";
 import { formatDollarsSigned } from "@/lib/formatters";
 import { safeDiv } from "@/lib/formatters";
+import { LVR_COLORS, DEPRECIATION_COLOR } from "@/lib/theme";
 import KpiSparkline from "./KpiSparkline";
 
 interface KpiItem {
@@ -33,7 +34,7 @@ interface Props {
 
 export default function CashflowKpiStrip({
   viewMode, yearData, selectedYearData: sy,
-  selectedYear, isInvestment, marginalRate, hasOffset, isHovered, depColor = "#a78bfa",
+  selectedYear, isInvestment, marginalRate, hasOffset, isHovered, depColor = DEPRECIATION_COLOR,
   onHoverYear, onSelectYear,
 }: Props) {
   const d = sy ?? yearData[0];
@@ -111,13 +112,6 @@ export default function CashflowKpiStrip({
   } else if (viewMode === "tax" && d) {
     const taxableIncome = d.grossIncome - d.totalDeductionsForTax;
     const bracket = getMarginalTaxRate(taxableIncome);
-    const getBracketColor = (rate: number) => {
-      if (rate <= 0) return "var(--color-positive)";
-      if (rate <= 0.16) return "#86efac";
-      if (rate <= 0.30) return "#fbbf24";
-      if (rate <= 0.37) return "#f59e0b";
-      return "#ef4444";
-    };
     items = [
       {
         label: "Taxable Income",
@@ -171,7 +165,7 @@ export default function CashflowKpiStrip({
       {
         label: "LVR",
         value: `${lvr.toFixed(1)}%`,
-        color: lvr > 80 ? "var(--color-negative)" : lvr > 60 ? "#fbbf24" : "var(--color-positive)",
+        color: lvr > 80 ? LVR_COLORS.high : lvr > 60 ? LVR_COLORS.moderate : LVR_COLORS.safe,
         sub: "",
         sparkData: yearData.map(y => safeDiv(y.loanBalance, y.propertyValue) * 100),
       },
@@ -228,7 +222,7 @@ export default function CashflowKpiStrip({
       {
         label: isInvestment ? "Total Deductions" : "Total Expenses",
         value: formatDollarsSigned(Math.round(isInvestment ? sy.totalDeductions : sy.ongoingCosts)),
-        color: isInvestment ? "#a78bfa" : "var(--color-negative)",
+        color: isInvestment ? DEPRECIATION_COLOR : "var(--color-negative)",
         sub: "",
         sparkData: yearData.map(y => isInvestment ? y.totalDeductions : y.ongoingCosts),
       },

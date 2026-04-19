@@ -12,6 +12,8 @@
   --color-muted: #f4f4f5;
   --color-subtle: #a1a1aa;
   --color-faint: #71717a;
+  /* Tabular data row text — softer than --color-foreground so numbers breathe */
+  --color-fg-table: #ccccd2;
 
   /* ── Surfaces ── */
   --color-card: rgba(42,42,46,0.72);
@@ -54,6 +56,10 @@
   --color-chart-cursor: rgba(148,163,184,0.15);
   --color-chart-legend-inactive: rgba(148,163,184,0.30);
   --color-chart-legend-dot-inactive: rgba(148,163,184,0.20);
+
+  /* ── Tool card defaults ── */
+  --color-tool-default: #94a3b8;
+  --color-tool-default-glow: rgba(148,163,184,0.08);
 }
 
 
@@ -214,9 +220,10 @@ thead .cf-zone,
   from { opacity: 0; transform: translateX(-8px); }
   to { opacity: 1; transform: translateX(0); }
 }
+.animate-col-fade-in { animation: col-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-up, .animate-overlay-in, .animate-card-pop-in { animation: none !important; }
+  .animate-fade-up, .animate-overlay-in, .animate-card-pop-in, .animate-col-fade-in { animation: none !important; }
 }
 
 /* ── Home page background effects ── */
@@ -250,8 +257,11 @@ thead .cf-zone,
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.20),
               0 0 0 0.5px rgba(255, 255, 255, 0.03),
               inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .glass-card:hover {
+  transform: translateY(-1px);
   box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35),
               0 0 0 0.5px rgba(113, 113, 122, 0.06),
               inset 0 1px 0 rgba(255, 255, 255, 0.03);

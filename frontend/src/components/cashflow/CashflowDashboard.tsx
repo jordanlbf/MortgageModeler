@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDollarsSigned } from "@/lib/formatters";
+import { DEPRECIATION_COLOR } from "@/lib/theme";
 import type { ViewMode } from "@/lib/cashflow-types";
 import type { useCashflowState } from "@/hooks/useCashflowState";
 import CashflowChart from "./CashflowChart";
@@ -25,7 +26,6 @@ export default function CashflowDashboard({
   const displayYearData = s.yearData.find(y => y.year === displayYear) ?? s.yearData[0];
   const y1 = displayYearData;
   const vm = s.effectiveViewMode;
-  const depColor = "#fbbf24";
 
   // Hero value/label/color per view mode
   const summaryCashflow = y1.salary + (s.isInvestment ? y1.rentalIncome : 0) - y1.ongoingCosts - y1.loanRepayment - y1.incomeTaxCalc;
@@ -47,7 +47,7 @@ export default function CashflowDashboard({
     : vm === "tax"
     ? "var(--color-negative)"
     : vm === "deductions"
-    ? "#a78bfa"
+    ? DEPRECIATION_COLOR
     : null;
 
   // Compute the single panel prop for CashflowDataTable
@@ -111,7 +111,6 @@ export default function CashflowDashboard({
           marginalRate={s.marginalRate}
           hasOffset={s.hasOffset}
           isHovered={hoveredYear !== null}
-          depColor={depColor}
           onHoverYear={onHoverYear}
           onSelectYear={onSelectYear}
         />
@@ -131,7 +130,6 @@ export default function CashflowDashboard({
           onExpandedChange={onManualExpand}
           onSelectYear={onSelectYear}
           onHoverYear={onHoverYear}
-          depColor={vm === "deductions" ? depColor : undefined}
           {...panelProp}
         />
       </div>

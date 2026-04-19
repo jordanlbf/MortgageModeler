@@ -3,24 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Maximize2, Minimize2, House, BadgeCheck, Check } from "lucide-react";
 import type { GrantScheme, GrantEligibilityResult } from "@/lib/api";
-import { mix } from "@/lib/theme";
-
-// ── State colours ───────────────────────────────
-
-const FEDERAL_COLOR = "#A78BFA";
-
-const STATE_COLORS: Record<string, string> = {
-  NSW: "#6BB5E8",
-  VIC: "#5B8DBE",
-  QLD: "#C06080",
-  WA:  "#D4A843",
-  SA:  "#E06060",
-  TAS: "#4AAF82",
-  ACT: "#6A9FD8",
-  NT:  "#D87A58",
-};
-
-export { FEDERAL_COLOR, STATE_COLORS };
+import { mix, STATE_COLORS } from "@/lib/theme";
 
 // ── Small helpers ───────────────────────────────
 
@@ -150,10 +133,10 @@ interface DenseSchemeCardProps {
 export default function DenseSchemeCard({ scheme, result, isExpanded, onToggleExpand }: DenseSchemeCardProps) {
   const color =
     scheme.level === "Federal"
-      ? FEDERAL_COLOR
+      ? STATE_COLORS.FEDERAL
       : scheme.state
-        ? STATE_COLORS[scheme.state]
-        : FEDERAL_COLOR;
+        ? (STATE_COLORS as Record<string, string>)[scheme.state]
+        : STATE_COLORS.FEDERAL;
 
   const overlayRef = useRef<HTMLDivElement>(null);
 
