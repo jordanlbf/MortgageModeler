@@ -27,6 +27,3 @@ Thumbs.db
 
 # Agentic Reports
 agents/reports
-
-# Prisma generated client
-platform/generated/

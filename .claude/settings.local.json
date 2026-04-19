@@ -61,7 +61,8 @@
       "Bash(npx vitest:*)",
       "Bash(curl *)",
       "Bash(echo \"exit: $?\")",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(npm uninstall *)"
     ]
   }
 }
