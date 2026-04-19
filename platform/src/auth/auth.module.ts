@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import type { StringValue } from 'ms';
 
+import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 @Module({
@@ -20,6 +21,7 @@ import { AuthService } from './auth.service';
       }),
     }),
   ],
+  controllers: [AuthController],
   providers: [AuthService],
   exports: [AuthService],
 })
