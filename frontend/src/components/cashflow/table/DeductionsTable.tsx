@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatDollarsSigned } from "@/lib/formatters";
+import TableCell from "@/components/ui/TableCell";
 import { DEPRECIATION_COLOR } from "@/lib/theme";
 import { yoyPct, yoyClass, fmtYoY } from "./helpers";
 import type { SubTableProps } from "./types";
@@ -59,13 +60,13 @@ export default function DeductionsTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  {isGroupExpanded("holding") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-col-fade-in">{formatDollarsSigned(Math.round(y.interestPortion))}</td>}
-                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-col-fade-in">{formatDollarsSigned(Math.round(y.councilRates + y.waterRates))}</td>}
-                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-col-fade-in">{formatDollarsSigned(Math.round(y.insurance))}</td>}
-                  {isGroupExpanded("holding") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-red-400/65 animate-col-fade-in">{formatDollarsSigned(Math.round(y.maintenance + y.strataFees))}</td>}
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-negative)" }}>
+                  {isGroupExpanded("holding") && isInvestment && <TableCell className="text-red-400/65">{formatDollarsSigned(Math.round(y.interestPortion))}</TableCell>}
+                  {isGroupExpanded("holding") && <TableCell className="text-red-400/65">{formatDollarsSigned(Math.round(y.councilRates + y.waterRates))}</TableCell>}
+                  {isGroupExpanded("holding") && <TableCell className="text-red-400/65">{formatDollarsSigned(Math.round(y.insurance))}</TableCell>}
+                  {isGroupExpanded("holding") && <TableCell className="text-red-400/65">{formatDollarsSigned(Math.round(y.maintenance + y.strataFees))}</TableCell>}
+                  <TableCell animated={false} className="pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-negative)" }}>
                     {formatDollarsSigned(Math.round(holdingTotal))}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}
@@ -102,11 +103,11 @@ export default function DeductionsTable({
               const depTotal = y.depDiv43 + y.depDiv40;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv43))}</td>}
-                  {isGroupExpanded("depreciation") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv40))}</td>}
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: depColor }}>
+                  {isGroupExpanded("depreciation") && <TableCell style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv43))}</TableCell>}
+                  {isGroupExpanded("depreciation") && <TableCell style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv40))}</TableCell>}
+                  <TableCell animated={false} className="pr-5 text-sm" style={{ fontWeight: 700, color: depColor }}>
                     {formatDollarsSigned(Math.round(depTotal))}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}
@@ -145,11 +146,11 @@ export default function DeductionsTable({
               const grandTotal = isInvestment ? holdingTotal + depTotal : holdingTotal;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("totals") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: "var(--color-negative)" }}>{formatDollarsSigned(Math.round(holdingTotal))}</td>}
-                  {isGroupExpanded("totals") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: depColor }}>{formatDollarsSigned(Math.round(depTotal))}</td>}
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: isInvestment ? DEPRECIATION_COLOR : "var(--color-negative)" }}>
+                  {isGroupExpanded("totals") && <TableCell style={{ color: "var(--color-negative)" }}>{formatDollarsSigned(Math.round(holdingTotal))}</TableCell>}
+                  {isGroupExpanded("totals") && isInvestment && <TableCell style={{ color: depColor }}>{formatDollarsSigned(Math.round(depTotal))}</TableCell>}
+                  <TableCell animated={false} className="pr-5 text-sm" style={{ fontWeight: 700, color: isInvestment ? DEPRECIATION_COLOR : "var(--color-negative)" }}>
                     {formatDollarsSigned(Math.round(grandTotal))}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}

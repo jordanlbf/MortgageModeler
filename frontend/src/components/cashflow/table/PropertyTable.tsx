@@ -59,9 +59,9 @@ export default function PropertyTable({
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {isGroupExpanded("gearing") && <TableCell>{formatDollarsSigned(Math.round(y.rentalIncome))}</TableCell>}
-                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in ${getValueClass(-holdingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-holdingCosts))}</td>}
-                  {isGroupExpanded("gearing") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in ${getValueClass(-depreciation, false, true)}`}>{formatDollarsSigned(Math.round(-depreciation))}</td>}
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm ${netGearing >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>{formatDollarsSigned(Math.round(netGearing))}</td>
+                  {isGroupExpanded("gearing") && <TableCell className={getValueClass(-holdingCosts, false, true)}>{formatDollarsSigned(Math.round(-holdingCosts))}</TableCell>}
+                  {isGroupExpanded("gearing") && <TableCell className={getValueClass(-depreciation, false, true)}>{formatDollarsSigned(Math.round(-depreciation))}</TableCell>}
+                  <TableCell animated={false} className={`pr-5 text-sm ${netGearing >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>{formatDollarsSigned(Math.round(netGearing))}</TableCell>
                 </tr>
               );
             })}
@@ -101,11 +101,11 @@ export default function PropertyTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   {isGroupExpanded("propertyCashflow") && <TableCell>{formatDollarsSigned(Math.round(y.rentalIncome))}</TableCell>}
-                  {isGroupExpanded("propertyCashflow") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in ${getValueClass(-totalCosts, false, true)}`}>{formatDollarsSigned(Math.round(-totalCosts))}</td>}
-                  {isGroupExpanded("propertyCashflow") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</td>}
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm ${y.propertyCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
+                  {isGroupExpanded("propertyCashflow") && <TableCell className={getValueClass(-totalCosts, false, true)}>{formatDollarsSigned(Math.round(-totalCosts))}</TableCell>}
+                  {isGroupExpanded("propertyCashflow") && <TableCell style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</TableCell>}
+                  <TableCell animated={false} className={`pr-5 text-sm ${y.propertyCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
                     {formatDollarsSigned(Math.round(y.propertyCashflow))}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}
@@ -279,15 +279,15 @@ export default function PropertyTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-y.ongoingCosts))}</td>
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-y.interestPortion, false, true)}`}>{formatDollarsSigned(Math.round(-y.interestPortion))}</td>
+                  <TableCell animated={false} className={getValueClass(-y.ongoingCosts, false, true)}>{formatDollarsSigned(Math.round(-y.ongoingCosts))}</TableCell>
+                  <TableCell animated={false} className={getValueClass(-y.interestPortion, false, true)}>{formatDollarsSigned(Math.round(-y.interestPortion))}</TableCell>
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-y.principalPortion, false, true)}`}>{formatDollarsSigned(Math.round(-y.principalPortion))}</td>
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-[#f0fdfa]">{formatDollarsSigned(Math.round(-(y.interestPortion + y.principalPortion)))}</td>
+                  <TableCell animated={false} className={getValueClass(-y.principalPortion, false, true)}>{formatDollarsSigned(Math.round(-y.principalPortion))}</TableCell>
+                  <TableCell tone="emphasis" animated={false}>{formatDollarsSigned(Math.round(-(y.interestPortion + y.principalPortion)))}</TableCell>
                   <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm ${getValueClass(y.propertyCashflow, true)}`}>
+                  <TableCell animated={false} className={`pr-5 text-sm ${getValueClass(y.propertyCashflow, true)}`}>
                     {formatDollarsSigned(Math.round(y.propertyCashflow))}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}

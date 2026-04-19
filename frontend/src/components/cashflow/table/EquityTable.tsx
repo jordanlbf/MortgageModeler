@@ -68,12 +68,12 @@ export default function EquityTable({
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {isGroupExpanded("property") && <TableCell>+{formatDollarsSigned(Math.round(totalGrowth))}</TableCell>}
-                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{totalGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <TableCell style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{totalGrowthPct}%</TableCell>}
                   {isGroupExpanded("property") && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-col-fade-in" />}
                   {isGroupExpanded("property") && <TableCell>+{formatDollarsSigned(Math.round(yoyGrowth))}</TableCell>}
-                  {isGroupExpanded("property") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{yoyGrowthPct}%</td>}
+                  {isGroupExpanded("property") && <TableCell style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{yoyGrowthPct}%</TableCell>}
                   {isGroupExpanded("property") && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-col-fade-in" />}
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(y.propertyValue))}</td>
+                  <TableCell animated={false} tone="emphasis" className="pr-5 text-sm" style={{ fontWeight: 700 }}>{formatDollarsSigned(Math.round(y.propertyValue))}</TableCell>
                 </tr>
               );
             })}
@@ -116,14 +116,14 @@ export default function EquityTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   {isGroupExpanded("position") && <TableCell>{formatDollarsSigned(Math.round(y.propertyValue))}</TableCell>}
-                  {isGroupExpanded("position") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in ${getValueClass(-y.loanBalance, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanBalance))}</td>}
-                  {isGroupExpanded("position") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</td>}
-                  {isGroupExpanded("position") && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(propertyEquity))}</td>}
+                  {isGroupExpanded("position") && <TableCell className={getValueClass(-y.loanBalance, false, true)}>{formatDollarsSigned(Math.round(-y.loanBalance))}</TableCell>}
+                  {isGroupExpanded("position") && <TableCell className={getLvrClass(lvr)}>{lvr.toFixed(1)}%</TableCell>}
+                  {isGroupExpanded("position") && showOffset && <TableCell tone="emphasis" style={{ fontWeight: 700 }}>{formatDollarsSigned(Math.round(propertyEquity))}</TableCell>}
                   {isGroupExpanded("position") && showOffset && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-col-fade-in" />}
                   {isGroupExpanded("position") && showOffset && <TableCell>{formatDollarsSigned(Math.round(y.offsetBalanceAtYear))}</TableCell>}
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>
+                  <TableCell animated={false} tone="emphasis" className="pr-5 text-sm" style={{ fontWeight: 700 }}>
                     {formatDollarsSigned(Math.round(y.netEquity))}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}

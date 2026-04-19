@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatDollarsSigned } from "@/lib/formatters";
+import TableCell from "@/components/ui/TableCell";
 import { yoyPct, yoyClass, fmtYoY, getValueClass } from "./helpers";
 import type { SubTableProps } from "./types";
 
@@ -61,13 +62,13 @@ export default function SummaryTable({
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
-                  {isGroupExpanded("income") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.salary))}</td>}
-                  {isGroupExpanded("income") && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: parseFloat(salaryGain) > 0 ? "var(--color-positive)" : "var(--color-faint)", opacity: parseFloat(salaryGain) > 0 ? 0.8 : 1 }}>{salaryGain}%</td>}
-                  {isGroupExpanded("income") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
-                  {isGroupExpanded("income") && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: parseFloat(rentGain) > 0 ? "var(--color-positive)" : "var(--color-faint)", opacity: parseFloat(rentGain) > 0 ? 0.8 : 1 }}>{rentGain}%</td>}
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-foreground)" }}>
+                  {isGroupExpanded("income") && <TableCell tone="emphasis">{formatDollarsSigned(Math.round(y.salary))}</TableCell>}
+                  {isGroupExpanded("income") && <TableCell style={{ color: parseFloat(salaryGain) > 0 ? "var(--color-positive)" : "var(--color-faint)", opacity: parseFloat(salaryGain) > 0 ? 0.8 : 1 }}>{salaryGain}%</TableCell>}
+                  {isGroupExpanded("income") && isInvestment && <TableCell tone="emphasis">{formatDollarsSigned(Math.round(y.rentalIncome))}</TableCell>}
+                  {isGroupExpanded("income") && isInvestment && <TableCell style={{ color: parseFloat(rentGain) > 0 ? "var(--color-positive)" : "var(--color-faint)", opacity: parseFloat(rentGain) > 0 ? 0.8 : 1 }}>{rentGain}%</TableCell>}
+                  <TableCell animated={false} tone="emphasis" className="pr-5 text-sm" style={{ fontWeight: 700 }}>
                     {formatDollarsSigned(Math.round(totalIncome))}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}
@@ -105,12 +106,12 @@ export default function SummaryTable({
               const totalCosts = y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-y.ongoingCosts))}</td>}
-                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in ${getValueClass(-y.loanRepayment, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanRepayment))}</td>}
-                  {isGroupExpanded("outgoings") && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatDollarsSigned(Math.round(-y.incomeTaxCalc))}</td>}
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-negative)" }}>
+                  {isGroupExpanded("outgoings") && <TableCell className={getValueClass(-y.ongoingCosts, false, true)}>{formatDollarsSigned(Math.round(-y.ongoingCosts))}</TableCell>}
+                  {isGroupExpanded("outgoings") && <TableCell className={getValueClass(-y.loanRepayment, false, true)}>{formatDollarsSigned(Math.round(-y.loanRepayment))}</TableCell>}
+                  {isGroupExpanded("outgoings") && <TableCell className={getValueClass(-y.incomeTaxCalc, false, true)}>{formatDollarsSigned(Math.round(-y.incomeTaxCalc))}</TableCell>}
+                  <TableCell animated={false} className="pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-negative)" }}>
                     {formatDollarsSigned(Math.round(-totalCosts))}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}
@@ -140,11 +141,11 @@ export default function SummaryTable({
               const annualCashflow = totalIncome - totalCosts;
               return (
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] text-foreground">{formatDollarsSigned(Math.round(totalIncome))}</td>
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${getValueClass(-totalCosts, false, true)}`}>{formatDollarsSigned(Math.round(-totalCosts))}</td>
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm ${annualCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
+                  <TableCell tone="emphasis" animated={false}>{formatDollarsSigned(Math.round(totalIncome))}</TableCell>
+                  <TableCell animated={false} className={getValueClass(-totalCosts, false, true)}>{formatDollarsSigned(Math.round(-totalCosts))}</TableCell>
+                  <TableCell animated={false} className={`pr-5 text-sm ${annualCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
                     {formatDollarsSigned(Math.round(annualCashflow))}
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}

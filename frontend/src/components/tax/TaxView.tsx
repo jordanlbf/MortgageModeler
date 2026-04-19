@@ -57,11 +57,11 @@ function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
         {/* Tax Deducted */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("#f87171", 58) }}>
+            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-negative)", 58) }}>
               Tax Deducted
             </span>
           </div>
-          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: "#f87171" }}>
+          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-negative)" }}>
             {formatCurrencyShort(totalTax)}
           </div>
         </div>

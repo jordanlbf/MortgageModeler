@@ -45,10 +45,10 @@ function TriPill({ label, active, isNo, onClick }: { label: string; active: bool
     <button
       className="h-[26px] px-2.5 rounded-full border text-[14px] font-semibold cursor-pointer whitespace-nowrap outline-none leading-none transition-all duration-150 min-w-[72px] text-center justify-center"
       style={red ? {
-        background: "rgba(248,113,113,0.12)",
-        color: "#f87171",
-        borderColor: "rgba(248,113,113,0.25)",
-        boxShadow: "0 0 8px rgba(248,113,113,0.08)",
+        background: mix("var(--color-negative)", 12),
+        color: "var(--color-negative)",
+        borderColor: mix("var(--color-negative)", 25),
+        boxShadow: `0 0 8px ${mix("var(--color-negative)", 8)}`,
       } : active ? {
         background: mix("var(--color-accent)", 14),
         color: "var(--color-accent)",
