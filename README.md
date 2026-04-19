@@ -71,6 +71,16 @@ MortgageModeler/
       lib/                  # API client, formatters, theme tokens, types
     package.json
     tsconfig.json
+  platform/
+    prisma/
+      schema.prisma         # Prisma datasource + models
+    src/
+      prisma/               # PrismaService + PrismaModule (global)
+      app.module.ts         # Root module
+      main.ts               # Nest bootstrap (port 3001, CORS, validation)
+    package.json
+    tsconfig.json
+  docker-compose.yml        # Postgres for the platform service
 ```
 
 ## Architecture
@@ -102,6 +112,8 @@ API docs available at `http://localhost:8000/docs` when running locally.
 
 ## Setup
 
+**Prerequisite:** Docker Desktop is required to run the platform service's PostgreSQL database.
+
 ### Compute
 
 ```bash
@@ -120,6 +132,25 @@ npm install
 npm run dev
 ```
 
+### Platform
+
+Start Postgres from the repo root (one-time per session):
+
+```bash
+docker compose up -d
+```
+
+Then from `platform/`:
+
+```bash
+npm install
+cp .env.example .env
+npx prisma generate
+npm run start:dev
+```
+
+Service runs on port 3001. See [`platform/README.md`](./platform/README.md) for Prisma workflow details.
+
 ## Run Tests
 
 ```bash
@@ -131,4 +162,5 @@ python -m pytest app/tests/ -v
 
 - **Compute**: Python 3.12+, FastAPI, Pydantic 2.5
 - **Frontend**: Next.js 16, React 19, TypeScript 5, Tailwind CSS 4, Recharts 3
+- **Platform**: NestJS 11, Prisma 6, PostgreSQL 16 (via Docker)
 - **Testing**: Pytest (1,064 tests across engine, service, and API layers)
