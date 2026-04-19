@@ -152,7 +152,7 @@ export default function CashflowCalculator() {
       )}
 
       {s.error && (
-        <div className="max-w-[1400px] mx-auto px-4 pt-6">
+        <div className="mb-4">
           <div className="rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
             {s.error}
           </div>
