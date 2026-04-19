@@ -242,13 +242,13 @@ export default function DeductionsTable({
               const isCollapsed = !holdExpanded && !depExpanded;
               return (
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td>
+                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td>
                   {/* Holding detail cells */}
-                  {holdExpanded && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-negative animate-col-fade-in">{formatDollarsSigned(Math.round(y.interestPortion))}</td>}
-                  {holdExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-negative animate-col-fade-in">{formatDollarsSigned(Math.round(y.councilRates + y.waterRates))}</td>}
-                  {holdExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-negative animate-col-fade-in">{formatDollarsSigned(Math.round(y.insurance))}</td>}
-                  {holdExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-negative animate-col-fade-in">{formatDollarsSigned(Math.round(y.maintenance))}</td>}
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
+                  {holdExpanded && isInvestment && <TableCell style={{ color: "var(--color-negative)" }}>{formatDollarsSigned(Math.round(y.interestPortion))}</TableCell>}
+                  {holdExpanded && <TableCell style={{ color: "var(--color-negative)" }}>{formatDollarsSigned(Math.round(y.councilRates + y.waterRates))}</TableCell>}
+                  {holdExpanded && <TableCell style={{ color: "var(--color-negative)" }}>{formatDollarsSigned(Math.round(y.insurance))}</TableCell>}
+                  {holdExpanded && <TableCell style={{ color: "var(--color-negative)" }}>{formatDollarsSigned(Math.round(y.maintenance))}</TableCell>}
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
                     <span className="font-semibold text-negative">{formatDollarsSigned(Math.round(holdingTotal))}</span>
                     {isCollapsed && (() => {
                       const prevHolding = i > 0 ? (isInvestment ? yearData[i-1].interestPortion + yearData[i-1].ongoingCosts : yearData[i-1].ongoingCosts) : holdingTotal;
@@ -257,9 +257,9 @@ export default function DeductionsTable({
                     })()}
                   </td>
                   {/* Depreciation detail cells (investment only) */}
-                  {isInvestment && depExpanded && <td className="h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.04] animate-col-fade-in" style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv43))}</td>}
-                  {isInvestment && depExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] animate-col-fade-in" style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv40))}</td>}
-                  {isInvestment && <td className={`h-[52px] box-border ${!depExpanded ? "pl-6 pr-3" : "px-3"} text-right align-middle border-b border-b-white/[0.04] ${isCollapsed ? "text-[15px] px-4" : ""}`} style={{ color: depColor }}>
+                  {isInvestment && depExpanded && <td className="h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.07] animate-col-fade-in" style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv43))}</td>}
+                  {isInvestment && depExpanded && <TableCell style={{ color: depColor, opacity: 0.7 }}>{formatDollarsSigned(Math.round(y.depDiv40))}</TableCell>}
+                  {isInvestment && <td className={`h-[52px] box-border ${!depExpanded ? "pl-6 pr-3" : "px-3"} text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`} style={{ color: depColor }}>
                     <span className="font-semibold">{formatDollarsSigned(Math.round(depTotal))}</span>
                     {isCollapsed && (() => {
                       const prevDep = i > 0 ? yearData[i-1].depDiv43 + yearData[i-1].depDiv40 : depTotal;
@@ -268,7 +268,7 @@ export default function DeductionsTable({
                     })()}
                   </td>}
                   {/* Total */}
-                  <td className={`h-[52px] box-border pl-6 pr-5 text-right align-middle border-b border-b-white/[0.04] out-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"}`} style={{ color: totalColor }}>
+                  <td className={`h-[52px] box-border pl-6 pr-5 text-right align-middle border-b border-b-white/[0.07] out-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"}`} style={{ color: totalColor }}>
                     <span className="font-bold">{formatDollarsSigned(Math.round(grandTotal))}</span>
                     {isCollapsed && (() => {
                       const prevGrand = i > 0 ? (() => { const py = yearData[i-1]; const ph = isInvestment ? py.interestPortion + py.ongoingCosts : py.ongoingCosts; const pd = py.depDiv43 + py.depDiv40; return isInvestment ? ph + pd : ph; })() : grandTotal;

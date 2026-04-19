@@ -238,32 +238,32 @@ export default function SummaryTable({
 
               return (
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="h-[52px] box-border align-middle border-b border-b-white/[0.04] w-[100px] pl-[18px] text-left">{formatYearCell(y.year, i, isMilestone)}</td>
+                  <td className="h-[52px] box-border align-middle border-b border-b-white/[0.07] w-[100px] pl-[18px] text-left">{formatYearCell(y.year, i, isMilestone)}</td>
                   {/* Income detail cells */}
-                  {incExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.salary))}</td>}
-                  {incExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] animate-col-fade-in" style={{ color: parseFloat(salaryGain) > 0 ? "var(--color-positive)" : "var(--color-faint)", opacity: parseFloat(salaryGain) > 0 ? 0.8 : 1 }}>{salaryGain}%</td>}
-                  {incExpanded && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
-                  {incExpanded && isInvestment && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] animate-col-fade-in" style={{ color: parseFloat(rentGain) > 0 ? "var(--color-positive)" : "var(--color-faint)", opacity: parseFloat(rentGain) > 0 ? 0.8 : 1 }}>{rentGain}%</td>}
+                  {incExpanded && <TableCell tone="emphasis">{formatDollarsSigned(Math.round(y.salary))}</TableCell>}
+                  {incExpanded && <TableCell style={{ color: parseFloat(salaryGain) > 0 ? "var(--color-positive)" : "var(--color-faint)", opacity: parseFloat(salaryGain) > 0 ? 0.8 : 1 }}>{salaryGain}%</TableCell>}
+                  {incExpanded && isInvestment && <TableCell tone="emphasis">{formatDollarsSigned(Math.round(y.rentalIncome))}</TableCell>}
+                  {incExpanded && isInvestment && <TableCell style={{ color: parseFloat(rentGain) > 0 ? "var(--color-positive)" : "var(--color-faint)", opacity: parseFloat(rentGain) > 0 ? 0.8 : 1 }}>{rentGain}%</TableCell>}
                   {/* Income total */}
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
                     <span className="font-semibold" style={{ color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(totalIncome))}</span>
                     {isCollapsed && (
                       <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(incomeYoY)}`}>{fmtYoY(incomeYoY)}</span>
                     )}
                   </td>
                   {/* Outgoings detail cells */}
-                  {ogExpanded && <td className={`h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.04] out-zone animate-col-fade-in ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-y.ongoingCosts))}</td>}
-                  {ogExpanded && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] out-zone animate-col-fade-in ${getValueClass(-y.loanRepayment, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanRepayment))}</td>}
-                  {ogExpanded && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] out-zone animate-col-fade-in ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatDollarsSigned(Math.round(-y.incomeTaxCalc))}</td>}
+                  {ogExpanded && <td className={`h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.07] out-zone animate-col-fade-in ${getValueClass(-y.ongoingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-y.ongoingCosts))}</td>}
+                  {ogExpanded && <TableCell className={`out-zone ${getValueClass(-y.loanRepayment, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanRepayment))}</TableCell>}
+                  {ogExpanded && <TableCell className={`out-zone ${getValueClass(-y.incomeTaxCalc, false, true)}`}>{formatDollarsSigned(Math.round(-y.incomeTaxCalc))}</TableCell>}
                   {/* Outgoings total */}
-                  <td className={`h-[52px] box-border ${!ogExpanded ? "pl-6 pr-3" : "px-3"} text-right align-middle border-b border-b-white/[0.04] out-zone ${isCollapsed ? "text-[15px]" : ""}`}>
+                  <td className={`h-[52px] box-border ${!ogExpanded ? "pl-6 pr-3" : "px-3"} text-right align-middle border-b border-b-white/[0.07] out-zone ${isCollapsed ? "text-[15px]" : ""}`}>
                     <span className="font-semibold" style={{ color: "var(--color-negative)" }}>{formatDollarsSigned(Math.round(-totalCosts))}</span>
                     {isCollapsed && (
                       <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(costsYoY, "negative")}`}>{fmtYoY(costsYoY)}</span>
                     )}
                   </td>
                   {/* Cashflow result */}
-                  <td className={`h-[52px] box-border pl-6 pr-5 text-right align-middle border-b border-b-white/[0.04] cf-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"} ${annualCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
+                  <td className={`h-[52px] box-border pl-6 pr-5 text-right align-middle border-b border-b-white/[0.07] cf-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"} ${annualCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
                     <span className="font-bold">{annualCashflow >= 0 ? "+" : ""}{formatDollarsSigned(Math.round(annualCashflow))}</span>
                     {isCollapsed && (() => {
                       const prevCashflow = i > 0 ? (prevIncome - prevCosts) : annualCashflow;

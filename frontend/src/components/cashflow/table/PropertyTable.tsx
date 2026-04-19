@@ -186,12 +186,12 @@ export default function PropertyTable({
               const isCollapsed = !gearExpanded && !cfExpanded;
               return (
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td>
+                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td>
                   {/* Gearing detail cells */}
-                  {gearExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
-                  {gearExpanded && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] animate-col-fade-in ${getValueClass(-holdingCosts, false, true)}`}>{formatDollarsSigned(Math.round(-holdingCosts))}</td>}
-                  {gearExpanded && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] animate-col-fade-in ${getValueClass(-depreciation, false, true)}`}>{formatDollarsSigned(Math.round(-depreciation))}</td>}
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
+                  {gearExpanded && <TableCell tone="emphasis">{formatDollarsSigned(Math.round(y.rentalIncome))}</TableCell>}
+                  {gearExpanded && <TableCell className={getValueClass(-holdingCosts, false, true)}>{formatDollarsSigned(Math.round(-holdingCosts))}</TableCell>}
+                  {gearExpanded && <TableCell className={getValueClass(-depreciation, false, true)}>{formatDollarsSigned(Math.round(-depreciation))}</TableCell>}
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
                     <span className={`font-bold ${netGearing >= 0 ? "text-positive" : "text-negative"}`}>{netGearing >= 0 ? "+" : ""}{formatDollarsSigned(Math.round(netGearing))}</span>
                     {isCollapsed && (() => {
                       const prevGearing = i > 0 ? (() => { const py = yearData[i-1]; return py.rentalIncome - (py.interestPortion + py.ongoingCosts) - (py.depDiv43 + py.depDiv40); })() : netGearing;
@@ -200,10 +200,10 @@ export default function PropertyTable({
                     })()}
                   </td>
                   {/* Cashflow detail cells */}
-                  {cfExpanded && <td className="h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.04] cf-zone text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
-                  {cfExpanded && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] cf-zone animate-col-fade-in ${getValueClass(-totalCosts, false, true)}`}>{formatDollarsSigned(Math.round(-totalCosts))}</td>}
-                  {cfExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] cf-zone animate-col-fade-in" style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</td>}
-                  <td className={`h-[52px] box-border ${!cfExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.04] cf-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"} ${y.propertyCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
+                  {cfExpanded && <td className="h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.07] cf-zone text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
+                  {cfExpanded && <TableCell className={`cf-zone ${getValueClass(-totalCosts, false, true)}`}>{formatDollarsSigned(Math.round(-totalCosts))}</TableCell>}
+                  {cfExpanded && <TableCell className="cf-zone" style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</TableCell>}
+                  <td className={`h-[52px] box-border ${!cfExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.07] cf-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"} ${y.propertyCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
                     <span className="font-bold">{y.propertyCashflow >= 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.propertyCashflow))}</span>
                     {isCollapsed && (() => {
                       const prevCf = i > 0 ? yearData[i-1].propertyCashflow : y.propertyCashflow;

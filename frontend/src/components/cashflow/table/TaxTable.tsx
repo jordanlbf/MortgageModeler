@@ -199,12 +199,12 @@ export default function TaxTable({
               const isCollapsed = !dedExpanded && !taxExpanded;
               return (
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td>
+                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td>
                   {/* Deductions detail cells */}
-                  {dedExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.ongoingCosts))}</td>}
-                  {dedExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.interestPortion))}</td>}
-                  {dedExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(depreciation))}</td>}
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
+                  {dedExpanded && <TableCell tone="emphasis">{formatDollarsSigned(Math.round(y.ongoingCosts))}</TableCell>}
+                  {dedExpanded && <TableCell tone="emphasis">{formatDollarsSigned(Math.round(y.interestPortion))}</TableCell>}
+                  {dedExpanded && <TableCell tone="emphasis">{formatDollarsSigned(Math.round(depreciation))}</TableCell>}
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
                     <span className="font-bold text-foreground">{formatDollarsSigned(Math.round(totalDeductions))}</span>
                     {isCollapsed && (() => {
                       const prevDed = i > 0 ? (() => { const py = yearData[i-1]; return py.ongoingCosts + py.interestPortion + py.depDiv43 + py.depDiv40; })() : totalDeductions;
@@ -213,14 +213,14 @@ export default function TaxTable({
                     })()}
                   </td>
                   {/* Tax detail cells */}
-                  {taxExpanded && <td className="h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.04] out-zone text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(totalIncome))}</td>}
-                  {taxExpanded && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] out-zone animate-col-fade-in ${getValueClass(-totalDeductions, false, true)}`}>{formatDollarsSigned(Math.round(-totalDeductions))}</td>}
-                  {taxExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] out-zone animate-col-fade-in" style={{ color: "var(--color-positive)" }}>
+                  {taxExpanded && <td className="h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.07] out-zone text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(totalIncome))}</td>}
+                  {taxExpanded && <TableCell className={`out-zone ${getValueClass(-totalDeductions, false, true)}`}>{formatDollarsSigned(Math.round(-totalDeductions))}</TableCell>}
+                  {taxExpanded && <TableCell className="out-zone" style={{ color: "var(--color-positive)" }}>
                     {y.taxSaved > 0 ? `+${formatDollarsSigned(Math.round(y.taxSaved))}` : "—"}
-                  </td>}
-                  {taxExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] out-zone text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(taxableIncome))}</td>}
-                  {taxExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] out-zone animate-col-fade-in" style={{ color: getBracketColor(bracket) }}>{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</td>}
-                  <td className={`h-[52px] box-border ${!taxExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.04] out-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"}`}>
+                  </TableCell>}
+                  {taxExpanded && <TableCell tone="emphasis" className="out-zone">{formatDollarsSigned(Math.round(taxableIncome))}</TableCell>}
+                  {taxExpanded && <TableCell className="out-zone" style={{ color: getBracketColor(bracket) }}>{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</TableCell>}
+                  <td className={`h-[52px] box-border ${!taxExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.07] out-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"}`}>
                     <span className="font-bold text-negative">{formatDollarsSigned(Math.round(-y.incomeTaxCalc))}</span>
                     {isCollapsed && (() => {
                       const prevTax = i > 0 ? yearData[i-1].incomeTaxCalc : y.incomeTaxCalc;

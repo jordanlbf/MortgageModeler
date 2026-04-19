@@ -205,24 +205,24 @@ export default function EquityTable({
               const isCollapsed = !propExpanded && !posExpanded;
               return (
                 <tr key={y.year} className={`${getRowClass(y.year, isMilestone)} ${isCollapsed ? "h-14" : ""}`} {...getRowHandlers(y.year, isMilestone)}>
-                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td>
+                  <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td>
                   {/* Property detail cells */}
-                  {propExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-foreground animate-col-fade-in">+{formatDollarsSigned(Math.round(totalGrowth))}</td>}
-                  {propExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] animate-col-fade-in" style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)", opacity: parseFloat(totalGrowthPct) > 0 ? 0.8 : 1 }}>{totalGrowthPct}%</td>}
-                  {propExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] text-foreground animate-col-fade-in">+{formatDollarsSigned(Math.round(yoyGrowth))}</td>}
-                  {propExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] animate-col-fade-in" style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)", opacity: parseFloat(yoyGrowthPct) > 0 ? 0.8 : 1 }}>{yoyGrowthPct}%</td>}
-                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
+                  {propExpanded && <TableCell tone="emphasis">+{formatDollarsSigned(Math.round(totalGrowth))}</TableCell>}
+                  {propExpanded && <TableCell style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)", opacity: parseFloat(totalGrowthPct) > 0 ? 0.8 : 1 }}>{totalGrowthPct}%</TableCell>}
+                  {propExpanded && <TableCell tone="emphasis">+{formatDollarsSigned(Math.round(yoyGrowth))}</TableCell>}
+                  {propExpanded && <TableCell style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)", opacity: parseFloat(yoyGrowthPct) > 0 ? 0.8 : 1 }}>{yoyGrowthPct}%</TableCell>}
+                  <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
                     <span className="font-semibold" style={{ color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(y.propertyValue))}</span>
                     {isCollapsed && (
                       <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(parseFloat(yoyGrowthPct))}`}>{fmtYoY(parseFloat(yoyGrowthPct))}</span>
                     )}
                   </td>
                   {/* Position detail cells */}
-                  {posExpanded && <td className={`h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.04] cf-zone animate-col-fade-in ${getValueClass(-y.loanBalance, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanBalance))}</td>}
-                  {posExpanded && <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] cf-zone animate-col-fade-in ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</td>}
-                  {posExpanded && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] cf-zone animate-col-fade-in" style={{ fontWeight: 600, color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(propertyEquity))}</td>}
-                  {posExpanded && showOffset && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] cf-zone text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.offsetBalanceAtYear))}</td>}
-                  <td className={`h-[52px] box-border ${!posExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.04] cf-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"}`}>
+                  {posExpanded && <td className={`h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.07] cf-zone animate-col-fade-in ${getValueClass(-y.loanBalance, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanBalance))}</td>}
+                  {posExpanded && <TableCell className={`cf-zone ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</TableCell>}
+                  {posExpanded && showOffset && <TableCell className="cf-zone" style={{ fontWeight: 600, color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(propertyEquity))}</TableCell>}
+                  {posExpanded && showOffset && <TableCell tone="emphasis" className="cf-zone">{formatDollarsSigned(Math.round(y.offsetBalanceAtYear))}</TableCell>}
+                  <td className={`h-[52px] box-border ${!posExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.07] cf-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"}`}>
                     <span className="font-bold text-positive">{formatDollarsSigned(Math.round(y.netEquity))}</span>
                     {isCollapsed && (() => {
                       const prevEquity = i > 0 ? yearData[i-1].netEquity : y.netEquity;
