@@ -3,7 +3,7 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatDollarsSigned } from "@/lib/formatters";
 import TableCell from "@/components/ui/TableCell";
-import { getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { getMarginalTaxRate, getBracketColor } from "@/lib/cashflow-calculations";
 import { yoyPct, yoyClass, fmtYoY, getValueClass } from "./helpers";
 import type { SubTableProps } from "./types";
 
@@ -112,7 +112,7 @@ export default function TaxTable({
                     {y.taxSaved > 0 ? `(+${formatDollarsSigned(Math.round(y.taxSaved))})` : "—"}
                   </td>}
                   {isGroupExpanded("tax") && <TableCell>{formatDollarsSigned(Math.round(taxableIncome))}</TableCell>}
-                  {isGroupExpanded("tax") && <TableCell>{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</TableCell>}
+                  {isGroupExpanded("tax") && <TableCell style={{ color: getBracketColor(bracket) }}>{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</TableCell>}
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] pr-5 text-sm" style={{ fontWeight: 700, color: "var(--color-negative)" }}>
                     {formatDollarsSigned(Math.round(-y.incomeTaxCalc))}
                   </td>
@@ -219,7 +219,7 @@ export default function TaxTable({
                     {y.taxSaved > 0 ? `+${formatDollarsSigned(Math.round(y.taxSaved))}` : "—"}
                   </td>}
                   {taxExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] out-zone text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(taxableIncome))}</td>}
-                  {taxExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] out-zone text-foreground animate-col-fade-in">{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</td>}
+                  {taxExpanded && <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.04] out-zone animate-col-fade-in" style={{ color: getBracketColor(bracket) }}>{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</td>}
                   <td className={`h-[52px] box-border ${!taxExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.04] out-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"}`}>
                     <span className="font-bold text-negative">{formatDollarsSigned(Math.round(-y.incomeTaxCalc))}</span>
                     {isCollapsed && (() => {

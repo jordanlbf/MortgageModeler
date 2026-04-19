@@ -1,10 +1,10 @@
 "use client";
 
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
-import { getMarginalTaxRate } from "@/lib/cashflow-calculations";
+import { getMarginalTaxRate, getBracketColor } from "@/lib/cashflow-calculations";
 import { formatDollarsSigned } from "@/lib/formatters";
 import { safeDiv } from "@/lib/formatters";
-import { TAX_BRACKET_COLORS, LVR_COLORS, DEPRECIATION_COLOR } from "@/lib/theme";
+import { LVR_COLORS, DEPRECIATION_COLOR } from "@/lib/theme";
 import KpiSparkline from "./KpiSparkline";
 
 interface KpiItem {
@@ -112,13 +112,6 @@ export default function CashflowKpiStrip({
   } else if (viewMode === "tax" && d) {
     const taxableIncome = d.grossIncome - d.totalDeductionsForTax;
     const bracket = getMarginalTaxRate(taxableIncome);
-    const getBracketColor = (rate: number) => {
-      if (rate <= 0) return TAX_BRACKET_COLORS.zero;
-      if (rate <= 0.16) return TAX_BRACKET_COLORS.low;
-      if (rate <= 0.30) return TAX_BRACKET_COLORS.medium;
-      if (rate <= 0.37) return TAX_BRACKET_COLORS.high;
-      return TAX_BRACKET_COLORS.top;
-    };
     items = [
       {
         label: "Taxable Income",
