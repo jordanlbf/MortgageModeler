@@ -6,7 +6,10 @@ interface PageHeaderProps {
 
 export default function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
-    <div className="flex items-start justify-between gap-4 mb-8 pr-16">
+    <div
+      className="flex items-start justify-between gap-4 mb-8"
+      style={{ paddingRight: "var(--layout-header-actions-reserve)" }}
+    >
       <div className="min-w-0">
         <h1
           className="text-[30px] font-semibold leading-[1.1] tracking-[-0.02em]"

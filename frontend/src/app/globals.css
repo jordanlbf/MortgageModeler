@@ -68,6 +68,8 @@
   --layout-page-padding-y: 32px;
   --layout-nav-item-height: 36px;
   --layout-global-btn-size: 34px;
+  /* Reservation on the right of page headers to keep clear of the globals tray */
+  --layout-header-actions-reserve: 64px;
 }
 
 
