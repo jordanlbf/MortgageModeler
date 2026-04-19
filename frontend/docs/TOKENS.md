@@ -61,3 +61,4 @@ Utility classes in `globals.css`:
 | `--layout-page-padding-y` | `32px` | Vertical page padding |
 | `--layout-nav-item-height` | `36px` | Sidebar nav item row height |
 | `--layout-global-btn-size` | `34px` | Globals tray icon button size |
+| `--layout-header-actions-reserve` | `64px` | Right-padding reservation on page headers to avoid overlap with the floating globals tray. Update when the tray's width changes. |
