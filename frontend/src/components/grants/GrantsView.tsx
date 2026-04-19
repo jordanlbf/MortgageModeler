@@ -7,8 +7,8 @@ import type { GrantSchemeWithEligibility } from "@/lib/api";
 import Header from "@/components/layout/Header";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import { useApiCall } from "@/hooks/useApiCall";
-import { mix } from "@/lib/theme";
-import DenseSchemeCard, { FEDERAL_COLOR, STATE_COLORS } from "./DenseSchemeCard";
+import { mix, STATE_COLORS } from "@/lib/theme";
+import DenseSchemeCard from "./DenseSchemeCard";
 
 // ── Types ───────────────────────────────────────
 
@@ -197,7 +197,7 @@ export default function GrantsView() {
               <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">State</label>
               <div className="grid grid-flow-col auto-cols-fr gap-5">
                 {ALL_REGIONS.map((r) => {
-                  const color = r === "Federal" ? FEDERAL_COLOR : STATE_COLORS[r];
+                  const color = r === "Federal" ? STATE_COLORS.FEDERAL : STATE_COLORS[r];
                   return (
                     <Pill key={r} label={r} active={regions.has(r)} color={color} onClick={() => toggleRegion(r)} />
                   );

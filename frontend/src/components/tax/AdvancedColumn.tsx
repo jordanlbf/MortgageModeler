@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { t, mix } from "@/lib/theme";
+import { t, mix, TAX_CATEGORY_COLORS } from "@/lib/theme";
 import { formatCurrencyShort, parseCurrencyInput } from "@/lib/formatters";
 import type { AdvancedTaxInputs, AdvancedTaxSetters } from "@/hooks/useAdvancedTaxState";
 import { useEditableInput } from "@/hooks/useEditableInput";
@@ -46,7 +46,7 @@ const SECTIONS: SectionDef[] = [
     id: "income",
     title: "Assessable Income",
     shortTitle: "Income",
-    color: "#6b9fcc",
+    color: TAX_CATEGORY_COLORS.income,
     groups: [
       {
         label: "Employment & Passive",
@@ -76,7 +76,7 @@ const SECTIONS: SectionDef[] = [
     id: "deductions",
     title: "Allowable Deductions",
     shortTitle: "Deductions",
-    color: "#c97070",
+    color: TAX_CATEGORY_COLORS.deductions,
     groups: [
       {
         label: "Property & Work",
@@ -91,7 +91,7 @@ const SECTIONS: SectionDef[] = [
     id: "adjustments",
     title: "Income Adjustments (HRI / MLS)",
     shortTitle: "Adjustments",
-    color: "#bfa75a",
+    color: TAX_CATEGORY_COLORS.adjustments,
     groups: [
       {
         label: "Super & Benefits",

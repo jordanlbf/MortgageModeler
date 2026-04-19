@@ -97,7 +97,7 @@ const icons: Record<string, React.ReactNode> = {
 
 /* ── ToolCard ─────────────────────────────────────── */
 function ToolCard({ tool }: { tool: Tool }) {
-  const color = TOOL_COLORS[tool.id] ?? { primary: "#94a3b8", glow: "rgba(148,163,184,0.08)" };
+  const color = TOOL_COLORS[tool.id] ?? { primary: "var(--color-tool-default)", glow: "var(--color-tool-default-glow)" };
   const c = color.primary;
 
   const card = (

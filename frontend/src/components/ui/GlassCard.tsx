@@ -11,7 +11,7 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
   ({ children, className = "", style }, ref) => (
     <div
       ref={ref}
-      className={`glass-card rounded-2xl backdrop-blur-md transition-all duration-300 ease-out hover:-translate-y-[1px] ${className}`}
+      className={`glass-card rounded-2xl backdrop-blur-md ${className}`}
       style={{
         background: t.bg.card,
         border: `1px solid ${t.border.default}`,

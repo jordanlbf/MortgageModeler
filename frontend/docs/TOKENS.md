@@ -33,3 +33,20 @@ Utility classes in `globals.css`:
 .out-zone { background: var(--color-out-tint); }
 .cf-zone { background: var(--color-cf-wash); }
 ```
+
+## Foreground ramp
+
+| Token | Value | Usage |
+|---|---|---|
+| `--color-foreground` | `#f0fdfa` | Primary text, headers, values |
+| `--color-muted` | `#f4f4f5` | Near-foreground variant |
+| `--color-subtle` | `#a1a1aa` | Secondary text, labels |
+| `--color-faint` | `#71717a` | Tertiary text, metadata |
+| `--color-fg-table` | `#ccccd2` | Tabular data row text — softer than foreground so numbers breathe |
+
+## Tool card defaults
+
+| Token | Value | Usage |
+|---|---|---|
+| `--color-tool-default` | `#94a3b8` | Fallback tool card accent when no category assigned |
+| `--color-tool-default-glow` | `rgba(148,163,184,0.08)` | Fallback tool card glow |
