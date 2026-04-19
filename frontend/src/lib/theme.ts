@@ -31,6 +31,7 @@ export const t = {
   muted: "var(--color-muted)",
   subtle: "var(--color-subtle)",
   faint: "var(--color-faint)",
+  fgTable: "var(--color-fg-table)",
 
   // ── Accent ───────────────────────────────────────
   accent: "var(--color-accent)",
@@ -102,6 +103,43 @@ export const TAX_COLORS = {
   mls:        "#fb923c",
   hecs:       "#a78bfa",
   netIncome:  "#2dd4bf",
+} as const;
+
+// ── Tax bracket severity ladder ───────────────────
+// Five-tier ramp for marginal-rate KPI tiles. Mixes semantic tokens
+// (zero/medium/top use --color-positive/--color-warning/--color-negative)
+// with literals for the in-between green and amber tiers.
+export const TAX_BRACKET_COLORS = {
+  zero:   "var(--color-positive)",
+  low:    "#86efac",
+  medium: "var(--color-warning)",
+  high:   "#f59e0b",
+  top:    "#ef4444",
+} as const;
+
+// ── LVR severity thresholds ───────────────────────
+export const LVR_COLORS = {
+  safe:     "var(--color-positive)",
+  moderate: "var(--color-warning)",
+  high:     "var(--color-negative)",
+} as const;
+
+// ── Depreciation series colour ────────────────────
+export const DEPRECIATION_COLOR = "#a78bfa";
+
+// ── Australian state / federal grant palette ─────
+// Scoped to the Government Grants feature — each jurisdiction has its own
+// recognition colour. Not part of the general design vocabulary.
+export const STATE_COLORS = {
+  FEDERAL: "#A78BFA",
+  NSW:     "#6BB5E8",
+  VIC:     "#5B8DBE",
+  QLD:     "#C06080",
+  WA:      "#D4A843",
+  SA:      "#E06060",
+  TAS:     "#4AAF82",
+  ACT:     "#6A9FD8",
+  NT:      "#D87A58",
 } as const;
 
 // Convenience array for legend / toggle iteration
