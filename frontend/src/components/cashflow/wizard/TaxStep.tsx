@@ -25,25 +25,27 @@ export default function TaxStep({ s }: Props) {
         <input type="text" className={INPUT_CLS} value={s.capitalGrowth} onChange={(e) => s.setCapitalGrowth(e.target.value)} />
       </div>
 
-      <div className="h-px bg-border my-1" />
+      {s.isInvestment && <div className="h-px bg-border my-1" />}
 
-      {/* Depreciation mode toggle */}
-      <div className="flex flex-col gap-3.5">
-        <span className="text-xs font-medium tracking-[0.06em] uppercase text-faint">Depreciation</span>
-        <div className="flex gap-3">
-          <button className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border bg-transparent font-medium text-[13px] font-[inherit] cursor-pointer transition-all duration-200 ${s.depreciationMode === "estimate" ? "border-accent/30 text-accent bg-accent/[0.08]" : "border-border text-subtle hover:border-white/[0.12] hover:text-foreground hover:bg-white/[0.03]"}`} onClick={() => s.setDepreciationMode("estimate")}>Estimate</button>
-          <button className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border bg-transparent font-medium text-[13px] font-[inherit] cursor-pointer transition-all duration-200 ${s.depreciationMode === "detailed" ? "border-accent/30 text-accent bg-accent/[0.08]" : "border-border text-subtle hover:border-white/[0.12] hover:text-foreground hover:bg-white/[0.03]"}`} onClick={() => s.setDepreciationMode("detailed")}>Detailed</button>
+      {/* Depreciation mode toggle — investment only */}
+      {s.isInvestment && (
+        <div className="flex flex-col gap-3.5">
+          <span className="text-xs font-medium tracking-[0.06em] uppercase text-faint">Depreciation</span>
+          <div className="flex gap-3">
+            <button className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border bg-transparent font-medium text-[13px] font-[inherit] cursor-pointer transition-all duration-200 ${s.depreciationMode === "estimate" ? "border-accent/30 text-accent bg-accent/[0.08]" : "border-border text-subtle hover:border-white/[0.12] hover:text-foreground hover:bg-white/[0.03]"}`} onClick={() => s.setDepreciationMode("estimate")}>Estimate</button>
+            <button className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border bg-transparent font-medium text-[13px] font-[inherit] cursor-pointer transition-all duration-200 ${s.depreciationMode === "detailed" ? "border-accent/30 text-accent bg-accent/[0.08]" : "border-border text-subtle hover:border-white/[0.12] hover:text-foreground hover:bg-white/[0.03]"}`} onClick={() => s.setDepreciationMode("detailed")}>Detailed</button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {s.depreciationMode === "estimate" && (
+      {s.isInvestment && s.depreciationMode === "estimate" && (
         <div className="flex flex-col gap-1 py-3 px-4 bg-accent/[0.05] border border-accent/[0.12] rounded-lg">
           <span className="text-base font-semibold text-accent tabular-nums">~{formatDollarsSigned(estAnnual)}/yr</span>
           <span className="text-xs text-faint">estimated from {formatDollarsSigned(propPrice)} property</span>
         </div>
       )}
 
-      {s.depreciationMode === "detailed" && (
+      {s.isInvestment && s.depreciationMode === "detailed" && (
         <>
           {/* Buildings */}
           <div className="flex flex-col gap-3.5">

@@ -9,7 +9,7 @@ import type { StepId } from "@/lib/cashflow-types";
 type ActiveTab = "wizard" | "dashboard";
 
 const STEP_ORDER_INVESTMENT: StepId[] = ["setup", "property", "loan", "costs", "rental", "tax"];
-const STEP_ORDER_BASE: StepId[] = ["setup", "property", "loan", "costs"];
+const STEP_ORDER_BASE: StepId[] = ["setup", "property", "loan", "costs", "tax"];
 
 function getNaturalStep(s: ReturnType<typeof useCashflowState>): StepId | null {
   if (!s.propertyUse || !s.purchaseMode || !s.setupComplete) return "setup";
@@ -17,7 +17,7 @@ function getNaturalStep(s: ReturnType<typeof useCashflowState>): StepId | null {
   if (!s.loanComplete) return "loan";
   if (!s.costsComplete) return "costs";
   if (s.isInvestment && !s.rentalComplete) return "rental";
-  if (s.isInvestment && !s.taxComplete) return "tax";
+  if (!s.taxComplete) return "tax";
   return null;
 }
 

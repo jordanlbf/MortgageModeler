@@ -27,8 +27,10 @@ const WIZARD_STEPS: { id: StepId; label: string; icon: typeof Home }[] = [
 ];
 
 function getWizardSteps(isInvestment: boolean) {
-  if (isInvestment) return WIZARD_STEPS;
-  return WIZARD_STEPS.filter(s => s.id !== "rental" && s.id !== "tax");
+  const steps = isInvestment ? WIZARD_STEPS : WIZARD_STEPS.filter(s => s.id !== "rental");
+  return steps.map(s =>
+    s.id === "tax" && !isInvestment ? { ...s, label: "Income & Growth" } : s
+  );
 }
 
 function getNaturalStepIndex(s: CashflowState): number {
@@ -37,7 +39,7 @@ function getNaturalStepIndex(s: CashflowState): number {
   if (!s.loanComplete) return 2;
   if (!s.costsComplete) return 3;
   if (s.isInvestment && !s.rentalComplete) return 4;
-  if (s.isInvestment && !s.taxComplete) return 5;
+  if (!s.taxComplete) return s.isInvestment ? 5 : 4;
   return -1;
 }
 
@@ -126,10 +128,12 @@ function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
         income > 190000 ? "45%" :
         income > 135000 ? "37%" :
         income > 45000  ? "30%" : "16%";
-      return [
+      const lines: StepLine[] = [
         { primary: true, text: `${formatDollarsSigned(income)} Taxable Income` },
-        { value: rate, descriptor: "Tax Bracket" },
       ];
+      if (s.isInvestment) lines.push({ value: rate, descriptor: "Tax Bracket" });
+      else lines.push({ value: `${s.capitalGrowth}%`, descriptor: "Capital Growth" });
+      return lines;
     }
     default:
       return null;
