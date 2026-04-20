@@ -15,21 +15,21 @@ export default function CashflowPage() {
             type="button"
             className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-medium transition-all cursor-pointer"
             style={{
-              background: "color-mix(in srgb, var(--color-accent) 3%, transparent)",
+              background: "color-mix(in srgb, var(--color-brand) 3%, transparent)",
               borderWidth: "1px",
               borderStyle: "solid",
-              borderColor: "color-mix(in srgb, var(--color-accent) 20%, transparent)",
-              color: "var(--color-subtle)",
+              borderColor: "color-mix(in srgb, var(--color-brand) 20%, transparent)",
+              color: "var(--color-fg-secondary)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "color-mix(in srgb, var(--color-accent) 8%, transparent)";
-              e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-accent) 35%, transparent)";
-              e.currentTarget.style.color = "var(--color-foreground)";
+              e.currentTarget.style.background = "color-mix(in srgb, var(--color-brand) 8%, transparent)";
+              e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-brand) 35%, transparent)";
+              e.currentTarget.style.color = "var(--color-fg-primary)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "color-mix(in srgb, var(--color-accent) 3%, transparent)";
-              e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-accent) 20%, transparent)";
-              e.currentTarget.style.color = "var(--color-subtle)";
+              e.currentTarget.style.background = "color-mix(in srgb, var(--color-brand) 3%, transparent)";
+              e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-brand) 20%, transparent)";
+              e.currentTarget.style.color = "var(--color-fg-secondary)";
             }}
           >
             <Plus size={13} strokeWidth={1.8} />

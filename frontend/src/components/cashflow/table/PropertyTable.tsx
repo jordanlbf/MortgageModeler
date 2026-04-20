@@ -61,7 +61,7 @@ export default function PropertyTable({
                   {isGroupExpanded("gearing") && <TableCell>{formatDollarsSigned(Math.round(y.rentalIncome))}</TableCell>}
                   {isGroupExpanded("gearing") && <TableCell className={getValueClass(-holdingCosts, false, true)}>{formatDollarsSigned(Math.round(-holdingCosts))}</TableCell>}
                   {isGroupExpanded("gearing") && <TableCell className={getValueClass(-depreciation, false, true)}>{formatDollarsSigned(Math.round(-depreciation))}</TableCell>}
-                  <TableCell animated={false} className={`pr-5 text-sm ${netGearing >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>{formatDollarsSigned(Math.round(netGearing))}</TableCell>
+                  <TableCell animated={false} className={`pr-5 text-sm ${netGearing >= 0 ? "text-data-positive font-bold" : "text-data-negative font-bold"}`}>{formatDollarsSigned(Math.round(netGearing))}</TableCell>
                 </tr>
               );
             })}
@@ -75,7 +75,7 @@ export default function PropertyTable({
           <thead>
             <tr className="h-7 border-b-0">
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-accent/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={isGroupExpanded("propertyCashflow") ? 4 : 1}
                 onClick={() => toggleGroup("propertyCashflow")}
               >
@@ -102,8 +102,8 @@ export default function PropertyTable({
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   {isGroupExpanded("propertyCashflow") && <TableCell>{formatDollarsSigned(Math.round(y.rentalIncome))}</TableCell>}
                   {isGroupExpanded("propertyCashflow") && <TableCell className={getValueClass(-totalCosts, false, true)}>{formatDollarsSigned(Math.round(-totalCosts))}</TableCell>}
-                  {isGroupExpanded("propertyCashflow") && <TableCell style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</TableCell>}
-                  <TableCell animated={false} className={`pr-5 text-sm ${y.propertyCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
+                  {isGroupExpanded("propertyCashflow") && <TableCell style={{ color: "var(--color-data-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</TableCell>}
+                  <TableCell animated={false} className={`pr-5 text-sm ${y.propertyCashflow >= 0 ? "text-data-positive font-bold" : "text-data-negative font-bold"}`}>
                     {formatDollarsSigned(Math.round(y.propertyCashflow))}
                   </TableCell>
                 </tr>
@@ -148,7 +148,7 @@ export default function PropertyTable({
                 </span>
               </th>
               <th
-                className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-accent cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={cfExpanded ? 4 : 1}
                 onClick={() => toggleGroup("propertyCashflow")}
                 style={{ background: "var(--color-cf-wash-strong)" }}
@@ -161,16 +161,16 @@ export default function PropertyTable({
             </tr>
             {(gearExpanded || cfExpanded) && (
             <tr className="h-14 border-b border-white/[0.10]" style={{ background: "var(--color-surface-raised)" }}>
-              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap w-24 text-left px-2.5" />
+              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap w-24 text-left px-2.5" />
               {/* Gearing detail columns */}
-              {gearExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Annual Rental Income">rent</th>}
-              {gearExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Interest + Ongoing Costs">holding</th>}
-              {gearExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Div 43 + Div 40 Depreciation">depr.</th>}
+              {gearExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Annual Rental Income">rent</th>}
+              {gearExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Interest + Ongoing Costs">holding</th>}
+              {gearExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Div 43 + Div 40 Depreciation">depr.</th>}
               <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-white/85 font-bold text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100" data-tip="Rent − Holding − Depreciation">net gearing</th>
               {/* Cashflow detail columns */}
-              {cfExpanded && <th className="h-14 box-border align-middle pl-6 pr-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Annual Rental Income">rent</th>}
-              {cfExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Holding + Repayments">costs</th>}
-              {cfExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Tax Benefit">tax saved</th>}
+              {cfExpanded && <th className="h-14 box-border align-middle pl-6 pr-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Annual Rental Income">rent</th>}
+              {cfExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Holding + Repayments">costs</th>}
+              {cfExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Tax Benefit">tax saved</th>}
               <th className={`h-14 box-border align-middle ${!cfExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-[11px] tracking-[0.02em] capitalize text-white/85 font-bold text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100`} style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Rent − Costs + Tax Saved">cashflow</th>
             </tr>
             )}
@@ -192,7 +192,7 @@ export default function PropertyTable({
                   {gearExpanded && <TableCell className={getValueClass(-holdingCosts, false, true)}>{formatDollarsSigned(Math.round(-holdingCosts))}</TableCell>}
                   {gearExpanded && <TableCell className={getValueClass(-depreciation, false, true)}>{formatDollarsSigned(Math.round(-depreciation))}</TableCell>}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
-                    <span className={`font-bold ${netGearing >= 0 ? "text-positive" : "text-negative"}`}>{netGearing >= 0 ? "+" : ""}{formatDollarsSigned(Math.round(netGearing))}</span>
+                    <span className={`font-bold ${netGearing >= 0 ? "text-data-positive" : "text-data-negative"}`}>{netGearing >= 0 ? "+" : ""}{formatDollarsSigned(Math.round(netGearing))}</span>
                     {isCollapsed && (() => {
                       const prevGearing = i > 0 ? (() => { const py = yearData[i-1]; return py.rentalIncome - (py.interestPortion + py.ongoingCosts) - (py.depDiv43 + py.depDiv40); })() : netGearing;
                       const gearYoY = yoyPct(netGearing, prevGearing);
@@ -200,10 +200,10 @@ export default function PropertyTable({
                     })()}
                   </td>
                   {/* Cashflow detail cells */}
-                  {cfExpanded && <td className="h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.07] cf-zone text-foreground animate-col-fade-in">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
+                  {cfExpanded && <td className="h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.07] cf-zone text-fg-primary animate-col-fade-in">{formatDollarsSigned(Math.round(y.rentalIncome))}</td>}
                   {cfExpanded && <TableCell className={`cf-zone ${getValueClass(-totalCosts, false, true)}`}>{formatDollarsSigned(Math.round(-totalCosts))}</TableCell>}
-                  {cfExpanded && <TableCell className="cf-zone" style={{ color: "var(--color-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</TableCell>}
-                  <td className={`h-[52px] box-border ${!cfExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.07] cf-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"} ${y.propertyCashflow >= 0 ? "text-positive font-bold" : "text-negative font-bold"}`}>
+                  {cfExpanded && <TableCell className="cf-zone" style={{ color: "var(--color-data-positive)" }}>{y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}</TableCell>}
+                  <td className={`h-[52px] box-border ${!cfExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.07] cf-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"} ${y.propertyCashflow >= 0 ? "text-data-positive font-bold" : "text-data-negative font-bold"}`}>
                     <span className="font-bold">{y.propertyCashflow >= 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.propertyCashflow))}</span>
                     {isCollapsed && (() => {
                       const prevCf = i > 0 ? yearData[i-1].propertyCashflow : y.propertyCashflow;
@@ -217,31 +217,31 @@ export default function PropertyTable({
             {/* Summary row — fixed totals across all visible years */}
             <tr className="row-summary">
               <td className="box-border align-middle pl-[18px] text-left" style={summaryBorder}>
-                <span className="text-[10.5px] tracking-[0.14em] uppercase text-subtle font-medium">{yearData.length}-yr total</span>
+                <span className="text-[10.5px] tracking-[0.14em] uppercase text-fg-secondary font-medium">{yearData.length}-yr total</span>
               </td>
               {gearExpanded && (
-                <td className="box-border px-3 text-right align-middle text-foreground font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.rent))}</td>
+                <td className="box-border px-3 text-right align-middle text-fg-primary font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.rent))}</td>
               )}
               {gearExpanded && (
-                <td className="box-border px-3 text-right align-middle text-negative font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(-totals.holding))}</td>
+                <td className="box-border px-3 text-right align-middle text-data-negative font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(-totals.holding))}</td>
               )}
               {gearExpanded && (
-                <td className="box-border px-3 text-right align-middle text-negative font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(-totals.depr))}</td>
+                <td className="box-border px-3 text-right align-middle text-data-negative font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(-totals.depr))}</td>
               )}
               <td className="box-border px-3 text-right align-middle text-[15px]" style={summaryBorder}>
-                <span className={`font-semibold ${totals.gearing >= 0 ? "text-positive" : "text-negative"}`}>{formatDollarsSigned(Math.round(totals.gearing))}</span>
+                <span className={`font-semibold ${totals.gearing >= 0 ? "text-data-positive" : "text-data-negative"}`}>{formatDollarsSigned(Math.round(totals.gearing))}</span>
               </td>
               {cfExpanded && (
-                <td className="box-border pl-6 pr-3 text-right align-middle text-foreground font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>{formatDollarsSigned(Math.round(totals.rent))}</td>
+                <td className="box-border pl-6 pr-3 text-right align-middle text-fg-primary font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>{formatDollarsSigned(Math.round(totals.rent))}</td>
               )}
               {cfExpanded && (
-                <td className="box-border px-3 text-right align-middle text-negative font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>{formatDollarsSigned(Math.round(-totals.cfCosts))}</td>
+                <td className="box-border px-3 text-right align-middle text-data-negative font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>{formatDollarsSigned(Math.round(-totals.cfCosts))}</td>
               )}
               {cfExpanded && (
-                <td className="box-border px-3 text-right align-middle text-positive font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>{formatDollarsSigned(Math.round(totals.taxSaved))}</td>
+                <td className="box-border px-3 text-right align-middle text-data-positive font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>{formatDollarsSigned(Math.round(totals.taxSaved))}</td>
               )}
               <td className={`box-border ${!cfExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle text-[15px]`} style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
-                <span className={`font-bold ${totals.cashflow >= 0 ? "text-positive" : "text-negative"}`}>{formatDollarsSigned(Math.round(totals.cashflow))}</span>
+                <span className={`font-bold ${totals.cashflow >= 0 ? "text-data-positive" : "text-data-negative"}`}>{formatDollarsSigned(Math.round(totals.cashflow))}</span>
               </td>
             </tr>
           </tbody>
@@ -259,7 +259,7 @@ export default function PropertyTable({
               <th className="w-0 max-w-0 p-0 bg-transparent relative border-l border-white/[0.1]" />
               <th className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-white/[0.35]" colSpan={2}>loan</th>
               <th className="w-0 max-w-0 p-0 bg-transparent relative border-l border-white/[0.1]" />
-              <th className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-accent/65" />
+              <th className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand/65" />
             </tr>
             <tr className="h-14 border-b border-white/[0.12]">
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-white/[0.42] text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />

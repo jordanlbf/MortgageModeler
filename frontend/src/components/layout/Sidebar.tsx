@@ -54,7 +54,7 @@ export default function Sidebar() {
       >
         <span
           className="text-[15px] font-semibold tracking-tight"
-          style={{ color: "var(--color-foreground)" }}
+          style={{ color: "var(--color-fg-primary)" }}
         >
           MortgageModeler
         </span>
@@ -103,7 +103,7 @@ function NavSection({
         className={`text-[10px] font-semibold uppercase tracking-[0.08em] px-3 ${
           firstSection ? "mt-2 mb-2" : "mt-6 mb-2"
         }`}
-        style={{ color: "var(--color-faint)" }}
+        style={{ color: "var(--color-fg-tertiary)" }}
       >
         {header}
       </div>
@@ -122,25 +122,25 @@ function NavItemRow({
   const isActive = variant === "default" && pathname === href;
 
   const bgStyle: React.CSSProperties = isActive
-    ? { background: "color-mix(in srgb, var(--color-accent) 10%, transparent)" }
+    ? { background: "color-mix(in srgb, var(--color-brand) 10%, transparent)" }
     : {};
 
   const textColor = isActive
-    ? "var(--color-foreground)"
+    ? "var(--color-fg-primary)"
     : variant === "utility"
-    ? "var(--color-faint)"
-    : "var(--color-subtle)";
+    ? "var(--color-fg-tertiary)"
+    : "var(--color-fg-secondary)";
 
   const iconColor = isActive
-    ? "var(--color-accent)"
+    ? "var(--color-brand)"
     : variant === "utility"
-    ? "var(--color-faint)"
-    : "var(--color-subtle)";
+    ? "var(--color-fg-tertiary)"
+    : "var(--color-fg-secondary)";
 
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 px-3 rounded-lg text-[14px] font-medium transition-colors hover:bg-[color-mix(in_srgb,var(--color-foreground)_4%,transparent)]"
+      className="flex items-center gap-2.5 px-3 rounded-lg text-[14px] font-medium transition-colors hover:bg-[color-mix(in_srgb,var(--color-fg-primary)_4%,transparent)]"
       style={{
         ...bgStyle,
         height: "var(--layout-nav-item-height)",

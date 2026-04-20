@@ -44,7 +44,7 @@ export default function Slider({
       {compact ? (
         /* ── Compact: label left, value right ── */
         <div className="mb-1 flex items-center justify-between">
-          <span className="text-[15px] text-foreground/50">{label}</span>
+          <span className="text-[15px] text-fg-primary/50">{label}</span>
           {editable ? (
             <input
               ref={inputRef}
@@ -58,12 +58,12 @@ export default function Slider({
               onClick={!editing ? startEditing : undefined}
               onFocus={startEditing}
               className={`w-[100px] bg-transparent text-right text-[15px] font-medium tabular-nums outline-none ${
-                editing ? "text-foreground cursor-text" : "text-foreground cursor-text hover:brightness-125"
+                editing ? "text-fg-primary cursor-text" : "text-fg-primary cursor-text hover:brightness-125"
               }`}
               style={{ caretColor: accent }}
             />
           ) : (
-            <span className="text-[15px] font-medium tabular-nums text-foreground">{display}</span>
+            <span className="text-[15px] font-medium tabular-nums text-fg-primary">{display}</span>
           )}
         </div>
       ) : (
@@ -98,9 +98,9 @@ export default function Slider({
               className={`w-full bg-transparent text-center text-[16px] font-normal leading-none tabular-nums outline-none transition-colors duration-150 ${
                 editable
                   ? editing
-                    ? "text-foreground cursor-text"
-                    : "text-foreground cursor-text hover:brightness-125"
-                  : "text-foreground"
+                    ? "text-fg-primary cursor-text"
+                    : "text-fg-primary cursor-text hover:brightness-125"
+                  : "text-fg-primary"
               }`}
             />
           </div>

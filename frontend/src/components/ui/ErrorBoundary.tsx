@@ -37,10 +37,10 @@ export default class ErrorBoundary extends Component<Props, State> {
 
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-8">
-        <p className="text-[13px] text-foreground/30">Something went wrong.</p>
+        <p className="text-[13px] text-fg-primary/30">Something went wrong.</p>
         <button
           onClick={this.reset}
-          className="rounded-lg px-4 py-2 text-[12px] font-medium text-accent/60 transition-colors hover:bg-white/[0.04]"
+          className="rounded-lg px-4 py-2 text-[12px] font-medium text-brand/60 transition-colors hover:bg-white/[0.04]"
         >
           Try again
         </button>

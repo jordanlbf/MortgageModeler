@@ -9,8 +9,8 @@ export default function DashboardPage() {
         style={{
           height: "240px",
           background: "rgba(42,42,46,0.35)",
-          borderColor: "var(--color-border)",
-          color: "var(--color-faint)",
+          borderColor: "var(--color-border-subtle)",
+          color: "var(--color-fg-tertiary)",
         }}
       >
         Dashboard content

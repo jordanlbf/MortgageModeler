@@ -123,7 +123,7 @@ export default function CashflowCalculator() {
     <>
       {/* ── Wizard view: sidebar + wizard centered together ── */}
       {showWizard && (
-        <div className="flex justify-center items-start bg-background text-foreground">
+        <div className="flex justify-center items-start bg-surface-app text-fg-primary">
           <div className="flex w-full max-w-[960px]">
             <CashflowSidebar s={s} currentStep={sidebarStep} onStepClick={goToStep} />
 

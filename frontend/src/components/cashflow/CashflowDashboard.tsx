@@ -41,11 +41,11 @@ export default function CashflowDashboard({
     : signedCf(summaryCashflow);
   const heroLabel = vm === "equity" ? "Net Equity" : vm === "deductions" ? "Total Deductions" : vm === "tax" ? "Total Tax" : vm === "property" ? "Property Cashflow" : "Net Cashflow";
   const heroColor = vm === "summary"
-    ? (summaryCashflow >= 0 ? "var(--color-positive)" : "var(--color-negative)")
+    ? (summaryCashflow >= 0 ? "var(--color-data-positive)" : "var(--color-data-negative)")
     : vm === "property"
-    ? (y1.propertyCashflow >= 0 ? "var(--color-positive)" : "var(--color-negative)")
+    ? (y1.propertyCashflow >= 0 ? "var(--color-data-positive)" : "var(--color-data-negative)")
     : vm === "tax"
-    ? "var(--color-negative)"
+    ? "var(--color-data-negative)"
     : vm === "deductions"
     ? DEPRECIATION_COLOR
     : null;
@@ -59,7 +59,7 @@ export default function CashflowDashboard({
   else if (vm === "deductions") panelProp.deductionsPanel = "unified";
 
   return (
-    <main className="text-foreground max-w-[1400px] mx-auto px-4 py-6 flex flex-col gap-6">
+    <main className="text-fg-primary max-w-[1400px] mx-auto px-4 py-6 flex flex-col gap-6">
       {/* ── Chart + Tabs ── */}
       <div className="flex items-stretch">
         <div className="relative flex-1 min-w-0 flex flex-col">
@@ -70,7 +70,7 @@ export default function CashflowDashboard({
               return (
                 <button
                   key={m}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[20px] border-none text-xs font-medium cursor-pointer transition-[background,color] duration-150 ${vm === m ? "bg-white/[0.08] text-foreground" : "bg-transparent text-[rgba(161,161,170,0.4)] hover:text-[rgba(161,161,170,0.6)]"}`}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[20px] border-none text-xs font-medium cursor-pointer transition-[background,color] duration-150 ${vm === m ? "bg-white/[0.08] text-fg-primary" : "bg-transparent text-[rgba(161,161,170,0.4)] hover:text-[rgba(161,161,170,0.6)]"}`}
                   onClick={() => { s.setViewMode(m); s.setSelectedYear(1); }}
                 >
                   {label}
@@ -91,17 +91,17 @@ export default function CashflowDashboard({
           />
 
           <div className="flex items-baseline justify-center gap-3 pt-[30px] pb-2.5">
-            <span className="text-[23px] font-semibold text-accent tracking-[-0.02em] tabular-nums">Year {displayYear}</span>
-            <span className="text-[22px] font-normal text-faint">{calendarYear}</span>
+            <span className="text-[23px] font-semibold text-brand tracking-[-0.02em] tabular-nums">Year {displayYear}</span>
+            <span className="text-[22px] font-normal text-fg-tertiary">{calendarYear}</span>
             <span className="w-px h-[22px] bg-[rgba(113,113,122,0.25)]" />
             <span className="text-[23px] font-semibold tracking-[-0.02em] tabular-nums" style={heroColor ? { color: heroColor } : undefined}>{heroValue}</span>
-            <span className="text-[22px] font-normal text-faint">{heroLabel}</span>
+            <span className="text-[22px] font-normal text-fg-tertiary">{heroLabel}</span>
           </div>
         </div>
       </div>
 
       {/* ── KPI strip ── */}
-      <div className="bg-surface-subtle border border-border rounded-xl overflow-hidden">
+      <div className="bg-surface-subtle border border-default rounded-xl overflow-hidden">
         <CashflowKpiStrip
           viewMode={vm}
           yearData={s.yearData}
@@ -117,7 +117,7 @@ export default function CashflowDashboard({
       </div>
 
       {/* ── Table ── */}
-      <div className="border border-border rounded-xl overflow-hidden">
+      <div className="border border-default rounded-xl overflow-hidden">
         <CashflowDataTable
           yearData={s.yearData}
           viewMode={vm}

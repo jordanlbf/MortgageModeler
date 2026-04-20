@@ -63,10 +63,10 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
     <div className="flex flex-col items-stretch justify-start min-h-[520px] w-full">
       <div className="flex flex-col gap-[35px] w-full max-w-[480px]">
         {/* Breadcrumb progress indicator */}
-        <div className="flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.08em] uppercase text-subtle h-4 leading-none">
-          <span className="font-semibold text-accent tabular-nums">Step {currentStepIndex + 1} of {stepOrder.length}</span>
-          <span className="text-faint">·</span>
-          <span className="text-subtle">{stepTitle}</span>
+        <div className="flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-secondary h-4 leading-none">
+          <span className="font-semibold text-brand tabular-nums">Step {currentStepIndex + 1} of {stepOrder.length}</span>
+          <span className="text-fg-tertiary">·</span>
+          <span className="text-fg-secondary">{stepTitle}</span>
         </div>
 
         {/* Card */}
@@ -76,13 +76,13 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
           </div>
           <div className="pt-6 flex items-center gap-3.5">
             {canGoBack && (
-              <button className="flex items-center gap-2 py-3.5 px-[22px] bg-transparent border border-border rounded-xl text-faint font-[inherit] text-sm font-medium cursor-pointer transition-all duration-150 whitespace-nowrap shrink-0 hover:border-white/[0.12] hover:text-subtle" onClick={onStepBack}>
+              <button className="flex items-center gap-2 py-3.5 px-[22px] bg-transparent border border-default rounded-xl text-fg-tertiary font-[inherit] text-sm font-medium cursor-pointer transition-all duration-150 whitespace-nowrap shrink-0 hover:border-white/[0.12] hover:text-fg-secondary" onClick={onStepBack}>
                 {isModal ? <X size={16} /> : null}
                 {isModal ? "Cancel" : "Back"}
               </button>
             )}
             <button
-              className={`flex-1 flex items-center justify-center gap-2.5 py-4 px-8 bg-accent border-none rounded-xl text-accent-contrast font-[inherit] text-sm font-semibold cursor-pointer transition-all duration-150 tracking-[0.01em] hover:enabled:brightness-[1.08] disabled:opacity-30 disabled:cursor-not-allowed ${step === "setup" ? "flex-none min-w-[200px]" : ""}`}
+              className={`flex-1 flex items-center justify-center gap-2.5 py-4 px-8 bg-brand border-none rounded-xl text-brand-contrast font-[inherit] text-sm font-semibold cursor-pointer transition-all duration-150 tracking-[0.01em] hover:enabled:brightness-[1.08] disabled:opacity-30 disabled:cursor-not-allowed ${step === "setup" ? "flex-none min-w-[200px]" : ""}`}
               onClick={onStepComplete}
               disabled={ctaDisabled}
             >

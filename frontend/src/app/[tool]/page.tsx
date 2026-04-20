@@ -30,7 +30,7 @@ export default async function ToolPlaceholder({ params }: Props) {
         }}
       >
         <div className="text-[36px] mb-4">{meta.icon}</div>
-        <h1 className="text-[18px] font-medium text-foreground/80 tracking-tight m-0 mb-2">
+        <h1 className="text-[18px] font-medium text-fg-primary/80 tracking-tight m-0 mb-2">
           {meta.title}
         </h1>
         <p className="text-[11px] m-0 mb-5" style={{ color: "rgba(148,163,184,0.35)", lineHeight: 1.5 }}>

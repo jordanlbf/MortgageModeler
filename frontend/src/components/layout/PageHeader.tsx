@@ -13,14 +13,14 @@ export default function PageHeader({ title, subtitle, actions }: PageHeaderProps
       <div className="min-w-0">
         <h1
           className="text-[30px] font-semibold leading-[1.1] tracking-[-0.02em]"
-          style={{ color: "var(--color-foreground)" }}
+          style={{ color: "var(--color-fg-primary)" }}
         >
           {title}
         </h1>
         {subtitle && (
           <p
             className="text-[14px] mt-2 tabular-nums"
-            style={{ color: "var(--color-subtle)" }}
+            style={{ color: "var(--color-fg-secondary)" }}
           >
             {subtitle}
           </p>

@@ -122,7 +122,7 @@ export default function CashflowDataTable({
         ) : (
           <span className="inline-flex items-center justify-center mr-1.5 w-3" aria-hidden="true" />
         )}
-        <span className={`inline-flex items-center text-[13px] ${isMilestoneRow ? "font-medium" : "font-normal"} text-accent transition-all duration-150 ease-in-out whitespace-nowrap ${isSelected ? "opacity-100" : isHovered ? "opacity-80" : ""}`} style={{ color: isMilestoneRow ? "var(--color-accent)" : "rgba(255, 255, 255, 0.85)" }}>
+        <span className={`inline-flex items-center text-[13px] ${isMilestoneRow ? "font-medium" : "font-normal"} text-brand transition-all duration-150 ease-in-out whitespace-nowrap ${isSelected ? "opacity-100" : isHovered ? "opacity-80" : ""}`} style={{ color: isMilestoneRow ? "var(--color-brand)" : "rgba(255, 255, 255, 0.85)" }}>
           Year {year}
         </span>
       </span>
@@ -135,7 +135,7 @@ export default function CashflowDataTable({
     const isHovered = year === hoveredYear && !isSelected;
     const isExpandable = isMilestoneRow;
     const isChildRow = !isMilestoneRow && !isMilestoneYear(year);
-    return `group/row h-[52px] transition-[background] duration-100 ease-in-out cursor-pointer hover:bg-[var(--color-surface-hover)] ${isSelected ? "row-selected bg-accent/[0.045] hover:bg-accent/[0.045]" : ""} ${isHovered ? "bg-accent/[0.015]" : ""} ${isExpandable ? "cursor-pointer" : ""} ${isMilestoneRow ? "[&_td]:relative [&_td]:after:content-[''] [&_td]:after:absolute [&_td]:after:left-0 [&_td]:after:right-0 [&_td]:after:bottom-[-1px] [&_td]:after:h-[6px] [&_td]:after:bg-gradient-to-b [&_td]:after:from-black/[0.10] [&_td]:after:to-transparent [&_td]:after:pointer-events-none" : ""} ${isChildRow ? "bg-black/[0.02]" : ""}`;
+    return `group/row h-[52px] transition-[background] duration-100 ease-in-out cursor-pointer hover:bg-[var(--color-surface-hover)] ${isSelected ? "row-selected bg-brand/[0.045] hover:bg-brand/[0.045]" : ""} ${isHovered ? "bg-brand/[0.015]" : ""} ${isExpandable ? "cursor-pointer" : ""} ${isMilestoneRow ? "[&_td]:relative [&_td]:after:content-[''] [&_td]:after:absolute [&_td]:after:left-0 [&_td]:after:right-0 [&_td]:after:bottom-[-1px] [&_td]:after:h-[6px] [&_td]:after:bg-gradient-to-b [&_td]:after:from-black/[0.10] [&_td]:after:to-transparent [&_td]:after:pointer-events-none" : ""} ${isChildRow ? "bg-black/[0.02]" : ""}`;
   };
 
   // Shared props for all sub-tables
@@ -158,7 +158,7 @@ export default function CashflowDataTable({
     <div className="relative w-full">
       {showExpandButton && (
         <button
-          className="absolute top-1.5 left-2 z-[2] flex items-center justify-center w-[22px] h-[22px] border-none rounded bg-transparent text-white/[0.22] cursor-pointer transition-[color,background] duration-150 hover:bg-accent/[0.08] hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+          className="absolute top-1.5 left-2 z-[2] flex items-center justify-center w-[22px] h-[22px] border-none rounded bg-transparent text-white/[0.22] cursor-pointer transition-[color,background] duration-150 hover:bg-brand/[0.08] hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           onClick={() => {
             if (expandedMilestones.size > 0) {
               setExpandedMilestones(new Set());

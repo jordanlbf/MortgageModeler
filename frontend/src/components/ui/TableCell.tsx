@@ -20,7 +20,7 @@ export default function TableCell({
 }: TableCellProps) {
   const toneClass =
     tone === "emphasis"
-      ? "text-[var(--color-foreground)]"
+      ? "text-[var(--color-fg-primary)]"
       : "text-[var(--color-fg-table)]";
   const animClass = animated ? "animate-col-fade-in" : "";
 

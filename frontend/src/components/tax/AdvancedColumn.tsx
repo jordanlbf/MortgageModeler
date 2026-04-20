@@ -256,7 +256,7 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
                 <span
                   className="text-[12px] font-semibold tracking-[0.04em]"
                   style={{
-                    color: isActive ? "var(--color-background)" : mix(s.color, 55),
+                    color: isActive ? "var(--color-surface-app)" : mix(s.color, 55),
                   }}
                 >
                   {s.shortTitle}
@@ -265,7 +265,7 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
                   className="mt-[2px] text-[17px] font-semibold tabular-nums"
                   style={{
                     color: isActive
-                      ? "var(--color-background)"
+                      ? "var(--color-surface-app)"
                       : agg.hasValues
                         ? mix(s.color, 50)
                         : "rgba(244,244,245,0.20)",

@@ -8,10 +8,10 @@ export const growthPct = (current: number, base: number) => base === 0 ? 0 : (sa
 
 /** Pick YoY badge class: neutral for zero, otherwise positive/negative. */
 export const yoyClass = (value: number, positiveWhen: "positive" | "negative" = "positive") =>
-  value === 0 ? "bg-white/10 text-faint"
+  value === 0 ? "bg-white/10 text-fg-tertiary"
     : positiveWhen === "positive"
-      ? (value > 0 ? "bg-accent/10 text-positive" : "bg-red-400/10 text-negative")
-      : (value < 0 ? "bg-accent/10 text-positive" : "bg-red-400/10 text-negative");
+      ? (value > 0 ? "bg-brand/10 text-data-positive" : "bg-red-400/10 text-data-negative")
+      : (value < 0 ? "bg-brand/10 text-data-positive" : "bg-red-400/10 text-data-negative");
 
 /** Format a YoY badge string. */
 export const fmtYoY = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
@@ -35,10 +35,10 @@ export const formatCompactSigned = (v: number): string => {
 
 /** Determine value styling tier: result (teal), outflow (red), or neutral */
 export const getValueClass = (value: number, isResult = false, isOutflow = false, isTaxSaved = false) => {
-  if (isResult) return value < 0 ? "text-negative font-bold" : "text-accent font-bold";
-  if (isTaxSaved && value > 0) return "text-accent font-bold";
-  if (isOutflow) return "text-negative";
-  return "text-foreground";
+  if (isResult) return value < 0 ? "text-data-negative font-bold" : "text-brand font-bold";
+  if (isTaxSaved && value > 0) return "text-brand font-bold";
+  if (isOutflow) return "text-data-negative";
+  return "text-fg-primary";
 };
 
 /** LVR conditional styling */

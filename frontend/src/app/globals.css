@@ -240,13 +240,13 @@
 }
 
 body {
-  background: var(--color-background);
-  color: var(--color-foreground);
+  background: var(--color-surface-app);
+  color: var(--color-fg-primary);
 }
 
 ::selection {
   background: rgba(45, 212, 191, 0.25);
-  color: var(--color-foreground);
+  color: var(--color-fg-primary);
 }
 
 /* ── Cashflow table: column group zones ── */
@@ -308,9 +308,9 @@ thead .cf-zone,
   height: 44px;
   padding: 0 16px;
   border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 3%, transparent);
-  color: var(--color-foreground);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 12%, transparent);
+  background: color-mix(in srgb, var(--color-brand) 3%, transparent);
+  color: var(--color-fg-primary);
   font-size: 15px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -319,16 +319,16 @@ thead .cf-zone,
   width: 100%;
 }
 .form-input:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 20%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand) 20%, transparent);
+  background: color-mix(in srgb, var(--color-brand) 5%, transparent);
 }
 .form-input:focus {
-  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
+  background: color-mix(in srgb, var(--color-brand) 5%, transparent);
   box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 .form-input::placeholder {
-  color: color-mix(in srgb, var(--color-subtle) 40%, transparent);
+  color: color-mix(in srgb, var(--color-fg-secondary) 40%, transparent);
   font-weight: 400;
 }
 
@@ -336,9 +336,9 @@ thead .cf-zone,
   height: 44px;
   padding: 0 32px 0 16px;
   border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 3%, transparent);
-  color: var(--color-foreground);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 12%, transparent);
+  background: color-mix(in srgb, var(--color-brand) 3%, transparent);
+  color: var(--color-fg-primary);
   font-size: 15px;
   font-weight: 500;
   outline: none;
@@ -351,16 +351,16 @@ thead .cf-zone,
   width: 100%;
 }
 .form-select:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 20%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand) 20%, transparent);
+  background: color-mix(in srgb, var(--color-brand) 5%, transparent);
 }
 .form-select:focus {
-  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
   box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 .form-select option {
-  background: var(--color-background);
-  color: var(--color-foreground);
+  background: var(--color-surface-app);
+  color: var(--color-fg-primary);
 }
 
 /* ── Entrance animation ── */

@@ -32,7 +32,7 @@ export default function EquityTable({
             <tr className="h-7 border-b-0">
               <th className="h-7 box-border px-3 text-center align-bottom" colSpan={2} />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-accent/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={isGroupExpanded("property") ? 7 : 1}
                 onClick={() => toggleGroup("property")}
               >
@@ -68,10 +68,10 @@ export default function EquityTable({
                 <tr key={y.year} className={getRowClass(y.year, isMilestone)} {...getRowHandlers(y.year, isMilestone)}>
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td><td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07]" />
                   {isGroupExpanded("property") && <TableCell>+{formatDollarsSigned(Math.round(totalGrowth))}</TableCell>}
-                  {isGroupExpanded("property") && <TableCell style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{totalGrowthPct}%</TableCell>}
+                  {isGroupExpanded("property") && <TableCell style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-fg-tertiary)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-data-positive)" : "var(--color-data-negative)" }}>{totalGrowthPct}%</TableCell>}
                   {isGroupExpanded("property") && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-col-fade-in" />}
                   {isGroupExpanded("property") && <TableCell>+{formatDollarsSigned(Math.round(yoyGrowth))}</TableCell>}
-                  {isGroupExpanded("property") && <TableCell style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)" }}>{yoyGrowthPct}%</TableCell>}
+                  {isGroupExpanded("property") && <TableCell style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-fg-tertiary)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-data-positive)" : "var(--color-data-negative)" }}>{yoyGrowthPct}%</TableCell>}
                   {isGroupExpanded("property") && <td className="w-0 max-w-0 p-0 border-l border-l-white/[0.1] border-b border-b-white/[0.07] animate-col-fade-in" />}
                   <TableCell animated={false} tone="emphasis" className="pr-5 text-sm" style={{ fontWeight: 700 }}>{formatDollarsSigned(Math.round(y.propertyValue))}</TableCell>
                 </tr>
@@ -152,7 +152,7 @@ export default function EquityTable({
             <tr className="h-7 border-b-0" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-7 box-border px-3 text-center align-bottom" />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-accent cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={propExpanded ? 5 : 1}
                 onClick={() => toggleGroup("property")}
               >
@@ -175,18 +175,18 @@ export default function EquityTable({
             </tr>
             {(propExpanded || posExpanded) && (
             <tr className="h-14 border-b border-white/[0.10]" style={{ background: "var(--color-surface-raised)" }}>
-              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap w-24 text-left px-2.5" />
+              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap w-24 text-left px-2.5" />
               {/* Property detail columns */}
-              {propExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Cumulative Growth $">total $</th>}
-              {propExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Cumulative Growth %">total %</th>}
-              {propExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Year-on-Year Growth $">yoy $</th>}
-              {propExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Year-on-Year Growth %">yoy %</th>}
+              {propExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Cumulative Growth $">total $</th>}
+              {propExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Cumulative Growth %">total %</th>}
+              {propExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Year-on-Year Growth $">yoy $</th>}
+              {propExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" data-tip="Year-on-Year Growth %">yoy %</th>}
               <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-white/85 font-bold text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100" data-tip="Current Property Value">value</th>
               {/* Position detail columns */}
-              {posExpanded && <th className="h-14 box-border align-middle pl-6 pr-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Outstanding Loan Balance">loan</th>}
-              {posExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Loan-to-Value Ratio">lvr</th>}
-              {posExpanded && showOffset && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Property Equity">prop eq.</th>}
-              {posExpanded && showOffset && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-subtle text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Offset Balance">offset</th>}
+              {posExpanded && <th className="h-14 box-border align-middle pl-6 pr-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Outstanding Loan Balance">loan</th>}
+              {posExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Loan-to-Value Ratio">lvr</th>}
+              {posExpanded && showOffset && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Property Equity">prop eq.</th>}
+              {posExpanded && showOffset && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100 animate-col-fade-in" style={{ background: "var(--color-cf-wash-strong)" }} data-tip="Offset Balance">offset</th>}
               <th className={`h-14 box-border align-middle ${!posExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-[11px] tracking-[0.02em] capitalize text-white/85 font-bold text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100`} style={{ background: "var(--color-cf-wash-strong)" }} data-tip={showOffset ? "Property Equity + Offset" : "Property − Loan"}>net equity</th>
             </tr>
             )}
@@ -208,11 +208,11 @@ export default function EquityTable({
                   <td className="h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] w-24 text-left px-2.5">{formatYearCell(y.year, i, isMilestone)}</td>
                   {/* Property detail cells */}
                   {propExpanded && <TableCell tone="emphasis">+{formatDollarsSigned(Math.round(totalGrowth))}</TableCell>}
-                  {propExpanded && <TableCell style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)", opacity: parseFloat(totalGrowthPct) > 0 ? 0.8 : 1 }}>{totalGrowthPct}%</TableCell>}
+                  {propExpanded && <TableCell style={{ color: parseFloat(totalGrowthPct) === 0 ? "var(--color-fg-tertiary)" : parseFloat(totalGrowthPct) > 0 ? "var(--color-data-positive)" : "var(--color-data-negative)", opacity: parseFloat(totalGrowthPct) > 0 ? 0.8 : 1 }}>{totalGrowthPct}%</TableCell>}
                   {propExpanded && <TableCell tone="emphasis">+{formatDollarsSigned(Math.round(yoyGrowth))}</TableCell>}
-                  {propExpanded && <TableCell style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-faint)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-positive)" : "var(--color-negative)", opacity: parseFloat(yoyGrowthPct) > 0 ? 0.8 : 1 }}>{yoyGrowthPct}%</TableCell>}
+                  {propExpanded && <TableCell style={{ color: parseFloat(yoyGrowthPct) === 0 ? "var(--color-fg-tertiary)" : parseFloat(yoyGrowthPct) > 0 ? "var(--color-data-positive)" : "var(--color-data-negative)", opacity: parseFloat(yoyGrowthPct) > 0 ? 0.8 : 1 }}>{yoyGrowthPct}%</TableCell>}
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
-                    <span className="font-semibold" style={{ color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(y.propertyValue))}</span>
+                    <span className="font-semibold" style={{ color: "var(--color-fg-primary)" }}>{formatDollarsSigned(Math.round(y.propertyValue))}</span>
                     {isCollapsed && (
                       <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(parseFloat(yoyGrowthPct))}`}>{fmtYoY(parseFloat(yoyGrowthPct))}</span>
                     )}
@@ -220,10 +220,10 @@ export default function EquityTable({
                   {/* Position detail cells */}
                   {posExpanded && <td className={`h-[52px] box-border pl-6 pr-3 text-right align-middle border-b border-b-white/[0.07] cf-zone animate-col-fade-in ${getValueClass(-y.loanBalance, false, true)}`}>{formatDollarsSigned(Math.round(-y.loanBalance))}</td>}
                   {posExpanded && <TableCell className={`cf-zone ${getLvrClass(lvr)}`}>{lvr.toFixed(1)}%</TableCell>}
-                  {posExpanded && showOffset && <TableCell className="cf-zone" style={{ fontWeight: 600, color: "var(--color-foreground)" }}>{formatDollarsSigned(Math.round(propertyEquity))}</TableCell>}
+                  {posExpanded && showOffset && <TableCell className="cf-zone" style={{ fontWeight: 600, color: "var(--color-fg-primary)" }}>{formatDollarsSigned(Math.round(propertyEquity))}</TableCell>}
                   {posExpanded && showOffset && <TableCell tone="emphasis" className="cf-zone">{formatDollarsSigned(Math.round(y.offsetBalanceAtYear))}</TableCell>}
                   <td className={`h-[52px] box-border ${!posExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle border-b border-b-white/[0.07] cf-zone ${isCollapsed ? "text-[15px] font-bold tracking-tight" : "text-[13px]"}`}>
-                    <span className="font-bold text-positive">{formatDollarsSigned(Math.round(y.netEquity))}</span>
+                    <span className="font-bold text-data-positive">{formatDollarsSigned(Math.round(y.netEquity))}</span>
                     {isCollapsed && (() => {
                       const prevEquity = i > 0 ? yearData[i-1].netEquity : y.netEquity;
                       const eqYoY = yoyPct(y.netEquity, prevEquity);
@@ -236,29 +236,29 @@ export default function EquityTable({
             {/* Summary row — final values at end of period */}
             <tr className="row-summary">
               <td className="box-border align-middle pl-[18px] text-left" style={summaryBorder}>
-                <span className="text-[10.5px] tracking-[0.14em] uppercase text-subtle font-medium">{yearData.length}-yr end</span>
+                <span className="text-[10.5px] tracking-[0.14em] uppercase text-fg-secondary font-medium">{yearData.length}-yr end</span>
               </td>
               {propExpanded && (
-                <td className="box-border px-3 text-right align-middle text-foreground font-medium text-[15px]" style={summaryBorder}>
+                <td className="box-border px-3 text-right align-middle text-fg-primary font-medium text-[15px]" style={summaryBorder}>
                   +{formatDollarsSigned(Math.round(finalGrowth))}
                 </td>
               )}
               {propExpanded && (
-                <td className="box-border px-3 text-right align-middle font-medium text-[15px]" style={{ ...summaryBorder, color: finalGrowthPct === 0 ? "var(--color-faint)" : finalGrowthPct > 0 ? "var(--color-positive)" : "var(--color-negative)", opacity: finalGrowthPct > 0 ? 0.8 : 1 }}>
+                <td className="box-border px-3 text-right align-middle font-medium text-[15px]" style={{ ...summaryBorder, color: finalGrowthPct === 0 ? "var(--color-fg-tertiary)" : finalGrowthPct > 0 ? "var(--color-data-positive)" : "var(--color-data-negative)", opacity: finalGrowthPct > 0 ? 0.8 : 1 }}>
                   {finalGrowthPct.toFixed(1)}%
                 </td>
               )}
               {propExpanded && (
-                <td className="box-border px-3 text-right align-middle text-faint text-[15px]" style={summaryBorder}>—</td>
+                <td className="box-border px-3 text-right align-middle text-fg-tertiary text-[15px]" style={summaryBorder}>—</td>
               )}
               {propExpanded && (
-                <td className="box-border px-3 text-right align-middle text-faint text-[15px]" style={summaryBorder}>—</td>
+                <td className="box-border px-3 text-right align-middle text-fg-tertiary text-[15px]" style={summaryBorder}>—</td>
               )}
               <td className="box-border px-3 text-right align-middle text-[15px]" style={summaryBorder}>
-                <span className="font-semibold text-foreground">{formatDollarsSigned(Math.round(finalValue))}</span>
+                <span className="font-semibold text-fg-primary">{formatDollarsSigned(Math.round(finalValue))}</span>
               </td>
               {posExpanded && (
-                <td className="box-border pl-6 pr-3 text-right align-middle text-negative font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
+                <td className="box-border pl-6 pr-3 text-right align-middle text-data-negative font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
                   {formatDollarsSigned(Math.round(-finalLoan))}
                 </td>
               )}
@@ -268,17 +268,17 @@ export default function EquityTable({
                 </td>
               )}
               {posExpanded && showOffset && (
-                <td className="box-border px-3 text-right align-middle text-foreground font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
+                <td className="box-border px-3 text-right align-middle text-fg-primary font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
                   {formatDollarsSigned(Math.round(finalPropEq))}
                 </td>
               )}
               {posExpanded && showOffset && (
-                <td className="box-border px-3 text-right align-middle text-foreground font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
+                <td className="box-border px-3 text-right align-middle text-fg-primary font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
                   {formatDollarsSigned(Math.round(finalOffset))}
                 </td>
               )}
               <td className={`box-border ${!posExpanded ? "pl-6 pr-5" : "px-3 pr-5"} text-right align-middle text-[15px]`} style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
-                <span className="font-bold text-positive">{formatDollarsSigned(Math.round(finalNetEquity))}</span>
+                <span className="font-bold text-data-positive">{formatDollarsSigned(Math.round(finalNetEquity))}</span>
               </td>
             </tr>
           </tbody>
