@@ -192,7 +192,7 @@ export default function PurchaseCostsView() {
         </div>
 
         {/* Property details card */}
-        <div className={`w-full max-w-[720px] rounded-2xl bg-surface-raised border border-brand/15 px-9 py-8 ${CARD_SHADOW} animate-fade-up [animation-delay:0.1s]`}>
+        <div className={`w-full max-w-[720px] rounded-2xl bg-surface-raised px-9 py-8 ${CARD_SHADOW} animate-fade-up [animation-delay:0.1s]`}>
           <div className="flex gap-6 items-end max-sm:flex-wrap">
             <div className="flex flex-col gap-2.5 flex-[0_0_100px] min-w-[100px]">
               <label className="text-[11px] font-semibold uppercase tracking-widest text-fg-primary/50 whitespace-nowrap">State</label>
@@ -268,7 +268,7 @@ export default function PurchaseCostsView() {
             </div>
 
             {/* Cost breakdown */}
-            <div className={`w-full max-w-[720px] rounded-2xl bg-surface-raised border border-brand/15 py-6 ${CARD_SHADOW} animate-fade-up [animation-delay:0.3s]`}>
+            <div className={`w-full max-w-[720px] rounded-2xl bg-surface-raised py-6 ${CARD_SHADOW} animate-fade-up [animation-delay:0.3s]`}>
               <div className="px-7 pb-4">
                 <div className="text-[11px] font-semibold uppercase tracking-widest text-brand/60 text-left">
                   Cost Breakdown
@@ -293,7 +293,7 @@ export default function PurchaseCostsView() {
             <div className="text-[11px] font-semibold uppercase tracking-widest text-brand/60 text-center">
               Loan Summary
             </div>
-            <div className="w-full max-w-[720px] flex justify-center gap-16 py-5 rounded-2xl bg-brand/[0.04] border border-brand/12 animate-fade-up [animation-delay:0.4s] max-sm:gap-8">
+            <div className="w-full max-w-[720px] flex justify-center gap-16 py-5 rounded-2xl bg-brand/[0.04] animate-fade-up [animation-delay:0.4s] max-sm:gap-8">
               <div className="text-center">
                 <div className="text-[22px] font-semibold text-fg-primary tabular-nums">{formatDollars(data.deposit_amount)}</div>
                 <div className="text-[12px] text-fg-tertiary font-medium uppercase tracking-widest mt-0.5">Deposit</div>

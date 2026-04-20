@@ -14,7 +14,6 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
       className={`glass-card rounded-2xl backdrop-blur-md ${className}`}
       style={{
         background: t.surface.raised,
-        border: `1px solid ${t.border.default}`,
         ...style,
       }}
     >

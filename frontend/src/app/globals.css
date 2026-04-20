@@ -26,7 +26,7 @@
   /* ───────────────────────────────────────────────────────────────── */
   --color-surface-page:     #08090a;      /* outermost page background */
   --color-surface-app:      #111215;      /* main app content surface */
-  --color-surface-raised:   #1a1c20;      /* cards, table headers */
+  --color-surface-raised:   #1c1e23;      /* cards, table headers */
   --color-surface-hover:    #22252a;      /* interactive hover feedback */
   --color-surface-active:   #2a2d33;      /* selected rows, pressed */
   --color-surface-overlay:  rgba(8, 9, 10, 0.72);  /* modal scrim */
@@ -75,9 +75,9 @@
   /* ───────────────────────────────────────────────────────────────── */
   /* Borders                                                            */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-border-subtle:  rgba(174, 196, 191, 0.08);   /* default */
-  --color-border-default: rgba(174, 196, 191, 0.14);   /* cards, tables */
-  --color-border-strong:  rgba(174, 196, 191, 0.22);   /* hover, focus */
+  --color-border-subtle:  rgba(174, 196, 191, 0.06);   /* default */
+  --color-border-default: rgba(174, 196, 191, 0.10);   /* cards, tables */
+  --color-border-strong:  rgba(174, 196, 191, 0.16);   /* hover, focus */
   --color-border-brand:   var(--color-brand-border);
 
   /* ───────────────────────────────────────────────────────────────── */
@@ -164,7 +164,7 @@
     /* Surface ramp — cooler tones than Graphite */
     --color-surface-page:    #070a0f;
     --color-surface-app:     #0f1319;
-    --color-surface-raised:  #171c24;
+    --color-surface-raised:  #1a1f28;
     --color-surface-hover:   #1f2530;
     --color-surface-active:  #272e3a;
 

@@ -39,7 +39,7 @@ export default function TaxStep({ s }: Props) {
       )}
 
       {s.isInvestment && s.depreciationMode === "estimate" && (
-        <div className="flex flex-col gap-1 py-3 px-4 bg-brand/[0.05] border border-brand/[0.12] rounded-lg">
+        <div className="flex flex-col gap-1 py-3 px-4 bg-brand/[0.05] rounded-lg">
           <span className="text-base font-semibold text-brand tabular-nums">~{formatDollarsSigned(estAnnual)}/yr</span>
           <span className="text-xs text-fg-tertiary">estimated from {formatDollarsSigned(propPrice)} property</span>
         </div>

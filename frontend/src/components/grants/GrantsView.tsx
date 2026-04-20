@@ -169,7 +169,7 @@ export default function GrantsView() {
         {/* Hero + Filter bar */}
         <div className="flex flex-col items-center mb-5">
           {/* Filter bar */}
-          <div className="flex items-center min-h-[80px] px-6 py-3.5 rounded-[14px] bg-surface-raised border border-default border-t-2 border-t-accent-border shadow-[0_1px_4px_rgba(0,0,0,0.20)] shrink-0 w-full overflow-visible animate-fade-up [animation-delay:0.1s]">
+          <div className="flex items-center min-h-[80px] px-6 py-3.5 rounded-[14px] bg-surface-raised border-t-2 border-t-accent-border shadow-[0_1px_4px_rgba(0,0,0,0.20)] shrink-0 w-full overflow-visible animate-fade-up [animation-delay:0.1s]">
             <BarInput label="Purchase Price" value={priceStr} placeholder="$0" onChange={handleCurrencyInput(setPriceStr)} />
             <Divider />
             <BarInput label="Annual Income" value={incomeStr} placeholder="$0" onChange={handleCurrencyInput(setIncomeStr)} />

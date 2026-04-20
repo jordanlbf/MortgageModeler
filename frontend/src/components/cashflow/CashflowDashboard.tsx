@@ -101,7 +101,7 @@ export default function CashflowDashboard({
       </div>
 
       {/* ── KPI strip ── */}
-      <div className="bg-surface-raised border border-default rounded-xl overflow-hidden">
+      <div className="bg-surface-raised rounded-xl overflow-hidden">
         <CashflowKpiStrip
           viewMode={vm}
           yearData={s.yearData}
@@ -117,7 +117,7 @@ export default function CashflowDashboard({
       </div>
 
       {/* ── Table ── */}
-      <div className="border border-default rounded-xl overflow-hidden">
+      <div className="bg-surface-raised rounded-xl overflow-hidden">
         <CashflowDataTable
           yearData={s.yearData}
           viewMode={vm}

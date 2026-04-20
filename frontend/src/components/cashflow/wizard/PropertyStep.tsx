@@ -26,7 +26,7 @@ export default function PropertyStep({ s }: Props) {
             <input type="text" className={INPUT_CLS} value={s.depositAmount} {...currencyInput(s.setDepositAmount)} />
           </div>
         </div>
-        <div className="flex items-stretch bg-brand/[0.04] border border-brand/[0.12] rounded-[14px] overflow-hidden">
+        <div className="flex items-stretch bg-brand/[0.04] rounded-[14px] overflow-hidden">
           <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
             <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-brand/50">Loan amount</span>
             <span className="text-lg font-semibold text-brand tabular-nums tracking-tight">{formatDollarsSigned(loanAmount)}</span>
@@ -73,7 +73,7 @@ export default function PropertyStep({ s }: Props) {
         <label className="text-xs font-medium text-fg-secondary">Year purchased</label>
         <input type="text" className={INPUT_CLS} value={s.purchaseYear} onChange={(e) => s.setPurchaseYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="2021" />
       </div>
-      <div className="flex items-stretch bg-brand/[0.04] border border-brand/[0.12] rounded-[14px] overflow-hidden">
+      <div className="flex items-stretch bg-brand/[0.04] rounded-[14px] overflow-hidden">
         <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
           <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-brand/50">Equity</span>
           <span className="text-lg font-semibold text-brand tabular-nums tracking-tight">{formatDollarsSigned(equity)}</span>
