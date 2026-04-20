@@ -6,7 +6,7 @@ import { useEditableInput } from "@/hooks/useEditableInput";
 import GlassCard from "@/components/ui/GlassCard";
 import Toggle from "@/components/ui/Toggle";
 
-const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated };
+const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.brand.border, background: t.surface.raised };
 
 // ── Field definitions ────────────────────────────
 
@@ -235,7 +235,7 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
   return (
     <GlassCard className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar overflow-y-auto px-8 py-6">
-        <span className="mb-8 block text-center text-[20px] font-semibold uppercase tracking-widest" style={{ color: t.accent }}>
+        <span className="mb-8 block text-center text-[20px] font-semibold uppercase tracking-widest" style={{ color: t.brand.default }}>
           Income &amp; Deductions
         </span>
 

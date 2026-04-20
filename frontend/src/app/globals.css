@@ -144,29 +144,9 @@
   --layout-header-actions-reserve:   64px;
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Deprecation aliases — remove once all components migrated          */
-  /* Existing v1 token names map to v2 equivalents so the build stays   */
-  /* green during the incremental migration.                            */
+  /* Scrollbar — webkit scrollbar thumb                                 */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-accent:           var(--color-brand);
-  --color-accent-contrast:  var(--color-brand-contrast);
-  --color-accent-border:    var(--color-brand-border);
-  --color-background:       var(--color-surface-app);
-  --color-foreground:       var(--color-fg-primary);
-  --color-subtle:           var(--color-fg-secondary);
-  --color-faint:            var(--color-fg-tertiary);
-  --color-fg-table:         var(--color-data-primary);
-  --color-positive:         var(--color-data-positive);
-  --color-negative:         var(--color-data-negative);
-  --color-warning:          var(--color-data-warning);
-  --color-border:           var(--color-border-subtle);
-  --color-border-hover:     var(--color-border-strong);
-  --color-card:             var(--color-surface-raised);
-  --color-card-elevated:    var(--color-surface-raised);
-  --color-control:          rgba(24, 24, 27, 0.60);
-  --color-surface-subtle:   var(--color-border-subtle);
-  --color-scrollbar:        rgba(174, 196, 191, 0.12);
-  --color-slider-thumb:     var(--color-surface-raised);
+  --color-scrollbar: rgba(174, 196, 191, 0.12);
 }
 
 
@@ -236,6 +216,9 @@
     --color-cf-wash:          rgba(56, 189, 248, 0.05);
     --color-cf-wash-hover:    rgba(56, 189, 248, 0.07);
     --color-cf-wash-strong:   rgba(56, 189, 248, 0.08);
+
+    /* Scrollbar */
+    --color-scrollbar: rgba(168, 192, 212, 0.12);
   }
 }
 

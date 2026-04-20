@@ -17,7 +17,7 @@ interface SliderProps {
 }
 
 export default function Slider({
-  label, value, display, min, max, step, onChange, editable = false, parseDisplay, accent = t.accent, variant = "default",
+  label, value, display, min, max, step, onChange, editable = false, parseDisplay, accent = t.brand.default, variant = "default",
 }: SliderProps) {
   const pct = ((value - min) / (max - min)) * 100;
   const compact = variant === "compact";
@@ -133,7 +133,7 @@ export default function Slider({
         />
         <div
           className={`pointer-events-none absolute h-[10px] w-[10px] -translate-x-1/2 rounded-full border-[2px]${compact ? " transition-all duration-500" : ""}`}
-          style={{ left: `${pct}%`, borderColor: mix(accent, 80), background: t.bg.sliderThumb }}
+          style={{ left: `${pct}%`, borderColor: mix(accent, 80), background: t.surface.raised }}
         />
       </div>
     </div>

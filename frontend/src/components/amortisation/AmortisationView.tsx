@@ -125,10 +125,10 @@ export default function AmortisationView() {
                   onClick={() => setView("chart")}
                   className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
                   style={view === "chart" ? {
-                    background: mix(t.accent, 12),
-                    color: t.accent,
-                    border: `1px solid ${mix(t.accent, 40)}`,
-                    boxShadow: `0 0 12px ${mix(t.accent, 15)}`,
+                    background: mix(t.brand.default, 12),
+                    color: t.brand.default,
+                    border: `1px solid ${mix(t.brand.default, 40)}`,
+                    boxShadow: `0 0 12px ${mix(t.brand.default, 15)}`,
                   } : {
                     background: "rgba(255,255,255,0.04)",
                     color: "rgba(255,255,255,0.35)",
@@ -146,10 +146,10 @@ export default function AmortisationView() {
                   onClick={() => setView("table")}
                   className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
                   style={view === "table" ? {
-                    background: mix(t.accent, 12),
-                    color: t.accent,
-                    border: `1px solid ${mix(t.accent, 40)}`,
-                    boxShadow: `0 0 12px ${mix(t.accent, 15)}`,
+                    background: mix(t.brand.default, 12),
+                    color: t.brand.default,
+                    border: `1px solid ${mix(t.brand.default, 40)}`,
+                    boxShadow: `0 0 12px ${mix(t.brand.default, 15)}`,
                   } : {
                     background: "rgba(255,255,255,0.04)",
                     color: "rgba(255,255,255,0.35)",

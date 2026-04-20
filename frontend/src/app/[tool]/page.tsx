@@ -23,7 +23,7 @@ export default async function ToolPlaceholder({ params }: Props) {
         className="rounded-[14px] backdrop-blur-md text-center"
         style={{
           padding: "40px 48px",
-          background: t.bg.card,
+          background: t.surface.raised,
           border: `1px solid ${t.border.default}`,
           boxShadow: "0 1px 4px rgba(0,0,0,0.20), 0 0 0 0.5px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.02)",
           maxWidth: 360,

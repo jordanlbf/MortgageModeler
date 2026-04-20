@@ -21,12 +21,13 @@ A sharp, dark instrument for modelling property decisions with precision.
 
 ### Backgrounds
 - Page: warm dark grey (#111215). Not pure black.
-- Cards: 1-2 steps lighter (~#1a1e23 to #2a2a2e at low opacity). Boundary from subtle border (1px, low-opacity), not dramatic shadows.
+- Cards: 1-2 steps lighter. Boundary from subtle border (1px, low-opacity), not dramatic shadows.
 
-### Accent
-- Teal (#2dd4bf) used surgically: hero numbers, active toggle states, section labels, active pills.
-- Never for large fills, card backgrounds, or decorative areas.
-- Arctic theme (#38bdf8) follows the same restraint — same placements, different hue.
+### Brand
+- Teal (`--color-brand`, #2dd4bf) is the single identity colour. Used surgically: hero numbers, active toggle states, section labels, active pills, selection.
+- **Brand is distinct from `data-positive`.** `--color-brand` owns identity / selection / "this is us"; `--color-data-positive` owns "good / up" semantics. They are chromatically distant so the eye can separate them at a glance.
+- Never used for large fills, card backgrounds, decorative areas, or semantic meaning (positive/negative/warning).
+- Arctic theme (`--color-brand` = #38bdf8) follows the same restraint — same placements, different hue.
 
 ### Typography
 - Sora — geometric, modern, good tabular-nums.
@@ -41,12 +42,31 @@ Elevation is communicated through progressively lighter surfaces, never shadows.
 | Token | Hex | Usage |
 |---|---|---|
 | `--color-surface-page` | `#08090a` | Outermost page background |
-| `--color-background` | `#111215` | Card / main app surface (unchanged) |
-| `--color-surface-raised` | `#17181c` | Elevated zones: table headers, card headers |
-| `--color-surface-hover` | `#1a1b1e` | Interactive row hover feedback |
-| `--color-surface-active` | `#1c1d21` | Summary rows, anchors, pressed states |
+| `--color-surface-app` | `#111215` | Main app content surface |
+| `--color-surface-raised` | `#1a1c20` | Cards, table headers, summary-row top band |
+| `--color-surface-hover` | `#22252a` | Interactive row hover feedback |
+| `--color-surface-active` | `#2a2d33` | Selected rows, anchors, pressed states |
+| `--color-surface-overlay` | `rgba(8,9,10,0.72)` | Modal / dialog scrim |
 
-Each step is ~4–6 hex points lighter. This follows the approach used by Linear and Stripe Dashboard.
+Each step is ~6–10 hex points lighter. This follows the approach used by Linear and Stripe Dashboard.
+
+### Data vs status semantic colours
+
+Meaning colours come in two flavours and the distinction is structural:
+
+- **Data semantics** (`--color-data-positive/-negative/-warning`) sit on-screen indefinitely — in tables, in chart axes, on KPI tiles. They are calm and desaturated (~60-70% of Tailwind default saturation) so they don't vibrate on dark surfaces or pull the eye away from the numbers they're colouring.
+- **Status semantics** (`--color-status-success/-error/-warning/-info`) flash briefly — toasts, validation messages, inline banners. They're slightly brighter than their data counterparts because they need to catch attention for a moment, then disappear.
+
+Kept as separate token sets so the two can diverge if a future design iteration demands it.
+
+### Tokens not patterns
+
+Components reach for tokens, never for raw hex or opacity-based washes on the brand colour. Two corollaries:
+
+- No `color-mix(… var(--color-brand) N%, transparent)` in component files for state backgrounds. Use `--color-brand-subtle` or `--color-brand-subtle-hover` — pre-mixed on the app surface, so the apparent colour doesn't drift across elevation tiers.
+- No inline `box-shadow: 0 4px 16px rgba(0,0,0,…)`. Use `--shadow-flat`, `--shadow-raised`, or `--shadow-float`.
+
+The only permitted raw colours in component files are feature-scoped palettes in `src/lib/theme.ts` (`SERIES`, `CF_COLORS`, `TAX_COLORS`, etc.), which are domain vocabulary rather than UI tokens.
 
 ### Cards
 - Barely raised. Transparent overlay on page, not opaque surface.
@@ -59,15 +79,16 @@ Each step is ~4–6 hex points lighter. This follows the approach used by Linear
 - Adjacent values differ by ~25% minimum.
 
 ### Interaction
-- Hover: translateY -1 to -2px with deeper shadow.
-- Active toggles: accent glow (low-opacity box-shadow).
+- Hover: translateY -1 to -2px with deeper shadow (`--shadow-float`).
+- Active toggles: brand glow (low-opacity box-shadow).
 - Transitions: `duration-150` to `duration-200` ease for colour/opacity. `duration-300` cubic-bezier for transform.
-- Focus rings: ring-2 to ring-3, accent at 10-25% opacity.
+- Focus rings: `box-shadow: 0 0 0 3px var(--color-focus-ring)`. Visible on every focusable element.
 
 ### Shadows
-- Rest: `shadow-sm` — `0 1px 4px rgba(0,0,0,0.20)`.
-- Hover: `shadow-md` — `0 4px 16px rgba(0,0,0,0.35)`.
-- No dramatic drop shadows. Mostly flat, depth from layering.
+- Rest: `--shadow-raised`.
+- Hover / lifted: `--shadow-float`.
+- Ultra-flat outline: `--shadow-flat`.
+- No ad-hoc `box-shadow: 0 Npx Mpx rgba(...)` in components. Depth comes from the three named tokens.
 
 ---
 
@@ -121,41 +142,38 @@ Use Tailwind's native spacing directly. No custom tokens needed.
 
 ### Shadows
 
-Defined as CSS custom properties (Tailwind's defaults don't match our dark theme needs).
+Defined as CSS custom properties. Three named tokens — components never use raw `box-shadow` values.
 
 | Token | Value | Use |
 |---|---|---|
-| Card rest | `0 1px 4px rgba(0,0,0,0.20)` | Default card shadow |
-| Card hover | `0 4px 16px rgba(0,0,0,0.35)` | Hovered/lifted card |
-| Glow (accent) | `0 0 8px color-mix(in srgb, var(--color-accent) 40%, transparent)` | Active toggle thumb |
+| `--shadow-flat` | `0 0 0 0.5px rgba(255,255,255,0.02)` | Subtle outline on flat surfaces |
+| `--shadow-raised` | `0 1px 3px rgba(0,0,0,0.24), 0 0 0 0.5px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.02)` | Default card shadow |
+| `--shadow-float` | `0 8px 24px rgba(0,0,0,0.40), 0 0 0 0.5px rgba(174,196,191,0.08), inset 0 1px 0 rgba(255,255,255,0.03)` | Hover / lifted card |
 
 ### Colour Tokens
 
-Defined as CSS custom properties in `globals.css` via `@theme`. Two themes remap the same semantic tokens.
+Defined as CSS custom properties in `globals.css` via `@theme`. Two themes (Graphite Teal, Slate Arctic) remap the same role-based tokens. See [TOKENS.md](TOKENS.md) for the complete palette table.
 
-**Semantic tokens (used in code):**
+**Token categories:**
 
-| Token | Graphite Teal | Slate Arctic |
-|---|---|---|
-| `--color-background` | #111215 | #0e1117 |
-| `--color-foreground` | #f0fdfa | #f0f9ff |
-| `--color-accent` | #2dd4bf | #38bdf8 |
-| `--color-accent-contrast` | #18181b | #0c1825 |
-| `--color-accent-border` | rgba(45,212,191,0.35) | rgba(56,189,248,0.30) |
-| `--color-muted` | #f4f4f5 | *(shared)* |
-| `--color-subtle` | #a1a1aa | *(shared)* |
-| `--color-faint` | #71717a | *(shared)* |
-| `--color-card` | rgba(42,42,46,0.72) | *(shared)* |
-| `--color-card-elevated` | rgba(44,44,48,0.82) | *(shared)* |
-| `--color-border` | rgba(113,113,122,0.08) | *(shared)* |
+- **Brand** — single identity colour. `--color-brand` + subtle/hover/border variants.
+- **Surface ramp** — elevation via lightness, not shadow. Five tiers: page → app → raised → hover → active, plus overlay.
+- **Foreground ramp** — unified mint-tinted family: primary / secondary / tertiary / disabled.
+- **Data ink** — tabular numerics: primary / emphasis / muted.
+- **Data semantic** — tabular meaning: positive / negative / warning / neutral.
+- **Status semantic** — UI feedback: success / error / warning / info (+ pre-mixed `-bg` surfaces).
+- **Borders** — mint-tinted: subtle / default / strong / brand.
+- **Focus** — explicit `--color-focus-ring`.
+- **Elevation** — three named shadows.
 
-**Accent usage (surgical — same placements both themes):**
-- Hero numbers: `color: var(--color-accent)`
-- Section labels: `color-mix(in srgb, var(--color-accent) 60%, transparent)`
-- Active toggles: `background: color-mix(in srgb, var(--color-accent) 35%, transparent)`
-- Active pills: `background: color-mix(in srgb, var(--color-accent) 14%, transparent)`
-- Focus rings: `box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent)`
-- Card borders (accent-tinted): `border-color: color-mix(in srgb, var(--color-accent) 15%, transparent)`
+**Brand usage (surgical — same placements both themes):**
+
+- Hero numbers, section labels, selection, active tab indicators: `color: var(--color-brand)`.
+- Active toggle fills, brand wash backgrounds: `background: var(--color-brand-subtle)` or `var(--color-brand-subtle-hover)`.
+- Card borders (brand-accented): `border-color: var(--color-brand-border)`.
+- Focus rings: `box-shadow: 0 0 0 3px var(--color-focus-ring)`.
+
+Never use `color-mix(…, var(--color-brand) N%, transparent)` in components — reach for the pre-mixed tokens instead, so apparent colour stays consistent across elevation tiers.
 
 **Series colours (charts only):**
 

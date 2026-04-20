@@ -5,7 +5,6 @@
 //   import { t, SERIES, mix } from "@/lib/theme";
 //
 // Themeable values use CSS custom properties (defined in globals.css).
-// Tailwind classes use the same tokens: text-accent, bg-card, etc.
 // SERIES colors, chart chrome, and tooltip stay as hex (single-file usage).
 // ──────────────────────────────────────────────────────────────
 
@@ -14,47 +13,83 @@ export const mix = (color: string, pct: number) =>
   `color-mix(in srgb, ${color} ${pct}%, transparent)`;
 
 export const t = {
-  // ── Backgrounds ──────────────────────────────────
-  bg: {
-    page: "var(--color-surface-page)",
-    card: "var(--color-card)",
-    cardElevated: "var(--color-card-elevated)",
-    raised: "var(--color-surface-raised)",
-    hover: "var(--color-surface-hover)",
-    active: "var(--color-surface-active)",
-    control: "var(--color-control)",
-    sliderThumb: "var(--color-slider-thumb)",
+  brand: {
+    default:     "var(--color-brand)",
+    contrast:    "var(--color-brand-contrast)",
+    hover:       "var(--color-brand-hover)",
+    subtle:      "var(--color-brand-subtle)",
+    subtleHover: "var(--color-brand-subtle-hover)",
+    border:      "var(--color-brand-border)",
   },
 
-  // ── Text ──────────────────────────────────────────
-  fg: "var(--color-foreground)",
-  subtle: "var(--color-subtle)",
-  faint: "var(--color-faint)",
-  fgTable: "var(--color-fg-table)",
+  surface: {
+    page:    "var(--color-surface-page)",
+    app:     "var(--color-surface-app)",
+    raised:  "var(--color-surface-raised)",
+    hover:   "var(--color-surface-hover)",
+    active:  "var(--color-surface-active)",
+    overlay: "var(--color-surface-overlay)",
+  },
 
-  // ── Accent ───────────────────────────────────────
-  accent: "var(--color-accent)",
-  accentBorder: "var(--color-accent-border)",
+  fg: {
+    primary:   "var(--color-fg-primary)",
+    secondary: "var(--color-fg-secondary)",
+    tertiary:  "var(--color-fg-tertiary)",
+    disabled:  "var(--color-fg-disabled)",
+  },
 
-  // ── Borders ──────────────────────────────────────
+  data: {
+    primary:  "var(--color-data-primary)",
+    emphasis: "var(--color-data-emphasis)",
+    muted:    "var(--color-data-muted)",
+    positive: "var(--color-data-positive)",
+    negative: "var(--color-data-negative)",
+    warning:  "var(--color-data-warning)",
+    neutral:  "var(--color-data-neutral)",
+  },
+
+  status: {
+    success:   "var(--color-status-success)",
+    error:     "var(--color-status-error)",
+    warning:   "var(--color-status-warning)",
+    info:      "var(--color-status-info)",
+    successBg: "var(--color-status-success-bg)",
+    errorBg:   "var(--color-status-error-bg)",
+    warningBg: "var(--color-status-warning-bg)",
+  },
+
   border: {
-    default: "var(--color-border)",
-    hover: "var(--color-border-hover)",
+    subtle:  "var(--color-border-subtle)",
+    default: "var(--color-border-default)",
+    strong:  "var(--color-border-strong)",
+    brand:   "var(--color-border-brand)",
   },
 
-  // ── Chart chrome ─────────────────────────────────
+  focus: {
+    ring:       "var(--color-focus-ring)",
+    ringOffset: "var(--color-focus-ring-offset)",
+  },
+
+  elevation: {
+    flat:   "var(--shadow-flat)",
+    raised: "var(--shadow-raised)",
+    float:  "var(--shadow-float)",
+  },
+
   chart: {
-    gridH: "var(--color-chart-grid-h)",
-    gridV: "var(--color-chart-grid-v)",
-    axisTick: "var(--color-chart-axis)",
-    axisTickMuted: "var(--color-chart-axis-muted)",
-    axisLine: "var(--color-chart-axis-line)",
-    cursor: "var(--color-chart-cursor)",
-    legendInactive: "var(--color-chart-legend-inactive)",
+    gridH:             "var(--color-chart-grid-h)",
+    gridV:             "var(--color-chart-grid-v)",
+    axisTick:          "var(--color-chart-axis)",
+    axisTickMuted:     "var(--color-chart-axis-muted)",
+    axisLine:          "var(--color-chart-axis-line)",
+    cursor:            "var(--color-chart-cursor)",
+    barDefault:        "var(--color-chart-bar-default)",
+    barSelected:       "var(--color-chart-bar-selected)",
+    barHover:          "var(--color-chart-bar-hover)",
+    legendInactive:    "var(--color-chart-legend-inactive)",
     legendDotInactive: "var(--color-chart-legend-dot-inactive)",
   },
 
-  // ── Tooltip ──────────────────────────────────────
   tooltip: {
     bg: "rgba(8,8,12,0.94)",
     shadow:
@@ -115,21 +150,21 @@ export const TAX_CATEGORY_COLORS = {
 
 // ── Tax bracket severity ladder ───────────────────
 // Five-tier ramp for marginal-rate KPI tiles. Mixes semantic tokens
-// (zero/medium/top use --color-positive/--color-warning/--color-negative)
-// with literals for the in-between green and amber tiers.
+// (zero/medium/top use --color-data-*) with literals for the in-between
+// green and amber tiers.
 export const TAX_BRACKET_COLORS = {
-  zero:   "var(--color-positive)",
+  zero:   "var(--color-data-positive)",
   low:    "#86efac",
-  medium: "var(--color-warning)",
+  medium: "var(--color-data-warning)",
   high:   "#f59e0b",
   top:    "#ef4444",
 } as const;
 
 // ── LVR severity thresholds ───────────────────────
 export const LVR_COLORS = {
-  safe:     "var(--color-positive)",
-  moderate: "var(--color-warning)",
-  high:     "var(--color-negative)",
+  safe:     "var(--color-data-positive)",
+  moderate: "var(--color-data-warning)",
+  high:     "var(--color-data-negative)",
 } as const;
 
 // ── Depreciation series colour ────────────────────

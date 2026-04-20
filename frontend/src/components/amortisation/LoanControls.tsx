@@ -27,7 +27,7 @@ interface LoanControlsProps {
   onOffsetContributionChange: (v: number) => void;
 }
 
-const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.accentBorder };
+const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.brand.border };
 
 const OFFSET_BORDER = { borderTopWidth: 3, borderTopColor: mix(SERIES.offset.color, 35) };
 const EQUITY_BORDER = { borderTopWidth: 3, borderTopColor: mix(SERIES.eq.color, 35) };

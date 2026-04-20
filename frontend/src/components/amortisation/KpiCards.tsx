@@ -21,7 +21,7 @@ interface KpiCardsProps {
 }
 
 const CARD_STYLE = "relative flex flex-col items-center py-2.5 text-center border-brand/20";
-const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated };
+const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.brand.border, background: t.surface.raised };
 
 export default memo(function KpiCards({
   data,
@@ -81,11 +81,11 @@ export default memo(function KpiCards({
                 className="flex-1 rounded-full text-[11px] tracking-[0.5px] transition-all duration-200 cursor-pointer"
                 style={{
                   padding: "14px 4px",
-                  background: isActive ? mix(t.accent, 15) : "transparent",
-                  border: isActive ? `1px solid ${t.accent}` : "1px solid rgba(255,255,255,0.12)",
-                  color: isActive ? t.accent : "rgba(255,255,255,0.4)",
+                  background: isActive ? mix(t.brand.default, 15) : "transparent",
+                  border: isActive ? `1px solid ${t.brand.default}` : "1px solid rgba(255,255,255,0.12)",
+                  color: isActive ? t.brand.default : "rgba(255,255,255,0.4)",
                   fontWeight: isActive ? 700 : 400,
-                  boxShadow: isActive ? `0 0 10px ${mix(t.accent, 20)}` : "none",
+                  boxShadow: isActive ? `0 0 10px ${mix(t.brand.default, 20)}` : "none",
                 }}
               >
                 {opt.label}
