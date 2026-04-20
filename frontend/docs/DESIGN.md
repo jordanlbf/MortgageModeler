@@ -4,7 +4,7 @@
 
 A sharp, dark instrument for modelling property decisions with precision.
 
-**Visual reference:** dark dashboards, warm dark grey backgrounds, barely-raised cards with subtle borders, teal accent used surgically, generous internal padding, typography-driven hierarchy. Not Bloomberg dense, not consumer playful. Clean, calm, precise.
+**Visual reference:** dark dashboards, warm dark grey backgrounds, surface-first elevation (no drawn borders on containers), teal accent used surgically, generous internal padding, typography-driven hierarchy. Not Bloomberg dense, not consumer playful. Clean, calm, precise.
 
 **Target users:** First home buyers through to multi-property investors. Approachable for someone modelling their first purchase, capable enough for someone comparing five scenarios.
 
@@ -21,7 +21,7 @@ A sharp, dark instrument for modelling property decisions with precision.
 
 ### Backgrounds
 - Page: warm dark grey (#111215). Not pure black.
-- Cards: 1-2 steps lighter. Boundary from subtle border (1px, low-opacity), not dramatic shadows.
+- Cards: 1-2 steps lighter on the surface ramp. Boundary comes from the lightness step itself — no drawn border, no dramatic shadow.
 
 ### Brand
 - Teal (`--color-brand`, #2dd4bf) is the single identity colour. Used surgically: hero numbers, active toggle states, section labels, active pills, selection.
@@ -69,10 +69,31 @@ Components reach for tokens, never for raw hex or opacity-based washes on the br
 The only permitted raw colours in component files are feature-scoped palettes in `src/lib/theme.ts` (`SERIES`, `CF_COLORS`, `TAX_COLORS`, etc.), which are domain vocabulary rather than UI tokens.
 
 ### Cards
-- Barely raised. Transparent overlay on page, not opaque surface.
-- Border: 1px, low-opacity (~8% white or accent-tinted).
+- Barely raised. `bg-surface-raised` against `bg-surface-app` — the ~6-10 hex-point lightness step is the boundary.
+- No drawn border on the container itself. See **Borders** below for the rule.
 - Internal padding: `p-6` (24px) to `p-8` (32px). Density from multiple cards, not packed content.
 - Border-radius: `rounded-xl` (12px) to `rounded-2xl` (16px).
+
+### Borders
+
+**Borders are for controls, not containers.** Containers (cards, KPI strips, panels, mode pickers, nested fact cards, filter bars) rely on the surface lightness step for definition. A drawn border on a container competes with the ramp and adds visual noise; remove it and let the surface do the work.
+
+Borders are reserved for elements where the edge is the affordance:
+
+| Allowed | Why |
+|---|---|
+| Form inputs (`.form-input`, `.form-select`) | The edge *is* the input — users target it to focus |
+| Outline buttons | The ring communicates "clickable but secondary" |
+| Toggle tracks, pill controls | Edge defines the hit target |
+| Focus rings | Accessibility requirement |
+| Top accent bars (`border-t-2 border-t-accent-border`) | Categorical marker, not a boundary |
+| Row dividers (`border-b`), column dividers (`border-l`) | Separators inside a container, not around one |
+| Tooltip / popover edges | Floating layer needs a hairline to read against any surface |
+| Data-viz bar edges | Part of the chart vocabulary |
+
+Everything else uses `bg-surface-raised` (or a `bg-brand/[0.0x]` wash for brand-tinted callouts) against the surrounding surface. If two adjacent surfaces don't visually separate, bump the raised surface's lightness — don't reach for a border.
+
+Exception: error / warning banners may carry a tinted border because they're ephemeral and need to catch the eye.
 
 ### Spacing
 - Generous by default. `gap-5` to `gap-7` (20-28px) between sections. `gap-3` to `gap-4` (12-16px) between rows.
@@ -162,7 +183,7 @@ Defined as CSS custom properties in `globals.css` via `@theme`. Two themes (Grap
 - **Data ink** — tabular numerics: primary / emphasis / muted.
 - **Data semantic** — tabular meaning: positive / negative / warning / neutral.
 - **Status semantic** — UI feedback: success / error / warning / info (+ pre-mixed `-bg` surfaces).
-- **Borders** — mint-tinted: subtle / default / strong / brand.
+- **Borders** — mint-tinted: subtle / default / strong / brand. Applied to controls only; see the Borders subsection above.
 - **Focus** — explicit `--color-focus-ring`.
 - **Elevation** — three named shadows.
 
@@ -170,7 +191,7 @@ Defined as CSS custom properties in `globals.css` via `@theme`. Two themes (Grap
 
 - Hero numbers, section labels, selection, active tab indicators: `color: var(--color-brand)`.
 - Active toggle fills, brand wash backgrounds: `background: var(--color-brand-subtle)` or `var(--color-brand-subtle-hover)`.
-- Card borders (brand-accented): `border-color: var(--color-brand-border)`.
+- Control borders (inputs, outline buttons) in brand-accented contexts: `border-color: var(--color-brand-border)`.
 - Focus rings: `box-shadow: 0 0 0 3px var(--color-focus-ring)`.
 
 Never use `color-mix(…, var(--color-brand) N%, transparent)` in components — reach for the pre-mixed tokens instead, so apparent colour stays consistent across elevation tiers.
