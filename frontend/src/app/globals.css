@@ -2,76 +2,171 @@
 
 /* ── Theme tokens synced with src/lib/theme.ts ── */
 @theme {
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Typography                                                         */
+  /* ───────────────────────────────────────────────────────────────── */
   --font-sans: var(--font-sora), "system-ui", "sans-serif";
 
-  /* ── Core palette ── */
-  --color-background: #111215;
-  --color-foreground: #f0fdfa;
-  --color-accent: #2dd4bf;
-  --color-accent-contrast: #18181b;
-  --color-subtle: #aec4bf;
-  --color-faint: #6e7e7a;
-  /* Tabular data row text — softer than --color-foreground so numbers breathe */
-  --color-fg-table: #c5d4cf;
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Brand — single identity colour for MortgageModeler                 */
+  /* Used for: selection, active tabs, column group accent, hero labels */
+  /* NEVER used for: semantic meaning (positive/negative/warning),      */
+  /* large fills, card backgrounds, decorative areas.                   */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-brand: #2dd4bf;
+  --color-brand-contrast: #0a1a18;
+  --color-brand-hover: #3de0cc;
+  --color-brand-subtle: #0f2320;          /* pre-mixed on --color-surface-app */
+  --color-brand-subtle-hover: #143330;
+  --color-brand-border: rgba(45, 212, 191, 0.32);
 
-  /* ── Surfaces ── */
-  --color-card: rgba(42,42,46,0.72);
-  --color-card-elevated: rgba(44,44,48,0.82);
-  --color-control: rgba(24,24,27,0.60);
-  --color-slider-thumb: #1a1c20;
-  --color-surface-subtle: rgba(255,255,255,0.02);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Surface ramp — elevation via lightness, not shadow                 */
+  /* Five tiers, ~6-10 hex points apart so each step is perceptible     */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-surface-page:     #08090a;      /* outermost page background */
+  --color-surface-app:      #111215;      /* main app content surface */
+  --color-surface-raised:   #1a1c20;      /* cards, table headers */
+  --color-surface-hover:    #22252a;      /* interactive hover feedback */
+  --color-surface-active:   #2a2d33;      /* selected rows, pressed */
+  --color-surface-overlay:  rgba(8, 9, 10, 0.72);  /* modal scrim */
 
-  /* ── Surface lightness ramp ── */
-  --color-surface-page: #08090a;
-  --color-surface-raised: #1b1d22;
-  --color-surface-hover: #23262c;
-  --color-surface-active: #1c1d21;
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Foreground ramp — unified mint-tinted family                       */
+  /* All text colours are in the same chromatic family so they cohere   */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-fg-primary:   #f0fdfa;    /* headers, hero values, primary text */
+  --color-fg-secondary: #aec4bf;    /* labels, secondary UI text (was: subtle) */
+  --color-fg-tertiary:  #6e7e7a;    /* metadata, axes, inactive (was: faint) */
+  --color-fg-disabled:  #3f4845;    /* disabled state */
 
-  /* ── Column group tints ── */
-  --color-out-tint: rgba(255,255,255,0.018);
-  --color-out-tint-hover: rgba(255,255,255,0.038);
-  --color-out-tint-raised: rgba(255,255,255,0.025);
-  --color-cf-wash: rgba(45,212,191,0.05);
-  --color-cf-wash-hover: rgba(45,212,191,0.07);
-  --color-cf-wash-strong: rgba(45,212,191,0.08);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Data ink — dedicated tokens for tabular numeric content            */
+  /* Separate from UI fg-* so table numbers can tune independently      */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-data-primary:   #c5d4cf;    /* tabular numbers, default */
+  --color-data-emphasis:  #f0fdfa;    /* headline/total values */
+  --color-data-muted:     #8ba19c;    /* YoY percentages, secondary data */
 
-  /* ── Borders ── */
-  --color-border: rgba(113,113,122,0.14);
-  --color-border-hover: rgba(113,113,122,0.15);
-  --color-accent-border: rgba(45,212,191,0.35);
-  --color-scrollbar: rgba(148,163,184,0.12);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Data semantic — meaning in tabular/chart context                   */
+  /* Calm colours that sit on-screen without pulling the eye            */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-data-positive: #2fb881;    /* green, distinct from brand teal */
+  --color-data-negative: #d45555;
+  --color-data-warning:  #d99a28;
+  --color-data-neutral:  var(--color-fg-tertiary);
 
-  /* ── Focus ring ── */
-  --color-focus-ring: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Status semantic — UI feedback (toasts, validation, banners)        */
+  /* Slightly brighter than data semantics because they flash briefly   */
+  /* Kept as separate tokens so they can diverge from data colours      */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-status-success: #3fc77a;
+  --color-status-error:   #e56565;
+  --color-status-warning: #e5a832;
+  --color-status-info:    var(--color-brand);
 
-  /* ── Semantic ── */
-  --color-negative: #ef6b6b;
-  --color-positive: #3fc77a;
-  --color-warning: #e5a832;
+  /* Status surfaces — pre-mixed low-opacity backgrounds */
+  --color-status-success-bg: rgba(63, 199, 122, 0.10);
+  --color-status-error-bg:   rgba(229, 101, 101, 0.10);
+  --color-status-warning-bg: rgba(229, 168, 50, 0.10);
 
-  /* ── Chart chrome ── */
-  --color-chart-grid-h: rgba(148,163,184,0.06);
-  --color-chart-grid-v: rgba(148,163,184,0.035);
-  --color-chart-axis: rgba(148,163,184,0.50);
-  --color-chart-axis-muted: rgba(148,163,184,0.40);
-  --color-chart-axis-line: rgba(148,163,184,0.08);
-  --color-chart-cursor: rgba(148,163,184,0.15);
-  --color-chart-legend-inactive: rgba(148,163,184,0.30);
-  --color-chart-legend-dot-inactive: rgba(148,163,184,0.20);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Borders                                                            */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-border-subtle:  rgba(174, 196, 191, 0.08);   /* default */
+  --color-border-default: rgba(174, 196, 191, 0.14);   /* cards, tables */
+  --color-border-strong:  rgba(174, 196, 191, 0.22);   /* hover, focus */
+  --color-border-brand:   var(--color-brand-border);
 
-  /* ── Tool card defaults ── */
-  --color-tool-default: #94a3b8;
-  --color-tool-default-glow: rgba(148,163,184,0.08);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Focus — explicit a11y-critical token                               */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-focus-ring:        rgba(45, 212, 191, 0.35);
+  --color-focus-ring-offset: var(--color-surface-app);
 
-  /* ── Layout ── */
-  --layout-sidebar-width: 240px;
-  --layout-content-max: 1200px;
-  --layout-page-padding-x: 36px;
-  --layout-page-padding-y: 32px;
-  --layout-nav-item-height: 36px;
-  --layout-global-btn-size: 34px;
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Elevation — three named shadows, no ad-hoc drop shadows allowed    */
+  /* ───────────────────────────────────────────────────────────────── */
+  --shadow-flat:
+    0 0 0 0.5px rgba(255, 255, 255, 0.02);
+  --shadow-raised:
+    0 1px 3px rgba(0, 0, 0, 0.24),
+    0 0 0 0.5px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  --shadow-float:
+    0 8px 24px rgba(0, 0, 0, 0.40),
+    0 0 0 0.5px rgba(174, 196, 191, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Column group washes — cashflow-specific tints                      */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-out-tint:         rgba(174, 196, 191, 0.022);
+  --color-out-tint-hover:   rgba(174, 196, 191, 0.040);
+  --color-out-tint-raised:  rgba(174, 196, 191, 0.028);
+  --color-cf-wash:          rgba(45, 212, 191, 0.05);
+  --color-cf-wash-hover:    rgba(45, 212, 191, 0.07);
+  --color-cf-wash-strong:   rgba(45, 212, 191, 0.08);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Chart chrome                                                       */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-chart-grid-h:              rgba(174, 196, 191, 0.06);
+  --color-chart-grid-v:              rgba(174, 196, 191, 0.035);
+  --color-chart-axis:                rgba(174, 196, 191, 0.50);
+  --color-chart-axis-muted:          rgba(174, 196, 191, 0.40);
+  --color-chart-axis-line:           rgba(174, 196, 191, 0.08);
+  --color-chart-cursor:              rgba(174, 196, 191, 0.15);
+  --color-chart-bar-default:         var(--color-surface-active);
+  --color-chart-bar-selected:        var(--color-brand);
+  --color-chart-bar-hover:           var(--color-surface-hover);
+  --color-chart-legend-inactive:     rgba(174, 196, 191, 0.30);
+  --color-chart-legend-dot-inactive: rgba(174, 196, 191, 0.20);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Tool card defaults                                                 */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-tool-default:      #94a3b8;
+  --color-tool-default-glow: rgba(148, 163, 184, 0.08);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Layout                                                             */
+  /* ───────────────────────────────────────────────────────────────── */
+  --layout-sidebar-width:            240px;
+  --layout-content-max:              1200px;
+  --layout-page-padding-x:           36px;
+  --layout-page-padding-y:           32px;
+  --layout-nav-item-height:          36px;
+  --layout-global-btn-size:          34px;
   /* Reservation on the right of page headers to keep clear of the globals tray */
-  --layout-header-actions-reserve: 64px;
+  --layout-header-actions-reserve:   64px;
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Deprecation aliases — remove once all components migrated          */
+  /* Existing v1 token names map to v2 equivalents so the build stays   */
+  /* green during the incremental migration.                            */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-accent:           var(--color-brand);
+  --color-accent-contrast:  var(--color-brand-contrast);
+  --color-accent-border:    var(--color-brand-border);
+  --color-background:       var(--color-surface-app);
+  --color-foreground:       var(--color-fg-primary);
+  --color-subtle:           var(--color-fg-secondary);
+  --color-faint:            var(--color-fg-tertiary);
+  --color-fg-table:         var(--color-data-primary);
+  --color-positive:         var(--color-data-positive);
+  --color-negative:         var(--color-data-negative);
+  --color-warning:          var(--color-data-warning);
+  --color-border:           var(--color-border-subtle);
+  --color-border-hover:     var(--color-border-strong);
+  --color-card:             var(--color-surface-raised);
+  --color-card-elevated:    var(--color-surface-raised);
+  --color-control:          rgba(24, 24, 27, 0.60);
+  --color-surface-subtle:   var(--color-border-subtle);
+  --color-scrollbar:        rgba(174, 196, 191, 0.12);
+  --color-slider-thumb:     var(--color-surface-raised);
 }
 
 
