@@ -61,7 +61,7 @@ export default memo(function KpiCards({
             />
           ) : <Skeleton width="160px" height="34px" />}
         </div>
-        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-muted/30">
+        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-foreground/30">
           {data ? `per ${FREQ_LABELS[frequency]}` : <Skeleton width="80px" height="11px" />}
         </div>
       </GlassCard>
@@ -103,7 +103,7 @@ export default memo(function KpiCards({
         <div className="mt-1.5 flex items-center h-[38px] text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums text-foreground">
           {data ? formatCurrencyShort(animLoan) : <Skeleton width="160px" height="34px" />}
         </div>
-        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-muted/30">
+        <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-foreground/30">
           {data ? `${lvrPct}% LVR` : <Skeleton width="60px" height="11px" />}
         </div>
       </GlassCard>

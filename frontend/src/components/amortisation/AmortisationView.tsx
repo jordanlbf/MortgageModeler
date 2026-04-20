@@ -113,7 +113,7 @@ export default function AmortisationView() {
               {view === "chart" ? (
                 <ChartLegend visibleSeries={visibleSeries} onToggle={toggleSeries} />
               ) : data ? (
-                <span className="text-[12px] font-medium tabular-nums text-muted/25">
+                <span className="text-[12px] font-medium tabular-nums text-foreground/25">
                   {data.total_periods} periods
                 </span>
               ) : null}
@@ -168,7 +168,7 @@ export default function AmortisationView() {
 
               <button
                 onClick={handleFocusToggle}
-                className="rounded-lg p-2 text-muted/25 transition-all duration-200 hover:text-muted/50 hover:bg-white/[0.04] active:scale-90"
+                className="rounded-lg p-2 text-foreground/25 transition-all duration-200 hover:text-foreground/50 hover:bg-white/[0.04] active:scale-90"
                 style={{ border: "1px solid transparent" }}
                 title={focused ? "Exit focus mode (Esc)" : "Focus mode"}
               >

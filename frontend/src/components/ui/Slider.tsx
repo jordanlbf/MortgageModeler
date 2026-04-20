@@ -44,7 +44,7 @@ export default function Slider({
       {compact ? (
         /* ── Compact: label left, value right ── */
         <div className="mb-1 flex items-center justify-between">
-          <span className="text-[15px] text-muted/50">{label}</span>
+          <span className="text-[15px] text-foreground/50">{label}</span>
           {editable ? (
             <input
               ref={inputRef}

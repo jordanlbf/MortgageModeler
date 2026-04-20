@@ -10,8 +10,8 @@ Elevation is expressed through progressively lighter surfaces, not shadows.
 |---|---|---|
 | `--color-surface-page` | `#08090a` | Outermost page background |
 | `--color-background` | `#111215` | Card / main app surface |
-| `--color-surface-raised` | `#17181c` | Table headers, card headers, summary-row top band |
-| `--color-surface-hover` | `#1a1b1e` | Row hover |
+| `--color-surface-raised` | `#1b1d22` | Table headers, card headers, summary-row top band |
+| `--color-surface-hover` | `#23262c` | Row hover |
 | `--color-surface-active` | `#1c1d21` | Summary row, pressed states |
 
 ## Column group tints (unified tables)
@@ -39,10 +39,15 @@ Utility classes in `globals.css`:
 | Token | Value | Usage |
 |---|---|---|
 | `--color-foreground` | `#f0fdfa` | Primary text, headers, values |
-| `--color-muted` | `#f4f4f5` | Near-foreground variant |
-| `--color-subtle` | `#a1a1aa` | Secondary text, labels |
-| `--color-faint` | `#71717a` | Tertiary text, metadata |
-| `--color-fg-table` | `#ccccd2` | Tabular data row text — softer than foreground so numbers breathe |
+| `--color-subtle` | `#aec4bf` | Secondary text, labels |
+| `--color-faint` | `#6e7e7a` | Tertiary text, metadata |
+| `--color-fg-table` | `#c5d4cf` | Tabular data row text — softer than foreground so numbers breathe |
+
+## Focus ring
+
+| Token | Value | Usage |
+|---|---|---|
+| `--color-focus-ring` | `color-mix(in srgb, var(--color-accent) 35%, transparent)` | Keyboard focus outline on form inputs, theme toggle, and other interactive controls |
 
 ## Tool card defaults
 

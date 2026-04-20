@@ -28,7 +28,6 @@ export const t = {
 
   // ── Text ──────────────────────────────────────────
   fg: "var(--color-foreground)",
-  muted: "var(--color-muted)",
   subtle: "var(--color-subtle)",
   faint: "var(--color-faint)",
   fgTable: "var(--color-fg-table)",

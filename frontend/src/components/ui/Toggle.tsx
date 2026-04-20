@@ -34,7 +34,7 @@ export default function Toggle({ label, checked, onChange, accent = "var(--color
   const labelSpan = (
     <span
       className="text-[15px] font-medium transition-colors duration-200"
-      style={{ color: checked ? "var(--color-foreground)" : mix("var(--color-muted)", 50) }}
+      style={{ color: checked ? "var(--color-foreground)" : mix("var(--color-foreground)", 50) }}
     >
       {label}
     </span>

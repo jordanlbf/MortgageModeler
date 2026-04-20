@@ -177,7 +177,7 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
             onMouseLeave={() => onHover(null)}
             onClick={() => onClick?.(row.key)}
           >
-            <span className="min-w-[120px] text-[15px] text-muted/50">{row.label}</span>
+            <span className="min-w-[120px] text-[15px] text-foreground/50">{row.label}</span>
             <div className="relative flex-1 rounded-[4px] transition-all duration-300" style={{ height: isHovered ? 28 : 22, background: "rgba(255,255,255,0.02)" }}>
               <div
                 className="absolute inset-y-0 rounded-[4px] transition-all duration-300"
@@ -209,7 +209,7 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
             onMouseLeave={() => onHover(null)}
             onClick={() => onClick?.(row.key)}
           >
-            <span className="min-w-[120px] text-[15px] text-muted/50">{row.label}</span>
+            <span className="min-w-[120px] text-[15px] text-foreground/50">{row.label}</span>
             <div className="relative flex-1 rounded-[4px] transition-all duration-300" style={{ height: isHovered ? 28 : 22, background: "rgba(255,255,255,0.02)" }}>
               <div
                 className="absolute inset-y-0 rounded-[4px] transition-all duration-300"
@@ -368,7 +368,7 @@ export default function TaxComposition({
                   onClick={() => handleClick(s.key)}
                 >
                   <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                  <span className="text-[16px] font-medium text-muted/60">{s.legendLabel}</span>
+                  <span className="text-[16px] font-medium text-foreground/60">{s.legendLabel}</span>
                 </div>
               );
             })}

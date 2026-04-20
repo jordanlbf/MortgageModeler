@@ -29,7 +29,7 @@ function Toggle({ label, active, onToggle }: { label: string; active: boolean; o
         }`} />
       </div>
       <span className={`text-[13px] font-medium transition-colors duration-150 ${
-        active ? "text-foreground/85" : "text-muted/55"
+        active ? "text-foreground/85" : "text-foreground/55"
       }`}>{label}</span>
     </button>
   );
@@ -84,7 +84,7 @@ function BreakdownRow({
             const val = parseCurrencyInput(d.value);
             const pct = waterfall && maxDetail > 0 ? (val / maxDetail) * 100 : 0;
             return (
-              <div key={d.label} className={`flex justify-between items-center text-[13px] text-muted/50 ${waterfall ? "gap-3" : ""}`}>
+              <div key={d.label} className={`flex justify-between items-center text-[13px] text-foreground/50 ${waterfall ? "gap-3" : ""}`}>
                 <span className={`shrink-0 ${waterfall ? "w-[170px]" : ""}`}>{d.label}</span>
                 {waterfall && (
                   <div className="flex-1 h-1.5 rounded-sm bg-white/[0.06] overflow-hidden">
@@ -195,7 +195,7 @@ export default function PurchaseCostsView() {
         <div className={`w-full max-w-[720px] rounded-2xl bg-card border border-accent/15 px-9 py-8 ${CARD_SHADOW} animate-fade-up [animation-delay:0.1s]`}>
           <div className="flex gap-6 items-end max-sm:flex-wrap">
             <div className="flex flex-col gap-2.5 flex-[0_0_100px] min-w-[100px]">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted/50 whitespace-nowrap">State</label>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-foreground/50 whitespace-nowrap">State</label>
               <select className="form-select" value={state} onChange={(e) => setState(e.target.value)}>
                 {STATES.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -203,15 +203,15 @@ export default function PurchaseCostsView() {
               </select>
             </div>
             <div className="flex flex-col gap-2.5 flex-[1_1_180px] min-w-[160px]">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted/50 whitespace-nowrap">Purchase Price</label>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-foreground/50 whitespace-nowrap">Purchase Price</label>
               <input className="form-input" type="text" inputMode="numeric" placeholder="$600,000" value={priceStr} onChange={handlePriceChange} />
             </div>
             <div className="flex flex-col gap-2.5 flex-[0_0_100px] min-w-[100px]">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted/50 whitespace-nowrap">Deposit</label>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-foreground/50 whitespace-nowrap">Deposit</label>
               <input className="form-input" type="text" inputMode="numeric" placeholder="10%" value={depositStr} onChange={handleDepositChange} />
             </div>
             <div className="flex flex-col gap-2.5 flex-[0_0_130px] min-w-[130px]">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-muted/50 whitespace-nowrap">Type</label>
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-foreground/50 whitespace-nowrap">Type</label>
               <select className="form-select" value={propertyType} onChange={(e) => setPropertyType(e.target.value)}>
                 <option value="existing">Existing</option>
                 <option value="new">New</option>
@@ -320,7 +320,7 @@ export default function PurchaseCostsView() {
         <div className="mt-auto pt-2">
           <Link
             href="/"
-            className="group flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
+            className="group flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-foreground/30 no-underline transition-colors duration-300 hover:text-accent/70"
           >
             <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
             All Tools

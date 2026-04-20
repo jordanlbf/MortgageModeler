@@ -74,7 +74,7 @@ function ChartTooltip({
                 {entry.name}
               </span>
             </span>
-            <span className="ml-auto text-[14px] font-medium text-muted/65 text-right">
+            <span className="ml-auto text-[14px] font-medium text-foreground/65 text-right">
               {entry.name === "LVR" ? `${entry.value.toFixed(1)}%` : formatCurrency(entry.value)}
             </span>
           </div>
@@ -299,7 +299,7 @@ export default function AmortisationChart({
         </ResponsiveContainer>
       ) : (
         <div
-          className="flex items-center justify-center text-sm text-muted/20"
+          className="flex items-center justify-center text-sm text-foreground/20"
           style={{ height }}
         >
           Loading…
