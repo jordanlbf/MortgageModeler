@@ -170,14 +170,72 @@
 }
 
 
-/* ── Slate Arctic theme ── */
+/* ── Slate Arctic theme — full override ── */
 @layer base {
   [data-theme="arctic"] {
-    --color-background: #0e1117;
-    --color-foreground: #f0f9ff;
-    --color-accent: #38bdf8;
-    --color-accent-contrast: #0c1825;
-    --color-accent-border: rgba(56,189,248,0.30);
+    /* Brand */
+    --color-brand:              #38bdf8;
+    --color-brand-contrast:     #0c1825;
+    --color-brand-hover:        #4dc6f9;
+    --color-brand-subtle:       #0d1f2d;
+    --color-brand-subtle-hover: #122d40;
+    --color-brand-border:       rgba(56, 189, 248, 0.32);
+
+    /* Surface ramp — cooler tones than Graphite */
+    --color-surface-page:    #070a0f;
+    --color-surface-app:     #0f1319;
+    --color-surface-raised:  #171c24;
+    --color-surface-hover:   #1f2530;
+    --color-surface-active:  #272e3a;
+
+    /* Foreground ramp — cool-white family */
+    --color-fg-primary:   #f0f9ff;
+    --color-fg-secondary: #a8c0d4;
+    --color-fg-tertiary:  #6a7a8a;
+    --color-fg-disabled:  #3a4450;
+
+    /* Data ink */
+    --color-data-primary:  #c2d1de;
+    --color-data-emphasis: #f0f9ff;
+    --color-data-muted:    #8499a8;
+
+    /* Data semantic — shifted cooler to match the cast */
+    --color-data-positive: #2aa893;
+    --color-data-negative: #d06060;
+    --color-data-warning:  #d4923a;
+
+    /* Status */
+    --color-status-success: #3eb896;
+    --color-status-error:   #df6b6b;
+    --color-status-warning: #e0a142;
+
+    /* Borders */
+    --color-border-subtle:  rgba(168, 192, 212, 0.08);
+    --color-border-default: rgba(168, 192, 212, 0.14);
+    --color-border-strong:  rgba(168, 192, 212, 0.22);
+
+    /* Focus */
+    --color-focus-ring:        rgba(56, 189, 248, 0.35);
+    --color-focus-ring-offset: var(--color-surface-app);
+
+    /* Chart chrome — cool hue */
+    --color-chart-grid-h:      rgba(168, 192, 212, 0.06);
+    --color-chart-grid-v:      rgba(168, 192, 212, 0.035);
+    --color-chart-axis:        rgba(168, 192, 212, 0.50);
+    --color-chart-axis-muted:  rgba(168, 192, 212, 0.40);
+    --color-chart-axis-line:   rgba(168, 192, 212, 0.08);
+    --color-chart-cursor:      rgba(168, 192, 212, 0.15);
+    --color-chart-bar-default: var(--color-surface-active);
+    --color-chart-bar-selected: var(--color-brand);
+    --color-chart-bar-hover:   var(--color-surface-hover);
+
+    /* Column group washes — shifted to brand blue */
+    --color-out-tint:         rgba(168, 192, 212, 0.022);
+    --color-out-tint-hover:   rgba(168, 192, 212, 0.040);
+    --color-out-tint-raised:  rgba(168, 192, 212, 0.028);
+    --color-cf-wash:          rgba(56, 189, 248, 0.05);
+    --color-cf-wash-hover:    rgba(56, 189, 248, 0.07);
+    --color-cf-wash-strong:   rgba(56, 189, 248, 0.08);
   }
 }
 
