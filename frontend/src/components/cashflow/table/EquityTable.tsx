@@ -32,7 +32,7 @@ export default function EquityTable({
             <tr className="h-7 border-b-0">
               <th className="h-7 box-border px-3 text-center align-bottom" colSpan={2} />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={isGroupExpanded("property") ? 7 : 1}
                 onClick={() => toggleGroup("property")}
               >
@@ -87,7 +87,7 @@ export default function EquityTable({
           <thead>
             <tr className="h-7 border-b-0">
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-blue-400/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-blue-400/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={isGroupExpanded("position") ? (showOffset ? 7 : 4) : 1}
                 onClick={() => toggleGroup("position")}
               >
@@ -152,7 +152,7 @@ export default function EquityTable({
             <tr className="h-7 border-b-0" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-7 box-border px-3 text-center align-bottom" />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={propExpanded ? 5 : 1}
                 onClick={() => toggleGroup("property")}
               >
@@ -162,7 +162,7 @@ export default function EquityTable({
                 </span>
               </th>
               <th
-                className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-blue-400 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-blue-400 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={posExpanded ? (showOffset ? 5 : 3) : 1}
                 onClick={() => toggleGroup("position")}
                 style={{ background: "var(--color-cf-wash-strong)" }}
@@ -258,7 +258,7 @@ export default function EquityTable({
                 <span className="font-semibold text-fg-primary">{formatDollarsSigned(Math.round(finalValue))}</span>
               </td>
               {posExpanded && (
-                <td className="box-border pl-6 pr-3 text-right align-middle text-data-negative font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
+                <td className="box-border pl-6 pr-3 text-right align-middle text-data-negative opacity-85 font-medium text-[15px]" style={{ ...summaryBorder, background: "var(--color-cf-wash-strong)" }}>
                   {formatDollarsSigned(Math.round(-finalLoan))}
                 </td>
               )}

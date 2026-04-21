@@ -33,7 +33,7 @@ export default function DeductionsTable({
             <tr className="h-7 border-b-0">
               <th className="h-7 box-border px-3 text-center align-bottom" colSpan={2} />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-amber-400/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-amber-400/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={isGroupExpanded("holding") ? (isInvestment ? 5 : 4) : 1}
                 onClick={() => toggleGroup("holding")}
               >
@@ -80,7 +80,7 @@ export default function DeductionsTable({
           <thead>
             <tr className="h-7 border-b-0">
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-violet-400/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-violet-400/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={isGroupExpanded("depreciation") ? 3 : 1}
                 onClick={() => toggleGroup("depreciation")}
               >
@@ -121,7 +121,7 @@ export default function DeductionsTable({
           <thead>
             <tr className="h-7 border-b-0">
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand/65 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={isGroupExpanded("totals") ? (isInvestment ? 3 : 2) : 1}
                 onClick={() => toggleGroup("totals")}
               >
@@ -186,7 +186,7 @@ export default function DeductionsTable({
             <tr className="h-7 border-b-0" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-7 box-border px-3 text-center align-bottom" />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-amber-400 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-amber-400 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={holdExpanded ? (isInvestment ? 5 : 4) : 1}
                 onClick={() => toggleGroup("holding")}
               >
@@ -197,7 +197,7 @@ export default function DeductionsTable({
               </th>
               {isInvestment && (
                 <th
-                  className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-violet-400 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                  className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-violet-400 cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                   colSpan={depExpanded ? 3 : 1}
                   onClick={() => toggleGroup("depreciation")}
                 >
@@ -208,7 +208,7 @@ export default function DeductionsTable({
                 </th>
               )}
               <th
-                className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand"
+                className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand"
                 style={{ background: "var(--color-out-tint-raised)" }}
               >
                 {isInvestment ? "deductions" : "expenses"}
@@ -285,16 +285,16 @@ export default function DeductionsTable({
                 <span className="text-[10.5px] tracking-[0.14em] uppercase text-fg-secondary font-medium">{yearData.length}-yr total</span>
               </td>
               {holdExpanded && isInvestment && (
-                <td className="box-border px-3 text-right align-middle text-data-negative font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.interest))}</td>
+                <td className="box-border px-3 text-right align-middle text-data-negative opacity-85 font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.interest))}</td>
               )}
               {holdExpanded && (
-                <td className="box-border px-3 text-right align-middle text-data-negative font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.rates))}</td>
+                <td className="box-border px-3 text-right align-middle text-data-negative opacity-85 font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.rates))}</td>
               )}
               {holdExpanded && (
-                <td className="box-border px-3 text-right align-middle text-data-negative font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.insurance))}</td>
+                <td className="box-border px-3 text-right align-middle text-data-negative opacity-85 font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.insurance))}</td>
               )}
               {holdExpanded && (
-                <td className="box-border px-3 text-right align-middle text-data-negative font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.maint))}</td>
+                <td className="box-border px-3 text-right align-middle text-data-negative opacity-85 font-medium text-[15px]" style={summaryBorder}>{formatDollarsSigned(Math.round(totals.maint))}</td>
               )}
               <td className="box-border px-3 text-right align-middle text-[15px]" style={summaryBorder}>
                 <span className="font-semibold text-data-negative">{formatDollarsSigned(Math.round(totals.holding))}</span>

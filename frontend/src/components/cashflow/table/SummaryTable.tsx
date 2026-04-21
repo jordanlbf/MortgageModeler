@@ -31,7 +31,7 @@ export default function SummaryTable({
             <tr className="h-7 border-b-0">
               <th className="h-7 box-border px-3 text-center align-bottom" colSpan={2} />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={isGroupExpanded("income") ? (isInvestment ? 5 : 3) : 1}
                 onClick={() => toggleGroup("income")}
               >
@@ -82,7 +82,7 @@ export default function SummaryTable({
           <thead>
             <tr className="h-7 border-b-0">
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
                 colSpan={isGroupExpanded("outgoings") ? 4 : 1}
                 onClick={() => toggleGroup("outgoings")}
               >
@@ -124,7 +124,7 @@ export default function SummaryTable({
         <table className="border-collapse tabular-nums text-xs leading-[1.4] whitespace-nowrap w-full">
           <thead>
             <tr className="h-7 border-b-0">
-              <th className="h-7 box-border px-3 text-center align-bottom text-[10px] font-semibold tracking-[0.06em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand" colSpan={3}>cashflow</th>
+              <th className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-brand" colSpan={3}>cashflow</th>
             </tr>
             <tr className="h-14 border-b border-white/[0.12]">
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap relative cursor-default after:content-[attr(data-tip)] after:absolute after:bottom-[calc(100%+6px)] after:left-1/2 after:-translate-x-1/2 after:py-[5px] after:px-[10px] after:rounded-md after:bg-zinc-900/95 after:border after:border-zinc-500/15 after:text-zinc-100/85 after:text-[11px] after:font-normal after:tracking-normal after:normal-case after:whitespace-nowrap after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-150 after:ease-in-out after:z-10 hover:after:opacity-100" data-tip="Salary + Rent">total income</th>
@@ -302,17 +302,17 @@ export default function SummaryTable({
                 {!incExpanded && !ogExpanded && <span className="inline-block ml-2 w-[52px]" aria-hidden="true" />}
               </td>
               {ogExpanded && (
-                <td className="box-border pl-6 pr-3 text-right align-middle text-data-negative font-medium out-zone text-[15px]" style={{ borderTop: "1px solid rgba(45,212,191,0.30)" }}>
+                <td className="box-border pl-6 pr-3 text-right align-middle text-data-negative opacity-85 font-medium out-zone text-[15px]" style={{ borderTop: "1px solid rgba(45,212,191,0.30)" }}>
                   {formatDollarsSigned(Math.round(-totals.holding))}
                 </td>
               )}
               {ogExpanded && (
-                <td className="box-border px-3 text-right align-middle text-data-negative font-medium out-zone text-[15px]" style={{ borderTop: "1px solid rgba(45,212,191,0.30)" }}>
+                <td className="box-border px-3 text-right align-middle text-data-negative opacity-85 font-medium out-zone text-[15px]" style={{ borderTop: "1px solid rgba(45,212,191,0.30)" }}>
                   {formatDollarsSigned(Math.round(-totals.repay))}
                 </td>
               )}
               {ogExpanded && (
-                <td className="box-border px-3 text-right align-middle text-data-negative font-medium out-zone text-[15px]" style={{ borderTop: "1px solid rgba(45,212,191,0.30)" }}>
+                <td className="box-border px-3 text-right align-middle text-data-negative opacity-85 font-medium out-zone text-[15px]" style={{ borderTop: "1px solid rgba(45,212,191,0.30)" }}>
                   {formatDollarsSigned(Math.round(-totals.tax))}
                 </td>
               )}
