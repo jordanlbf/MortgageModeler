@@ -106,9 +106,9 @@
   --color-out-tint:         rgba(174, 196, 191, 0.022);
   --color-out-tint-hover:   rgba(174, 196, 191, 0.040);
   --color-out-tint-raised:  rgba(174, 196, 191, 0.028);
-  --color-cf-wash:          rgba(45, 212, 191, 0.05);
-  --color-cf-wash-hover:    rgba(45, 212, 191, 0.07);
-  --color-cf-wash-strong:   rgba(45, 212, 191, 0.08);
+  --color-cf-wash:          rgba(255, 255, 255, 0.025);
+  --color-cf-wash-hover:    rgba(255, 255, 255, 0.040);
+  --color-cf-wash-strong:   rgba(255, 255, 255, 0.050);
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Chart chrome                                                       */
@@ -210,9 +210,9 @@
     --color-out-tint:         rgba(220, 230, 255, 0.018);
     --color-out-tint-hover:   rgba(220, 230, 255, 0.038);
     --color-out-tint-raised:  rgba(220, 230, 255, 0.028);
-    --color-cf-wash:          rgba(59, 130, 246, 0.05);
-    --color-cf-wash-hover:    rgba(59, 130, 246, 0.07);
-    --color-cf-wash-strong:   rgba(59, 130, 246, 0.09);
+    --color-cf-wash:          rgba(255, 255, 255, 0.025);
+    --color-cf-wash-hover:    rgba(255, 255, 255, 0.040);
+    --color-cf-wash-strong:   rgba(255, 255, 255, 0.050);
 
     /* Chart chrome — cool slate */
     --color-chart-grid-h:      rgba(148, 163, 184, 0.06);
