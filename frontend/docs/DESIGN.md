@@ -27,7 +27,7 @@ A sharp, dark instrument for modelling property decisions with precision.
 - Teal (`--color-brand`, #2dd4bf) is the single identity colour. Used surgically: hero numbers, active toggle states, section labels, active pills, selection.
 - **Brand is distinct from `data-positive`.** `--color-brand` owns identity / selection / "this is us"; `--color-data-positive` owns "good / up" semantics. They are chromatically distant so the eye can separate them at a glance.
 - Never used for large fills, card backgrounds, decorative areas, or semantic meaning (positive/negative/warning).
-- Arctic theme (`--color-brand` = #38bdf8) follows the same restraint — same placements, different hue.
+- Arctic theme (Slate Electric, `#3b82f6`) is a more chromatic alternative — a brighter, cooler blue accent on a deeper page background with pure blue-white foreground. Same placement rules apply; the hue itself is the personality shift.
 
 ### Typography
 - Sora — geometric, modern, good tabular-nums.
@@ -173,7 +173,7 @@ Defined as CSS custom properties. Three named tokens — components never use ra
 
 ### Colour Tokens
 
-Defined as CSS custom properties in `globals.css` via `@theme`. Two themes (Graphite Teal, Slate Arctic) remap the same role-based tokens. See [TOKENS.md](TOKENS.md) for the complete palette table.
+Defined as CSS custom properties in `globals.css` via `@theme`. Two themes (Graphite Teal, Slate Electric) remap the same role-based tokens. See [TOKENS.md](TOKENS.md) for the complete palette table.
 
 **Token categories:**
 

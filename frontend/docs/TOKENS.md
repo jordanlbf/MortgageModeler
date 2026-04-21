@@ -169,6 +169,17 @@ Utility classes in `globals.css`:
 |---|---|---|
 | `--color-scrollbar` | `rgba(174, 196, 191, 0.12)` | `.custom-scrollbar` webkit thumb |
 
+## Arctic theme — Slate Electric
+
+The Arctic theme is a full override of every palette token. See the
+`[data-theme="arctic"]` block in `globals.css` for the canonical values.
+
+Key Arctic identity:
+- Brand: `#3b82f6` (electric blue, brighter than Graphite's `#2dd4bf` teal)
+- Surface page: `#060810` (deeper than Graphite's `#08090a`)
+- Foreground primary: `#eff6ff` (pure blue-white vs Graphite's mint-tinted)
+- Semantics: brighter than Graphite's calm set to match the accent energy
+
 ## Layout
 
 | Token | Value | Usage |

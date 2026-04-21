@@ -150,75 +150,83 @@
 }
 
 
-/* ── Slate Arctic theme — full override ── */
+/* ── Arctic theme (Slate Electric) — full override ── */
 @layer base {
   [data-theme="arctic"] {
     /* Brand */
-    --color-brand:              #38bdf8;
-    --color-brand-contrast:     #0c1825;
-    --color-brand-hover:        #4dc6f9;
-    --color-brand-subtle:       #0d1f2d;
-    --color-brand-subtle-hover: #122d40;
-    --color-brand-border:       rgba(56, 189, 248, 0.32);
+    --color-brand:              #3b82f6;
+    --color-brand-contrast:     #0b1220;
+    --color-brand-hover:        #5a96f7;
+    --color-brand-subtle:       #0f1a2d;          /* pre-mixed on --color-surface-app */
+    --color-brand-subtle-hover: #152340;
+    --color-brand-border:       rgba(59, 130, 246, 0.38);
 
-    /* Surface ramp — cooler tones than Graphite */
-    --color-surface-page:    #070a0f;
-    --color-surface-app:     #0f1319;
-    --color-surface-raised:  #1a1f28;
-    --color-surface-hover:   #1f2530;
-    --color-surface-active:  #272e3a;
+    /* Surface ramp — deeper, cooler than Graphite; Slate Electric is darker at the base */
+    --color-surface-page:    #060810;
+    --color-surface-app:     #0d1118;
+    --color-surface-raised:  #131822;
+    --color-surface-hover:   #171d28;
+    --color-surface-active:  #1b222f;
+    --color-surface-overlay: rgba(6, 8, 16, 0.74);
 
-    /* Foreground ramp — cool-white family */
-    --color-fg-primary:   #f0f9ff;
-    --color-fg-secondary: #a8c0d4;
-    --color-fg-tertiary:  #6a7a8a;
-    --color-fg-disabled:  #3a4450;
+    /* Foreground ramp — blue-white family */
+    --color-fg-primary:   #eff6ff;
+    --color-fg-secondary: #94a3b8;
+    --color-fg-tertiary:  #64748b;
+    --color-fg-disabled:  #334155;
 
     /* Data ink */
-    --color-data-primary:  #c2d1de;
-    --color-data-emphasis: #f0f9ff;
-    --color-data-muted:    #8499a8;
+    --color-data-primary:  #c1cddd;
+    --color-data-emphasis: #eff6ff;
+    --color-data-muted:    #7f8b9c;
 
-    /* Data semantic — shifted cooler to match the cast */
-    --color-data-positive: #2aa893;
-    --color-data-negative: #d06060;
-    --color-data-warning:  #d4923a;
+    /* Data semantic — slightly brighter than Graphite's calm set to match Electric's energy */
+    --color-data-positive: #34d399;
+    --color-data-negative: #f87171;
+    --color-data-warning:  #fbbf24;
+    --color-data-neutral:  var(--color-fg-tertiary);
 
-    /* Status */
-    --color-status-success: #3eb896;
-    --color-status-error:   #df6b6b;
-    --color-status-warning: #e0a142;
+    /* Status — flash-briefly UI feedback, a touch brighter than data colours */
+    --color-status-success: #34d399;
+    --color-status-error:   #f87171;
+    --color-status-warning: #fbbf24;
+    --color-status-info:    var(--color-brand);
+
+    /* Status surfaces */
+    --color-status-success-bg: rgba(52, 211, 153, 0.10);
+    --color-status-error-bg:   rgba(248, 113, 113, 0.10);
+    --color-status-warning-bg: rgba(251, 191, 36, 0.10);
 
     /* Borders */
-    --color-border-subtle:  rgba(168, 192, 212, 0.08);
-    --color-border-default: rgba(168, 192, 212, 0.14);
-    --color-border-strong:  rgba(168, 192, 212, 0.22);
+    --color-border-subtle:  rgba(148, 163, 184, 0.07);
+    --color-border-default: rgba(148, 163, 184, 0.11);
+    --color-border-strong:  rgba(148, 163, 184, 0.20);
 
     /* Focus */
-    --color-focus-ring:        rgba(56, 189, 248, 0.35);
+    --color-focus-ring:        rgba(59, 130, 246, 0.35);
     --color-focus-ring-offset: var(--color-surface-app);
 
-    /* Chart chrome — cool hue */
-    --color-chart-grid-h:      rgba(168, 192, 212, 0.06);
-    --color-chart-grid-v:      rgba(168, 192, 212, 0.035);
-    --color-chart-axis:        rgba(168, 192, 212, 0.50);
-    --color-chart-axis-muted:  rgba(168, 192, 212, 0.40);
-    --color-chart-axis-line:   rgba(168, 192, 212, 0.08);
-    --color-chart-cursor:      rgba(168, 192, 212, 0.15);
+    /* Column group washes — cool blue-grey outgoings, bright blue cashflow */
+    --color-out-tint:         rgba(220, 230, 255, 0.018);
+    --color-out-tint-hover:   rgba(220, 230, 255, 0.038);
+    --color-out-tint-raised:  rgba(220, 230, 255, 0.028);
+    --color-cf-wash:          rgba(59, 130, 246, 0.05);
+    --color-cf-wash-hover:    rgba(59, 130, 246, 0.07);
+    --color-cf-wash-strong:   rgba(59, 130, 246, 0.09);
+
+    /* Chart chrome — cool slate */
+    --color-chart-grid-h:      rgba(148, 163, 184, 0.06);
+    --color-chart-grid-v:      rgba(148, 163, 184, 0.035);
+    --color-chart-axis:        rgba(148, 163, 184, 0.50);
+    --color-chart-axis-muted:  rgba(148, 163, 184, 0.40);
+    --color-chart-axis-line:   rgba(148, 163, 184, 0.09);
+    --color-chart-cursor:      rgba(148, 163, 184, 0.18);
     --color-chart-bar-default: var(--color-surface-active);
     --color-chart-bar-selected: var(--color-brand);
     --color-chart-bar-hover:   var(--color-surface-hover);
 
-    /* Column group washes — shifted to brand blue */
-    --color-out-tint:         rgba(168, 192, 212, 0.022);
-    --color-out-tint-hover:   rgba(168, 192, 212, 0.040);
-    --color-out-tint-raised:  rgba(168, 192, 212, 0.028);
-    --color-cf-wash:          rgba(56, 189, 248, 0.05);
-    --color-cf-wash-hover:    rgba(56, 189, 248, 0.07);
-    --color-cf-wash-strong:   rgba(56, 189, 248, 0.08);
-
     /* Scrollbar */
-    --color-scrollbar: rgba(168, 192, 212, 0.12);
+    --color-scrollbar: rgba(148, 163, 184, 0.14);
   }
 }
 
@@ -228,7 +236,7 @@ body {
 }
 
 ::selection {
-  background: rgba(45, 212, 191, 0.25);
+  background: color-mix(in srgb, var(--color-brand) 25%, transparent);
   color: var(--color-fg-primary);
 }
 
@@ -244,8 +252,8 @@ tr:hover .out-zone { background: var(--color-out-tint-hover); }
 tr:hover .cf-zone { background: var(--color-cf-wash-hover); }
 
 /* Selected row keeps its accent wash */
-tr.row-selected .out-zone { background: rgba(45,212,191,0.05); }
-tr.row-selected .cf-zone { background: rgba(45,212,191,0.08); }
+tr.row-selected .out-zone { background: color-mix(in srgb, var(--color-brand) 5%, transparent); }
+tr.row-selected .cf-zone { background: color-mix(in srgb, var(--color-brand) 8%, transparent); }
 
 /* Header and summary rows use the raised/strong tint */
 thead .out-zone,
@@ -267,10 +275,9 @@ thead .cf-zone,
 }
 
 @layer base {
-  /* Slate Arctic logo */
   [data-theme="arctic"] .header-logo {
-    background: #38bdf8 !important;
-    color: #0c1825 !important;
+    background: #3b82f6 !important;
+    color: #0b1220 !important;
   }
 }
 
@@ -388,16 +395,16 @@ thead .cf-zone,
 @layer base {
   [data-theme="arctic"] .home-bg-glow {
     background:
-      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(56,189,248,0.04) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 35% at 50% 5%, rgba(56,189,248,0.10) 0%, transparent 65%);
+      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(59,130,246,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 35% at 50% 5%, rgba(59,130,246,0.14) 0%, transparent 65%);
   }
-  [data-theme="arctic"] .home-bg-noise { opacity: 0.015; }
+  [data-theme="arctic"] .home-bg-noise { opacity: 0.020; }
 }
 
-/* ── Slate Arctic select arrow ── */
+/* ── Arctic (Slate Electric) select arrow ── */
 @layer base {
   [data-theme="arctic"] .form-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(56,189,248,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(59,130,246,0.55)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   }
 }
 
