@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { formatDollarsSigned } from "@/lib/formatters";
 import { DEPRECIATION_COLOR } from "@/lib/theme";
 import type { ViewMode } from "@/lib/cashflow-types";
@@ -20,6 +21,7 @@ interface Props {
 export default function CashflowDashboard({
   s, hoveredYear, tableExpanded, onHoverYear, onSelectYear, onManualExpand,
 }: Props) {
+  const [dashboardMode, setDashboardMode] = useState<"overview" | "details">("overview");
   const displayYear = hoveredYear ?? s.selectedYear;
   const baseYear = new Date().getFullYear();
   const calendarYear = baseYear + displayYear - 1;
@@ -60,79 +62,119 @@ export default function CashflowDashboard({
 
   return (
     <main className="text-fg-primary max-w-[1400px] mx-auto px-4 py-6 flex flex-col gap-6">
-      {/* ── Chart + Tabs ── */}
-      <div className="flex items-stretch">
-        <div className="relative flex-1 min-w-0 flex flex-col">
-          <div className="flex gap-1.5 mt-5 mb-3 pr-6">
-            {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map(m => {
-              if (m === "tax" && !s.isInvestment) return null;
-              const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "tax" ? "Tax" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
-              return (
-                <button
-                  key={m}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[20px] border-none text-xs font-medium cursor-pointer transition-[background,color] duration-150 ${vm === m ? "bg-white/[0.08] text-fg-primary" : "bg-transparent text-[rgba(161,161,170,0.4)] hover:text-[rgba(161,161,170,0.6)]"}`}
-                  onClick={() => { s.setViewMode(m); s.setSelectedYear(1); }}
-                >
-                  {label}
-                </button>
-              );
-            })}
+      {/* ── Overview / Details tabs ── */}
+      <div className="flex gap-5 mb-5 border-b border-[color:var(--color-border-subtle)]">
+        <button
+          type="button"
+          onClick={() => setDashboardMode("overview")}
+          className={`relative py-2.5 text-[13px] font-medium tracking-tight transition-colors ${
+            dashboardMode === "overview"
+              ? "text-fg-primary"
+              : "text-fg-tertiary hover:text-fg-secondary"
+          }`}
+        >
+          Overview
+          {dashboardMode === "overview" && (
+            <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-brand" />
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => setDashboardMode("details")}
+          className={`relative py-2.5 text-[13px] font-medium tracking-tight transition-colors ${
+            dashboardMode === "details"
+              ? "text-fg-primary"
+              : "text-fg-tertiary hover:text-fg-secondary"
+          }`}
+        >
+          Details
+          <span className="ml-1.5 text-[11px] font-normal text-fg-tertiary">
+            {s.yearData.length} years
+          </span>
+          {dashboardMode === "details" && (
+            <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-brand" />
+          )}
+        </button>
+      </div>
+
+      {dashboardMode === "overview" && (
+        <>
+          {/* ── Chart + Tabs ── */}
+          <div className="flex items-stretch">
+            <div className="relative flex-1 min-w-0 flex flex-col">
+              <div className="flex gap-1.5 mt-5 mb-3 pr-6">
+                {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map(m => {
+                  if (m === "tax" && !s.isInvestment) return null;
+                  const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "tax" ? "Tax" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
+                  return (
+                    <button
+                      key={m}
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[20px] border-none text-xs font-medium cursor-pointer transition-[background,color] duration-150 ${vm === m ? "bg-white/[0.08] text-fg-primary" : "bg-transparent text-[rgba(161,161,170,0.4)] hover:text-[rgba(161,161,170,0.6)]"}`}
+                      onClick={() => { s.setViewMode(m); s.setSelectedYear(1); }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <CashflowChart
+                chartData={s.chartData}
+                yearData={s.yearData}
+                viewMode={vm}
+                selectedYear={s.selectedYear}
+                hoveredYear={hoveredYear}
+                chartView="bars"
+                onSelectYear={onSelectYear}
+                onHoverYear={onHoverYear}
+              />
+
+              <div className="flex items-baseline justify-center gap-3 pt-[30px] pb-2.5">
+                <span className="text-[23px] font-semibold text-brand tracking-[-0.02em] tabular-nums">Year {displayYear}</span>
+                <span className="text-[22px] font-normal text-fg-tertiary">{calendarYear}</span>
+                <span className="w-px h-[22px] bg-[rgba(113,113,122,0.25)]" />
+                <span className="text-[23px] font-semibold tracking-[-0.02em] tabular-nums" style={heroColor ? { color: heroColor } : undefined}>{heroValue}</span>
+                <span className="text-[22px] font-normal text-fg-tertiary">{heroLabel}</span>
+              </div>
+            </div>
           </div>
 
-          <CashflowChart
-            chartData={s.chartData}
+          {/* ── KPI strip ── */}
+          <div className="bg-surface-raised rounded-xl overflow-hidden">
+            <CashflowKpiStrip
+              viewMode={vm}
+              yearData={s.yearData}
+              selectedYearData={displayYearData}
+              selectedYear={displayYear}
+              isInvestment={s.isInvestment}
+              marginalRate={s.marginalRate}
+              hasOffset={s.hasOffset}
+              isHovered={hoveredYear !== null}
+              onHoverYear={onHoverYear}
+              onSelectYear={onSelectYear}
+            />
+          </div>
+        </>
+      )}
+
+      {dashboardMode === "details" && (
+        <div className="bg-surface-raised rounded-xl overflow-hidden">
+          <CashflowDataTable
             yearData={s.yearData}
             viewMode={vm}
             selectedYear={s.selectedYear}
             hoveredYear={hoveredYear}
-            chartView="bars"
+            isInvestment={s.isInvestment}
+            hasOffset={s.hasOffset}
+            propertyValue={s.propertyValue}
+            expandedMilestones={tableExpanded}
+            onExpandedChange={onManualExpand}
             onSelectYear={onSelectYear}
             onHoverYear={onHoverYear}
+            {...panelProp}
           />
-
-          <div className="flex items-baseline justify-center gap-3 pt-[30px] pb-2.5">
-            <span className="text-[23px] font-semibold text-brand tracking-[-0.02em] tabular-nums">Year {displayYear}</span>
-            <span className="text-[22px] font-normal text-fg-tertiary">{calendarYear}</span>
-            <span className="w-px h-[22px] bg-[rgba(113,113,122,0.25)]" />
-            <span className="text-[23px] font-semibold tracking-[-0.02em] tabular-nums" style={heroColor ? { color: heroColor } : undefined}>{heroValue}</span>
-            <span className="text-[22px] font-normal text-fg-tertiary">{heroLabel}</span>
-          </div>
         </div>
-      </div>
-
-      {/* ── KPI strip ── */}
-      <div className="bg-surface-raised rounded-xl overflow-hidden">
-        <CashflowKpiStrip
-          viewMode={vm}
-          yearData={s.yearData}
-          selectedYearData={displayYearData}
-          selectedYear={displayYear}
-          isInvestment={s.isInvestment}
-          marginalRate={s.marginalRate}
-          hasOffset={s.hasOffset}
-          isHovered={hoveredYear !== null}
-          onHoverYear={onHoverYear}
-          onSelectYear={onSelectYear}
-        />
-      </div>
-
-      {/* ── Table ── */}
-      <div className="bg-surface-raised rounded-xl overflow-hidden">
-        <CashflowDataTable
-          yearData={s.yearData}
-          viewMode={vm}
-          selectedYear={s.selectedYear}
-          hoveredYear={hoveredYear}
-          isInvestment={s.isInvestment}
-          hasOffset={s.hasOffset}
-          propertyValue={s.propertyValue}
-          expandedMilestones={tableExpanded}
-          onExpandedChange={onManualExpand}
-          onSelectYear={onSelectYear}
-          onHoverYear={onHoverYear}
-          {...panelProp}
-        />
-      </div>
+      )}
     </main>
   );
 }
