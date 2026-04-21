@@ -8,8 +8,8 @@ interface TableCellProps extends TdHTMLAttributes<HTMLTableCellElement> {
 
 /**
  * Standard data cell for Cashflow tables.
- * - tone="data" (default) — softer --color-fg-table for tabular numbers
- * - tone="emphasis" — full --color-foreground for headline values
+ * - tone="data" (default) — --color-data-primary for tabular numbers
+ * - tone="emphasis" — --color-data-emphasis for headline values
  */
 export default function TableCell({
   children,
@@ -20,8 +20,8 @@ export default function TableCell({
 }: TableCellProps) {
   const toneClass =
     tone === "emphasis"
-      ? "text-[var(--color-fg-primary)]"
-      : "text-[var(--color-fg-table)]";
+      ? "text-[var(--color-data-emphasis)]"
+      : "text-[var(--color-data-primary)]";
   const animClass = animated ? "animate-col-fade-in" : "";
 
   return (

@@ -44,9 +44,9 @@
   /* Data ink — dedicated tokens for tabular numeric content            */
   /* Separate from UI fg-* so table numbers can tune independently      */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-data-primary:   #c5d4cf;    /* tabular numbers, default */
-  --color-data-emphasis:  #f0fdfa;    /* headline/total values */
-  --color-data-muted:     #8ba19c;    /* YoY percentages, secondary data */
+  --color-data-primary:   #d4d7db;    /* tabular numbers, default */
+  --color-data-emphasis:  #f3f4f6;    /* headline/total values */
+  --color-data-muted:     #9aa0a6;    /* YoY percentages, secondary data */
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Data semantic — meaning in tabular/chart context                   */
@@ -175,10 +175,10 @@
     --color-fg-tertiary:  #64748b;
     --color-fg-disabled:  #334155;
 
-    /* Data ink */
-    --color-data-primary:  #c1cddd;
-    --color-data-emphasis: #eff6ff;
-    --color-data-muted:    #7f8b9c;
+    /* Data ink — neutral grey, theme-independent for tabular legibility */
+    --color-data-primary:  #d4d7db;
+    --color-data-emphasis: #f3f4f6;
+    --color-data-muted:    #9aa0a6;
 
     /* Data semantic — slightly brighter than Graphite's calm set to match Electric's energy */
     --color-data-positive: #34d399;
