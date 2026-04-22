@@ -116,7 +116,7 @@ export default function CashflowDataTable({
     return (
       <span className="whitespace-nowrap inline-flex items-center gap-2.5">
         {showChevron ? (
-          <span className="inline-flex items-center justify-center mr-1.5 text-white/[0.3] transition-all duration-150 group-hover/row:text-white/[0.55] group-hover/row:translate-x-[1px]">
+          <span className="inline-flex items-center justify-center mr-1.5 text-fg-primary/30 transition-all duration-150 group-hover/row:text-fg-primary/55 group-hover/row:translate-x-[1px]">
             {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
           </span>
         ) : (
@@ -158,7 +158,7 @@ export default function CashflowDataTable({
     <div className="relative w-full">
       {showExpandButton && (
         <button
-          className="absolute top-1.5 left-2 z-[2] flex items-center justify-center w-[22px] h-[22px] border-none rounded bg-transparent text-white/[0.22] cursor-pointer transition-[color,background] duration-150 hover:bg-brand/[0.08] hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+          className="absolute top-1.5 left-2 z-[2] flex items-center justify-center w-[22px] h-[22px] border-none rounded bg-transparent text-fg-primary/[0.22] cursor-pointer transition-[color,background] duration-150 hover:bg-brand/[0.08] hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           onClick={() => {
             if (expandedMilestones.size > 0) {
               setExpandedMilestones(new Set());

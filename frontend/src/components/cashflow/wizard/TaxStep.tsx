@@ -31,8 +31,8 @@ export default function TaxStep({ s }: Props) {
         <div className="flex flex-col gap-3.5">
           <span className="text-xs font-medium tracking-[0.06em] uppercase text-fg-tertiary">Depreciation</span>
           <div className="flex gap-3">
-            <button className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border bg-transparent font-medium text-[13px] font-[inherit] cursor-pointer transition-all duration-200 ${s.depreciationMode === "estimate" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-white/[0.12] hover:text-fg-primary hover:bg-white/[0.03]"}`} onClick={() => s.setDepreciationMode("estimate")}>Estimate</button>
-            <button className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border bg-transparent font-medium text-[13px] font-[inherit] cursor-pointer transition-all duration-200 ${s.depreciationMode === "detailed" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-white/[0.12] hover:text-fg-primary hover:bg-white/[0.03]"}`} onClick={() => s.setDepreciationMode("detailed")}>Detailed</button>
+            <button className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border bg-transparent font-medium text-[13px] font-[inherit] cursor-pointer transition-all duration-200 ${s.depreciationMode === "estimate" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-strong hover:text-fg-primary hover:bg-surface-hover"}`} onClick={() => s.setDepreciationMode("estimate")}>Estimate</button>
+            <button className={`flex-1 flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border bg-transparent font-medium text-[13px] font-[inherit] cursor-pointer transition-all duration-200 ${s.depreciationMode === "detailed" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-strong hover:text-fg-primary hover:bg-surface-hover"}`} onClick={() => s.setDepreciationMode("detailed")}>Detailed</button>
           </div>
         </div>
       )}

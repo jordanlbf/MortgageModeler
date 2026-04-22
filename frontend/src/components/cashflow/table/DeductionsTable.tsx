@@ -44,8 +44,8 @@ export default function DeductionsTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
-              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />
+            <tr className="h-14 border-b border-strong">
+              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-default" />
               {isGroupExpanded("holding") && isInvestment && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Loan Interest Paid">interest</th>}
               {isGroupExpanded("holding") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Council + Water Rates">rates</th>}
               {isGroupExpanded("holding") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Building & Landlord Insurance">insurance</th>}
@@ -91,7 +91,7 @@ export default function DeductionsTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
+            <tr className="h-14 border-b border-strong">
               {isGroupExpanded("depreciation") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Division 43 — Capital Works Deduction">div 43</th>}
               {isGroupExpanded("depreciation") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Division 40 — Plant & Equipment Depreciation">div 40</th>}
               <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-fg-secondary font-bold pr-5 text-right whitespace-nowrap tip" data-tip="Depreciation Subtotal">subtotal</th>
@@ -132,7 +132,7 @@ export default function DeductionsTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
+            <tr className="h-14 border-b border-strong">
               {isGroupExpanded("totals") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Interest + Ongoing Costs">holding</th>}
               {isGroupExpanded("totals") && isInvestment && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Div 43 + Div 40">depr.</th>}
               <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-fg-secondary font-bold pr-5 text-right whitespace-nowrap tip" data-tip={isInvestment ? "Total Deductions" : "Total Expenses"}>{isInvestment ? "total ded." : "total exp."}</th>
@@ -216,7 +216,7 @@ export default function DeductionsTable({
               </th>
             </tr>
             {(holdExpanded || depExpanded) && (
-            <tr className="h-14 border-b border-white/[0.10]" style={{ background: "var(--color-surface-raised)" }}>
+            <tr className="h-14 border-b border-default" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap w-24 text-left px-2.5" />
               {/* Holding detail columns */}
               {holdExpanded && isInvestment && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Loan Interest Paid">interest</th>}

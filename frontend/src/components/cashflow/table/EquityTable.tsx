@@ -43,14 +43,14 @@ export default function EquityTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
-              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />
+            <tr className="h-14 border-b border-strong">
+              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-default" />
               {isGroupExpanded("property") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Cumulative Capital Growth From Purchase">total growth</th>}
               {isGroupExpanded("property") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Total Growth as % of Purchase Price">gain %</th>}
-              {isGroupExpanded("property") && <th className="w-0 max-w-0 p-0 border-l border-white/[0.1] animate-col-fade-in" />}
+              {isGroupExpanded("property") && <th className="w-0 max-w-0 p-0 border-l border-default animate-col-fade-in" />}
               {isGroupExpanded("property") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Year-on-Year Capital Growth">yoy growth</th>}
               {isGroupExpanded("property") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Year-on-Year Growth %">yoy %</th>}
-              {isGroupExpanded("property") && <th className="w-0 max-w-0 p-0 border-l border-white/[0.1] animate-col-fade-in" />}
+              {isGroupExpanded("property") && <th className="w-0 max-w-0 p-0 border-l border-default animate-col-fade-in" />}
               <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-fg-secondary font-bold pr-5 text-right whitespace-nowrap tip" data-tip="Current Property Value">value</th>
             </tr>
           </thead>
@@ -98,12 +98,12 @@ export default function EquityTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
+            <tr className="h-14 border-b border-strong">
               {isGroupExpanded("position") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Current Property Value">prop value</th>}
               {isGroupExpanded("position") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Outstanding Loan Balance">loan balance</th>}
               {isGroupExpanded("position") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Loan-to-Value Ratio">lvr</th>}
               {isGroupExpanded("position") && showOffset && <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-fg-secondary font-bold text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Property Value − Loan Balance">prop equity</th>}
-              {isGroupExpanded("position") && showOffset && <th className="w-0 max-w-0 p-0 border-l border-white/[0.1] animate-col-fade-in" />}
+              {isGroupExpanded("position") && showOffset && <th className="w-0 max-w-0 p-0 border-l border-default animate-col-fade-in" />}
               {isGroupExpanded("position") && showOffset && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Offset Account Balance">offset</th>}
               <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-fg-secondary font-bold pr-5 text-right whitespace-nowrap tip" data-tip={showOffset ? "Property Equity + Offset Balance" : "Property Value − Loan Balance"}>net equity</th>
             </tr>
@@ -175,7 +175,7 @@ export default function EquityTable({
               </th>
             </tr>
             {(propExpanded || posExpanded) && (
-            <tr className="h-14 border-b border-white/[0.10]" style={{ background: "var(--color-surface-raised)" }}>
+            <tr className="h-14 border-b border-default" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap w-24 text-left px-2.5" />
               {/* Property detail columns */}
               {propExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Cumulative Growth $">total $</th>}

@@ -12,14 +12,14 @@ export default function SetupStep({ s }: Props) {
         <span className="text-xs font-medium tracking-[0.06em] uppercase text-fg-tertiary">Property type</span>
         <div className="flex gap-3">
           <button
-            className={`flex-1 flex items-center justify-center gap-2.5 py-[18px] px-5 rounded-xl border bg-transparent font-medium text-sm font-[inherit] cursor-pointer transition-all duration-200 ${s.propertyUse === "investment" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-white/[0.12] hover:text-fg-primary hover:bg-white/[0.03]"}`}
+            className={`flex-1 flex items-center justify-center gap-2.5 py-[18px] px-5 rounded-xl border bg-transparent font-medium text-sm font-[inherit] cursor-pointer transition-all duration-200 ${s.propertyUse === "investment" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-strong hover:text-fg-primary hover:bg-surface-hover"}`}
             onClick={() => { s.setPropertyUse("investment"); s.setPurchaseMode(null); }}
           >
             <Building2 size={18} />
             <span>Investment</span>
           </button>
           <button
-            className={`flex-1 flex items-center justify-center gap-2.5 py-[18px] px-5 rounded-xl border bg-transparent font-medium text-sm font-[inherit] cursor-pointer transition-all duration-200 ${s.propertyUse === "ppor" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-white/[0.12] hover:text-fg-primary hover:bg-white/[0.03]"}`}
+            className={`flex-1 flex items-center justify-center gap-2.5 py-[18px] px-5 rounded-xl border bg-transparent font-medium text-sm font-[inherit] cursor-pointer transition-all duration-200 ${s.propertyUse === "ppor" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-strong hover:text-fg-primary hover:bg-surface-hover"}`}
             onClick={() => { s.setPropertyUse("ppor"); s.setPurchaseMode(null); }}
           >
             <Home size={18} />
@@ -32,14 +32,14 @@ export default function SetupStep({ s }: Props) {
           <span className="text-xs font-medium tracking-[0.06em] uppercase text-fg-tertiary">Purchase type</span>
           <div className="flex gap-3">
             <button
-              className={`flex-1 flex items-center justify-center gap-2.5 py-[18px] px-5 rounded-xl border bg-transparent font-medium text-sm font-[inherit] cursor-pointer transition-all duration-200 ${s.purchaseMode === "new" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-white/[0.12] hover:text-fg-primary hover:bg-white/[0.03]"}`}
+              className={`flex-1 flex items-center justify-center gap-2.5 py-[18px] px-5 rounded-xl border bg-transparent font-medium text-sm font-[inherit] cursor-pointer transition-all duration-200 ${s.purchaseMode === "new" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-strong hover:text-fg-primary hover:bg-surface-hover"}`}
               onClick={() => s.setPurchaseMode("new")}
             >
               <Sparkles size={18} />
               <span>New purchase</span>
             </button>
             <button
-              className={`flex-1 flex items-center justify-center gap-2.5 py-[18px] px-5 rounded-xl border bg-transparent font-medium text-sm font-[inherit] cursor-pointer transition-all duration-200 ${s.purchaseMode === "existing" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-white/[0.12] hover:text-fg-primary hover:bg-white/[0.03]"}`}
+              className={`flex-1 flex items-center justify-center gap-2.5 py-[18px] px-5 rounded-xl border bg-transparent font-medium text-sm font-[inherit] cursor-pointer transition-all duration-200 ${s.purchaseMode === "existing" ? "border-brand/30 text-brand bg-brand/[0.08]" : "border-default text-fg-secondary hover:border-strong hover:text-fg-primary hover:bg-surface-hover"}`}
               onClick={() => s.setPurchaseMode("existing")}
             >
               <Building2 size={18} />

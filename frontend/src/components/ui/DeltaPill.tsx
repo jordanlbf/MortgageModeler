@@ -12,7 +12,7 @@ interface Props {
 }
 
 const pillClass = (value: number, direction: "positive" | "negative") => {
-  if (value === 0) return "bg-white/10 text-fg-tertiary";
+  if (value === 0) return "bg-surface-active text-fg-tertiary";
   const isGood = direction === "positive" ? value > 0 : value < 0;
   return isGood ? "bg-data-positive/10 text-data-positive" : "bg-data-negative/10 text-data-negative";
 };

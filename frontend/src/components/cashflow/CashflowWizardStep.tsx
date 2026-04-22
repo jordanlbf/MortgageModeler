@@ -76,7 +76,7 @@ export default function CashflowWizardStep({ s, currentStep, onStepComplete, onS
           </div>
           <div className="pt-6 flex items-center gap-3.5">
             {canGoBack && (
-              <button className="flex items-center gap-2 py-3.5 px-[22px] bg-transparent border border-default rounded-xl text-fg-tertiary font-[inherit] text-sm font-medium cursor-pointer transition-all duration-150 whitespace-nowrap shrink-0 hover:border-white/[0.12] hover:text-fg-secondary" onClick={onStepBack}>
+              <button className="flex items-center gap-2 py-3.5 px-[22px] bg-transparent border border-default rounded-xl text-fg-tertiary font-[inherit] text-sm font-medium cursor-pointer transition-all duration-150 whitespace-nowrap shrink-0 hover:border-strong hover:text-fg-secondary" onClick={onStepBack}>
                 {isModal ? <X size={16} /> : null}
                 {isModal ? "Cancel" : "Back"}
               </button>

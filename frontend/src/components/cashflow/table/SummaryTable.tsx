@@ -42,8 +42,8 @@ export default function SummaryTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
-              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />
+            <tr className="h-14 border-b border-strong">
+              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-default" />
               {isGroupExpanded("income") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Annual Salary (grows with capital growth rate)">salary</th>}
               {isGroupExpanded("income") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Year-on-Year Salary Growth">gain %</th>}
               {isGroupExpanded("income") && isInvestment && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Annual Rental Income (grows with capital growth rate)">rent</th>}
@@ -93,7 +93,7 @@ export default function SummaryTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
+            <tr className="h-14 border-b border-strong">
               {isGroupExpanded("outgoings") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Council, Water, Insurance, Maintenance, Strata">holding</th>}
               {isGroupExpanded("outgoings") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Interest + Principal">repayments</th>}
               {isGroupExpanded("outgoings") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Income Tax (incl. Medicare Levy)">tax</th>}
@@ -127,7 +127,7 @@ export default function SummaryTable({
             <tr className="h-7 border-b-0">
               <th className="col-group-h px-3 text-fg-secondary" colSpan={3}>cashflow</th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
+            <tr className="h-14 border-b border-strong">
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip" data-tip="Salary + Rent">total income</th>
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip" data-tip="Holding + Repayments + Tax">total costs</th>
               <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-fg-secondary font-bold pr-5 text-right whitespace-nowrap tip" data-tip="Total Income − Total Costs">cashflow</th>
@@ -176,7 +176,7 @@ export default function SummaryTable({
             <tr className="h-11 border-b-0" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-11 box-border pb-2 px-3 text-center align-bottom" />
               <th
-                className="h-11 box-border pb-2 px-3 text-center align-bottom text-[10.5px] font-medium tracking-[0.14em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[2.5px] before:rounded-b-sm before:bg-current text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03] [&_svg]:opacity-70 [&_svg]:transition-[opacity,transform] [&_svg]:duration-150 hover:[&_svg]:opacity-100"
+                className="h-11 box-border pb-2 px-3 text-center align-bottom text-[10.5px] font-medium tracking-[0.14em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[2.5px] before:rounded-b-sm before:bg-current text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-surface-hover [&_svg]:opacity-70 [&_svg]:transition-[opacity,transform] [&_svg]:duration-150 hover:[&_svg]:opacity-100"
                 colSpan={incExpanded ? (isInvestment ? 5 : 3) : 1}
                 onClick={() => toggleGroup("income")}
               >
@@ -186,7 +186,7 @@ export default function SummaryTable({
                 </span>
               </th>
               <th
-                className="h-11 box-border pb-2 pl-6 pr-3 text-center align-bottom text-[10.5px] font-medium tracking-[0.14em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[2.5px] before:rounded-b-sm before:bg-current text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03] out-zone [&_svg]:opacity-70 [&_svg]:transition-[opacity,transform] [&_svg]:duration-150 hover:[&_svg]:opacity-100"
+                className="h-11 box-border pb-2 pl-6 pr-3 text-center align-bottom text-[10.5px] font-medium tracking-[0.14em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[2.5px] before:rounded-b-sm before:bg-current text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-surface-hover out-zone [&_svg]:opacity-70 [&_svg]:transition-[opacity,transform] [&_svg]:duration-150 hover:[&_svg]:opacity-100"
                 colSpan={ogExpanded ? 4 : 1}
                 onClick={() => toggleGroup("outgoings")}
               >
@@ -200,7 +200,7 @@ export default function SummaryTable({
               </th>
             </tr>
             {(incExpanded || ogExpanded) && (
-            <tr className="h-14 border-b border-white/[0.10]" style={{ background: "var(--color-surface-raised)" }}>
+            <tr className="h-14 border-b border-default" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-14 box-border align-middle text-[12px] font-normal tracking-[0.02em] capitalize text-fg-tertiary whitespace-nowrap w-[100px] pl-[18px] text-left" />
               {/* Income detail columns */}
               {incExpanded && <th className="h-14 box-border align-middle px-3 text-[12px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Annual Salary">salary</th>}

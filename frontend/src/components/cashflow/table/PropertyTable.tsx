@@ -41,8 +41,8 @@ export default function PropertyTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
-              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />
+            <tr className="h-14 border-b border-strong">
+              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-default" />
               {isGroupExpanded("gearing") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Annual Rental Income">rent</th>}
               {isGroupExpanded("gearing") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Interest + Ongoing Costs">holding</th>}
               {isGroupExpanded("gearing") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Div 43 + Div 40 Depreciation">depreciation</th>}
@@ -86,7 +86,7 @@ export default function PropertyTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
+            <tr className="h-14 border-b border-strong">
               {isGroupExpanded("propertyCashflow") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Annual Rental Income">rent</th>}
               {isGroupExpanded("propertyCashflow") && <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-fg-secondary font-bold text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Holding + Repayments">total costs</th>}
               {isGroupExpanded("propertyCashflow") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Tax Benefit From Property Deductions">tax saved</th>}
@@ -161,7 +161,7 @@ export default function PropertyTable({
               </th>
             </tr>
             {(gearExpanded || cfExpanded) && (
-            <tr className="h-14 border-b border-white/[0.10]" style={{ background: "var(--color-surface-raised)" }}>
+            <tr className="h-14 border-b border-default" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap w-24 text-left px-2.5" />
               {/* Gearing detail columns */}
               {gearExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Annual Rental Income">rent</th>}
@@ -257,19 +257,19 @@ export default function PropertyTable({
             <tr className="h-7 border-b-0">
               <th className="h-7 box-border px-3 text-center align-bottom" colSpan={2} />
               <th className="col-group-h px-3 text-fg-tertiary" colSpan={2}>costs</th>
-              <th className="w-0 max-w-0 p-0 bg-transparent relative border-l border-white/[0.1]" />
+              <th className="w-0 max-w-0 p-0 bg-transparent relative border-l border-default" />
               <th className="col-group-h px-3 text-fg-tertiary" colSpan={2}>loan</th>
-              <th className="w-0 max-w-0 p-0 bg-transparent relative border-l border-white/[0.1]" />
+              <th className="w-0 max-w-0 p-0 bg-transparent relative border-l border-default" />
               <th className="col-group-h px-3 text-fg-tertiary" />
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
-              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />
+            <tr className="h-14 border-b border-strong">
+              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-default" />
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip" data-tip="Council, Water, Insurance, Maintenance, Strata">holding</th>
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip" data-tip="Interest Portion of Loan Repayment">interest</th>
-              <th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />
+              <th className="w-0 max-w-0 p-0 border-l border-default" />
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip" data-tip="Principal Portion of Loan Repayment">principal</th>
               <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-fg-secondary font-bold text-right whitespace-nowrap tip" data-tip="Interest + Principal">repayments</th>
-              <th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />
+              <th className="w-0 max-w-0 p-0 border-l border-default" />
               <th className="h-14 box-border align-middle px-3 text-[11px] tracking-[0.02em] capitalize text-fg-secondary font-bold pr-5 text-right whitespace-nowrap tip" data-tip="Annual Property Cashflow">cashflow</th>
             </tr>
           </thead>

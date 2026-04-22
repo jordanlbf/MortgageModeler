@@ -41,8 +41,8 @@ export default function TaxTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
-              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />
+            <tr className="h-14 border-b border-strong">
+              <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-default" />
               {isGroupExpanded("deductions") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Council, Water, Insurance, Maintenance, Strata">holding</th>}
               {isGroupExpanded("deductions") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Loan Interest Paid">interest</th>}
               {isGroupExpanded("deductions") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Div 43 + Div 40 Depreciation">depr.</th>}
@@ -87,7 +87,7 @@ export default function TaxTable({
                 </span>
               </th>
             </tr>
-            <tr className="h-14 border-b border-white/[0.12]">
+            <tr className="h-14 border-b border-strong">
               {isGroupExpanded("tax") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Salary + Rental Income">total income</th>}
               {isGroupExpanded("tax") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Total Deductible Expenses">deductions</th>}
               {isGroupExpanded("tax") && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Tax Saved From Property Deductions">benefit</th>}
@@ -171,7 +171,7 @@ export default function TaxTable({
               </th>
             </tr>
             {(dedExpanded || taxExpanded) && (
-            <tr className="h-14 border-b border-white/[0.10]" style={{ background: "var(--color-surface-raised)" }}>
+            <tr className="h-14 border-b border-default" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap w-24 text-left px-2.5" />
               {/* Deductions detail columns */}
               {dedExpanded && <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-secondary text-right whitespace-nowrap tip animate-col-fade-in" data-tip="Ongoing Holding Costs">holding</th>}
