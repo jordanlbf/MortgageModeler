@@ -5,6 +5,7 @@ import { getMarginalTaxRate, getBracketColor } from "@/lib/cashflow-calculations
 import { formatDollarsSigned } from "@/lib/formatters";
 import { safeDiv } from "@/lib/formatters";
 import { LVR_COLORS, DEPRECIATION_COLOR } from "@/lib/theme";
+import KpiTile from "@/components/ui/KpiTile";
 import KpiSparkline from "./KpiSparkline";
 
 interface KpiItem {
@@ -234,16 +235,7 @@ export default function CashflowKpiStrip({
   return (
     <div className={`flex flex-wrap max-[768px]:flex-wrap ${isHovered ? "[&_.kpi-val]:transition-opacity [&_.kpi-val]:duration-150 [&_.kpi-val]:ease-out" : ""}`}>
       {items.map((item, i) => (
-        <div
-          key={i}
-          className={`flex-1 px-6 py-5 flex flex-col gap-2 text-center relative max-[768px]:flex-[1_1_50%] max-[768px]:min-w-[50%] ${
-            i > 0
-              ? "before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-px before:bg-border max-[768px]:before:hidden"
-              : ""
-          }`}
-        >
-          <div className="mb-1 text-[10px] font-medium tracking-[0.04em] uppercase text-zinc-400/40">{item.label}</div>
-          <div className="kpi-val text-lg font-semibold tabular-nums tracking-tight leading-tight" style={{ color: item.color }}>{item.value}</div>
+        <KpiTile key={i} label={item.label} value={item.value} color={item.color} divider={i > 0}>
           {item.sparkData && (
             <KpiSparkline
               data={item.sparkData}
@@ -255,7 +247,7 @@ export default function CashflowKpiStrip({
               onSelectIndex={onSelectYear ? (idx) => onSelectYear(idx + 1) : undefined}
             />
           )}
-        </div>
+        </KpiTile>
       ))}
     </div>
   );
