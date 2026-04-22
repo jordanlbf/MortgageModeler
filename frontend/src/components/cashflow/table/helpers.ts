@@ -16,23 +16,6 @@ export const yoyClass = (value: number, positiveWhen: "positive" | "negative" = 
 /** Format a YoY badge string. */
 export const fmtYoY = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
 
-/** Compact dollar format for summary rows: $X.XXM, $XXXK, $XXX. No sign prefix. */
-export const formatCompact = (v: number): string => {
-  const a = Math.abs(v);
-  if (a >= 1_000_000) return "$" + (a / 1_000_000).toFixed(2) + "M";
-  if (a >= 1_000) return "$" + Math.round(a / 1_000) + "K";
-  return "$" + Math.round(a);
-};
-
-/** Compact dollar format with sign prefix: +$X.XXM, −$XXXK. For cashflow/delta values. */
-export const formatCompactSigned = (v: number): string => {
-  const a = Math.abs(v);
-  const sign = v < 0 ? "−" : v > 0 ? "+" : "";
-  if (a >= 1_000_000) return sign + "$" + (a / 1_000_000).toFixed(2) + "M";
-  if (a >= 1_000) return sign + "$" + Math.round(a / 1_000) + "K";
-  return sign + "$" + Math.round(a);
-};
-
 /** Determine value styling tier: result (positive/negative), outflow (negative), or neutral */
 export const getValueClass = (value: number, isResult = false, isOutflow = false, isTaxSaved = false) => {
   if (isResult) return value < 0 ? "text-data-negative font-bold" : "text-data-positive font-bold";
