@@ -1,6 +1,7 @@
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
-import { INPUT_CLS, currencyInput } from "./shared";
+import Input from "@/components/ui/Input";
+import { currencyInput } from "./shared";
 
 interface Props {
   s: CashflowState;
@@ -19,11 +20,11 @@ export default function PropertyStep({ s }: Props) {
         <div className="flex gap-3.5">
           <div className="flex flex-col gap-2 flex-1">
             <label className="text-xs font-medium text-fg-secondary">Purchase price</label>
-            <input type="text" className={INPUT_CLS} value={s.purchasePrice} {...currencyInput(s.setPurchasePrice)} />
+            <Input value={s.purchasePrice} {...currencyInput(s.setPurchasePrice)} />
           </div>
           <div className="flex flex-col gap-2 flex-1">
             <label className="text-xs font-medium text-fg-secondary">Deposit</label>
-            <input type="text" className={INPUT_CLS} value={s.depositAmount} {...currencyInput(s.setDepositAmount)} />
+            <Input value={s.depositAmount} {...currencyInput(s.setDepositAmount)} />
           </div>
         </div>
         <div className="flex items-stretch bg-brand/[0.04] rounded-[14px] overflow-hidden">
@@ -58,20 +59,20 @@ export default function PropertyStep({ s }: Props) {
       <div className="flex gap-3.5">
         <div className="flex flex-col gap-2 flex-1">
           <label className="text-xs font-medium text-fg-secondary">Current value</label>
-          <input type="text" className={INPUT_CLS} value={s.currentValue} {...currencyInput(s.setCurrentValue)} />
+          <Input value={s.currentValue} {...currencyInput(s.setCurrentValue)} />
         </div>
         <div className="flex flex-col gap-2 flex-1">
           <label className="text-xs font-medium text-fg-secondary">Loan balance</label>
-          <input type="text" className={INPUT_CLS} value={s.currentLoanBalance} {...currencyInput(s.setCurrentLoanBalance)} />
+          <Input value={s.currentLoanBalance} {...currencyInput(s.setCurrentLoanBalance)} />
         </div>
       </div>
       <div className="flex flex-col gap-2">
         <label className="text-xs font-medium text-fg-secondary">Original purchase price</label>
-        <input type="text" className={INPUT_CLS} value={s.originalPurchasePrice} {...currencyInput(s.setOriginalPurchasePrice)} />
+        <Input value={s.originalPurchasePrice} {...currencyInput(s.setOriginalPurchasePrice)} />
       </div>
       <div className="flex flex-col gap-2">
         <label className="text-xs font-medium text-fg-secondary">Year purchased</label>
-        <input type="text" className={INPUT_CLS} value={s.purchaseYear} onChange={(e) => s.setPurchaseYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="2021" />
+        <Input value={s.purchaseYear} onChange={(e) => s.setPurchaseYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="2021" />
       </div>
       <div className="flex items-stretch bg-brand/[0.04] rounded-[14px] overflow-hidden">
         <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">

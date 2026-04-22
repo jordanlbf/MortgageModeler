@@ -1,13 +1,12 @@
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 import { paymentFromLoanAmount } from "@/lib/calculations";
-import { INPUT_CLS, currencyInput } from "./shared";
+import Input from "@/components/ui/Input";
+import { currencyInput } from "./shared";
 
 interface Props {
   s: CashflowState;
 }
-
-const SUFFIXED_INPUT_CLS = "py-3.5 px-4 pr-10 bg-transparent border border-default rounded-xl text-fg-primary font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-brand/40 w-full";
 
 export default function LoanStep({ s }: Props) {
   const principal = s.isNewPurchase
@@ -44,17 +43,11 @@ export default function LoanStep({ s }: Props) {
       <div className="flex gap-3.5">
         <div className="flex flex-col gap-2 flex-1">
           <label className="text-xs font-medium text-fg-secondary">Interest rate</label>
-          <div className="relative">
-            <input type="text" className={SUFFIXED_INPUT_CLS} value={s.interestRate} onChange={(e) => s.setInterestRate(e.target.value)} />
-            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] font-medium text-fg-tertiary pointer-events-none">%</span>
-          </div>
+          <Input suffix="%" value={s.interestRate} onChange={(e) => s.setInterestRate(e.target.value)} />
         </div>
         <div className="flex flex-col gap-2 flex-1">
           <label className="text-xs font-medium text-fg-secondary">Loan term</label>
-          <div className="relative">
-            <input type="text" className={SUFFIXED_INPUT_CLS} value={s.loanTerm} onChange={(e) => s.setLoanTerm(e.target.value)} />
-            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] font-medium text-fg-tertiary pointer-events-none">yrs</span>
-          </div>
+          <Input suffix="yrs" value={s.loanTerm} onChange={(e) => s.setLoanTerm(e.target.value)} />
         </div>
       </div>
 
@@ -70,12 +63,12 @@ export default function LoanStep({ s }: Props) {
       {s.hasOffset && (
         <div className="flex flex-col gap-2">
           <label className="text-xs font-medium text-fg-secondary">Offset balance</label>
-          <input type="text" className={INPUT_CLS} value={s.offsetBalance} {...currencyInput(s.setOffsetBalance)} />
+          <Input value={s.offsetBalance} {...currencyInput(s.setOffsetBalance)} />
         </div>
       )}
       <div className="flex flex-col gap-2">
         <label className="text-xs font-medium text-fg-secondary">Extra repayments / month</label>
-        <input type="text" className={INPUT_CLS} value={s.extraRepayments} {...currencyInput(s.setExtraRepayments)} />
+        <Input value={s.extraRepayments} {...currencyInput(s.setExtraRepayments)} />
       </div>
     </div>
   );

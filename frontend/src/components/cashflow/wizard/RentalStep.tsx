@@ -1,5 +1,6 @@
 import type { CashflowState } from "@/hooks/useCashflowState";
-import { INPUT_CLS, currencyInput } from "./shared";
+import Input from "@/components/ui/Input";
+import { currencyInput } from "./shared";
 
 interface Props {
   s: CashflowState;
@@ -10,11 +11,11 @@ export default function RentalStep({ s }: Props) {
     <div className="flex flex-col gap-7">
       <div className="flex flex-col gap-2">
         <label className="text-xs font-medium text-fg-secondary">Weekly rent</label>
-        <input type="text" className={INPUT_CLS} value={s.weeklyRent} {...currencyInput(s.setWeeklyRent)} />
+        <Input value={s.weeklyRent} {...currencyInput(s.setWeeklyRent)} />
       </div>
       <div className="flex flex-col gap-2">
         <label className="text-xs font-medium text-fg-secondary">Vacancy rate (%)</label>
-        <input type="text" className={INPUT_CLS} value={s.vacancyRate} onChange={(e) => s.setVacancyRate(e.target.value)} />
+        <Input value={s.vacancyRate} onChange={(e) => s.setVacancyRate(e.target.value)} />
       </div>
       <div className="pt-0.5">
         <label className="flex items-center gap-3 cursor-pointer text-[13px] text-fg-secondary">
@@ -26,7 +27,7 @@ export default function RentalStep({ s }: Props) {
       {s.usePropertyManager && (
         <div className="flex flex-col gap-2">
           <label className="text-xs font-medium text-fg-secondary">Management fee (%)</label>
-          <input type="text" className={INPUT_CLS} value={s.managementFee} onChange={(e) => s.setManagementFee(e.target.value)} />
+          <Input value={s.managementFee} onChange={(e) => s.setManagementFee(e.target.value)} />
         </div>
       )}
     </div>
