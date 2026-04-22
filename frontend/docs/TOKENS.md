@@ -140,6 +140,22 @@ Utility classes in `globals.css`:
 .cf-zone { background: var(--color-cf-wash); }
 ```
 
+## Hover tooltip (`.tip`)
+
+Shared utility for hover tooltips on table headers, KPI tiles, and similar
+hinted controls. Apply `className="tip"` plus `data-tip="Label"`; the
+tooltip text renders above the element on hover via a CSS `::after`
+pseudo-element.
+
+```tsx
+<th className="tip" data-tip="Loan Interest Paid">interest</th>
+```
+
+The utility uses `--color-surface-app` (95%) for the background,
+`--color-border-default` for the outline, and `--color-fg-secondary` for
+the text — so it follows the palette automatically. No JS, no positioning
+hook, no portal.
+
 ## Chart chrome
 
 | Token | Value | Usage |

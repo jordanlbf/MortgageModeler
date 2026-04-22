@@ -154,6 +154,36 @@ body {
   color: var(--color-fg-primary);
 }
 
+/* ── Hover tooltip utility ── */
+/* Apply to any element with `data-tip="..."`; the attribute value renders */
+/* as a small floating tooltip above the element on hover. */
+.tip {
+  position: relative;
+  cursor: default;
+}
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-surface-app) 95%, transparent);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-fg-secondary);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease-in-out;
+  z-index: 10;
+}
+.tip:hover::after { opacity: 1; }
+
 /* ── Cashflow table: column group zones ── */
 .out-zone { background: var(--color-out-tint); }
 .cf-zone { background: var(--color-cf-wash); }
