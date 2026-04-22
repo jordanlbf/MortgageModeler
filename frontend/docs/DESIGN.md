@@ -20,14 +20,13 @@ A sharp, dark instrument for modelling property decisions with precision.
 ## Visual DNA
 
 ### Backgrounds
-- Page: warm dark grey (#111215). Not pure black.
+- Page: cool dark slate (#0e1117). Not pure black.
 - Cards: 1-2 steps lighter on the surface ramp. Boundary comes from the lightness step itself — no drawn border, no dramatic shadow.
 
 ### Brand
 - Teal (`--color-brand`, #2dd4bf) is the single identity colour. Used surgically: hero numbers, active toggle states, section labels, active pills, selection.
 - **Brand is distinct from `data-positive`.** `--color-brand` owns identity / selection / "this is us"; `--color-data-positive` owns "good / up" semantics. They are chromatically distant so the eye can separate them at a glance.
 - Never used for large fills, card backgrounds, decorative areas, or semantic meaning (positive/negative/warning).
-- Arctic theme (Slate Electric, `#3b82f6`) is a more chromatic alternative — a brighter, cooler blue accent on a deeper page background with pure blue-white foreground. Same placement rules apply; the hue itself is the personality shift.
 
 ### Typography
 - Sora — geometric, modern, good tabular-nums.
@@ -41,12 +40,12 @@ Elevation is communicated through progressively lighter surfaces, never shadows.
 
 | Token | Hex | Usage |
 |---|---|---|
-| `--color-surface-page` | `#08090a` | Outermost page background |
-| `--color-surface-app` | `#111215` | Main app content surface |
-| `--color-surface-raised` | `#1a1c20` | Cards, table headers, summary-row top band |
-| `--color-surface-hover` | `#22252a` | Interactive row hover feedback |
-| `--color-surface-active` | `#2a2d33` | Selected rows, anchors, pressed states |
-| `--color-surface-overlay` | `rgba(8,9,10,0.72)` | Modal / dialog scrim |
+| `--color-surface-page` | `#09090b` | Outermost page background |
+| `--color-surface-app` | `#0e1117` | Main app content surface |
+| `--color-surface-raised` | `#1a1e26` | Cards, table headers, summary-row top band |
+| `--color-surface-hover` | `#22262f` | Interactive row hover feedback |
+| `--color-surface-active` | `#2a3040` | Selected rows, anchors, pressed states |
+| `--color-surface-overlay` | `rgba(9,9,11,0.74)` | Modal / dialog scrim |
 
 Each step is ~6–10 hex points lighter. This follows the approach used by Linear and Stripe Dashboard.
 
@@ -168,22 +167,22 @@ Defined as CSS custom properties. Three named tokens — components never use ra
 | Token | Value | Use |
 |---|---|---|
 | `--shadow-flat` | `0 0 0 0.5px rgba(255,255,255,0.02)` | Subtle outline on flat surfaces |
-| `--shadow-raised` | `0 1px 3px rgba(0,0,0,0.24), 0 0 0 0.5px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.02)` | Default card shadow |
-| `--shadow-float` | `0 8px 24px rgba(0,0,0,0.40), 0 0 0 0.5px rgba(174,196,191,0.08), inset 0 1px 0 rgba(255,255,255,0.03)` | Hover / lifted card |
+| `--shadow-raised` | `0 1px 3px rgba(0,0,0,0.28), 0 0 0 0.5px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.02)` | Default card shadow |
+| `--shadow-float` | `0 8px 24px rgba(0,0,0,0.44), 0 0 0 0.5px rgba(148,163,184,0.08), inset 0 1px 0 rgba(255,255,255,0.03)` | Hover / lifted card |
 
 ### Colour Tokens
 
-Defined as CSS custom properties in `globals.css` via `@theme`. Two themes (Graphite Teal, Slate Electric) remap the same role-based tokens. See [TOKENS.md](TOKENS.md) for the complete palette table.
+Defined as CSS custom properties in `globals.css` via `@theme`. Single dark theme on a cool neutral slate base with teal brand accent. See [TOKENS.md](TOKENS.md) for the complete palette table.
 
 **Token categories:**
 
 - **Brand** — single identity colour. `--color-brand` + subtle/hover/border variants.
 - **Surface ramp** — elevation via lightness, not shadow. Five tiers: page → app → raised → hover → active, plus overlay.
-- **Foreground ramp** — unified mint-tinted family: primary / secondary / tertiary / disabled.
+- **Foreground ramp** — cool neutral slate family: primary / secondary / tertiary / disabled.
 - **Data ink** — tabular numerics: primary / emphasis / muted.
 - **Data semantic** — tabular meaning: positive / negative / warning / neutral.
 - **Status semantic** — UI feedback: success / error / warning / info (+ pre-mixed `-bg` surfaces).
-- **Borders** — mint-tinted: subtle / default / strong / brand. Applied to controls only; see the Borders subsection above.
+- **Borders** — slate-tinted: subtle / default / strong / brand. Applied to controls only; see the Borders subsection above.
 - **Focus** — explicit `--color-focus-ring`.
 - **Elevation** — three named shadows.
 

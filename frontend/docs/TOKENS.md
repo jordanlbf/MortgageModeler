@@ -30,24 +30,24 @@ Each tier is ~6–10 hex points apart so the step is perceptible.
 
 | Token | Value | Usage | Tailwind |
 |---|---|---|---|
-| `--color-surface-page` | `#08090a` | Outermost page background | `bg-surface-page` |
-| `--color-surface-app` | `#111215` | Main app content surface | `bg-surface-app` |
-| `--color-surface-raised` | `#1a1c20` | Cards, table headers, summary-row top band | `bg-surface-raised` |
-| `--color-surface-hover` | `#22252a` | Interactive row hover feedback | `bg-surface-hover` |
-| `--color-surface-active` | `#2a2d33` | Selected rows, pressed states | `bg-surface-active` |
-| `--color-surface-overlay` | `rgba(8, 9, 10, 0.72)` | Modal / dialog scrim | — |
+| `--color-surface-page` | `#09090b` | Outermost page background | `bg-surface-page` |
+| `--color-surface-app` | `#0e1117` | Main app content surface | `bg-surface-app` |
+| `--color-surface-raised` | `#1a1e26` | Cards, table headers, summary-row top band | `bg-surface-raised` |
+| `--color-surface-hover` | `#22262f` | Interactive row hover feedback | `bg-surface-hover` |
+| `--color-surface-active` | `#2a3040` | Selected rows, pressed states | `bg-surface-active` |
+| `--color-surface-overlay` | `rgba(9, 9, 11, 0.74)` | Modal / dialog scrim | — |
 
 ## Foreground ramp
 
-Unified mint-tinted family — all text colours share the same chromatic family
-so they cohere.
+Cool neutral slate family — fully neutral text stack so the brand teal remains
+the only chromatic moment on the page.
 
 | Token | Value | Usage | Tailwind |
 |---|---|---|---|
-| `--color-fg-primary` | `#f0fdfa` | Headers, hero values, primary text | `text-fg-primary` |
-| `--color-fg-secondary` | `#aec4bf` | Labels, secondary UI text | `text-fg-secondary` |
-| `--color-fg-tertiary` | `#6e7e7a` | Metadata, axes, inactive UI | `text-fg-tertiary` |
-| `--color-fg-disabled` | `#3f4845` | Disabled state | — |
+| `--color-fg-primary` | `#f8fafc` | Headers, hero values, primary text | `text-fg-primary` |
+| `--color-fg-secondary` | `#cbd5e1` | Labels, secondary UI text | `text-fg-secondary` |
+| `--color-fg-tertiary` | `#94a3b8` | Metadata, axes, inactive UI | `text-fg-tertiary` |
+| `--color-fg-disabled` | `#475569` | Disabled state | — |
 
 ## Data ink
 
@@ -56,9 +56,9 @@ numbers can tune independently.
 
 | Token | Value | Usage | Tailwind |
 |---|---|---|---|
-| `--color-data-primary` | `#c5d4cf` | Default tabular numbers | `text-data-primary` |
-| `--color-data-emphasis` | `#f0fdfa` | Headline / total values | — |
-| `--color-data-muted` | `#8ba19c` | YoY percentages, secondary data | — |
+| `--color-data-primary` | `#cbd5e1` | Default tabular numbers | `text-data-primary` |
+| `--color-data-emphasis` | `#f8fafc` | Headline / total values | — |
+| `--color-data-muted` | `#94a3b8` | YoY percentages, secondary data | — |
 
 ## Data semantic
 
@@ -67,9 +67,9 @@ on-screen indefinitely without pulling the eye.
 
 | Token | Value | Usage | Tailwind |
 |---|---|---|---|
-| `--color-data-positive` | `#2fb881` | Gains, up-movement — chromatically distant from `--color-brand` | `text-data-positive` |
-| `--color-data-negative` | `#d45555` | Losses, down-movement | `text-data-negative` |
-| `--color-data-warning` | `#d99a28` | Caution, threshold values | `text-data-warning` |
+| `--color-data-positive` | `#34d399` | Gains, up-movement — chromatically distant from `--color-brand` | `text-data-positive` |
+| `--color-data-negative` | `#fb7185` | Losses, down-movement | `text-data-negative` |
+| `--color-data-warning` | `#fbbf24` | Caution, threshold values | `text-data-warning` |
 | `--color-data-neutral` | `var(--color-fg-tertiary)` | Zero, neutral rows | — |
 
 ## Status semantic
@@ -80,23 +80,23 @@ they can diverge from data colours.
 
 | Token | Value | Usage |
 |---|---|---|
-| `--color-status-success` | `#3fc77a` | Success toast / banner text |
-| `--color-status-error` | `#e56565` | Error validation, destructive confirmations |
-| `--color-status-warning` | `#e5a832` | Warning banners |
+| `--color-status-success` | `#34d399` | Success toast / banner text |
+| `--color-status-error` | `#fb7185` | Error validation, destructive confirmations |
+| `--color-status-warning` | `#fbbf24` | Warning banners |
 | `--color-status-info` | `var(--color-brand)` | Info banners |
-| `--color-status-success-bg` | `rgba(63, 199, 122, 0.10)` | Success banner background |
-| `--color-status-error-bg` | `rgba(229, 101, 101, 0.10)` | Error banner background |
-| `--color-status-warning-bg` | `rgba(229, 168, 50, 0.10)` | Warning banner background |
+| `--color-status-success-bg` | `rgba(52, 211, 153, 0.10)` | Success banner background |
+| `--color-status-error-bg` | `rgba(251, 113, 133, 0.10)` | Error banner background |
+| `--color-status-warning-bg` | `rgba(251, 191, 36, 0.10)` | Warning banner background |
 
 ## Borders
 
-Mint-tinted family so borders cohere with the foreground ramp.
+Slate-tinted family so borders cohere with the foreground ramp.
 
 | Token | Value | Usage | Tailwind |
 |---|---|---|---|
-| `--color-border-subtle` | `rgba(174, 196, 191, 0.08)` | Default panels, dividers | `border-subtle` |
-| `--color-border-default` | `rgba(174, 196, 191, 0.14)` | Cards, tables, form inputs | `border-default` |
-| `--color-border-strong` | `rgba(174, 196, 191, 0.22)` | Hover, focus, emphasised edges | `border-strong` |
+| `--color-border-subtle` | `rgba(148, 163, 184, 0.07)` | Default panels, dividers | `border-subtle` |
+| `--color-border-default` | `rgba(148, 163, 184, 0.11)` | Cards, tables, form inputs | `border-default` |
+| `--color-border-strong` | `rgba(148, 163, 184, 0.18)` | Hover, focus, emphasised edges | `border-strong` |
 | `--color-border-brand` | `var(--color-brand-border)` | Brand-accented borders | `border-brand` |
 
 ## Focus
@@ -116,8 +116,8 @@ Three named shadows. No ad-hoc drop shadows in components.
 | Token | Value | Usage |
 |---|---|---|
 | `--shadow-flat` | `0 0 0 0.5px rgba(255,255,255,0.02)` | Subtle outline on flat surfaces |
-| `--shadow-raised` | `0 1px 3px rgba(0,0,0,0.24), 0 0 0 0.5px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.02)` | Default card shadow |
-| `--shadow-float` | `0 8px 24px rgba(0,0,0,0.40), 0 0 0 0.5px rgba(174,196,191,0.08), inset 0 1px 0 rgba(255,255,255,0.03)` | Hover / lifted card |
+| `--shadow-raised` | `0 1px 3px rgba(0,0,0,0.28), 0 0 0 0.5px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.02)` | Default card shadow |
+| `--shadow-float` | `0 8px 24px rgba(0,0,0,0.44), 0 0 0 0.5px rgba(148,163,184,0.08), inset 0 1px 0 rgba(255,255,255,0.03)` | Hover / lifted card |
 
 ## Column group washes (cashflow)
 
@@ -126,9 +126,9 @@ group Outgoings and Cashflow columns without hard separator rules.
 
 | Token | Value | Usage |
 |---|---|---|
-| `--color-out-tint` | `rgba(174, 196, 191, 0.022)` | Outgoings cell default |
-| `--color-out-tint-hover` | `rgba(174, 196, 191, 0.040)` | Outgoings cell hover |
-| `--color-out-tint-raised` | `rgba(174, 196, 191, 0.028)` | Outgoings header / summary row |
+| `--color-out-tint` | `rgba(148, 163, 184, 0.022)` | Outgoings cell default |
+| `--color-out-tint-hover` | `rgba(148, 163, 184, 0.040)` | Outgoings cell hover |
+| `--color-out-tint-raised` | `rgba(148, 163, 184, 0.028)` | Outgoings header / summary row |
 | `--color-cf-wash` | `rgba(45, 212, 191, 0.05)` | Cashflow cell default |
 | `--color-cf-wash-hover` | `rgba(45, 212, 191, 0.07)` | Cashflow cell hover |
 | `--color-cf-wash-strong` | `rgba(45, 212, 191, 0.08)` | Cashflow header / summary row |
@@ -144,17 +144,17 @@ Utility classes in `globals.css`:
 
 | Token | Value | Usage |
 |---|---|---|
-| `--color-chart-grid-h` | `rgba(174, 196, 191, 0.06)` | Horizontal grid lines |
-| `--color-chart-grid-v` | `rgba(174, 196, 191, 0.035)` | Vertical grid lines |
-| `--color-chart-axis` | `rgba(174, 196, 191, 0.50)` | Axis tick labels |
-| `--color-chart-axis-muted` | `rgba(174, 196, 191, 0.40)` | Secondary axis ticks |
-| `--color-chart-axis-line` | `rgba(174, 196, 191, 0.08)` | Axis lines |
-| `--color-chart-cursor` | `rgba(174, 196, 191, 0.15)` | Hover cursor |
+| `--color-chart-grid-h` | `rgba(148, 163, 184, 0.06)` | Horizontal grid lines |
+| `--color-chart-grid-v` | `rgba(148, 163, 184, 0.035)` | Vertical grid lines |
+| `--color-chart-axis` | `rgba(148, 163, 184, 0.50)` | Axis tick labels |
+| `--color-chart-axis-muted` | `rgba(148, 163, 184, 0.40)` | Secondary axis ticks |
+| `--color-chart-axis-line` | `rgba(148, 163, 184, 0.08)` | Axis lines |
+| `--color-chart-cursor` | `rgba(148, 163, 184, 0.15)` | Hover cursor |
 | `--color-chart-bar-default` | `var(--color-surface-active)` | Default bar fill — calm, not attention-grabbing |
 | `--color-chart-bar-selected` | `var(--color-brand)` | Selected / focused bar |
 | `--color-chart-bar-hover` | `var(--color-surface-hover)` | Hovered bar |
-| `--color-chart-legend-inactive` | `rgba(174, 196, 191, 0.30)` | Inactive legend text |
-| `--color-chart-legend-dot-inactive` | `rgba(174, 196, 191, 0.20)` | Inactive legend dot |
+| `--color-chart-legend-inactive` | `rgba(148, 163, 184, 0.30)` | Inactive legend text |
+| `--color-chart-legend-dot-inactive` | `rgba(148, 163, 184, 0.20)` | Inactive legend dot |
 
 ## Tool card defaults
 
@@ -167,18 +167,7 @@ Utility classes in `globals.css`:
 
 | Token | Value | Usage |
 |---|---|---|
-| `--color-scrollbar` | `rgba(174, 196, 191, 0.12)` | `.custom-scrollbar` webkit thumb |
-
-## Arctic theme — Slate Electric
-
-The Arctic theme is a full override of every palette token. See the
-`[data-theme="arctic"]` block in `globals.css` for the canonical values.
-
-Key Arctic identity:
-- Brand: `#3b82f6` (electric blue, brighter than Graphite's `#2dd4bf` teal)
-- Surface page: `#060810` (deeper than Graphite's `#08090a`)
-- Foreground primary: `#eff6ff` (pure blue-white vs Graphite's mint-tinted)
-- Semantics: brighter than Graphite's calm set to match the accent energy
+| `--color-scrollbar` | `rgba(148, 163, 184, 0.14)` | `.custom-scrollbar` webkit thumb |
 
 ## Layout
 
@@ -188,6 +177,7 @@ Key Arctic identity:
 | `--layout-content-max` | `1200px` | Maximum width for main content area |
 | `--layout-page-padding-x` | `36px` | Horizontal page padding |
 | `--layout-page-padding-y` | `32px` | Vertical page padding |
-| `--layout-nav-item-height` | `36px` | Sidebar nav item row height |
+| `--layout-nav-item-height` | `28px` | Sidebar nav item row height |
+| `--layout-nav-item-utility-height` | `24px` | Sidebar utility (secondary) nav item height |
 | `--layout-global-btn-size` | `34px` | Globals tray icon button size |
 | `--layout-header-actions-reserve` | `64px` | Right-padding reservation on page headers to avoid overlap with the floating globals tray. Update when the tray's width changes. |

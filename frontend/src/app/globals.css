@@ -8,227 +8,141 @@
   --font-sans: var(--font-sora), "system-ui", "sans-serif";
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Brand — single identity colour for MortgageModeler                 */
-  /* Used for: selection, active tabs, column group accent, hero labels */
-  /* NEVER used for: semantic meaning (positive/negative/warning),      */
-  /* large fills, card backgrounds, decorative areas.                   */
+  /* Brand — unchanged. Teal identity, used surgically for selection,  */
+  /* active tabs, column group accents, hero labels.                   */
   /* ───────────────────────────────────────────────────────────────── */
   --color-brand: #2dd4bf;
   --color-brand-contrast: #0a1a18;
   --color-brand-hover: #3de0cc;
-  --color-brand-subtle: #0f2320;          /* pre-mixed on --color-surface-app */
+  --color-brand-subtle: #0f2320;
   --color-brand-subtle-hover: #143330;
   --color-brand-border: rgba(45, 212, 191, 0.32);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Surface ramp — elevation via lightness, not shadow                 */
-  /* Five tiers, ~6-10 hex points apart so each step is perceptible     */
+  /* Surface ramp — cool neutral zinc/slate family                     */
+  /* Wider tonal steps than previous mint-tinted ramp                  */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-surface-page:     #08090a;      /* outermost page background */
-  --color-surface-app:      #111215;      /* main app content surface */
-  --color-surface-raised:   #1c1e23;      /* cards, table headers */
-  --color-surface-hover:    #22252a;      /* interactive hover feedback */
-  --color-surface-active:   #2a2d33;      /* selected rows, pressed */
-  --color-surface-overlay:  rgba(8, 9, 10, 0.72);  /* modal scrim */
+  --color-surface-page:     #09090b;      /* outer page bg */
+  --color-surface-app:      #0e1117;      /* main app content */
+  --color-surface-raised:   #1a1e26;      /* cards, table headers */
+  --color-surface-hover:    #22262f;      /* interactive hover */
+  --color-surface-active:   #2a3040;      /* selected rows, KPI tiles */
+  --color-surface-overlay:  rgba(9, 9, 11, 0.74);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Foreground ramp — unified mint-tinted family                       */
-  /* All text colours are in the same chromatic family so they cohere   */
+  /* Foreground ramp — slate family, fully neutral                     */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-fg-primary:   #f0fdfa;    /* headers, hero values, primary text */
-  --color-fg-secondary: #aec4bf;    /* labels, secondary UI text (was: subtle) */
-  --color-fg-tertiary:  #6e7e7a;    /* metadata, axes, inactive (was: faint) */
-  --color-fg-disabled:  #3f4845;    /* disabled state */
+  --color-fg-primary:   #f8fafc;    /* slate-50 */
+  --color-fg-secondary: #cbd5e1;    /* slate-300 */
+  --color-fg-tertiary:  #94a3b8;    /* slate-400 */
+  --color-fg-disabled:  #475569;    /* slate-600, genuinely dimmer than tertiary */
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Data ink — dedicated tokens for tabular numeric content            */
-  /* Separate from UI fg-* so table numbers can tune independently      */
+  /* Data ink — slate for numbers                                      */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-data-primary:   #d4d7db;    /* tabular numbers, default */
-  --color-data-emphasis:  #f3f4f6;    /* headline/total values */
-  --color-data-muted:     #9aa0a6;    /* YoY percentages, secondary data */
+  --color-data-primary:   #cbd5e1;    /* tabular numbers */
+  --color-data-emphasis:  #f8fafc;    /* headline values */
+  --color-data-muted:     #94a3b8;    /* YoY, secondary data */
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Data semantic — meaning in tabular/chart context                   */
-  /* Calm colours that sit on-screen without pulling the eye            */
+  /* Data semantic — richer than before, enough energy to carry        */
+  /* chromatic signal against the neutral base                         */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-data-positive: #2fb881;    /* green, distinct from brand teal */
-  --color-data-negative: #d45555;
-  --color-data-warning:  #d99a28;
+  --color-data-positive: #34d399;    /* emerald-400 */
+  --color-data-negative: #fb7185;    /* rose-400 */
+  --color-data-warning:  #fbbf24;    /* amber-400 */
   --color-data-neutral:  var(--color-fg-tertiary);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Status semantic — UI feedback (toasts, validation, banners)        */
-  /* Slightly brighter than data semantics because they flash briefly   */
-  /* Kept as separate tokens so they can diverge from data colours      */
+  /* Status semantic — UI feedback (toasts, validation, banners)       */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-status-success: #3fc77a;
-  --color-status-error:   #e56565;
-  --color-status-warning: #e5a832;
+  --color-status-success: #34d399;
+  --color-status-error:   #fb7185;
+  --color-status-warning: #fbbf24;
   --color-status-info:    var(--color-brand);
 
-  /* Status surfaces — pre-mixed low-opacity backgrounds */
-  --color-status-success-bg: rgba(63, 199, 122, 0.10);
-  --color-status-error-bg:   rgba(229, 101, 101, 0.10);
-  --color-status-warning-bg: rgba(229, 168, 50, 0.10);
+  /* Status surfaces */
+  --color-status-success-bg: rgba(52, 211, 153, 0.10);
+  --color-status-error-bg:   rgba(251, 113, 133, 0.10);
+  --color-status-warning-bg: rgba(251, 191, 36, 0.10);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Borders                                                            */
+  /* Borders — slate-tinted, replacing mint rgbas                      */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-border-subtle:  rgba(174, 196, 191, 0.06);   /* default */
-  --color-border-default: rgba(174, 196, 191, 0.10);   /* cards, tables */
-  --color-border-strong:  rgba(174, 196, 191, 0.16);   /* hover, focus */
+  --color-border-subtle:  rgba(148, 163, 184, 0.07);
+  --color-border-default: rgba(148, 163, 184, 0.11);
+  --color-border-strong:  rgba(148, 163, 184, 0.18);
   --color-border-brand:   var(--color-brand-border);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Focus — explicit a11y-critical token                               */
+  /* Focus — unchanged teal                                            */
   /* ───────────────────────────────────────────────────────────────── */
   --color-focus-ring:        rgba(45, 212, 191, 0.35);
   --color-focus-ring-offset: var(--color-surface-app);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Elevation — three named shadows, no ad-hoc drop shadows allowed    */
+  /* Elevation — unchanged                                             */
   /* ───────────────────────────────────────────────────────────────── */
   --shadow-flat:
     0 0 0 0.5px rgba(255, 255, 255, 0.02);
   --shadow-raised:
-    0 1px 3px rgba(0, 0, 0, 0.24),
+    0 1px 3px rgba(0, 0, 0, 0.28),
     0 0 0 0.5px rgba(255, 255, 255, 0.03),
     inset 0 1px 0 rgba(255, 255, 255, 0.02);
   --shadow-float:
-    0 8px 24px rgba(0, 0, 0, 0.40),
-    0 0 0 0.5px rgba(174, 196, 191, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.44),
+    0 0 0 0.5px rgba(148, 163, 184, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Column group washes — cashflow-specific tints                      */
+  /* Column group washes — slate-tinted outgoings, teal cashflow       */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-out-tint:         rgba(174, 196, 191, 0.022);
-  --color-out-tint-hover:   rgba(174, 196, 191, 0.040);
-  --color-out-tint-raised:  rgba(174, 196, 191, 0.028);
-  --color-cf-wash:          rgba(255, 255, 255, 0.025);
-  --color-cf-wash-hover:    rgba(255, 255, 255, 0.040);
-  --color-cf-wash-strong:   rgba(255, 255, 255, 0.050);
+  --color-out-tint:         rgba(148, 163, 184, 0.022);
+  --color-out-tint-hover:   rgba(148, 163, 184, 0.040);
+  --color-out-tint-raised:  rgba(148, 163, 184, 0.028);
+  --color-cf-wash:          rgba(45, 212, 191, 0.05);
+  --color-cf-wash-hover:    rgba(45, 212, 191, 0.07);
+  --color-cf-wash-strong:   rgba(45, 212, 191, 0.08);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Chart chrome                                                       */
+  /* Chart chrome — slate family                                       */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-chart-grid-h:              rgba(174, 196, 191, 0.06);
-  --color-chart-grid-v:              rgba(174, 196, 191, 0.035);
-  --color-chart-axis:                rgba(174, 196, 191, 0.50);
-  --color-chart-axis-muted:          rgba(174, 196, 191, 0.40);
-  --color-chart-axis-line:           rgba(174, 196, 191, 0.08);
-  --color-chart-cursor:              rgba(174, 196, 191, 0.15);
+  --color-chart-grid-h:              rgba(148, 163, 184, 0.06);
+  --color-chart-grid-v:              rgba(148, 163, 184, 0.035);
+  --color-chart-axis:                rgba(148, 163, 184, 0.50);
+  --color-chart-axis-muted:          rgba(148, 163, 184, 0.40);
+  --color-chart-axis-line:           rgba(148, 163, 184, 0.08);
+  --color-chart-cursor:              rgba(148, 163, 184, 0.15);
   --color-chart-bar-default:         var(--color-surface-active);
   --color-chart-bar-selected:        var(--color-brand);
   --color-chart-bar-hover:           var(--color-surface-hover);
-  --color-chart-legend-inactive:     rgba(174, 196, 191, 0.30);
-  --color-chart-legend-dot-inactive: rgba(174, 196, 191, 0.20);
+  --color-chart-legend-inactive:     rgba(148, 163, 184, 0.30);
+  --color-chart-legend-dot-inactive: rgba(148, 163, 184, 0.20);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Tool card defaults                                                 */
+  /* Tool card defaults — unchanged                                    */
   /* ───────────────────────────────────────────────────────────────── */
   --color-tool-default:      #94a3b8;
   --color-tool-default-glow: rgba(148, 163, 184, 0.08);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Layout                                                             */
+  /* Layout — unchanged                                                */
   /* ───────────────────────────────────────────────────────────────── */
   --layout-sidebar-width:            240px;
   --layout-content-max:              1200px;
   --layout-page-padding-x:           36px;
   --layout-page-padding-y:           32px;
-  --layout-nav-item-height:          36px;
+  --layout-nav-item-height:          28px;
+  --layout-nav-item-utility-height:  24px;
   --layout-global-btn-size:          34px;
-  /* Reservation on the right of page headers to keep clear of the globals tray */
   --layout-header-actions-reserve:   64px;
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Scrollbar — webkit scrollbar thumb                                 */
+  /* Scrollbar                                                         */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-scrollbar: rgba(174, 196, 191, 0.12);
+  --color-scrollbar: rgba(148, 163, 184, 0.14);
 }
 
-
-/* ── Arctic theme (Slate Electric) — full override ── */
-@layer base {
-  [data-theme="arctic"] {
-    /* Brand */
-    --color-brand:              #3b82f6;
-    --color-brand-contrast:     #0b1220;
-    --color-brand-hover:        #5a96f7;
-    --color-brand-subtle:       #0f1a2d;          /* pre-mixed on --color-surface-app */
-    --color-brand-subtle-hover: #152340;
-    --color-brand-border:       rgba(59, 130, 246, 0.38);
-
-    /* Surface ramp — deeper, cooler than Graphite; Slate Electric is darker at the base */
-    --color-surface-page:    #060810;
-    --color-surface-app:     #0d1118;
-    --color-surface-raised:  #131822;
-    --color-surface-hover:   #171d28;
-    --color-surface-active:  #1b222f;
-    --color-surface-overlay: rgba(6, 8, 16, 0.74);
-
-    /* Foreground ramp — blue-white family */
-    --color-fg-primary:   #eff6ff;
-    --color-fg-secondary: #94a3b8;
-    --color-fg-tertiary:  #64748b;
-    --color-fg-disabled:  #334155;
-
-    /* Data ink — neutral grey, theme-independent for tabular legibility */
-    --color-data-primary:  #d4d7db;
-    --color-data-emphasis: #f3f4f6;
-    --color-data-muted:    #9aa0a6;
-
-    /* Data semantic — slightly brighter than Graphite's calm set to match Electric's energy */
-    --color-data-positive: #34d399;
-    --color-data-negative: #f87171;
-    --color-data-warning:  #fbbf24;
-    --color-data-neutral:  var(--color-fg-tertiary);
-
-    /* Status — flash-briefly UI feedback, a touch brighter than data colours */
-    --color-status-success: #34d399;
-    --color-status-error:   #f87171;
-    --color-status-warning: #fbbf24;
-    --color-status-info:    var(--color-brand);
-
-    /* Status surfaces */
-    --color-status-success-bg: rgba(52, 211, 153, 0.10);
-    --color-status-error-bg:   rgba(248, 113, 113, 0.10);
-    --color-status-warning-bg: rgba(251, 191, 36, 0.10);
-
-    /* Borders */
-    --color-border-subtle:  rgba(148, 163, 184, 0.07);
-    --color-border-default: rgba(148, 163, 184, 0.11);
-    --color-border-strong:  rgba(148, 163, 184, 0.20);
-
-    /* Focus */
-    --color-focus-ring:        rgba(59, 130, 246, 0.35);
-    --color-focus-ring-offset: var(--color-surface-app);
-
-    /* Column group washes — cool blue-grey outgoings, bright blue cashflow */
-    --color-out-tint:         rgba(220, 230, 255, 0.018);
-    --color-out-tint-hover:   rgba(220, 230, 255, 0.038);
-    --color-out-tint-raised:  rgba(220, 230, 255, 0.028);
-    --color-cf-wash:          rgba(255, 255, 255, 0.025);
-    --color-cf-wash-hover:    rgba(255, 255, 255, 0.040);
-    --color-cf-wash-strong:   rgba(255, 255, 255, 0.050);
-
-    /* Chart chrome — cool slate */
-    --color-chart-grid-h:      rgba(148, 163, 184, 0.06);
-    --color-chart-grid-v:      rgba(148, 163, 184, 0.035);
-    --color-chart-axis:        rgba(148, 163, 184, 0.50);
-    --color-chart-axis-muted:  rgba(148, 163, 184, 0.40);
-    --color-chart-axis-line:   rgba(148, 163, 184, 0.09);
-    --color-chart-cursor:      rgba(148, 163, 184, 0.18);
-    --color-chart-bar-default: var(--color-surface-active);
-    --color-chart-bar-selected: var(--color-brand);
-    --color-chart-bar-hover:   var(--color-surface-hover);
-
-    /* Scrollbar */
-    --color-scrollbar: rgba(148, 163, 184, 0.14);
-  }
-}
 
 body {
   background: var(--color-surface-app);
@@ -272,13 +186,6 @@ thead .cf-zone,
   height: 56px;
   border-bottom: none;
   border-top: 0.5px solid rgba(255,255,255,0.10);
-}
-
-@layer base {
-  [data-theme="arctic"] .header-logo {
-    background: #3b82f6 !important;
-    color: #0b1220 !important;
-  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -390,22 +297,6 @@ thead .cf-zone,
 .home-bg-noise {
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: 0.025;
-}
-
-@layer base {
-  [data-theme="arctic"] .home-bg-glow {
-    background:
-      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(59,130,246,0.06) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 35% at 50% 5%, rgba(59,130,246,0.14) 0%, transparent 65%);
-  }
-  [data-theme="arctic"] .home-bg-noise { opacity: 0.020; }
-}
-
-/* ── Arctic (Slate Electric) select arrow ── */
-@layer base {
-  [data-theme="arctic"] .form-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(59,130,246,0.55)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  }
 }
 
 .glass-card {
