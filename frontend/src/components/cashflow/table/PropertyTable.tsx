@@ -3,7 +3,8 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatDollarsSigned } from "@/lib/formatters";
 import TableCell from "@/components/ui/TableCell";
-import { yoyPct, yoyClass, fmtYoY, getValueClass } from "./helpers";
+import { yoyPct, getValueClass } from "./helpers";
+import DeltaPill from "@/components/ui/DeltaPill";
 import type { SubTableProps } from "./types";
 
 interface Props extends SubTableProps {
@@ -196,7 +197,7 @@ export default function PropertyTable({
                     {isCollapsed && (() => {
                       const prevGearing = i > 0 ? (() => { const py = yearData[i-1]; return py.rentalIncome - (py.interestPortion + py.ongoingCosts) - (py.depDiv43 + py.depDiv40); })() : netGearing;
                       const gearYoY = yoyPct(netGearing, prevGearing);
-                      return <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(gearYoY)}`}>{fmtYoY(gearYoY)}</span>;
+                      return <DeltaPill value={gearYoY} />;
                     })()}
                   </td>
                   {/* Cashflow detail cells */}
@@ -208,7 +209,7 @@ export default function PropertyTable({
                     {isCollapsed && (() => {
                       const prevCf = i > 0 ? yearData[i-1].propertyCashflow : y.propertyCashflow;
                       const cfYoY = yoyPct(y.propertyCashflow, prevCf);
-                      return <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(cfYoY)}`}>{fmtYoY(cfYoY)}</span>;
+                      return <DeltaPill value={cfYoY} />;
                     })()}
                   </td>
                 </tr>

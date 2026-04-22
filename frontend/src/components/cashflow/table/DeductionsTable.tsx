@@ -4,7 +4,8 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatDollarsSigned } from "@/lib/formatters";
 import TableCell from "@/components/ui/TableCell";
 import { DEPRECIATION_COLOR } from "@/lib/theme";
-import { yoyPct, yoyClass, fmtYoY } from "./helpers";
+import { yoyPct } from "./helpers";
+import DeltaPill from "@/components/ui/DeltaPill";
 import type { SubTableProps } from "./types";
 
 interface Props extends SubTableProps {
@@ -253,7 +254,7 @@ export default function DeductionsTable({
                     {isCollapsed && (() => {
                       const prevHolding = i > 0 ? (isInvestment ? yearData[i-1].interestPortion + yearData[i-1].ongoingCosts : yearData[i-1].ongoingCosts) : holdingTotal;
                       const holdYoY = yoyPct(holdingTotal, prevHolding);
-                      return <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(holdYoY, "negative")}`}>{fmtYoY(holdYoY)}</span>;
+                      return <DeltaPill value={holdYoY} direction="negative" />;
                     })()}
                   </td>
                   {/* Depreciation detail cells (investment only) */}
@@ -264,7 +265,7 @@ export default function DeductionsTable({
                     {isCollapsed && (() => {
                       const prevDep = i > 0 ? yearData[i-1].depDiv43 + yearData[i-1].depDiv40 : depTotal;
                       const depYoY = yoyPct(depTotal, prevDep);
-                      return <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(depYoY, "negative")}`}>{fmtYoY(depYoY)}</span>;
+                      return <DeltaPill value={depYoY} direction="negative" />;
                     })()}
                   </td>}
                   {/* Total */}
@@ -273,7 +274,7 @@ export default function DeductionsTable({
                     {isCollapsed && (() => {
                       const prevGrand = i > 0 ? (() => { const py = yearData[i-1]; const ph = isInvestment ? py.interestPortion + py.ongoingCosts : py.ongoingCosts; const pd = py.depDiv43 + py.depDiv40; return isInvestment ? ph + pd : ph; })() : grandTotal;
                       const grandYoY = yoyPct(grandTotal, prevGrand);
-                      return <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(grandYoY, "negative")}`}>{fmtYoY(grandYoY)}</span>;
+                      return <DeltaPill value={grandYoY} direction="negative" />;
                     })()}
                   </td>
                 </tr>

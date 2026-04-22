@@ -4,7 +4,8 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatDollarsSigned } from "@/lib/formatters";
 import TableCell from "@/components/ui/TableCell";
 import { getMarginalTaxRate, getBracketColor } from "@/lib/cashflow-calculations";
-import { yoyPct, yoyClass, fmtYoY, getValueClass } from "./helpers";
+import { yoyPct, getValueClass } from "./helpers";
+import DeltaPill from "@/components/ui/DeltaPill";
 import type { SubTableProps } from "./types";
 
 interface Props extends SubTableProps {
@@ -209,7 +210,7 @@ export default function TaxTable({
                     {isCollapsed && (() => {
                       const prevDed = i > 0 ? (() => { const py = yearData[i-1]; return py.ongoingCosts + py.interestPortion + py.depDiv43 + py.depDiv40; })() : totalDeductions;
                       const dedYoY = yoyPct(totalDeductions, prevDed);
-                      return <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(dedYoY, "negative")}`}>{fmtYoY(dedYoY)}</span>;
+                      return <DeltaPill value={dedYoY} direction="negative" />;
                     })()}
                   </td>
                   {/* Tax detail cells */}
@@ -225,7 +226,7 @@ export default function TaxTable({
                     {isCollapsed && (() => {
                       const prevTax = i > 0 ? yearData[i-1].incomeTaxCalc : y.incomeTaxCalc;
                       const taxYoY = yoyPct(y.incomeTaxCalc, prevTax);
-                      return <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(taxYoY, "negative")}`}>{fmtYoY(taxYoY)}</span>;
+                      return <DeltaPill value={taxYoY} direction="negative" />;
                     })()}
                   </td>
                 </tr>

@@ -3,7 +3,8 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatDollarsSigned, safeDiv } from "@/lib/formatters";
 import TableCell from "@/components/ui/TableCell";
-import { yoyPct, growthPct, yoyClass, fmtYoY, getValueClass, getLvrClass } from "./helpers";
+import { yoyPct, growthPct, getValueClass, getLvrClass } from "./helpers";
+import DeltaPill from "@/components/ui/DeltaPill";
 import type { SubTableProps } from "./types";
 
 interface Props extends SubTableProps {
@@ -214,7 +215,7 @@ export default function EquityTable({
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
                     <span className="font-semibold" style={{ color: "var(--color-fg-primary)" }}>{formatDollarsSigned(Math.round(y.propertyValue))}</span>
                     {isCollapsed && (
-                      <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(parseFloat(yoyGrowthPct))}`}>{fmtYoY(parseFloat(yoyGrowthPct))}</span>
+                      <DeltaPill value={parseFloat(yoyGrowthPct)} />
                     )}
                   </td>
                   {/* Position detail cells */}
@@ -227,7 +228,7 @@ export default function EquityTable({
                     {isCollapsed && (() => {
                       const prevEquity = i > 0 ? yearData[i-1].netEquity : y.netEquity;
                       const eqYoY = yoyPct(y.netEquity, prevEquity);
-                      return <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(eqYoY)}`}>{fmtYoY(eqYoY)}</span>;
+                      return <DeltaPill value={eqYoY} />;
                     })()}
                   </td>
                 </tr>

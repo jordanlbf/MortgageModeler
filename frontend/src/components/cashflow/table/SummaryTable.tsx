@@ -3,7 +3,8 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatDollarsSigned } from "@/lib/formatters";
 import TableCell from "@/components/ui/TableCell";
-import { yoyPct, yoyClass, fmtYoY, getValueClass } from "./helpers";
+import { yoyPct, getValueClass } from "./helpers";
+import DeltaPill from "@/components/ui/DeltaPill";
 import type { SubTableProps } from "./types";
 
 interface Props extends SubTableProps {
@@ -248,7 +249,7 @@ export default function SummaryTable({
                   <td className={`h-[52px] box-border px-3 text-right align-middle border-b border-b-white/[0.07] ${isCollapsed ? "text-[15px] px-4" : ""}`}>
                     <span className="font-semibold" style={{ color: "var(--color-fg-primary)" }}>{formatDollarsSigned(Math.round(totalIncome))}</span>
                     {isCollapsed && (
-                      <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(incomeYoY)}`}>{fmtYoY(incomeYoY)}</span>
+                      <DeltaPill value={incomeYoY} />
                     )}
                   </td>
                   {/* Outgoings detail cells */}
@@ -259,7 +260,7 @@ export default function SummaryTable({
                   <td className={`h-[52px] box-border ${!ogExpanded ? "pl-6 pr-3" : "px-3"} text-right align-middle border-b border-b-white/[0.07] out-zone ${isCollapsed ? "text-[15px]" : ""}`}>
                     <span className="font-semibold" style={{ color: "var(--color-data-negative)" }}>{formatDollarsSigned(Math.round(-totalCosts))}</span>
                     {isCollapsed && (
-                      <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(costsYoY, "negative")}`}>{fmtYoY(costsYoY)}</span>
+                      <DeltaPill value={costsYoY} direction="negative" />
                     )}
                   </td>
                   {/* Cashflow result */}
@@ -269,7 +270,7 @@ export default function SummaryTable({
                       const prevCashflow = i > 0 ? (prevIncome - prevCosts) : annualCashflow;
                       const cashflowYoY = yoyPct(annualCashflow, prevCashflow);
                       return (
-                        <span className={`inline-block ml-2 py-0.5 rounded text-[10px] font-medium tracking-[0.01em] align-middle tabular-nums w-[52px] text-center ${yoyClass(cashflowYoY)}`}>{fmtYoY(cashflowYoY)}</span>
+                        <DeltaPill value={cashflowYoY} />
                       );
                     })()}
                   </td>
