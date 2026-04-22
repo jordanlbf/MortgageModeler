@@ -154,6 +154,39 @@ body {
   color: var(--color-fg-primary);
 }
 
+/* ── Cashflow table: column group header utility ── */
+/* Small uppercase group labels with a 3px accent bar above. Colour is */
+/* controlled by the caller via `text-*` utility — the bar inherits it */
+/* via `background: currentColor`. */
+.col-group-h {
+  height: 28px;
+  box-sizing: border-box;
+  text-align: center;
+  vertical-align: bottom;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  position: relative;
+  user-select: none;
+}
+.col-group-h::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  border-radius: 0 0 2px 2px;
+  background: currentColor;
+  opacity: 0.75;
+}
+.col-group-h--clickable {
+  cursor: pointer;
+  transition: background 150ms ease-in-out;
+}
+.col-group-h--clickable:hover { background: var(--color-surface-hover); }
+
 /* ── Hover tooltip utility ── */
 /* Apply to any element with `data-tip="..."`; the attribute value renders */
 /* as a small floating tooltip above the element on hover. */

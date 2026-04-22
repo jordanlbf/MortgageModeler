@@ -31,7 +31,7 @@ export default function TaxTable({
             <tr className="h-7 border-b-0">
               <th className="h-7 box-border px-3 text-center align-bottom" colSpan={2} />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-tertiary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable px-3 text-fg-tertiary"
                 colSpan={isGroupExpanded("deductions") ? 4 : 1}
                 onClick={() => toggleGroup("deductions")}
               >
@@ -77,7 +77,7 @@ export default function TaxTable({
           <thead>
             <tr className="h-7 border-b-0">
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-tertiary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable px-3 text-fg-tertiary"
                 colSpan={isGroupExpanded("tax") ? 6 : 1}
                 onClick={() => toggleGroup("tax")}
               >
@@ -149,7 +149,7 @@ export default function TaxTable({
             <tr className="h-7 border-b-0" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-7 box-border px-3 text-center align-bottom" />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable px-3 text-fg-secondary"
                 colSpan={dedExpanded ? 4 : 1}
                 onClick={() => toggleGroup("deductions")}
               >
@@ -159,7 +159,7 @@ export default function TaxTable({
                 </span>
               </th>
               <th
-                className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable pl-6 pr-3 text-fg-secondary"
                 colSpan={taxExpanded ? 6 : 1}
                 onClick={() => toggleGroup("tax")}
                 style={{ background: "var(--color-out-tint-raised)" }}

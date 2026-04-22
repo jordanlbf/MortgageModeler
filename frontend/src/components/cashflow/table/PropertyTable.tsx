@@ -31,7 +31,7 @@ export default function PropertyTable({
             <tr className="h-7 border-b-0">
               <th className="h-7 box-border px-3 text-center align-bottom" colSpan={2} />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-tertiary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable px-3 text-fg-tertiary"
                 colSpan={isGroupExpanded("gearing") ? 4 : 1}
                 onClick={() => toggleGroup("gearing")}
               >
@@ -76,7 +76,7 @@ export default function PropertyTable({
           <thead>
             <tr className="h-7 border-b-0">
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-tertiary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable px-3 text-fg-tertiary"
                 colSpan={isGroupExpanded("propertyCashflow") ? 4 : 1}
                 onClick={() => toggleGroup("propertyCashflow")}
               >
@@ -139,7 +139,7 @@ export default function PropertyTable({
             <tr className="h-7 border-b-0" style={{ background: "var(--color-surface-raised)" }}>
               <th className="h-7 box-border px-3 text-center align-bottom" />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable px-3 text-fg-secondary"
                 colSpan={gearExpanded ? 4 : 1}
                 onClick={() => toggleGroup("gearing")}
               >
@@ -149,7 +149,7 @@ export default function PropertyTable({
                 </span>
               </th>
               <th
-                className="h-7 box-border pl-6 pr-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable pl-6 pr-3 text-fg-secondary"
                 colSpan={cfExpanded ? 4 : 1}
                 onClick={() => toggleGroup("propertyCashflow")}
                 style={{ background: "var(--color-cf-wash-strong)" }}
@@ -256,11 +256,11 @@ export default function PropertyTable({
           <thead>
             <tr className="h-7 border-b-0">
               <th className="h-7 box-border px-3 text-center align-bottom" colSpan={2} />
-              <th className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-tertiary" colSpan={2}>costs</th>
+              <th className="col-group-h px-3 text-fg-tertiary" colSpan={2}>costs</th>
               <th className="w-0 max-w-0 p-0 bg-transparent relative border-l border-white/[0.1]" />
-              <th className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-tertiary" colSpan={2}>loan</th>
+              <th className="col-group-h px-3 text-fg-tertiary" colSpan={2}>loan</th>
               <th className="w-0 max-w-0 p-0 bg-transparent relative border-l border-white/[0.1]" />
-              <th className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-tertiary" />
+              <th className="col-group-h px-3 text-fg-tertiary" />
             </tr>
             <tr className="h-14 border-b border-white/[0.12]">
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap w-24 text-left px-2.5" /><th className="w-0 max-w-0 p-0 border-l border-white/[0.1]" />

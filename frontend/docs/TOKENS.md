@@ -140,6 +140,30 @@ Utility classes in `globals.css`:
 .cf-zone { background: var(--color-cf-wash); }
 ```
 
+## Column group header (`.col-group-h`)
+
+Shared utility for the small uppercase group labels with a 3px accent bar
+above. The bar inherits `background: currentColor`, so the caller picks
+the accent by applying a `text-*` class.
+
+```tsx
+// Clickable expandable group
+<th
+  className="col-group-h col-group-h--clickable px-3 text-fg-tertiary"
+  colSpan={expanded ? 5 : 1}
+  onClick={toggle}
+>
+  …
+</th>
+
+// Static group label
+<th className="col-group-h px-3 text-fg-secondary">total</th>
+```
+
+Add `col-group-h--clickable` for the expandable variant (cursor pointer +
+`--color-surface-hover` background on hover). Padding and colour stay
+inline so each caller can tune them independently.
+
 ## Hover tooltip (`.tip`)
 
 Shared utility for hover tooltips on table headers, KPI tiles, and similar

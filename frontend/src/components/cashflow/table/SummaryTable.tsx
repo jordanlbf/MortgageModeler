@@ -32,7 +32,7 @@ export default function SummaryTable({
             <tr className="h-7 border-b-0">
               <th className="h-7 box-border px-3 text-center align-bottom" colSpan={2} />
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable px-3 text-fg-secondary"
                 colSpan={isGroupExpanded("income") ? (isInvestment ? 5 : 3) : 1}
                 onClick={() => toggleGroup("income")}
               >
@@ -83,7 +83,7 @@ export default function SummaryTable({
           <thead>
             <tr className="h-7 border-b-0">
               <th
-                className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-secondary cursor-pointer transition-[background] duration-150 ease-in-out select-none hover:bg-white/[0.03]"
+                className="col-group-h col-group-h--clickable px-3 text-fg-secondary"
                 colSpan={isGroupExpanded("outgoings") ? 4 : 1}
                 onClick={() => toggleGroup("outgoings")}
               >
@@ -125,7 +125,7 @@ export default function SummaryTable({
         <table className="border-collapse tabular-nums text-xs leading-[1.4] whitespace-nowrap w-full">
           <thead>
             <tr className="h-7 border-b-0">
-              <th className="h-7 box-border px-3 text-center align-bottom text-[10px] font-medium tracking-[0.12em] uppercase relative before:content-[''] before:absolute before:top-0 before:left-2 before:right-2 before:h-[3px] before:rounded-b-sm before:bg-current before:opacity-75 text-fg-secondary" colSpan={3}>cashflow</th>
+              <th className="col-group-h px-3 text-fg-secondary" colSpan={3}>cashflow</th>
             </tr>
             <tr className="h-14 border-b border-white/[0.12]">
               <th className="h-14 box-border align-middle px-3 text-[11px] font-normal tracking-[0.02em] capitalize text-fg-tertiary text-right whitespace-nowrap tip" data-tip="Salary + Rent">total income</th>
