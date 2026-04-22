@@ -5,6 +5,8 @@ import { formatDollarsSigned } from "@/lib/formatters";
 import { DEPRECIATION_COLOR } from "@/lib/theme";
 import type { ViewMode } from "@/lib/cashflow-types";
 import type { useCashflowState } from "@/hooks/useCashflowState";
+import PillButton from "@/components/ui/PillButton";
+import UnderlineTabs from "@/components/ui/UnderlineTabs";
 import CashflowChart from "./CashflowChart";
 import CashflowKpiStrip from "./CashflowKpiStrip";
 import CashflowDataTable from "./CashflowDataTable";
@@ -63,38 +65,15 @@ export default function CashflowDashboard({
   return (
     <main className="text-fg-primary max-w-[1400px] mx-auto px-4 py-6 flex flex-col gap-6">
       {/* ── Overview / Details tabs ── */}
-      <div className="flex gap-5 mb-5 border-b border-[color:var(--color-border-subtle)]">
-        <button
-          type="button"
-          onClick={() => setDashboardMode("overview")}
-          className={`relative py-2.5 text-[13px] font-medium tracking-tight transition-colors ${
-            dashboardMode === "overview"
-              ? "text-fg-primary"
-              : "text-fg-tertiary hover:text-fg-secondary"
-          }`}
-        >
-          Overview
-          {dashboardMode === "overview" && (
-            <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-brand" />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => setDashboardMode("details")}
-          className={`relative py-2.5 text-[13px] font-medium tracking-tight transition-colors ${
-            dashboardMode === "details"
-              ? "text-fg-primary"
-              : "text-fg-tertiary hover:text-fg-secondary"
-          }`}
-        >
-          Details
-          <span className="ml-1.5 text-[11px] font-normal text-fg-tertiary">
-            {s.yearData.length} years
-          </span>
-          {dashboardMode === "details" && (
-            <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-brand" />
-          )}
-        </button>
+      <div className="mb-5">
+        <UnderlineTabs
+          tabs={[
+            { key: "overview", label: "Overview" },
+            { key: "details", label: "Details", hint: `${s.yearData.length} years` },
+          ]}
+          activeKey={dashboardMode}
+          onChange={(k) => setDashboardMode(k as "overview" | "details")}
+        />
       </div>
 
       {dashboardMode === "overview" && (
@@ -107,13 +86,13 @@ export default function CashflowDashboard({
                   if (m === "tax" && !s.isInvestment) return null;
                   const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "tax" ? "Tax" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
                   return (
-                    <button
+                    <PillButton
                       key={m}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[20px] border-none text-xs font-medium cursor-pointer transition-[background,color] duration-150 ${vm === m ? "bg-white/[0.08] text-fg-primary" : "bg-transparent text-[rgba(161,161,170,0.4)] hover:text-[rgba(161,161,170,0.6)]"}`}
+                      active={vm === m}
                       onClick={() => { s.setViewMode(m); s.setSelectedYear(1); }}
                     >
                       {label}
-                    </button>
+                    </PillButton>
                   );
                 })}
               </div>

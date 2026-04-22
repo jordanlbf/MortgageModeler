@@ -7,6 +7,7 @@ import type { GrantSchemeWithEligibility } from "@/lib/api";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import { useApiCall } from "@/hooks/useApiCall";
 import { mix, STATE_COLORS } from "@/lib/theme";
+import PillButton from "@/components/ui/PillButton";
 import DenseSchemeCard from "./DenseSchemeCard";
 
 // ── Types ───────────────────────────────────────
@@ -14,29 +15,7 @@ import DenseSchemeCard from "./DenseSchemeCard";
 const ALL_REGIONS = ["Federal", "NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
 type Region = (typeof ALL_REGIONS)[number];
 
-// ── Pill button ─────────────────────────────────
-
-function Pill({ label, active, color, onClick }: { label: string; active: boolean; color?: string; onClick: () => void }) {
-  const accent = color ?? "var(--color-brand)";
-  return (
-    <button
-      className="h-[26px] px-2.5 rounded-full border text-[14px] font-semibold cursor-pointer whitespace-nowrap outline-none leading-none transition-all duration-150 min-w-[72px] text-center justify-center"
-      style={active ? {
-        background: mix(accent, 14),
-        color: accent,
-        borderColor: mix(accent, 25),
-        boxShadow: `0 0 8px ${mix(accent, 10)}`,
-      } : {
-        background: "transparent",
-        color: mix("var(--color-fg-primary)", 50),
-        borderColor: "rgba(255,255,255,0.07)",
-      }}
-      onClick={onClick}
-    >
-      {label}
-    </button>
-  );
-}
+// ── Tri-state pill (domain-specific: yes/no with red "no" state) ─
 
 function TriPill({ label, active, isNo, onClick }: { label: string; active: boolean; isNo?: boolean; onClick: () => void }) {
   const red = active && isNo;
@@ -190,7 +169,7 @@ export default function GrantsView() {
                 {ALL_REGIONS.map((r) => {
                   const color = r === "Federal" ? STATE_COLORS.FEDERAL : STATE_COLORS[r];
                   return (
-                    <Pill key={r} label={r} active={regions.has(r)} color={color} onClick={() => toggleRegion(r)} />
+                    <PillButton key={r} active={regions.has(r)} color={color} onClick={() => toggleRegion(r)}>{r}</PillButton>
                   );
                 })}
               </div>
@@ -209,7 +188,7 @@ export default function GrantsView() {
                     { value: "land" as const, label: "Land" },
                     { value: "off-the-plan" as const, label: "OTP" },
                   ]).map((o) => (
-                    <Pill key={o.value} label={o.label} active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)} />
+                    <PillButton key={o.value} active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)}>{o.label}</PillButton>
                   ))}
                 </div>
               </div>
@@ -220,7 +199,7 @@ export default function GrantsView() {
                 <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">Buyer</label>
                 <div className="flex gap-1.5">
                   {([{ value: "individual" as const, label: "Individual" }, { value: "couple" as const, label: "Couple" }]).map((o) => (
-                    <Pill key={o.value} label={o.label} active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)} />
+                    <PillButton key={o.value} active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)}>{o.label}</PillButton>
                   ))}
                 </div>
               </div>
