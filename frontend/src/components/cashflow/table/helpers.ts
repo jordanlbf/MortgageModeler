@@ -1,4 +1,5 @@
 import { safeDiv } from "@/lib/formatters";
+import { t } from "@/lib/theme";
 
 /** Safe YoY % change: ((current / previous) - 1) * 100, returns 0 when previous is 0. */
 export const yoyPct = (current: number, previous: number) => previous === 0 ? 0 : (safeDiv(current, previous) - 1) * 100;
@@ -17,7 +18,7 @@ export const getValueClass = (value: number, isResult = false, isOutflow = false
   if (isResult) return value < 0 ? "text-data-negative font-bold" : "text-data-positive font-bold";
   if (isTaxSaved && value > 0) return "text-data-positive font-bold";
   if (isOutflow) return "text-data-negative";
-  return "text-fg-primary";
+  return "";
 };
 
 /** LVR conditional styling */
@@ -27,56 +28,117 @@ export const getLvrClass = (lvr: number) => {
   return "text-data-positive";
 };
 
+/** Get inline color style for LVR */
+export const getLvrColor = (lvr: number) => {
+  if (lvr > 80) return t.data.negative;
+  if (lvr > 60) return t.data.warning;
+  return t.data.positive;
+};
+
 type ThVariant = "default" | "total" | "net";
 type TdVariant = "default" | "out" | "total" | "totalOut" | "net";
 
-const TH_BASE = "h-9 px-3.5 text-right align-middle text-[11.5px] font-medium border-b border-default whitespace-nowrap";
-const TD_BASE = "px-3.5 text-right tracking-tight border-b border-subtle whitespace-nowrap";
+// Data Dense style: cleaner, more compact, using theme tokens
+const TH_BASE = "px-3 py-2 text-right text-[11px] font-medium whitespace-nowrap uppercase tracking-wider";
+const TD_BASE = "px-3 py-2 text-right text-[12px] tabular-nums whitespace-nowrap border-t border-border-subtle";
 
 export const thClass = (
   variant: ThVariant = "default",
   opts?: { groupStart?: boolean; first?: boolean },
 ) => {
   const { groupStart = false, first = false } = opts ?? {};
-  if (first) return `${TH_BASE} text-left pl-0.5 text-fg-tertiary`;
-  const color =
-    variant === "total" ? "text-fg-secondary font-semibold"
-    : variant === "net" ? "text-brand font-semibold"
-    : "text-fg-tertiary";
-  const group = groupStart ? "border-l border-default pl-5" : "";
-  return `${TH_BASE} ${color} ${group}`.trim();
+  const base = TH_BASE;
+  const group = groupStart ? "border-l border-border-subtle pl-4" : "";
+
+  if (first) return `${base} text-left sticky left-0 z-[1] ${group}`.trim();
+
+  return `${base} ${group}`.trim();
+};
+
+export const thStyle = (
+  variant: ThVariant = "default",
+  opts?: { first?: boolean },
+) => {
+  const { first = false } = opts ?? {};
+  const baseStyle: React.CSSProperties = {
+    color: t.fg.tertiary,
+    backgroundColor: t.surface.sunken,
+  };
+
+  if (first) {
+    return baseStyle;
+  }
+
+  if (variant === "total") {
+    return { ...baseStyle, color: t.fg.secondary, fontWeight: 600 };
+  }
+  if (variant === "net") {
+    return { ...baseStyle, color: t.brand.default, fontWeight: 600 };
+  }
+
+  return baseStyle;
 };
 
 export const tdClass = (
   variant: TdVariant = "default",
-  opts?: { isMs?: boolean; groupStart?: boolean; first?: boolean },
+  opts?: { isMs?: boolean; groupStart?: boolean; first?: boolean; isSelected?: boolean },
 ) => {
-  const { isMs = false, groupStart = false, first = false } = opts ?? {};
+  const { groupStart = false, first = false, isSelected = false } = opts ?? {};
+  const base = TD_BASE;
+  const group = groupStart ? "border-l border-border-subtle pl-4" : "";
+  const selected = isSelected ? "bg-surface-hover" : "";
+
   if (first) {
-    const c = isMs ? "text-fg-primary font-medium" : "text-fg-tertiary";
-    return `${TD_BASE} text-left pl-0.5 ${c}`;
+    return `${base} text-left sticky left-0 z-[1] font-medium ${group} ${selected}`.trim();
   }
-  let color: string;
-  switch (variant) {
-    case "out":
-      color = isMs ? "text-data-negative font-medium" : "text-data-negative-dim";
-      break;
-    case "total":
-      color = isMs ? "text-fg-primary font-semibold" : "text-fg-primary font-medium";
-      break;
-    case "totalOut":
-      color = isMs ? "text-data-negative font-semibold" : "text-data-negative font-medium";
-      break;
-    case "net":
-      color = isMs
-        ? "text-data-positive font-bold text-[13.5px]"
-        : "text-data-positive font-semibold text-[13.5px]";
-      break;
-    default:
-      color = isMs ? "text-fg-primary font-medium" : "text-fg-secondary";
-  }
-  const group = groupStart ? "border-l border-subtle pl-5" : "";
-  return `${TD_BASE} ${color} ${group}`.trim();
+
+  return `${base} ${group} ${selected}`.trim();
 };
 
-export const gainCls = "text-fg-muted text-[10px] font-normal ml-1.5";
+export const tdStyle = (
+  variant: TdVariant = "default",
+  opts?: { isMs?: boolean; isSelected?: boolean; first?: boolean },
+): React.CSSProperties => {
+  const { isMs = false, isSelected = false, first = false } = opts ?? {};
+
+  const bgColor = isSelected ? t.surface.hover : t.card;
+
+  if (first) {
+    return {
+      color: t.fg.primary,
+      backgroundColor: bgColor,
+    };
+  }
+
+  switch (variant) {
+    case "out":
+      return {
+        color: t.data.negative,
+        fontWeight: isMs ? 500 : 400,
+      };
+    case "total":
+      return {
+        color: t.fg.primary,
+        fontWeight: isMs ? 600 : 500,
+      };
+    case "totalOut":
+      return { 
+        color: t.data.negative,
+        fontWeight: isMs ? 600 : 500,
+      };
+    case "net":
+      return {
+        color: t.data.positive,
+        fontWeight: isMs ? 700 : 600,
+        fontSize: "13px",
+      };
+    default:
+      return {
+        color: isMs ? t.fg.primary : t.fg.secondary,
+        fontWeight: isMs ? 500 : 400,
+      };
+  }
+};
+
+export const gainCls = "text-[10px] font-normal ml-1.5";
+export const gainStyle: React.CSSProperties = { color: t.fg.muted };

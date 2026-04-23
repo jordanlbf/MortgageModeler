@@ -121,10 +121,10 @@ export default function CashflowDataTable({
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full bg-card border border-border-subtle rounded-xl overflow-hidden">
       {showExpandButton && (
         <button
-          className="absolute top-1.5 left-2 z-[2] flex items-center justify-center w-[22px] h-[22px] border-none rounded bg-transparent text-fg-primary/[0.22] cursor-pointer transition-[color,background] duration-150 hover:bg-brand/[0.08] hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+          className="absolute top-2.5 left-2.5 z-[2] flex items-center justify-center w-[22px] h-[22px] border-none rounded bg-transparent text-fg-primary/[0.22] cursor-pointer transition-[color,background] duration-150 hover:bg-brand/[0.08] hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           onClick={() => {
             if (expandedMilestones.size > 0) {
               setExpandedMilestones(new Set());
@@ -137,11 +137,13 @@ export default function CashflowDataTable({
           {expandedMilestones.size > 0 ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
         </button>
       )}
-      {viewMode === "summary"    && <SummaryTable    {...shared} />}
-      {viewMode === "tax"        && <TaxTable        {...shared} />}
-      {viewMode === "property"   && <PropertyTable   {...shared} />}
-      {viewMode === "equity"     && <EquityTable     {...shared} />}
-      {viewMode === "deductions" && <DeductionsTable {...shared} />}
+      <div className="overflow-x-auto">
+        {viewMode === "summary"    && <SummaryTable    {...shared} />}
+        {viewMode === "tax"        && <TaxTable        {...shared} />}
+        {viewMode === "property"   && <PropertyTable   {...shared} />}
+        {viewMode === "equity"     && <EquityTable     {...shared} />}
+        {viewMode === "deductions" && <DeductionsTable {...shared} />}
+      </div>
     </div>
   );
 }

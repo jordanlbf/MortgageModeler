@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDollarsSigned } from "@/lib/formatters";
-import { yoyPct, fmtYoY, thClass, tdClass, gainCls } from "./helpers";
+import { yoyPct, fmtYoY, thClass, thStyle, tdClass, tdStyle, gainCls, gainStyle } from "./helpers";
 import type { SubTableProps } from "./types";
 
 export default function DeductionsTable({
@@ -14,16 +14,16 @@ export default function DeductionsTable({
   getRowHandlers,
 }: SubTableProps) {
   return (
-    <table className="w-full border-collapse text-[13px] tabular-nums">
+    <table className="w-full text-[12px]">
       <thead>
         <tr>
-          <th className={thClass("default", { first: true })}>Year</th>
-          <th className={thClass()}>Holding</th>
-          {isInvestment && <th className={thClass()}>Interest</th>}
-          {isInvestment && <th className={thClass("default", { groupStart: true })}>Div 43</th>}
-          {isInvestment && <th className={thClass()}>Div 40</th>}
-          {isInvestment && <th className={thClass("total")}>Total depreciation</th>}
-          <th className={thClass("net", { groupStart: true })}>
+          <th className={thClass("default", { first: true })} style={thStyle("default", { first: true })}>Year</th>
+          <th className={thClass()} style={thStyle()}>Holding</th>
+          {isInvestment && <th className={thClass()} style={thStyle()}>Interest</th>}
+          {isInvestment && <th className={thClass("default", { groupStart: true })} style={thStyle()}>Div 43</th>}
+          {isInvestment && <th className={thClass()} style={thStyle()}>Div 40</th>}
+          {isInvestment && <th className={thClass("total")} style={thStyle("total")}>Total depreciation</th>}
+          <th className={thClass("net", { groupStart: true })} style={thStyle("net")}>
             {isInvestment ? "Total deductions" : "Total expenses"}
           </th>
         </tr>
@@ -49,30 +49,38 @@ export default function DeductionsTable({
 
           return (
             <tr key={y.year} className={getRowClass(y.year, isMs)} {...getRowHandlers(y.year, isMs)}>
-              <td className={tdClass("default", { isMs, first: true })}>{formatYearCell(y.year, i, isMs)}</td>
-              <td className={tdClass("default", { isMs })}>
+              <td className={tdClass("default", { isMs, first: true })} style={tdStyle("default", { isMs, first: true })}>
+                {formatYearCell(y.year, i, isMs)}
+              </td>
+              <td className={tdClass("default", { isMs })} style={tdStyle("default", { isMs })}>
                 {formatDollarsSigned(Math.round(y.ongoingCosts))}
-                {prev && <span className={gainCls}>{fmtYoY(holdingYoY)}</span>}
+                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(holdingYoY)}</span>}
               </td>
               {isInvestment && (
-                <td className={tdClass("default", { isMs })}>
+                <td className={tdClass("default", { isMs })} style={tdStyle("default", { isMs })}>
                   {formatDollarsSigned(Math.round(y.interestPortion))}
-                  {prev && <span className={gainCls}>{fmtYoY(interestYoY)}</span>}
+                  {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(interestYoY)}</span>}
                 </td>
               )}
               {isInvestment && (
-                <td className={tdClass("default", { isMs, groupStart: true })}>{formatDollarsSigned(Math.round(y.depDiv43))}</td>
+                <td className={tdClass("default", { isMs, groupStart: true })} style={tdStyle("default", { isMs })}>
+                  {formatDollarsSigned(Math.round(y.depDiv43))}
+                </td>
               )}
-              {isInvestment && <td className={tdClass("default", { isMs })}>{formatDollarsSigned(Math.round(y.depDiv40))}</td>}
               {isInvestment && (
-                <td className={tdClass("total", { isMs })}>
+                <td className={tdClass("default", { isMs })} style={tdStyle("default", { isMs })}>
+                  {formatDollarsSigned(Math.round(y.depDiv40))}
+                </td>
+              )}
+              {isInvestment && (
+                <td className={tdClass("total", { isMs })} style={tdStyle("total", { isMs })}>
                   {formatDollarsSigned(Math.round(depr))}
-                  {prev && <span className={gainCls}>{fmtYoY(deprYoY)}</span>}
+                  {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(deprYoY)}</span>}
                 </td>
               )}
-              <td className={tdClass("net", { isMs, groupStart: true })}>
+              <td className={tdClass("net", { isMs, groupStart: true })} style={tdStyle("net", { isMs })}>
                 {formatDollarsSigned(Math.round(totalDed))}
-                {prev && <span className={gainCls}>{fmtYoY(totalDedYoY)}</span>}
+                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(totalDedYoY)}</span>}
               </td>
             </tr>
           );
