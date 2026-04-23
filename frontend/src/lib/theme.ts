@@ -29,6 +29,13 @@ export const t = {
     hover:   "var(--color-surface-hover)",
     active:  "var(--color-surface-active)",
     overlay: "var(--color-surface-overlay)",
+    subtle:  "var(--color-surface-subtle)",
+  },
+
+  card: {
+    base:     "var(--color-card)",
+    elevated: "var(--color-card-elevated)",
+    control:  "var(--color-control)",
   },
 
   fg: {
@@ -39,13 +46,14 @@ export const t = {
   },
 
   data: {
-    primary:  "var(--color-data-primary)",
-    emphasis: "var(--color-data-emphasis)",
-    muted:    "var(--color-data-muted)",
-    positive: "var(--color-data-positive)",
-    negative: "var(--color-data-negative)",
-    warning:  "var(--color-data-warning)",
-    neutral:  "var(--color-data-neutral)",
+    primary:     "var(--color-data-primary)",
+    emphasis:    "var(--color-data-emphasis)",
+    muted:       "var(--color-data-muted)",
+    positive:    "var(--color-data-positive)",
+    negative:    "var(--color-data-negative)",
+    negativeDim: "var(--color-data-negative-dim)",
+    warning:     "var(--color-data-warning)",
+    neutral:     "var(--color-data-neutral)",
   },
 
   status: {

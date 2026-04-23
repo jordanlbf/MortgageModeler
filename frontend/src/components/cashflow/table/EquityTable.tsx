@@ -145,7 +145,7 @@ export default function EquityTable({
         const finalPropEq = lastYear.propertyValue - lastYear.loanBalance;
         const finalOffset = lastYear.offsetBalanceAtYear;
         const finalNetEquity = lastYear.netEquity;
-        const summaryBorder = { borderTop: "1px solid rgba(45,212,191,0.30)" } as const;
+        const summaryBorder = { borderTop: "1px solid color-mix(in srgb, var(--color-brand) 30%, transparent)" } as const;
 
         return (
         <table className="border-collapse tabular-nums text-[13px] leading-[1.4] whitespace-nowrap w-full min-w-full table-auto">

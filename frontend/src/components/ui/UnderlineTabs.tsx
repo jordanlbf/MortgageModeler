@@ -30,7 +30,7 @@ export default function UnderlineTabs({ tabs, activeKey, onChange }: Props) {
             {tab.hint && (
               <span className="ml-1.5 text-[11px] font-normal text-fg-tertiary">{tab.hint}</span>
             )}
-            {active && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-brand" />}
+            {active && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-brand-hover" />}
           </button>
         );
       })}

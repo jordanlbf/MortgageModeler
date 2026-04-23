@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* TODO: add stylelint rule `declaration-property-value-disallowed-list` banning */
+/* raw `rgba(45,212,191,…)` and `rgba(59,130,246,…)` outside the @theme block. */
+/* Route brand alpha washes through `color-mix(in srgb, var(--color-brand) N%, transparent)`. */
+
 /* ── Theme tokens synced with src/lib/theme.ts ── */
 @theme {
   /* ───────────────────────────────────────────────────────────────── */
@@ -16,7 +20,7 @@
   --color-brand-hover: #3de0cc;
   --color-brand-subtle: #0f2320;
   --color-brand-subtle-hover: #143330;
-  --color-brand-border: rgba(45, 212, 191, 0.32);
+  --color-brand-border: color-mix(in srgb, var(--color-brand) 32%, transparent);
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Surface ramp — cool neutral zinc/slate family                     */
@@ -28,6 +32,16 @@
   --color-surface-hover:    #22262f;      /* interactive hover */
   --color-surface-active:   #2a3040;      /* selected rows, KPI tiles */
   --color-surface-overlay:  rgba(9, 9, 11, 0.74);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Card surfaces — translucent, meant to sit over surface-app or    */
+  /* surface-page and pick up the underlying tone. Exposed for opt-in */
+  /* by glass-card components; existing components not retrofitted.   */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-card:            rgba(26, 32, 42, 0.72);
+  --color-card-elevated:   rgba(32, 38, 50, 0.82);
+  --color-control:         rgba(15, 18, 24, 0.60);
+  --color-surface-subtle:  rgba(220, 230, 255, 0.02);
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Foreground ramp — slate family, fully neutral                     */
@@ -48,10 +62,11 @@
   /* Data semantic — richer than before, enough energy to carry        */
   /* chromatic signal against the neutral base                         */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-data-positive: #34d399;    /* emerald-400 */
-  --color-data-negative: #fb7185;    /* rose-400 */
-  --color-data-warning:  #fbbf24;    /* amber-400 */
-  --color-data-neutral:  var(--color-fg-tertiary);
+  --color-data-positive:     #34d399;    /* emerald-400 */
+  --color-data-negative:     #fb7185;    /* rose-400 — reserved for shortfall, errors, outlier-neg YoY */
+  --color-data-negative-dim: #be475e;    /* routine recurring outgoings (not in-crisis) */
+  --color-data-warning:      #fbbf24;    /* amber-400 */
+  --color-data-neutral:      var(--color-fg-tertiary);
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Status semantic — UI feedback (toasts, validation, banners)       */
@@ -77,7 +92,7 @@
   /* ───────────────────────────────────────────────────────────────── */
   /* Focus — unchanged teal                                            */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-focus-ring:        rgba(45, 212, 191, 0.35);
+  --color-focus-ring:        color-mix(in srgb, var(--color-brand) 35%, transparent);
   --color-focus-ring-offset: var(--color-surface-app);
 
   /* ───────────────────────────────────────────────────────────────── */
@@ -97,12 +112,15 @@
   /* ───────────────────────────────────────────────────────────────── */
   /* Column group washes — slate-tinted outgoings, teal cashflow       */
   /* ───────────────────────────────────────────────────────────────── */
+  --color-inc-tint:         rgba(148, 163, 184, 0.014);
+  --color-inc-tint-hover:   rgba(148, 163, 184, 0.028);
+  --color-inc-tint-raised:  rgba(148, 163, 184, 0.020);
   --color-out-tint:         rgba(148, 163, 184, 0.022);
   --color-out-tint-hover:   rgba(148, 163, 184, 0.040);
   --color-out-tint-raised:  rgba(148, 163, 184, 0.028);
-  --color-cf-wash:          rgba(45, 212, 191, 0.05);
-  --color-cf-wash-hover:    rgba(45, 212, 191, 0.07);
-  --color-cf-wash-strong:   rgba(45, 212, 191, 0.08);
+  --color-cf-wash:          color-mix(in srgb, var(--color-brand) 5%, transparent);
+  --color-cf-wash-hover:    color-mix(in srgb, var(--color-brand) 8%, transparent);
+  --color-cf-wash-strong:   color-mix(in srgb, var(--color-brand) 12%, transparent);
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Chart chrome — slate family                                       */
@@ -178,9 +196,12 @@ body {
   right: 8px;
   height: 3px;
   border-radius: 0 0 2px 2px;
-  background: currentColor;
-  opacity: 0.75;
+  background: var(--col-bar, currentColor);
+  opacity: var(--col-bar-alpha, 0.75);
 }
+.col-group-h--income   { --col-bar: var(--color-fg-tertiary);       --col-bar-alpha: 0.35; }
+.col-group-h--outgoing { --col-bar: var(--color-data-negative-dim); --col-bar-alpha: 0.55; }
+.col-group-h--cashflow { --col-bar: var(--color-brand);             --col-bar-alpha: 0.75; }
 .col-group-h--clickable {
   cursor: pointer;
   transition: background 150ms ease-in-out;
@@ -218,25 +239,74 @@ body {
 .tip:hover::after { opacity: 1; }
 
 /* ── Cashflow table: column group zones ── */
+.inc-zone { background: var(--color-inc-tint); }
 .out-zone { background: var(--color-out-tint); }
 .cf-zone { background: var(--color-cf-wash); }
+
+/* Zone boundary — inset left shadow, no column-width shift */
+.zone-start { box-shadow: inset 1px 0 0 var(--color-border-subtle); }
 
 /* Group gap: applied to first cell of a column group */
 .row-gsep { padding-left: 24px !important; }
 
 /* Hover compound: row hover brightens the zone tint */
+tr:hover .inc-zone { background: var(--color-inc-tint-hover); }
 tr:hover .out-zone { background: var(--color-out-tint-hover); }
 tr:hover .cf-zone { background: var(--color-cf-wash-hover); }
+
+/* Row hover surfaces the year label cell (but not on the summary row) */
+tbody tr:not(.row-summary):hover > td:first-child {
+  background: var(--color-surface-hover);
+}
 
 /* Selected row keeps its accent wash */
 tr.row-selected .out-zone { background: color-mix(in srgb, var(--color-brand) 5%, transparent); }
 tr.row-selected .cf-zone { background: color-mix(in srgb, var(--color-brand) 8%, transparent); }
 
 /* Header and summary rows use the raised/strong tint */
+thead .inc-zone,
+.row-summary .inc-zone { background: var(--color-inc-tint-raised); }
 thead .out-zone,
 .row-summary .out-zone { background: var(--color-out-tint-raised); }
 thead .cf-zone,
 .row-summary .cf-zone { background: var(--color-cf-wash-strong); }
+
+/* Milestone row rhythm — every 5 years gets a subtle landmark */
+.row-milestone > td {
+  border-top: 1px solid var(--color-border-default);
+}
+.row-milestone > td:first-child {
+  color: var(--color-fg-primary);
+  font-weight: 500;
+}
+
+/* Cashflow table body: per-zone number treatments */
+.tbl .num--income {
+  color: var(--color-fg-secondary);
+  font-weight: 400;
+}
+.tbl .num--cashflow {
+  color: var(--color-data-emphasis);
+  font-weight: 500;
+}
+.tbl .num--cashflow[data-shortfall="true"] {
+  color: var(--color-data-negative);
+}
+.tbl .num--outgoing {
+  color: var(--color-data-negative-dim);
+  font-weight: 400;
+}
+.tbl .num--outgoing[data-shortfall="true"] {
+  color: var(--color-data-negative);
+}
+
+/* Darker shell wrapping the data table — inset-data-surface feel */
+.cashflow-table-shell {
+  background: var(--color-surface-page);
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  overflow: hidden;
+}
 
 /* Summary row */
 .row-summary {
@@ -248,7 +318,7 @@ thead .cf-zone,
 .row-summary > td {
   height: 56px;
   border-bottom: none;
-  border-top: 0.5px solid rgba(255,255,255,0.10);
+  border-top: 1px solid var(--color-border-strong);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -268,8 +338,8 @@ thead .cf-zone,
   height: 44px;
   padding: 0 16px;
   border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-brand) 12%, transparent);
-  background: color-mix(in srgb, var(--color-brand) 3%, transparent);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-surface-raised);
   color: var(--color-fg-primary);
   font-size: 15px;
   font-weight: 500;
@@ -279,8 +349,8 @@ thead .cf-zone,
   width: 100%;
 }
 .form-input:hover {
-  border-color: color-mix(in srgb, var(--color-brand) 20%, transparent);
-  background: color-mix(in srgb, var(--color-brand) 5%, transparent);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover);
 }
 .form-input:focus {
   border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
@@ -296,23 +366,23 @@ thead .cf-zone,
   height: 44px;
   padding: 0 32px 0 16px;
   border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-brand) 12%, transparent);
-  background: color-mix(in srgb, var(--color-brand) 3%, transparent);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-surface-raised);
   color: var(--color-fg-primary);
   font-size: 15px;
   font-weight: 500;
   outline: none;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(45,212,191,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(148,163,184,0.55)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   transition: border-color 0.2s ease, background 0.2s ease;
   width: 100%;
 }
 .form-select:hover {
-  border-color: color-mix(in srgb, var(--color-brand) 20%, transparent);
-  background: color-mix(in srgb, var(--color-brand) 5%, transparent);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover);
 }
 .form-select:focus {
   border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
@@ -354,8 +424,8 @@ thead .cf-zone,
 /* ── Home page background effects ── */
 .home-bg-glow {
   background:
-    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(45,212,191,0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 35% at 50% 5%, rgba(45,212,191,0.10) 0%, transparent 65%);
+    radial-gradient(ellipse 60% 45% at 50% 0%, color-mix(in srgb, var(--color-brand) 4%, transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 35% at 50% 5%, color-mix(in srgb, var(--color-brand) 10%, transparent) 0%, transparent 65%);
 }
 .home-bg-noise {
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");

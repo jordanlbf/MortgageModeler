@@ -135,7 +135,7 @@ export default function CashflowDataTable({
     const isHovered = year === hoveredYear && !isSelected;
     const isExpandable = isMilestoneRow;
     const isChildRow = !isMilestoneRow && !isMilestoneYear(year);
-    return `group/row h-[52px] transition-[background] duration-100 ease-in-out cursor-pointer hover:bg-[var(--color-surface-hover)] ${isSelected ? "row-selected bg-brand/[0.045] hover:bg-brand/[0.045]" : ""} ${isHovered ? "bg-brand/[0.015]" : ""} ${isExpandable ? "cursor-pointer" : ""} ${isMilestoneRow ? "[&_td]:relative [&_td]:after:content-[''] [&_td]:after:absolute [&_td]:after:left-0 [&_td]:after:right-0 [&_td]:after:bottom-[-1px] [&_td]:after:h-[6px] [&_td]:after:bg-gradient-to-b [&_td]:after:from-black/[0.10] [&_td]:after:to-transparent [&_td]:after:pointer-events-none" : ""} ${isChildRow ? "bg-black/[0.02]" : ""}`;
+    return `group/row h-[52px] transition-[background] duration-100 ease-in-out cursor-pointer hover:bg-[var(--color-surface-hover)] ${isMilestoneRow ? "row-milestone" : ""} ${isSelected ? "row-selected bg-brand/[0.045] hover:bg-brand/[0.045]" : ""} ${isHovered ? "bg-brand/[0.015]" : ""} ${isExpandable ? "cursor-pointer" : ""} ${isMilestoneRow ? "[&_td]:relative [&_td]:after:content-[''] [&_td]:after:absolute [&_td]:after:left-0 [&_td]:after:right-0 [&_td]:after:bottom-[-1px] [&_td]:after:h-[6px] [&_td]:after:bg-gradient-to-b [&_td]:after:from-black/[0.10] [&_td]:after:to-transparent [&_td]:after:pointer-events-none" : ""} ${isChildRow ? "bg-black/[0.02]" : ""}`;
   };
 
   // Shared props for all sub-tables
@@ -171,7 +171,7 @@ export default function CashflowDataTable({
           {expandedMilestones.size > 0 ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
         </button>
       )}
-    <div className="bg-transparent border-none rounded-none">
+    <div className="cashflow-table-shell">
       {viewMode === "summary" && summaryPanel && (
         <SummaryTable {...shared} panel={summaryPanel} />
       )}

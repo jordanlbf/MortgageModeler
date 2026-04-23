@@ -164,7 +164,7 @@ function StepIndicator({
         isComplete
           ? "border-[1.5px] border-brand bg-brand text-brand-contrast"
           : isCurrent
-            ? "border-[1.5px] border-brand text-brand bg-[rgba(45,212,191,0.08)] shadow-[0_0_0_3px_rgba(45,212,191,0.12)]"
+            ? "border-[1.5px] border-brand text-brand bg-brand/[0.08] shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-brand)_12%,transparent)]"
             : "border-[1.5px] border-default bg-surface-app text-fg-tertiary"
       ].join(" ")}>
         {isComplete ? (
@@ -309,8 +309,8 @@ export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) 
                   key={step.id}
                   className={[
                     "flex items-start gap-3.5 py-3 px-6 relative bg-none border-none w-full text-left font-[inherit] transition-colors duration-150 ease-in-out",
-                    isComplete ? "cursor-pointer hover:bg-[rgba(255,255,255,0.02)]" : "cursor-default",
-                    isCurrent && "!bg-[rgba(45,212,191,0.04)]",
+                    isComplete ? "cursor-pointer hover:bg-surface-hover" : "cursor-default",
+                    isCurrent && "!bg-brand/[0.04]",
                     isUpcoming && "opacity-50",
                   ].filter(Boolean).join(" ")}
                   onClick={() => isComplete && onStepClick?.(step.id)}

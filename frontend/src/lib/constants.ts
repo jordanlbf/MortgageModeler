@@ -47,6 +47,7 @@ export const TOOLS: Tool[] = [
 
 /** Per-tool brand colours — used on the homepage card grid. */
 export const TOOL_COLORS: Record<string, { primary: string; glow: string }> = {
+  /* literal teal swatch — amortisation tool identity, not a theme-aware wash */
   amortisation:     { primary: "#2dd4bf", glow: "rgba(45,212,191,0.08)" },
   tax:              { primary: "#60a5fa", glow: "rgba(96,165,250,0.08)" },
   "ppor-vs-rent":   { primary: "#a78bfa", glow: "rgba(167,139,250,0.08)" },

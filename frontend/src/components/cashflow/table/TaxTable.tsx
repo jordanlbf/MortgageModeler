@@ -141,7 +141,7 @@ export default function TaxTable({
             tax: acc.tax + y.incomeTaxCalc,
           };
         }, { holding: 0, interest: 0, depr: 0, totalDed: 0, income: 0, benefit: 0, tax: 0 });
-        const summaryBorder = { borderTop: "1px solid rgba(45,212,191,0.30)" } as const;
+        const summaryBorder = { borderTop: "1px solid color-mix(in srgb, var(--color-brand) 30%, transparent)" } as const;
 
         return (
         <table className="border-collapse tabular-nums text-[13px] leading-[1.4] whitespace-nowrap w-full min-w-full table-auto">
