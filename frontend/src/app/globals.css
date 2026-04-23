@@ -1,9 +1,5 @@
 @import "tailwindcss";
 
-/* TODO: add stylelint rule `declaration-property-value-disallowed-list` banning */
-/* raw `rgba(45,212,191,…)` and `rgba(59,130,246,…)` outside the @theme block. */
-/* Route brand alpha washes through `color-mix(in srgb, var(--color-brand) N%, transparent)`. */
-
 /* ── Theme tokens synced with src/lib/theme.ts ── */
 @theme {
   /* ───────────────────────────────────────────────────────────────── */
@@ -12,62 +8,80 @@
   --font-sans: var(--font-sora), "system-ui", "sans-serif";
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Brand — unchanged. Teal identity, used surgically for selection,  */
-  /* active tabs, column group accents, hero labels.                   */
+  /* Brand — Emerald identity, used for selection, active tabs,        */
+  /* column group accents, hero labels.                                */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-brand: #2dd4bf;
-  --color-brand-contrast: #0a1a18;
-  --color-brand-hover: #3de0cc;
-  --color-brand-subtle: #0f2320;
-  --color-brand-subtle-hover: #143330;
+  --color-brand: #34d399;             /* emerald-400 */
+  --color-brand-contrast: #022c22;
+  --color-brand-hover: #6ee7b7;       /* emerald-300 */
+  --color-brand-subtle: #064e3b;      /* emerald-900 */
+  --color-brand-subtle-hover: #065f46; /* emerald-800 */
   --color-brand-border: color-mix(in srgb, var(--color-brand) 32%, transparent);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Surface ramp — cool neutral zinc/slate family                     */
-  /* Wider tonal steps than previous mint-tinted ramp                  */
+  /* Surface ramp — pure zinc family (no blue tint)                    */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-surface-page:     #09090b;      /* outer page bg */
-  --color-surface-sidebar:  #0a0d13;      /* sits between page and app — for chrome surfaces like the sidebar */
-  --color-surface-app:      #0e1117;      /* main app content */
-  --color-surface-raised:   #1a1e26;      /* cards, table headers */
-  --color-surface-hover:    #22262f;      /* interactive hover */
-  --color-surface-active:   #2a3040;      /* selected rows, KPI tiles */
+  --color-surface-page:     #09090b;              /* zinc-950 — outer page bg (darkest) */
+  --color-surface-sidebar:  rgba(24, 24, 27, 0.80); /* same as card — glassmorphism */
+  --color-surface-app:      #09090b;              /* zinc-950 — main app content bg */
+  --color-surface-raised:   #18181b;              /* zinc-900 — elevated solid panels */
+  --color-surface-hover:    #27272a;              /* zinc-800 — interactive hover */
+  --color-surface-active:   #27272a;              /* zinc-800 — active nav items */
   --color-surface-overlay:  rgba(9, 9, 11, 0.74);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Card surfaces — translucent, meant to sit over surface-app or    */
-  /* surface-page and pick up the underlying tone. Exposed for opt-in */
-  /* by glass-card components; existing components not retrofitted.   */
+  /* Card surfaces — translucent glassmorphism panels                  */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-card:            rgba(26, 32, 42, 0.72);
-  --color-card-elevated:   rgba(32, 38, 50, 0.82);
-  --color-control:         rgba(15, 18, 24, 0.60);
-  --color-surface-subtle:  rgba(220, 230, 255, 0.02);
+  --color-card:            rgba(24, 24, 27, 0.80);   /* zinc-900/80 — more visible */
+  --color-card-elevated:   rgba(39, 39, 42, 0.85);   /* zinc-800/85 */
+  --color-control:         rgba(24, 24, 27, 0.70);   /* zinc-900/70 */
+  --color-surface-subtle:  rgba(255, 255, 255, 0.03);
+  --color-surface-kpi:     rgba(39, 39, 42, 0.60);   /* zinc-800/60 — more visible */
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Foreground ramp — slate family, fully neutral                     */
+  /* Foreground ramp — zinc family, fully neutral                      */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-fg-primary:   #f8fafc;    /* slate-50 */
-  --color-fg-secondary: #cbd5e1;    /* slate-300 */
-  --color-fg-tertiary:  #94a3b8;    /* slate-400 */
-  --color-fg-disabled:  #475569;    /* slate-600, genuinely dimmer than tertiary */
+  --color-fg-primary:   #ffffff;    /* white */
+  --color-fg-secondary: #a1a1aa;    /* zinc-400 */
+  --color-fg-tertiary:  #71717a;    /* zinc-500 */
+  --color-fg-muted:     #52525b;    /* zinc-600 */
+  --color-fg-disabled:  #3f3f46;    /* zinc-700 */
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Data ink — slate for numbers                                      */
+  /* Data ink — zinc for numbers                                       */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-data-primary:   #cbd5e1;    /* tabular numbers */
-  --color-data-emphasis:  #f8fafc;    /* headline values */
-  --color-data-muted:     #94a3b8;    /* YoY, secondary data */
+  --color-data-primary:   #a1a1aa;    /* zinc-400 — tabular numbers */
+  --color-data-emphasis:  #ffffff;    /* white — headline values */
+  --color-data-muted:     #71717a;    /* zinc-500 — YoY, secondary data */
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Data semantic — richer than before, enough energy to carry        */
-  /* chromatic signal against the neutral base                         */
+  /* Data semantic — chromatic signal against neutral base             */
   /* ───────────────────────────────────────────────────────────────── */
   --color-data-positive:     #34d399;    /* emerald-400 */
-  --color-data-negative:     #fb7185;    /* rose-400 — reserved for shortfall, errors, outlier-neg YoY */
-  --color-data-negative-dim: #be475e;    /* routine recurring outgoings (not in-crisis) */
+  --color-data-positive-dim: #059669;    /* emerald-600 */
+  --color-data-positive-wash: rgba(16, 185, 129, 0.2); /* emerald-500/20 */
+  --color-data-negative:     #fb7185;    /* rose-400 — shortfall, errors */
+  --color-data-negative-dim: #be475e;    /* routine recurring outgoings */
+  --color-data-negative-wash: rgba(251, 113, 133, 0.1);
   --color-data-warning:      #fbbf24;    /* amber-400 */
+  --color-data-warning-dim:  #d97706;    /* amber-600 */
+  --color-data-warning-wash: rgba(251, 191, 36, 0.1);
   --color-data-neutral:      var(--color-fg-tertiary);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Chart Series — distinct colors for multi-chart dashboards         */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-series-cashflow:          #34d399;    /* emerald-400 — cash/income growth */
+  --color-series-cashflow-dim:      #059669;    /* emerald-600 — gradient end */
+  --color-series-cashflow-selected: #5eead4;    /* teal-300 — selected bar */
+  --color-series-cashflow-wash:     rgba(52, 211, 153, 0.10);
+
+  --color-series-equity:            #22d3ee;    /* cyan-400 — net worth/equity */
+  --color-series-equity-dim:        #06b6d4;    /* cyan-500 — gradient end */
+  --color-series-equity-wash:       rgba(34, 211, 238, 0.10);
+
+  --color-series-debt:              #f472b6;    /* pink-400 — loan balance line */
+  --color-series-debt-dim:          rgba(244, 114, 182, 0.20);
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Status semantic — UI feedback (toasts, validation, banners)       */
@@ -83,21 +97,21 @@
   --color-status-warning-bg: rgba(251, 191, 36, 0.10);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Borders — slate-tinted, replacing mint rgbas                      */
+  /* Borders — zinc-based, visible                                     */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-border-subtle:  rgba(148, 163, 184, 0.07);
-  --color-border-default: rgba(148, 163, 184, 0.11);
-  --color-border-strong:  rgba(148, 163, 184, 0.18);
+  --color-border-subtle:  rgba(63, 63, 70, 0.50);   /* zinc-700/50 */
+  --color-border-default: rgba(63, 63, 70, 0.70);   /* zinc-700/70 */
+  --color-border-strong:  #52525b;                  /* zinc-600 */
   --color-border-brand:   var(--color-brand-border);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Focus — unchanged teal                                            */
+  /* Focus                                                              */
   /* ───────────────────────────────────────────────────────────────── */
   --color-focus-ring:        color-mix(in srgb, var(--color-brand) 35%, transparent);
   --color-focus-ring-offset: var(--color-surface-app);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Elevation — unchanged                                             */
+  /* Elevation                                                          */
   /* ───────────────────────────────────────────────────────────────── */
   --shadow-flat:
     0 0 0 0.5px rgba(255, 255, 255, 0.02);
@@ -107,11 +121,11 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.02);
   --shadow-float:
     0 8px 24px rgba(0, 0, 0, 0.44),
-    0 0 0 0.5px rgba(148, 163, 184, 0.08),
+    0 0 0 0.5px rgba(113, 113, 122, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Column group washes — slate-tinted outgoings, teal cashflow       */
+  /* Column group washes                                                */
   /* ───────────────────────────────────────────────────────────────── */
   --color-inc-tint:         transparent;
   --color-inc-tint-hover:   transparent;
@@ -124,28 +138,28 @@
   --color-cf-wash-strong:   transparent;
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Chart chrome — slate family                                       */
+  /* Chart chrome — zinc family                                        */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-chart-grid-h:              rgba(148, 163, 184, 0.06);
-  --color-chart-grid-v:              rgba(148, 163, 184, 0.035);
-  --color-chart-axis:                rgba(148, 163, 184, 0.50);
-  --color-chart-axis-muted:          rgba(148, 163, 184, 0.40);
-  --color-chart-axis-line:           rgba(148, 163, 184, 0.08);
-  --color-chart-cursor:              rgba(148, 163, 184, 0.15);
+  --color-chart-grid-h:              rgba(113, 113, 122, 0.06);
+  --color-chart-grid-v:              rgba(113, 113, 122, 0.035);
+  --color-chart-axis:                rgba(113, 113, 122, 0.50);
+  --color-chart-axis-muted:          rgba(113, 113, 122, 0.40);
+  --color-chart-axis-line:           rgba(113, 113, 122, 0.08);
+  --color-chart-cursor:              rgba(113, 113, 122, 0.15);
   --color-chart-bar-default:         var(--color-surface-active);
   --color-chart-bar-selected:        var(--color-brand);
   --color-chart-bar-hover:           var(--color-surface-hover);
-  --color-chart-legend-inactive:     rgba(148, 163, 184, 0.30);
-  --color-chart-legend-dot-inactive: rgba(148, 163, 184, 0.20);
+  --color-chart-legend-inactive:     rgba(113, 113, 122, 0.30);
+  --color-chart-legend-dot-inactive: rgba(113, 113, 122, 0.20);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Tool card defaults — unchanged                                    */
+  /* Tool card defaults                                                 */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-tool-default:      #94a3b8;
-  --color-tool-default-glow: rgba(148, 163, 184, 0.08);
+  --color-tool-default:      #71717a;   /* zinc-500 */
+  --color-tool-default-glow: rgba(113, 113, 122, 0.08);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Layout — unchanged                                                */
+  /* Layout                                                             */
   /* ───────────────────────────────────────────────────────────────── */
   --layout-sidebar-width:            240px;
   --layout-content-max:              1200px;
@@ -159,7 +173,7 @@
   /* ───────────────────────────────────────────────────────────────── */
   /* Scrollbar                                                         */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-scrollbar: rgba(148, 163, 184, 0.14);
+  --color-scrollbar: rgba(113, 113, 122, 0.14);
 }
 
 
@@ -174,9 +188,6 @@ body {
 }
 
 /* ── Cashflow table: column group header utility ── */
-/* Small uppercase group labels with a 3px accent bar above. Colour is */
-/* controlled by the caller via `text-*` utility — the bar inherits it */
-/* via `background: currentColor`. */
 .col-group-h {
   height: 28px;
   box-sizing: border-box;
@@ -223,8 +234,6 @@ body {
 }
 
 /* ── Hover tooltip utility ── */
-/* Apply to any element with `data-tip="..."`; the attribute value renders */
-/* as a small floating tooltip above the element on hover. */
 .tip {
   position: relative;
   cursor: default;
@@ -257,27 +266,20 @@ body {
 .out-zone { background: var(--color-out-tint); }
 .cf-zone { background: var(--color-cf-wash); }
 
-/* Zone boundary — inset left shadow, no column-width shift */
 .zone-start { box-shadow: inset 1px 0 0 var(--color-border-subtle); }
-
-/* Group gap: applied to first cell of a column group */
 .row-gsep { padding-left: 24px !important; }
 
-/* Hover compound: row hover brightens the zone tint */
 tr:hover .inc-zone { background: var(--color-inc-tint-hover); }
 tr:hover .out-zone { background: var(--color-out-tint-hover); }
 tr:hover .cf-zone { background: var(--color-cf-wash-hover); }
 
-/* Row hover surfaces the year label cell (but not on the summary row) */
 tbody tr:not(.row-summary):hover > td:first-child {
   background: var(--color-surface-hover);
 }
 
-/* Selected row keeps its accent wash */
 tr.row-selected .out-zone { background: transparent; }
 tr.row-selected .cf-zone { background: transparent; }
 
-/* Header and summary rows use the raised/strong tint */
 thead .inc-zone,
 .row-summary .inc-zone { background: transparent; }
 thead .out-zone,
@@ -285,7 +287,6 @@ thead .out-zone,
 thead .cf-zone,
 .row-summary .cf-zone { background: transparent; }
 
-/* Milestone row rhythm — every 5 years gets a subtle landmark */
 .row-milestone > td {
   border-top: 1px solid var(--color-border-default);
 }
@@ -314,7 +315,6 @@ thead .cf-zone,
   color: var(--color-data-negative);
 }
 
-/* Darker shell wrapping the data table — inset-data-surface feel */
 .cashflow-table-shell {
   background: transparent;
   border: 0;
@@ -346,7 +346,6 @@ thead .cf-zone,
   border-radius: 2px;
 }
 
-/* GlassCard hover shadow (replaces JS onMouseEnter/Leave) */
 /* ── Shared form input styles ── */
 .form-input {
   height: 44px;
@@ -388,7 +387,7 @@ thead .cf-zone,
   outline: none;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(148,163,184,0.55)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(113,113,122,0.55)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   transition: border-color 0.2s ease, background 0.2s ease;
@@ -459,4 +458,3 @@ thead .cf-zone,
               0 0 0 0.5px rgba(113, 113, 122, 0.06),
               inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
-

@@ -1,4 +1,4 @@
-// ── Theme: Graphite Teal ─────────────────────────────────────
+// ── Theme: Graphite Emerald ──────────────────────────────────
 // Single source of truth for all colour tokens.
 //
 // Usage:
@@ -24,12 +24,14 @@ export const t = {
 
   surface: {
     page:    "var(--color-surface-page)",
+    sidebar: "var(--color-surface-sidebar)",       // ADD: for sidebar bg
     app:     "var(--color-surface-app)",
     raised:  "var(--color-surface-raised)",
     hover:   "var(--color-surface-hover)",
     active:  "var(--color-surface-active)",
     overlay: "var(--color-surface-overlay)",
     subtle:  "var(--color-surface-subtle)",
+    kpi:     "var(--color-surface-kpi)",           // ADD: for KPI tile bg
   },
 
   card: {
@@ -42,18 +44,36 @@ export const t = {
     primary:   "var(--color-fg-primary)",
     secondary: "var(--color-fg-secondary)",
     tertiary:  "var(--color-fg-tertiary)",
+    muted:     "var(--color-fg-muted)",            // ADD: missing from original
     disabled:  "var(--color-fg-disabled)",
   },
 
   data: {
-    primary:     "var(--color-data-primary)",
-    emphasis:    "var(--color-data-emphasis)",
-    muted:       "var(--color-data-muted)",
-    positive:    "var(--color-data-positive)",
-    negative:    "var(--color-data-negative)",
-    negativeDim: "var(--color-data-negative-dim)",
-    warning:     "var(--color-data-warning)",
-    neutral:     "var(--color-data-neutral)",
+    primary:      "var(--color-data-primary)",
+    emphasis:     "var(--color-data-emphasis)",
+    muted:        "var(--color-data-muted)",
+    positive:     "var(--color-data-positive)",
+    positiveDim:  "var(--color-data-positive-dim)",   // ADD
+    positiveWash: "var(--color-data-positive-wash)",  // ADD
+    negative:     "var(--color-data-negative)",
+    negativeDim:  "var(--color-data-negative-dim)",
+    negativeWash: "var(--color-data-negative-wash)",  // ADD
+    warning:      "var(--color-data-warning)",
+    warningDim:   "var(--color-data-warning-dim)",    // ADD
+    warningWash:  "var(--color-data-warning-wash)",   // ADD
+    neutral:      "var(--color-data-neutral)",
+  },
+
+  series: {
+    cashflow:         "var(--color-series-cashflow)",          // ADD: chart series
+    cashflowDim:      "var(--color-series-cashflow-dim)",
+    cashflowSelected: "var(--color-series-cashflow-selected)",
+    cashflowWash:     "var(--color-series-cashflow-wash)",
+    equity:           "var(--color-series-equity)",
+    equityDim:        "var(--color-series-equity-dim)",
+    equityWash:       "var(--color-series-equity-wash)",
+    debt:             "var(--color-series-debt)",
+    debtDim:          "var(--color-series-debt-dim)",
   },
 
   status: {
@@ -121,21 +141,27 @@ export const SERIES = {
 } as const;
 
 // ── Cashflow chart palette ────────────────────────
+// Updated to use emerald for positive (matching brand)
 export const CF_COLORS = {
-  positive:     "#4ade80",
-  positiveDark: "#16a34a",
-  positiveLit:  "#86efac",
+  positive:     "#34d399",    // emerald-400 (was #4ade80 green)
+  positiveDark: "#059669",    // emerald-600 (was #16a34a)
+  positiveLit:  "#6ee7b7",    // emerald-300 (was #86efac)
   teal:         "#2dd4bf",
   tealDark:     "#0d9488",
   tealLit:      "#5eead4",
-  negative:     "#ef4444",
-  negativeDark: "#dc2626",
-  negativeLit:  "#f87171",
-  amber:        "#f59e0b",
-  amberLit:     "#fcd34d",
+  cyan:         "#22d3ee",    // ADD: for equity series
+  cyanDark:     "#06b6d4",    // ADD
+  cyanLit:      "#67e8f9",    // ADD
+  negative:     "#fb7185",    // rose-400 (was #ef4444 red)
+  negativeDark: "#e11d48",    // rose-600 (was #dc2626)
+  negativeLit:  "#fda4af",    // rose-300 (was #f87171)
+  amber:        "#fbbf24",    // amber-400 (was #f59e0b)
+  amberLit:     "#fde047",    // yellow-300 (was #fcd34d)
+  pink:         "#f472b6",    // ADD: for debt line
+  pinkDark:     "#db2777",    // ADD
   purple:       "#a78bfa",
   purpleLit:    "#c4b5fd",
-  axisTick:     "#71717a",
+  axisTick:     "#71717a",    // zinc-500 (unchanged)
 } as const;
 
 // ── Tax breakdown palette ─────────────────────────
@@ -162,7 +188,7 @@ export const TAX_CATEGORY_COLORS = {
 // green and amber tiers.
 export const TAX_BRACKET_COLORS = {
   zero:   "var(--color-data-positive)",
-  low:    "#86efac",
+  low:    "#6ee7b7",    // emerald-300 (was #86efac)
   medium: "var(--color-data-warning)",
   high:   "#f59e0b",
   top:    "#ef4444",

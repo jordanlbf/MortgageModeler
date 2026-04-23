@@ -54,14 +54,6 @@ export default function CashflowDashboard({
     ? DEPRECIATION_COLOR
     : null;
 
-  // Compute the single panel prop for CashflowDataTable
-  const panelProp: Record<string, string> = {};
-  if (vm === "property" && s.isInvestment) panelProp.propertyPanel = "unified";
-  else if (vm === "equity") panelProp.equityPanel = "unified";
-  else if (vm === "tax" && s.isInvestment) panelProp.taxPanel = "unified";
-  else if (vm === "summary") panelProp.summaryPanel = "unified";
-  else if (vm === "deductions") panelProp.deductionsPanel = "unified";
-
   return (
     <main className="text-fg-primary max-w-[1400px] mx-auto px-4 py-6 flex flex-col gap-6">
       {/* ── Overview / Details tabs ── */}
@@ -137,7 +129,7 @@ export default function CashflowDashboard({
       )}
 
       {dashboardMode === "details" && (
-        <div className="bg-surface-raised rounded-xl overflow-hidden">
+        <div>
           <CashflowDataTable
             yearData={s.yearData}
             viewMode={vm}
@@ -150,7 +142,6 @@ export default function CashflowDashboard({
             onExpandedChange={onManualExpand}
             onSelectYear={onSelectYear}
             onHoverYear={onHoverYear}
-            {...panelProp}
           />
         </div>
       )}

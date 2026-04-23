@@ -7,8 +7,6 @@ export interface SubTableProps {
   showOffset: boolean;
   propertyValue: number;
   depColor: string;
-  isGroupExpanded: (group: string) => boolean;
-  toggleGroup: (group: string) => void;
   isRowVisible: (year: number) => boolean;
   isMilestoneYear: (year: number) => boolean;
   formatYearCell: (year: number, index: number, isMilestoneRow?: boolean) => ReactNode;
