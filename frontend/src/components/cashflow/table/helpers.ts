@@ -62,7 +62,7 @@ export const thStyle = (
   const { first = false } = opts ?? {};
   const baseStyle: React.CSSProperties = {
     color: t.fg.tertiary,
-    backgroundColor: t.surface.sunken,
+    backgroundColor: t.surface.subtle,
   };
 
   if (first) {
@@ -101,7 +101,7 @@ export const tdStyle = (
 ): React.CSSProperties => {
   const { isMs = false, isSelected = false, first = false } = opts ?? {};
 
-  const bgColor = isSelected ? t.surface.hover : t.card;
+  const bgColor = isSelected ? t.surface.hover : t.card.base;
 
   if (first) {
     return {
@@ -122,7 +122,7 @@ export const tdStyle = (
         fontWeight: isMs ? 600 : 500,
       };
     case "totalOut":
-      return { 
+      return {
         color: t.data.negative,
         fontWeight: isMs ? 600 : 500,
       };

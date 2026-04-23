@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { formatDollarsSigned } from "@/lib/formatters";
-import { DEPRECIATION_COLOR } from "@/lib/theme";
+import {
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip,
+} from "recharts";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { t, CF_COLORS as C } from "@/lib/theme";
 import type { ViewMode } from "@/lib/cashflow-types";
 import type { useCashflowState } from "@/hooks/useCashflowState";
-import PillButton from "@/components/ui/PillButton";
-import UnderlineTabs from "@/components/ui/UnderlineTabs";
-import CashflowChart from "./CashflowChart";
-import CashflowKpiStrip from "./CashflowKpiStrip";
 import CashflowDataTable from "./CashflowDataTable";
 
 interface Props {
@@ -20,131 +19,504 @@ interface Props {
   onManualExpand: (expanded: Set<number>) => void;
 }
 
-export default function CashflowDashboard({
-  s, hoveredYear, tableExpanded, onHoverYear, onSelectYear, onManualExpand,
-}: Props) {
-  const [dashboardMode, setDashboardMode] = useState<"overview" | "details">("overview");
-  const displayYear = hoveredYear ?? s.selectedYear;
-  const baseYear = new Date().getFullYear();
-  const calendarYear = baseYear + displayYear - 1;
-  const displayYearData = s.yearData.find(y => y.year === displayYear) ?? s.yearData[0];
-  const y1 = displayYearData;
-  const vm = s.effectiveViewMode;
+type TabMode = "overview" | "details";
 
-  // Hero value/label/color per view mode
-  const summaryCashflow = y1.salary + (s.isInvestment ? y1.rentalIncome : 0) - y1.ongoingCosts - y1.loanRepayment - y1.incomeTaxCalc;
-  const signedCf = (v: number) => `${v >= 0 ? "+" : ""}${formatDollarsSigned(Math.round(v))}`;
-  const heroValue = vm === "equity"
-    ? formatDollarsSigned(Math.round(y1.netEquity))
-    : vm === "deductions"
-    ? formatDollarsSigned(Math.round(y1.totalDeductions))
-    : vm === "tax"
-    ? formatDollarsSigned(Math.round(-y1.incomeTaxCalc))
-    : vm === "property"
-    ? signedCf(y1.propertyCashflow)
-    : signedCf(summaryCashflow);
-  const heroLabel = vm === "equity" ? "Net Equity" : vm === "deductions" ? "Total Deductions" : vm === "tax" ? "Total Tax" : vm === "property" ? "Property Cashflow" : "Net Cashflow";
-  const heroColor = vm === "summary"
-    ? (summaryCashflow >= 0 ? "var(--color-data-positive)" : "var(--color-data-negative)")
-    : vm === "property"
-    ? (y1.propertyCashflow >= 0 ? "var(--color-data-positive)" : "var(--color-data-negative)")
-    : vm === "tax"
-    ? "var(--color-data-negative)"
-    : vm === "deductions"
-    ? DEPRECIATION_COLOR
+const fmt = (v: number) => `$${Math.abs(v).toLocaleString()}`;
+const fmtK = (v: number) => {
+  const abs = Math.abs(v);
+  if (abs >= 1_000_000) return `${v < 0 ? '-' : ''}$${(abs / 1_000_000).toFixed(1)}M`;
+  return `${v < 0 ? '-' : ''}$${Math.round(abs / 1000)}k`;
+};
+
+export default function CashflowDashboard({
+  s, hoveredYear, tableExpanded, onSelectYear, onHoverYear, onManualExpand,
+}: Props) {
+  const [activeTab, setActiveTab] = useState<TabMode>("overview");
+  const [viewMode, setViewMode] = useState<ViewMode>(s.effectiveViewMode);
+
+  const YEARS = s.yearData.length;
+  const baseYear = new Date().getFullYear();
+  const selectedYear = s.selectedYear;
+
+  const chartData = s.yearData.map((y) => {
+    const rental = s.isInvestment ? y.rentalIncome : 0;
+    const depreciation = y.depDiv43 + y.depDiv40;
+    return {
+      year: y.year,
+      name: `Yr ${y.year}`,
+      calendarYear: baseYear + y.year - 1,
+      cashflow: Math.round(y.netCashflow),
+      cashflowMonthly: Math.round(y.netCashflow / 12),
+      propertyCashflow: Math.round(y.propertyCashflow),
+      propertyCashflowMonthly: Math.round(y.propertyCashflow / 12),
+      salary: Math.round(y.salary),
+      rentalIncome: Math.round(rental),
+      totalIncome: Math.round(y.salary + rental),
+      holdingCosts: Math.round(y.ongoingCosts),
+      interest: Math.round(y.interestPortion),
+      principal: Math.round(y.principalPortion),
+      totalCosts: Math.round(y.ongoingCosts + y.loanRepayment),
+      depreciation: Math.round(depreciation),
+      depDiv43: Math.round(y.depDiv43),
+      depDiv40: Math.round(y.depDiv40),
+      totalDeductions: Math.round(y.totalDeductions),
+      taxOffset: Math.round(rental - y.ongoingCosts - y.interestPortion - depreciation),
+      taxPayable: Math.round(y.incomeTaxCalc),
+      taxRefund: Math.round(y.taxSaved),
+      propertyValue: Math.round(y.propertyValue),
+      loanBalance: Math.round(y.loanBalance),
+      equity: Math.round(y.netEquity),
+      offsetBalance: Math.round(y.offsetBalanceAtYear),
+      lvr: y.propertyValue > 0 ? Math.round((y.loanBalance / y.propertyValue) * 100) : 0,
+      councilRates: Math.round(y.councilRates),
+      waterRates: Math.round(y.waterRates),
+      insurance: Math.round(y.insurance),
+      maintenance: Math.round(y.maintenance),
+      strataFees: Math.round(y.strataFees),
+    };
+  });
+  const d = chartData[selectedYear - 1] ?? chartData[0];
+
+  const setViewModeBoth = (m: ViewMode) => {
+    setViewMode(m);
+    s.setViewMode(m);
+  };
+
+  // ── Per-view-mode config ─────────────────────────────────────────
+  type ChartCfg = {
+    dataKey: keyof typeof chartData[number];
+    // colors for (sign, state)
+    baseColor: (positive: boolean) => string;
+    selectedColor: (positive: boolean) => string;
+  };
+
+  const chartCfg: Record<ViewMode, ChartCfg> = {
+    summary: {
+      dataKey: "cashflow",
+      baseColor: (p) => p ? C.positive : C.negative,
+      selectedColor: (p) => p ? C.teal : C.pink,
+    },
+    property: {
+      dataKey: "propertyCashflow",
+      baseColor: (p) => p ? C.positive : C.negative,
+      selectedColor: (p) => p ? C.teal : C.pink,
+    },
+    tax: {
+      dataKey: "taxPayable",
+      baseColor: () => C.negative,
+      selectedColor: () => C.pink,
+    },
+    equity: {
+      dataKey: "equity",
+      baseColor: () => C.cyan,
+      selectedColor: () => C.cyanLit,
+    },
+    deductions: {
+      dataKey: "totalDeductions",
+      baseColor: () => C.purple,
+      selectedColor: () => C.purpleLit,
+    },
+  };
+
+  const cfg = chartCfg[viewMode];
+
+  // ── Hero and indicator row per mode ─────────────────────────────
+  const heroMonthly = viewMode === "summary"
+    ? d.cashflowMonthly
+    : viewMode === "property"
+    ? d.propertyCashflowMonthly
     : null;
 
+  const heroAnnual = viewMode === "tax"
+    ? d.taxPayable
+    : viewMode === "equity"
+    ? d.equity
+    : viewMode === "deductions"
+    ? d.totalDeductions
+    : viewMode === "property"
+    ? d.propertyCashflow
+    : d.cashflow;
+
+  const heroLabel = viewMode === "summary" ? "Net Cashflow"
+    : viewMode === "property" ? "Property Cashflow"
+    : viewMode === "tax" ? "Tax Payable"
+    : viewMode === "equity" ? "Net Equity"
+    : "Total Deductions";
+
+  const heroColor = viewMode === "summary"
+    ? (d.cashflow >= 0 ? t.data.positive : t.data.negative)
+    : viewMode === "property"
+    ? (d.propertyCashflow >= 0 ? t.data.positive : t.data.negative)
+    : viewMode === "tax"
+    ? t.data.negative
+    : viewMode === "equity"
+    ? C.cyan
+    : C.purple;
+
   return (
-    <main className="text-fg-primary max-w-[1400px] mx-auto px-4 py-6 flex flex-col gap-6">
-      {/* ── Overview / Details tabs ── */}
-      <div className="mb-5">
-        <UnderlineTabs
-          tabs={[
-            { key: "overview", label: "Overview" },
-            { key: "details", label: "Details", hint: `${s.yearData.length} years` },
-          ]}
-          activeKey={dashboardMode}
-          onChange={(k) => setDashboardMode(k as "overview" | "details")}
-        />
+    <div className="bg-surface-app p-6" style={{ color: t.fg.primary }}>
+
+      {/* Tabs Row */}
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-border-subtle">
+        <div className="flex gap-6">
+          {(["overview", "details"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className="pb-3 -mb-3 text-sm font-medium border-b-2 transition-colors capitalize"
+              style={{
+                color: activeTab === tab ? t.fg.primary : t.fg.tertiary,
+                borderColor: activeTab === tab ? t.brand.default : "transparent",
+              }}
+            >
+              {tab === "details" ? `Details ${YEARS} Years` : tab}
+            </button>
+          ))}
+        </div>
+
+        {/* View Mode Pills */}
+        {activeTab === "overview" && (
+          <div className="flex gap-1.5">
+            {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map((mode) => {
+              if (mode === "tax" && !s.isInvestment) return null;
+              return (
+                <button
+                  key={mode}
+                  onClick={() => setViewModeBoth(mode)}
+                  className="px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors"
+                  style={{
+                    backgroundColor: viewMode === mode ? t.brand.default : "transparent",
+                    color: viewMode === mode ? t.brand.contrast : t.fg.secondary,
+                  }}
+                >
+                  {mode}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {dashboardMode === "overview" && (
-        <>
-          {/* ── Chart + Tabs ── */}
-          <div className="flex items-stretch">
-            <div className="relative flex-1 min-w-0 flex flex-col">
-              <div className="flex gap-1.5 mt-5 mb-3 pr-6">
-                {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map(m => {
-                  if (m === "tax" && !s.isInvestment) return null;
-                  const label = m === "summary" ? "Summary" : m === "property" ? "Property" : m === "tax" ? "Tax" : m === "equity" ? "Equity" : (s.isInvestment ? "Deductions" : "Expenses");
-                  return (
-                    <PillButton
-                      key={m}
-                      active={vm === m}
-                      onClick={() => { s.setViewMode(m); s.setSelectedYear(1); }}
-                    >
-                      {label}
-                    </PillButton>
-                  );
-                })}
+      {activeTab === "overview" && (
+        <div className="flex gap-4">
+
+          {/* LEFT: Chart + KPI Cards */}
+          <div className="flex-1 flex flex-col gap-3 min-w-0">
+
+            {/* Cashflow Chart */}
+            <div className="bg-card border border-border-subtle rounded-xl p-4 flex flex-col">
+              <div className="h-[280px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={chartData}
+                    onClick={(e) => {
+                      const idx = e?.activeTooltipIndex;
+                      if (typeof idx === "number") {
+                        onSelectYear(idx + 1);
+                      }
+                    }}
+                  >
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} interval={4} />
+                    <YAxis tickFormatter={fmtK} axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} width={40} />
+                    <Tooltip content={() => null} />
+                    <Bar dataKey={cfg.dataKey} radius={[2, 2, 0, 0]}>
+                      {chartData.map((entry, index) => {
+                        const isSelected = selectedYear === index + 1;
+                        const isHovered = hoveredYear === index + 1;
+                        const rawValue = entry[cfg.dataKey] as number;
+                        const isPositive = rawValue >= 0;
+                        return (
+                          <Cell
+                            key={entry.year}
+                            fill={isSelected ? cfg.selectedColor(isPositive) : cfg.baseColor(isPositive)}
+                            opacity={isSelected ? 1 : isHovered ? 0.8 : 0.6}
+                            onMouseEnter={() => onHoverYear(index + 1)}
+                            onMouseLeave={() => onHoverYear(null)}
+                          />
+                        );
+                      })}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
 
-              <CashflowChart
-                chartData={s.chartData}
-                yearData={s.yearData}
-                viewMode={vm}
-                selectedYear={s.selectedYear}
-                hoveredYear={hoveredYear}
-                chartView="bars"
-                onSelectYear={onSelectYear}
-                onHoverYear={onHoverYear}
-              />
+              {/* Year Indicator Row */}
+              <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-border-subtle">
+                <span className="text-base font-semibold" style={{ color: t.brand.default }}>Year {selectedYear}</span>
+                <span className="text-base" style={{ color: t.fg.tertiary }}>{d.calendarYear}</span>
+                <span className="mx-1" style={{ color: t.fg.tertiary }}>|</span>
+                <span className="text-base font-semibold tabular-nums" style={{ color: heroColor }}>
+                  {heroAnnual >= 0 ? '+' : '-'}{fmt(heroAnnual)}
+                </span>
+                <span className="text-sm" style={{ color: t.fg.tertiary }}>{heroLabel}</span>
+              </div>
+            </div>
 
-              <div className="flex items-baseline justify-center gap-3 pt-[30px] pb-2.5">
-                <span className="text-[23px] font-semibold text-brand tracking-[-0.02em] tabular-nums">Year {displayYear}</span>
-                <span className="text-[22px] font-normal text-fg-tertiary">{calendarYear}</span>
-                <span className="w-px h-[22px] bg-[rgba(113,113,122,0.25)]" />
-                <span className="text-[23px] font-semibold tracking-[-0.02em] tabular-nums" style={heroColor ? { color: heroColor } : undefined}>{heroValue}</span>
-                <span className="text-[22px] font-normal text-fg-tertiary">{heroLabel}</span>
+            {/* KPI Cards: Property Value, Net Equity, Loan Balance */}
+            <div className="flex gap-3">
+              <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
+                <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>Property Value</div>
+                <div className="text-2xl font-bold tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.propertyValue)}</div>
+                <div className="text-xs mt-0.5" style={{ color: t.fg.tertiary }}>4% annual growth</div>
+              </div>
+              <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
+                <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>Net Equity</div>
+                <div className="text-2xl font-bold tabular-nums" style={{ color: t.data.positive }}>{fmt(d.equity)}</div>
+                <div className="text-xs mt-0.5" style={{ color: t.fg.tertiary }}>{d.lvr}% LVR</div>
+              </div>
+              <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
+                <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>Loan Balance</div>
+                <div className="text-2xl font-bold tabular-nums" style={{ color: t.data.negative }}>{fmt(d.loanBalance)}</div>
+                <div className="text-xs mt-0.5" style={{ color: t.fg.tertiary }}>remaining principal</div>
               </div>
             </div>
           </div>
 
-          {/* ── KPI strip ── */}
-          <div className="bg-surface-raised rounded-xl overflow-hidden">
-            <CashflowKpiStrip
-              viewMode={vm}
-              yearData={s.yearData}
-              selectedYearData={displayYearData}
-              selectedYear={displayYear}
-              isInvestment={s.isInvestment}
-              marginalRate={s.marginalRate}
-              hasOffset={s.hasOffset}
-              isHovered={hoveredYear !== null}
-              onHoverYear={onHoverYear}
-              onSelectYear={onSelectYear}
-            />
-          </div>
-        </>
-      )}
+          {/* RIGHT: Year Summary Panel */}
+          <div className="w-[340px] shrink-0 bg-card border border-border-subtle rounded-xl p-5 flex flex-col">
 
-      {dashboardMode === "details" && (
-        <div>
-          <CashflowDataTable
-            yearData={s.yearData}
-            viewMode={vm}
-            selectedYear={s.selectedYear}
-            hoveredYear={hoveredYear}
-            isInvestment={s.isInvestment}
-            hasOffset={s.hasOffset}
-            propertyValue={s.propertyValue}
-            expandedMilestones={tableExpanded}
-            onExpandedChange={onManualExpand}
-            onSelectYear={onSelectYear}
-            onHoverYear={onHoverYear}
-          />
+            {/* Year Navigation Header */}
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => onSelectYear(Math.max(1, selectedYear - 1))}
+                disabled={selectedYear === 1}
+                className="p-1.5 rounded-lg border border-border-default disabled:opacity-30"
+              >
+                <ChevronLeft size={14} style={{ color: t.fg.secondary }} />
+              </button>
+              <div className="text-center">
+                <div className="text-xl font-bold" style={{ color: t.brand.default }}>Year {selectedYear}</div>
+                <div className="text-xs" style={{ color: t.fg.tertiary }}>{d.calendarYear}</div>
+              </div>
+              <button
+                onClick={() => onSelectYear(Math.min(YEARS, selectedYear + 1))}
+                disabled={selectedYear === YEARS}
+                className="p-1.5 rounded-lg border border-border-default disabled:opacity-30"
+              >
+                <ChevronRight size={14} style={{ color: t.fg.secondary }} />
+              </button>
+            </div>
+
+            {/* Hero */}
+            <div
+              className="rounded-xl p-4 mb-4 flex items-baseline justify-center gap-2"
+              style={{ backgroundColor: t.surface.subtle }}
+            >
+              {heroMonthly !== null ? (
+                <>
+                  <span className="text-4xl font-bold tabular-nums" style={{ color: heroColor }}>
+                    {heroMonthly >= 0 ? '+' : '-'}{fmt(Math.abs(heroMonthly))}
+                  </span>
+                  <span className="text-lg font-medium" style={{ color: t.fg.tertiary }}>/ Month</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-3xl font-bold tabular-nums" style={{ color: heroColor }}>
+                    {fmt(heroAnnual)}
+                  </span>
+                  <span className="text-xs font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary }}>
+                    {heroLabel}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {viewMode === "summary" && <SummarySections d={d} isInvestment={s.isInvestment} />}
+            {viewMode === "property" && <PropertySections d={d} />}
+            {viewMode === "tax" && <TaxSections d={d} isInvestment={s.isInvestment} />}
+            {viewMode === "equity" && <EquitySections d={d} />}
+            {viewMode === "deductions" && <DeductionsSections d={d} />}
+          </div>
         </div>
       )}
-    </main>
+
+      {activeTab === "details" && (
+        <CashflowDataTable
+          yearData={s.yearData}
+          viewMode={s.effectiveViewMode}
+          selectedYear={s.selectedYear}
+          hoveredYear={hoveredYear}
+          isInvestment={s.isInvestment}
+          hasOffset={s.hasOffset}
+          propertyValue={s.propertyValue}
+          expandedMilestones={tableExpanded}
+          onExpandedChange={onManualExpand}
+          onSelectYear={onSelectYear}
+          onHoverYear={onHoverYear}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Row primitive ─────────────────────────────────────────────
+function Row({ label, value, color, bold, negative, note }: {
+  label: string;
+  value: number;
+  color: string;
+  bold?: boolean;
+  negative?: boolean;
+  note?: string;
+}) {
+  return (
+    <div className="flex justify-between items-center">
+      <span className={`text-xs ${bold ? 'font-semibold' : ''}`} style={{ color: bold ? t.fg.primary : t.fg.secondary }}>
+        {label}
+      </span>
+      <span className={`text-xs tabular-nums ${bold ? 'font-semibold' : 'font-medium'}`} style={{ color }}>
+        {negative && value > 0 ? '-' : ''}{fmt(value)}
+        {note && <span className="text-[10px] ml-1" style={{ color: t.fg.tertiary }}>{note}</span>}
+      </span>
+    </div>
+  );
+}
+
+function Section({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-4 pb-4 border-b border-border-subtle flex flex-col gap-1.5">
+      {children}
+    </div>
+  );
+}
+
+// ── Per-mode section bodies ───────────────────────────────────
+type D = {
+  salary: number; rentalIncome: number; totalIncome: number;
+  holdingCosts: number; interest: number; principal: number; totalCosts: number;
+  depreciation: number; depDiv43: number; depDiv40: number; totalDeductions: number;
+  taxOffset: number; taxPayable: number; taxRefund: number;
+  propertyValue: number; loanBalance: number; equity: number;
+  offsetBalance: number; lvr: number;
+  councilRates: number; waterRates: number; insurance: number; maintenance: number; strataFees: number;
+  propertyCashflow: number;
+};
+
+function SummarySections({ d, isInvestment }: { d: D; isInvestment: boolean }) {
+  return (
+    <>
+      <Section>
+        <Row label="Salary" value={d.salary} color={t.fg.primary} />
+        {isInvestment && <Row label="Rental Income" value={d.rentalIncome} color={t.fg.primary} />}
+        <Row label="Total Income" value={d.totalIncome} color={t.data.positive} bold />
+      </Section>
+      <Section>
+        <Row label="Operating" value={d.holdingCosts} color={t.fg.primary} negative />
+        <Row label="Interest" value={d.interest} color={t.fg.primary} negative />
+        <Row label="Principal" value={d.principal} color={t.fg.primary} negative />
+        <Row label="Total Costs" value={d.totalCosts} color={t.data.negative} bold negative />
+      </Section>
+      <Section>
+        <Row label="Net Rental Position" value={d.taxOffset} color={t.fg.primary} />
+        <Row
+          label={d.taxRefund >= 0 ? "Tax Refund" : "Tax Liability"}
+          value={Math.abs(d.taxRefund)}
+          color={d.taxRefund >= 0 ? t.data.positive : t.data.negative}
+          bold
+        />
+      </Section>
+    </>
+  );
+}
+
+function PropertySections({ d }: { d: D }) {
+  return (
+    <>
+      <Section>
+        <Row label="Gross Rent" value={d.rentalIncome} color={t.data.positive} />
+      </Section>
+      <Section>
+        <Row label="Interest" value={d.interest} color={t.fg.primary} negative />
+        <Row label="Rates & Insurance" value={d.holdingCosts} color={t.fg.primary} negative />
+      </Section>
+      <Section>
+        <Row
+          label={d.taxRefund >= 0 ? "Tax Benefit" : "Tax Cost"}
+          value={Math.abs(d.taxRefund)}
+          color={d.taxRefund >= 0 ? t.data.positive : t.data.negative}
+        />
+      </Section>
+      <Section>
+        <Row
+          label="After Tax (p.a.)"
+          value={Math.abs(d.propertyCashflow)}
+          color={d.propertyCashflow >= 0 ? t.data.positive : t.data.negative}
+          bold
+          negative={d.propertyCashflow < 0}
+        />
+      </Section>
+    </>
+  );
+}
+
+function TaxSections({ d, isInvestment }: { d: D; isInvestment: boolean }) {
+  return (
+    <>
+      <Section>
+        <Row label="Salary" value={d.salary} color={t.fg.primary} />
+        {isInvestment && <Row label="Rental Income" value={d.rentalIncome} color={t.fg.primary} />}
+      </Section>
+      <Section>
+        <Row label="Holding Costs" value={d.holdingCosts + d.interest} color={t.fg.primary} negative />
+        <Row label="Depreciation" value={d.depreciation} color={C.purple} negative />
+        <Row label="Total Deductions" value={d.totalDeductions} color={t.data.negative} bold negative />
+      </Section>
+      <Section>
+        <Row label="Tax Payable" value={d.taxPayable} color={t.data.negative} negative />
+        <Row
+          label={d.taxRefund >= 0 ? "Tax Benefit" : "Tax Cost"}
+          value={Math.abs(d.taxRefund)}
+          color={d.taxRefund >= 0 ? t.data.positive : t.data.negative}
+          bold
+        />
+      </Section>
+    </>
+  );
+}
+
+function EquitySections({ d }: { d: D }) {
+  const lvrColor = d.lvr > 80 ? t.data.negative : d.lvr > 60 ? t.data.warning : t.data.positive;
+  return (
+    <>
+      <Section>
+        <Row label="Property Value" value={d.propertyValue} color={t.fg.primary} />
+        {d.offsetBalance > 0 && (
+          <Row label="Offset Balance" value={d.offsetBalance} color={t.fg.primary} />
+        )}
+      </Section>
+      <Section>
+        <Row label="Loan Balance" value={d.loanBalance} color={t.fg.primary} negative />
+        <div className="flex justify-between items-center">
+          <span className="text-xs" style={{ color: t.fg.secondary }}>LVR</span>
+          <span className="text-xs tabular-nums font-medium" style={{ color: lvrColor }}>
+            {d.lvr}%
+          </span>
+        </div>
+      </Section>
+      <Section>
+        <Row label="Net Equity" value={d.equity} color={t.data.positive} bold />
+      </Section>
+    </>
+  );
+}
+
+function DeductionsSections({ d }: { d: D }) {
+  return (
+    <>
+      <Section>
+        <Row label="Interest" value={d.interest} color={t.fg.primary} />
+        <Row label="Council Rates" value={d.councilRates} color={t.fg.primary} />
+        <Row label="Water Rates" value={d.waterRates} color={t.fg.primary} />
+        <Row label="Insurance" value={d.insurance} color={t.fg.primary} />
+        <Row label="Maintenance" value={d.maintenance} color={t.fg.primary} />
+        {d.strataFees > 0 && <Row label="Strata" value={d.strataFees} color={t.fg.primary} />}
+      </Section>
+      <Section>
+        <Row label="Capital Works (Div 43)" value={d.depDiv43} color={C.purple} />
+        <Row label="Plant & Equipment (Div 40)" value={d.depDiv40} color={C.purple} />
+      </Section>
+      <Section>
+        <Row label="Total Deductions" value={d.totalDeductions} color={C.purple} bold />
+      </Section>
+    </>
   );
 }
