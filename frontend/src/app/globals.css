@@ -27,6 +27,7 @@
   /* Wider tonal steps than previous mint-tinted ramp                  */
   /* ───────────────────────────────────────────────────────────────── */
   --color-surface-page:     #09090b;      /* outer page bg */
+  --color-surface-sidebar:  #0a0d13;      /* sits between page and app — for chrome surfaces like the sidebar */
   --color-surface-app:      #0e1117;      /* main app content */
   --color-surface-raised:   #1a1e26;      /* cards, table headers */
   --color-surface-hover:    #22262f;      /* interactive hover */
@@ -112,15 +113,15 @@
   /* ───────────────────────────────────────────────────────────────── */
   /* Column group washes — slate-tinted outgoings, teal cashflow       */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-inc-tint:         rgba(148, 163, 184, 0.014);
-  --color-inc-tint-hover:   rgba(148, 163, 184, 0.028);
-  --color-inc-tint-raised:  rgba(148, 163, 184, 0.020);
-  --color-out-tint:         rgba(148, 163, 184, 0.022);
-  --color-out-tint-hover:   rgba(148, 163, 184, 0.040);
-  --color-out-tint-raised:  rgba(148, 163, 184, 0.028);
-  --color-cf-wash:          color-mix(in srgb, var(--color-brand) 5%, transparent);
-  --color-cf-wash-hover:    color-mix(in srgb, var(--color-brand) 8%, transparent);
-  --color-cf-wash-strong:   color-mix(in srgb, var(--color-brand) 12%, transparent);
+  --color-inc-tint:         transparent;
+  --color-inc-tint-hover:   transparent;
+  --color-inc-tint-raised:  transparent;
+  --color-out-tint:         transparent;
+  --color-out-tint-hover:   transparent;
+  --color-out-tint-raised:  transparent;
+  --color-cf-wash:          transparent;
+  --color-cf-wash-hover:    transparent;
+  --color-cf-wash-strong:   transparent;
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Chart chrome — slate family                                       */
@@ -208,6 +209,19 @@ body {
 }
 .col-group-h--clickable:hover { background: var(--color-surface-hover); }
 
+/* ── Sidebar nav ── */
+.sb-nav-item { position: relative; }
+.sb-nav-item--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--color-brand);
+}
+
 /* ── Hover tooltip utility ── */
 /* Apply to any element with `data-tip="..."`; the attribute value renders */
 /* as a small floating tooltip above the element on hover. */
@@ -260,16 +274,16 @@ tbody tr:not(.row-summary):hover > td:first-child {
 }
 
 /* Selected row keeps its accent wash */
-tr.row-selected .out-zone { background: color-mix(in srgb, var(--color-brand) 5%, transparent); }
-tr.row-selected .cf-zone { background: color-mix(in srgb, var(--color-brand) 8%, transparent); }
+tr.row-selected .out-zone { background: transparent; }
+tr.row-selected .cf-zone { background: transparent; }
 
 /* Header and summary rows use the raised/strong tint */
 thead .inc-zone,
-.row-summary .inc-zone { background: var(--color-inc-tint-raised); }
+.row-summary .inc-zone { background: transparent; }
 thead .out-zone,
-.row-summary .out-zone { background: var(--color-out-tint-raised); }
+.row-summary .out-zone { background: transparent; }
 thead .cf-zone,
-.row-summary .cf-zone { background: var(--color-cf-wash-strong); }
+.row-summary .cf-zone { background: transparent; }
 
 /* Milestone row rhythm — every 5 years gets a subtle landmark */
 .row-milestone > td {
@@ -302,10 +316,10 @@ thead .cf-zone,
 
 /* Darker shell wrapping the data table — inset-data-surface feel */
 .cashflow-table-shell {
-  background: var(--color-surface-page);
-  border: 1px solid var(--color-border-default);
-  border-radius: 10px;
-  overflow: hidden;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
 }
 
 /* Summary row */
