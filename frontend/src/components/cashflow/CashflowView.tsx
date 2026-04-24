@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import type { useCashflowState } from "@/hooks/useCashflowState";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowDashboard from "./CashflowDashboard";
@@ -30,43 +30,10 @@ export default function CashflowCalculator({ s }: CashflowViewProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>("wizard");
   const [editStep, setEditStep] = useState<StepId>("setup");
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
-  const [tableExpanded, setTableExpanded] = useState<Set<number>>(new Set());
-  const autoExpandedRef = useRef<Set<number>>(new Set());
-
-  const isMilestoneYear = (year: number) => year === 1 || (year - 1) % 5 === 0;
-  const getMilestoneForYear = (year: number) => year === 1 ? 1 : Math.floor((year - 1) / 5) * 5 + 1;
 
   const handleSelectYear = useCallback((year: number) => {
     s.setSelectedYear(year);
-
-    const milestone = getMilestoneForYear(year);
-    const isVisible = isMilestoneYear(year) || tableExpanded.has(milestone);
-
-    // Collapse previously auto-expanded groups that no longer contain selection
-    const toCollapse = [...autoExpandedRef.current].filter(m => m !== milestone);
-    const next = new Set(tableExpanded);
-    let changed = false;
-
-    for (const m of toCollapse) {
-      if (next.has(m)) { next.delete(m); changed = true; }
-      autoExpandedRef.current.delete(m);
-    }
-
-    // Auto-expand if needed
-    if (!isVisible) {
-      next.add(milestone);
-      autoExpandedRef.current.add(milestone);
-      changed = true;
-    }
-
-    if (changed) setTableExpanded(next);
-  }, [s, tableExpanded]);
-
-  // Manual expand/collapse from table — clear auto-tracking for toggled milestones
-  const handleManualExpand = useCallback((expanded: Set<number>) => {
-    autoExpandedRef.current.clear();
-    setTableExpanded(expanded);
-  }, []);
+  }, [s]);
 
 
   const stepOrder = s.isInvestment ? STEP_ORDER_INVESTMENT : STEP_ORDER_BASE;
@@ -164,13 +131,11 @@ export default function CashflowCalculator({ s }: CashflowViewProps) {
 
       {/* ── Dashboard view ── */}
       {s.allComplete && s.yearData.length > 0 && activeTab === "dashboard" && (
-        <CashflowDashboard
+<CashflowDashboard
           s={s}
           hoveredYear={hoveredYear}
-          tableExpanded={tableExpanded}
           onHoverYear={setHoveredYear}
           onSelectYear={handleSelectYear}
-          onManualExpand={handleManualExpand}
         />
       )}
     </>

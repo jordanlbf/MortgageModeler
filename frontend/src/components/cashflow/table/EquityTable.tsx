@@ -1,64 +1,99 @@
 "use client";
 
 import { formatDollarsSigned, safeDiv } from "@/lib/formatters";
-import { yoyPct, fmtYoY, getLvrColor, thClass, thStyle, tdClass, tdStyle, gainCls, gainStyle } from "./helpers";
+import { t, LVR_COLORS } from "@/lib/theme";
+import { yoyPct, fmtYoY } from "./helpers";
 import type { SubTableProps } from "./types";
+
+function getLvrColor(lvr: number): string {
+  if (lvr <= 60) return LVR_COLORS.safe;
+  if (lvr <= 80) return LVR_COLORS.moderate;
+  return LVR_COLORS.high;
+}
+
+// Gain badge that sits to the LEFT of the number so the number stays pinned to the cell's right edge.
+function GainCell({ value, gain, showGain }: { value: string; gain?: string; showGain: boolean }) {
+  return (
+    <span className="inline-flex items-baseline gap-1.5">
+      {showGain && gain && (
+        <span className="text-[10px] font-normal" style={{ color: t.fg.muted }}>
+          {gain}
+        </span>
+      )}
+      <span>{value}</span>
+    </span>
+  );
+}
 
 export default function EquityTable({
   yearData,
   showOffset,
-  isRowVisible,
-  isMilestoneYear,
   formatYearCell,
   getRowClass,
   getRowHandlers,
+  visibleCols = {},
 }: SubTableProps) {
+  const show = (key: string) => visibleCols[key] !== false;
+
   return (
     <table className="w-full text-[12px]">
       <thead>
         <tr>
-          <th className={thClass("default", { first: true })} style={thStyle("default", { first: true })}>Year</th>
-          <th className={thClass("total")} style={thStyle("total")}>Property value</th>
-          <th className={thClass("default", { groupStart: true })} style={thStyle()}>Loan balance</th>
-          {showOffset && <th className={thClass()} style={thStyle()}>Offset balance</th>}
-          <th className={thClass("net", { groupStart: true })} style={thStyle("net")}>Net equity</th>
-          <th className={thClass()} style={thStyle()}>LVR</th>
+          <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1]" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Year</th>
+          {show("propertyValue") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.secondary, background: t.surface.subtle, fontWeight: 600 }}>Property value</th>}
+          {show("loanBalance") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.subtle }}>Loan balance</th>}
+          {show("offsetBalance") && showOffset && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Offset balance</th>}
+          {show("netEquity") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.brand.default, background: t.surface.subtle, fontWeight: 600, borderColor: t.border.subtle }}>Net equity</th>}
+          {show("lvr") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>LVR</th>}
         </tr>
       </thead>
       <tbody>
         {yearData.map((y, i) => {
-          if (!isRowVisible(y.year)) return null;
-          const isMs = isMilestoneYear(y.year);
           const prev = i > 0 ? yearData[i - 1] : null;
+          const isSelected = getRowClass(y.year).includes("bg-brand");
           const lvr = safeDiv(y.loanBalance, y.propertyValue) * 100;
 
           const valueYoY = prev ? yoyPct(y.propertyValue, prev.propertyValue) : 0;
           const equityYoY = prev ? yoyPct(y.netEquity, prev.netEquity) : 0;
 
           return (
-            <tr key={y.year} className={getRowClass(y.year, isMs)} {...getRowHandlers(y.year, isMs)}>
-              <td className={tdClass("default", { isMs, first: true })} style={tdStyle("default", { isMs, first: true })}>
-                {formatYearCell(y.year, i, isMs)}
+            <tr key={y.year} className={getRowClass(y.year)} {...getRowHandlers(y.year)}>
+              <td className="px-3 py-2 text-left text-[12px] font-medium sticky left-0 z-[1] border-t" style={{ color: isSelected ? t.brand.default : t.fg.primary, background: isSelected ? t.surface.hover : t.card.base, borderColor: t.border.subtle }}>
+                {formatYearCell(y.year, i)}
               </td>
-              <td className={tdClass("total", { isMs })} style={tdStyle("total", { isMs })}>
-                {formatDollarsSigned(Math.round(y.propertyValue))}
-                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(valueYoY)}</span>}
-              </td>
-              <td className={tdClass("out", { isMs, groupStart: true })} style={tdStyle("out", { isMs })}>
-                {formatDollarsSigned(-Math.round(y.loanBalance))}
-              </td>
-              {showOffset && (
-                <td className={tdClass("default", { isMs })} style={tdStyle("default", { isMs })}>
+              {show("propertyValue") && (
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, fontWeight: 500, borderColor: t.border.subtle }}>
+                  <GainCell
+                    value={formatDollarsSigned(Math.round(y.propertyValue))}
+                    gain={fmtYoY(valueYoY)}
+                    showGain={!!prev}
+                  />
+                </td>
+              )}
+              {show("loanBalance") && (
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t border-l" style={{ color: t.data.negative, borderColor: t.border.subtle }}>
+                  {formatDollarsSigned(-Math.round(y.loanBalance))}
+                </td>
+              )}
+              {show("offsetBalance") && showOffset && (
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
                   {formatDollarsSigned(Math.round(y.offsetBalanceAtYear))}
                 </td>
               )}
-              <td className={tdClass("net", { isMs, groupStart: true })} style={tdStyle("net", { isMs })}>
-                {formatDollarsSigned(Math.round(y.netEquity))}
-                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(equityYoY)}</span>}
-              </td>
-              <td className={tdClass("default", { isMs })} style={{ ...tdStyle("default", { isMs }), color: getLvrColor(lvr) }}>
-                {lvr.toFixed(1)}%
-              </td>
+              {show("netEquity") && (
+                <td className="px-3 py-2 text-right text-[13px] tabular-nums border-t border-l" style={{ color: t.data.positive, fontWeight: 600, borderColor: t.border.subtle }}>
+                  <GainCell
+                    value={formatDollarsSigned(Math.round(y.netEquity))}
+                    gain={fmtYoY(equityYoY)}
+                    showGain={!!prev}
+                  />
+                </td>
+              )}
+              {show("lvr") && (
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: getLvrColor(lvr), borderColor: t.border.subtle }}>
+                  {lvr.toFixed(1)}%
+                </td>
+              )}
             </tr>
           );
         })}

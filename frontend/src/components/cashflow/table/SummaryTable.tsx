@@ -1,84 +1,179 @@
 "use client";
 
 import { formatDollarsSigned } from "@/lib/formatters";
-import { yoyPct, fmtYoY, thClass, thStyle, tdClass, tdStyle, gainCls, gainStyle } from "./helpers";
+import { t } from "@/lib/theme";
 import type { SubTableProps } from "./types";
 
 export default function SummaryTable({
   yearData,
   isInvestment,
-  isRowVisible,
-  isMilestoneYear,
   formatYearCell,
   getRowClass,
   getRowHandlers,
+  visibleCols = {},
 }: SubTableProps) {
+  const show = (key: string) => visibleCols[key] !== false;
+
   return (
     <table className="w-full text-[12px]">
       <thead>
         <tr>
-          <th className={thClass("default", { first: true })} style={thStyle("default", { first: true })}>Year</th>
-          <th className={thClass()} style={thStyle()}>Salary</th>
-          {isInvestment && <th className={thClass()} style={thStyle()}>Rent</th>}
-          <th className={thClass("total")} style={thStyle("total")}>Total in</th>
-          <th className={thClass("default", { groupStart: true })} style={thStyle()}>Holding</th>
-          <th className={thClass()} style={thStyle()}>Repay</th>
-          <th className={thClass()} style={thStyle()}>Tax</th>
-          <th className={thClass("total")} style={thStyle("total")}>Total out</th>
-          <th className={thClass("net", { groupStart: true })} style={thStyle("net")}>Net</th>
+          <th
+            className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1]"
+            style={{ color: t.fg.tertiary, background: t.surface.subtle }}
+          >
+            Year
+          </th>
+          {show("salary") && (
+            <th
+              className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider"
+              style={{ color: t.fg.tertiary, background: t.surface.subtle }}
+            >
+              Salary
+            </th>
+          )}
+          {show("rent") && isInvestment && (
+            <th
+              className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider"
+              style={{ color: t.fg.tertiary, background: t.surface.subtle }}
+            >
+              Rent
+            </th>
+          )}
+          {show("totalIn") && (
+            <th
+              className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider"
+              style={{ color: t.fg.secondary, background: t.surface.subtle, fontWeight: 600 }}
+            >
+              Total in
+            </th>
+          )}
+          {show("holding") && (
+            <th
+              className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l"
+              style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.subtle }}
+            >
+              Holding
+            </th>
+          )}
+          {show("repay") && (
+            <th
+              className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider"
+              style={{ color: t.fg.tertiary, background: t.surface.subtle }}
+            >
+              Repay
+            </th>
+          )}
+          {show("tax") && (
+            <th
+              className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider"
+              style={{ color: t.fg.tertiary, background: t.surface.subtle }}
+            >
+              Tax
+            </th>
+          )}
+          {show("totalOut") && (
+            <th
+              className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider"
+              style={{ color: t.fg.secondary, background: t.surface.subtle, fontWeight: 600 }}
+            >
+              Total out
+            </th>
+          )}
+          {show("net") && (
+            <th
+              className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l"
+              style={{ color: t.brand.default, background: t.surface.subtle, fontWeight: 600, borderColor: t.border.subtle }}
+            >
+              Net
+            </th>
+          )}
         </tr>
       </thead>
       <tbody>
         {yearData.map((y, i) => {
-          if (!isRowVisible(y.year)) return null;
-          const isMs = isMilestoneYear(y.year);
-          const prev = i > 0 ? yearData[i - 1] : null;
+          const isSelected = getRowClass(y.year).includes("bg-brand");
 
           const totalIn = y.salary + (isInvestment ? y.rentalIncome : 0);
           const totalOut = y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc;
           const net = totalIn - totalOut;
 
-          const holdingYoY = prev ? yoyPct(y.ongoingCosts, prev.ongoingCosts) : 0;
-          const taxYoY = prev ? yoyPct(y.incomeTaxCalc, prev.incomeTaxCalc) : 0;
-          const netPrev = prev
-            ? prev.salary + (isInvestment ? prev.rentalIncome : 0) - prev.ongoingCosts - prev.loanRepayment - prev.incomeTaxCalc
-            : 0;
-          const netYoY = prev ? yoyPct(net, netPrev) : 0;
-
           return (
-            <tr key={y.year} className={getRowClass(y.year, isMs)} {...getRowHandlers(y.year, isMs)}>
-              <td className={tdClass("default", { isMs, first: true })} style={tdStyle("default", { isMs, first: true })}>
-                {formatYearCell(y.year, i, isMs)}
+            <tr key={y.year} className={getRowClass(y.year)} {...getRowHandlers(y.year)}>
+              <td
+                className="px-3 py-2 text-left text-[12px] font-medium sticky left-0 z-[1] border-t"
+                style={{
+                  color: isSelected ? t.brand.default : t.fg.primary,
+                  background: isSelected ? t.surface.hover : t.card.base,
+                  borderColor: t.border.subtle
+                }}
+              >
+                {formatYearCell(y.year, i)}
               </td>
-              <td className={tdClass("default", { isMs })} style={tdStyle("default", { isMs })}>
-                {formatDollarsSigned(Math.round(y.salary))}
-              </td>
-              {isInvestment && (
-                <td className={tdClass("default", { isMs })} style={tdStyle("default", { isMs })}>
+              {show("salary") && (
+                <td
+                  className="px-3 py-2 text-right text-[12px] tabular-nums border-t"
+                  style={{ color: t.fg.primary, borderColor: t.border.subtle }}
+                >
+                  {formatDollarsSigned(Math.round(y.salary))}
+                </td>
+              )}
+              {show("rent") && isInvestment && (
+                <td
+                  className="px-3 py-2 text-right text-[12px] tabular-nums border-t"
+                  style={{ color: t.fg.primary, borderColor: t.border.subtle }}
+                >
                   {formatDollarsSigned(Math.round(y.rentalIncome))}
                 </td>
               )}
-              <td className={tdClass("total", { isMs })} style={tdStyle("total", { isMs })}>
-                {formatDollarsSigned(Math.round(totalIn))}
-              </td>
-              <td className={tdClass("out", { isMs, groupStart: true })} style={tdStyle("out", { isMs })}>
-                {formatDollarsSigned(-Math.round(y.ongoingCosts))}
-                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(holdingYoY)}</span>}
-              </td>
-              <td className={tdClass("out", { isMs })} style={tdStyle("out", { isMs })}>
-                {formatDollarsSigned(-Math.round(y.loanRepayment))}
-              </td>
-              <td className={tdClass("out", { isMs })} style={tdStyle("out", { isMs })}>
-                {formatDollarsSigned(-Math.round(y.incomeTaxCalc))}
-                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(taxYoY)}</span>}
-              </td>
-              <td className={tdClass("totalOut", { isMs })} style={tdStyle("totalOut", { isMs })}>
-                {formatDollarsSigned(-Math.round(totalOut))}
-              </td>
-              <td className={tdClass("net", { isMs, groupStart: true })} style={tdStyle("net", { isMs })}>
-                {formatDollarsSigned(Math.round(net))}
-                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(netYoY)}</span>}
-              </td>
+              {show("totalIn") && (
+                <td
+                  className="px-3 py-2 text-right text-[12px] tabular-nums border-t"
+                  style={{ color: t.fg.primary, fontWeight: 500, borderColor: t.border.subtle }}
+                >
+                  {formatDollarsSigned(Math.round(totalIn))}
+                </td>
+              )}
+              {show("holding") && (
+                <td
+                  className="px-3 py-2 text-right text-[12px] tabular-nums border-t border-l"
+                  style={{ color: t.data.negative, borderColor: t.border.subtle }}
+                >
+                  {formatDollarsSigned(-Math.round(y.ongoingCosts))}
+                </td>
+              )}
+              {show("repay") && (
+                <td
+                  className="px-3 py-2 text-right text-[12px] tabular-nums border-t"
+                  style={{ color: t.data.negative, borderColor: t.border.subtle }}
+                >
+                  {formatDollarsSigned(-Math.round(y.loanRepayment))}
+                </td>
+              )}
+              {show("tax") && (
+                <td
+                  className="px-3 py-2 text-right text-[12px] tabular-nums border-t"
+                  style={{ color: t.data.negative, borderColor: t.border.subtle }}
+                >
+                  {formatDollarsSigned(-Math.round(y.incomeTaxCalc))}
+                </td>
+              )}
+              {show("totalOut") && (
+                <td
+                  className="px-3 py-2 text-right text-[12px] tabular-nums border-t"
+                  style={{ color: t.data.negative, fontWeight: 500, borderColor: t.border.subtle }}
+                >
+                  {formatDollarsSigned(-Math.round(totalOut))}
+                </td>
+              )}
+              {show("net") && (
+                <td
+                  className="px-3 py-2 text-right text-[13px] tabular-nums border-t border-l"
+                  style={{ color: t.data.positive, fontWeight: 600, borderColor: t.border.subtle }}
+                >
+                  {formatDollarsSigned(Math.round(net))}
+                </td>
+              )}
             </tr>
           );
         })}

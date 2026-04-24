@@ -1,76 +1,77 @@
 "use client";
 
 import { formatDollarsSigned } from "@/lib/formatters";
-import { yoyPct, fmtYoY, thClass, thStyle, tdClass, tdStyle, gainCls, gainStyle } from "./helpers";
+import { t } from "@/lib/theme";
 import type { SubTableProps } from "./types";
 
 export default function PropertyTable({
   yearData,
   isInvestment,
-  isRowVisible,
-  isMilestoneYear,
   formatYearCell,
   getRowClass,
   getRowHandlers,
+  visibleCols = {},
 }: SubTableProps) {
   if (!isInvestment) return null;
+
+  const show = (key: string) => visibleCols[key] !== false;
 
   return (
     <table className="w-full text-[12px]">
       <thead>
         <tr>
-          <th className={thClass("default", { first: true })} style={thStyle("default", { first: true })}>Year</th>
-          <th className={thClass()} style={thStyle()}>Rent</th>
-          <th className={thClass("default", { groupStart: true })} style={thStyle()}>Holding</th>
-          <th className={thClass()} style={thStyle()}>Depr.</th>
-          <th className={thClass("total")} style={thStyle("total")}>Net gearing</th>
-          <th className={thClass("default", { groupStart: true })} style={thStyle()}>Tax saved</th>
-          <th className={thClass("net", { groupStart: true })} style={thStyle("net")}>Net cashflow</th>
+          <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1]" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Year</th>
+          {show("rent") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Rent</th>}
+          {show("holding") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.subtle }}>Holding</th>}
+          {show("depr") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Depr.</th>}
+          {show("netGearing") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.secondary, background: t.surface.subtle, fontWeight: 600 }}>Net gearing</th>}
+          {show("taxSaved") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.subtle }}>Tax saved</th>}
+          {show("netCashflow") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.brand.default, background: t.surface.subtle, fontWeight: 600, borderColor: t.border.subtle }}>Net cashflow</th>}
         </tr>
       </thead>
       <tbody>
         {yearData.map((y, i) => {
-          if (!isRowVisible(y.year)) return null;
-          const isMs = isMilestoneYear(y.year);
-          const prev = i > 0 ? yearData[i - 1] : null;
+          const isSelected = getRowClass(y.year).includes("bg-brand");
 
           const holding = y.interestPortion + y.ongoingCosts;
           const depr = y.depDiv43 + y.depDiv40;
           const netGearing = y.rentalIncome - holding - depr;
 
-          const prevGearing = prev
-            ? prev.rentalIncome - (prev.interestPortion + prev.ongoingCosts) - (prev.depDiv43 + prev.depDiv40)
-            : 0;
-          const gearingYoY = prev ? yoyPct(netGearing, prevGearing) : 0;
-          const taxSavedYoY = prev ? yoyPct(y.taxSaved, prev.taxSaved) : 0;
-          const cfYoY = prev ? yoyPct(y.propertyCashflow, prev.propertyCashflow) : 0;
-
           return (
-            <tr key={y.year} className={getRowClass(y.year, isMs)} {...getRowHandlers(y.year, isMs)}>
-              <td className={tdClass("default", { isMs, first: true })} style={tdStyle("default", { isMs, first: true })}>
-                {formatYearCell(y.year, i, isMs)}
+            <tr key={y.year} className={getRowClass(y.year)} {...getRowHandlers(y.year)}>
+              <td className="px-3 py-2 text-left text-[12px] font-medium sticky left-0 z-[1] border-t" style={{ color: isSelected ? t.brand.default : t.fg.primary, background: isSelected ? t.surface.hover : t.card.base, borderColor: t.border.subtle }}>
+                {formatYearCell(y.year, i)}
               </td>
-              <td className={tdClass("default", { isMs })} style={tdStyle("default", { isMs })}>
-                {formatDollarsSigned(Math.round(y.rentalIncome))}
-              </td>
-              <td className={tdClass("out", { isMs, groupStart: true })} style={tdStyle("out", { isMs })}>
-                {formatDollarsSigned(-Math.round(holding))}
-              </td>
-              <td className={tdClass("out", { isMs })} style={tdStyle("out", { isMs })}>
-                {formatDollarsSigned(-Math.round(depr))}
-              </td>
-              <td className={tdClass(netGearing < 0 ? "totalOut" : "total", { isMs })} style={tdStyle(netGearing < 0 ? "totalOut" : "total", { isMs })}>
-                {formatDollarsSigned(Math.round(netGearing))}
-                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(gearingYoY)}</span>}
-              </td>
-              <td className={tdClass("default", { isMs, groupStart: true })} style={tdStyle("default", { isMs })}>
-                {formatDollarsSigned(Math.round(y.taxSaved))}
-                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(taxSavedYoY)}</span>}
-              </td>
-              <td className={tdClass("net", { isMs, groupStart: true })} style={tdStyle("net", { isMs })}>
-                {formatDollarsSigned(Math.round(y.propertyCashflow))}
-                {prev && <span className={gainCls} style={gainStyle}>{fmtYoY(cfYoY)}</span>}
-              </td>
+              {show("rent") && (
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
+                  {formatDollarsSigned(Math.round(y.rentalIncome))}
+                </td>
+              )}
+              {show("holding") && (
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t border-l" style={{ color: t.data.negative, borderColor: t.border.subtle }}>
+                  {formatDollarsSigned(-Math.round(holding))}
+                </td>
+              )}
+              {show("depr") && (
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.data.negative, borderColor: t.border.subtle }}>
+                  {formatDollarsSigned(-Math.round(depr))}
+                </td>
+              )}
+              {show("netGearing") && (
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: netGearing < 0 ? t.data.negative : t.fg.primary, fontWeight: 500, borderColor: t.border.subtle }}>
+                  {formatDollarsSigned(Math.round(netGearing))}
+                </td>
+              )}
+              {show("taxSaved") && (
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t border-l" style={{ color: t.data.positive, borderColor: t.border.subtle }}>
+                  {formatDollarsSigned(Math.round(y.taxSaved))}
+                </td>
+              )}
+              {show("netCashflow") && (
+                <td className="px-3 py-2 text-right text-[13px] tabular-nums border-t border-l" style={{ color: t.data.positive, fontWeight: 600, borderColor: t.border.subtle }}>
+                  {formatDollarsSigned(Math.round(y.propertyCashflow))}
+                </td>
+              )}
             </tr>
           );
         })}

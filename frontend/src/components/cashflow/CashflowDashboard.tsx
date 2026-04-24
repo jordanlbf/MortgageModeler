@@ -15,10 +15,8 @@ import CashflowDataTable from "./CashflowDataTable";
 interface Props {
   s: ReturnType<typeof useCashflowState>;
   hoveredYear: number | null;
-  tableExpanded: Set<number>;
   onHoverYear: (year: number | null) => void;
   onSelectYear: (year: number) => void;
-  onManualExpand: (expanded: Set<number>) => void;
 }
 
 type TabMode = "overview" | "details";
@@ -31,7 +29,7 @@ const fmtK = (v: number) => {
 };
 
 export default function CashflowDashboard({
-  s, hoveredYear, tableExpanded, onSelectYear, onHoverYear, onManualExpand,
+  s, hoveredYear, onSelectYear, onHoverYear,
 }: Props) {
   const [activeTab, setActiveTab] = useState<TabMode>("overview");
   const [viewMode, setViewMode] = useState<ViewMode>(s.effectiveViewMode);
@@ -181,45 +179,43 @@ export default function CashflowDashboard({
   return (
     <div className="bg-surface-app p-6" style={{ color: t.fg.primary }}>
 
-      {/* Tabs Row */}
+      {/* Tabs Row — primary tabs are view modes; secondary toggle is overview/details */}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-border-subtle">
         <div className="flex gap-6">
+          {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map((mode) => {
+            if (mode === "tax" && !s.isInvestment) return null;
+            return (
+              <button
+                key={mode}
+                onClick={() => setViewModeBoth(mode)}
+                className="pb-3 -mb-3 text-sm font-medium border-b-2 transition-colors capitalize"
+                style={{
+                  color: viewMode === mode ? t.fg.primary : t.fg.tertiary,
+                  borderColor: viewMode === mode ? t.brand.default : "transparent",
+                }}
+              >
+                {mode}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Overview / Details toggle */}
+        <div className="flex gap-1.5">
           {(["overview", "details"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className="pb-3 -mb-3 text-sm font-medium border-b-2 transition-colors capitalize"
+              className="px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors"
               style={{
-                color: activeTab === tab ? t.fg.primary : t.fg.tertiary,
-                borderColor: activeTab === tab ? t.brand.default : "transparent",
+                backgroundColor: activeTab === tab ? t.brand.default : "transparent",
+                color: activeTab === tab ? t.brand.contrast : t.fg.secondary,
               }}
             >
-              {tab === "details" ? `Details ${YEARS} Years` : tab}
+              {tab}
             </button>
           ))}
         </div>
-
-        {/* View Mode Pills */}
-        {activeTab === "overview" && (
-          <div className="flex gap-1.5">
-            {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map((mode) => {
-              if (mode === "tax" && !s.isInvestment) return null;
-              return (
-                <button
-                  key={mode}
-                  onClick={() => setViewModeBoth(mode)}
-                  className="px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors"
-                  style={{
-                    backgroundColor: viewMode === mode ? t.brand.default : "transparent",
-                    color: viewMode === mode ? t.brand.contrast : t.fg.secondary,
-                  }}
-                >
-                  {mode}
-                </button>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {activeTab === "overview" && (() => {
@@ -587,8 +583,6 @@ export default function CashflowDashboard({
           isInvestment={s.isInvestment}
           hasOffset={s.hasOffset}
           propertyValue={s.propertyValue}
-          expandedMilestones={tableExpanded}
-          onExpandedChange={onManualExpand}
           onSelectYear={onSelectYear}
           onHoverYear={onHoverYear}
         />

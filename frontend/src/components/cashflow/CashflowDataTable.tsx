@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
 import { DEPRECIATION_COLOR } from "@/lib/theme";
 
@@ -10,6 +9,8 @@ import TaxTable from "./table/TaxTable";
 import PropertyTable from "./table/PropertyTable";
 import EquityTable from "./table/EquityTable";
 import DeductionsTable from "./table/DeductionsTable";
+import { ColumnDrawer, ColumnDrawerTrigger } from "@/components/ui/ColumnDrawer";
+import { COLUMN_CONFIGS, defaultVisibility } from "./table/columns";
 
 interface Props {
   yearData: YearData[];
@@ -20,91 +21,84 @@ interface Props {
   hasOffset: boolean;
   propertyValue: number;
   depColor?: string;
-  showExpandButton?: boolean;
-  expandedMilestones?: Set<number>;
-  onExpandedChange?: (expanded: Set<number>) => void;
   onSelectYear: (year: number) => void;
   onHoverYear: (year: number | null) => void;
 }
 
+// Investment-only keys in the deductions view that should be hidden for PPOR.
+const PPOR_HIDDEN_DEDUCTIONS = new Set(["interest", "div43", "div40", "totalDepr"]);
+
 export default function CashflowDataTable({
   yearData, viewMode, selectedYear, hoveredYear, isInvestment,
-  hasOffset, propertyValue, depColor = DEPRECIATION_COLOR, showExpandButton = true,
-  expandedMilestones: externalExpanded, onExpandedChange,
+  hasOffset, propertyValue, depColor = DEPRECIATION_COLOR,
   onSelectYear, onHoverYear,
 }: Props) {
-  const showOffset = hasOffset && yearData.some(y => y.offsetBalanceAtYear > 0);
+  const showOffset = hasOffset && yearData.some((y) => y.offsetBalanceAtYear > 0);
 
-  const [localExpanded, setLocalExpanded] = useState<Set<number>>(new Set());
-  const expandedMilestones = externalExpanded ?? localExpanded;
-  const setExpandedMilestones = onExpandedChange ?? setLocalExpanded;
+  // Per-view-mode column visibility — each tab remembers its own toggles
+  const [visibleByMode, setVisibleByMode] = useState<Record<ViewMode, Record<string, boolean>>>(() => {
+    const initial = {} as Record<ViewMode, Record<string, boolean>>;
+    (Object.keys(COLUMN_CONFIGS) as ViewMode[]).forEach((m) => {
+      initial[m] = defaultVisibility(COLUMN_CONFIGS[m]);
+    });
+    return initial;
+  });
 
-  const isMilestoneYear = (year: number) => year === 1 || (year - 1) % 5 === 0;
-  const getMilestoneForYear = (year: number) => {
-    if (year === 1) return 1;
-    return Math.floor((year - 1) / 5) * 5 + 1;
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Filter out columns that don't apply to the current context (e.g. PPOR in deductions)
+  const activeColumns = useMemo(() => {
+    const raw = COLUMN_CONFIGS[viewMode];
+    if (viewMode === "deductions" && !isInvestment) {
+      return raw.filter((c) => !PPOR_HIDDEN_DEDUCTIONS.has(c.key));
+    }
+    return raw;
+  }, [viewMode, isInvestment]);
+
+  const visibleCols = visibleByMode[viewMode];
+  const visibleCount = activeColumns.filter((c) => visibleCols[c.key] !== false).length;
+
+  const toggleColumn = (key: string) => {
+    setVisibleByMode((prev) => ({
+      ...prev,
+      [viewMode]: { ...prev[viewMode], [key]: !prev[viewMode][key] },
+    }));
   };
 
-  const toggleMilestone = (milestone: number) => {
-    const next = new Set(expandedMilestones);
-    if (next.has(milestone)) next.delete(milestone);
-    else next.add(milestone);
-    setExpandedMilestones(next);
+  const resetColumns = () => {
+    setVisibleByMode((prev) => ({
+      ...prev,
+      [viewMode]: defaultVisibility(COLUMN_CONFIGS[viewMode]),
+    }));
   };
 
-  const isRowVisible = (year: number) => {
-    if (isMilestoneYear(year)) return true;
-    const milestone = getMilestoneForYear(year);
-    return expandedMilestones.has(milestone);
-  };
-
-  const getGroupYears = (milestone: number) => {
-    const endYear = milestone + 4;
-    return yearData.filter(y => y.year > milestone && y.year <= endYear);
-  };
-
-  const getRowHandlers = (year: number, isMilestone: boolean) => ({
-    onClick: () => {
-      if (isMilestone) toggleMilestone(year);
-      onSelectYear(year);
-    },
+  const getRowHandlers = (year: number) => ({
+    onClick: () => onSelectYear(year),
     onMouseEnter: () => onHoverYear(year),
     onMouseLeave: () => onHoverYear(null),
   });
 
-  const formatYearCell = (year: number, _index: number, isMilestoneRow = false) => {
-    const milestone = getMilestoneForYear(year);
-    const isExpanded = expandedMilestones.has(milestone);
-    const groupYears = getGroupYears(year);
-    const hasGroupYears = groupYears.length > 0;
-    const showChevron = isMilestoneRow && hasGroupYears;
+  const formatYearCell = (year: number) => {
     const isSelected = year === selectedYear;
 
     return (
       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
         <span className={`w-0.5 h-4 rounded-r-sm shrink-0 ${isSelected ? "bg-brand" : "bg-transparent"}`} />
-        {showChevron && (
-          <span className="text-fg-muted inline-flex items-center">
-            {isExpanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
-          </span>
-        )}
         <span className={isSelected ? "text-brand font-medium" : undefined}>
-          Year {year}
+          Yr {year}
         </span>
       </span>
     );
   };
 
-  const getRowClass = (year: number, isMilestoneRow = false) => {
+  const getRowClass = (year: number) => {
     const isSelected = year === selectedYear;
     const classes = ["h-8 transition-colors cursor-pointer hover:bg-white/[0.02]"];
-    if (isMilestoneRow) classes.push("[&>td]:border-t", "[&>td]:border-default");
     if (isSelected) classes.push("bg-brand/[0.04]");
     return classes.join(" ");
   };
 
-  // hoveredYear is still consumed by parent components for chart highlighting;
-  // row-level hover is now pure CSS, no JS state needed.
+  // hoveredYear is still consumed by parent components for chart highlighting
   void hoveredYear;
 
   const shared = {
@@ -113,37 +107,44 @@ export default function CashflowDataTable({
     showOffset,
     propertyValue,
     depColor,
-    isRowVisible,
-    isMilestoneYear,
     formatYearCell,
     getRowClass,
     getRowHandlers,
+    visibleCols,
   };
 
   return (
-    <div className="relative w-full bg-card border border-border-subtle rounded-xl overflow-hidden">
-      {showExpandButton && (
-        <button
-          className="absolute top-2.5 left-2.5 z-[2] flex items-center justify-center w-[22px] h-[22px] border-none rounded bg-transparent text-fg-primary/[0.22] cursor-pointer transition-[color,background] duration-150 hover:bg-brand/[0.08] hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-          onClick={() => {
-            if (expandedMilestones.size > 0) {
-              setExpandedMilestones(new Set());
-            } else {
-              setExpandedMilestones(new Set([1, 6, 11, 16, 21, 26]));
-            }
-          }}
-          title={expandedMilestones.size > 0 ? "Collapse all" : "Expand all"}
-        >
-          {expandedMilestones.size > 0 ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-        </button>
-      )}
-      <div className="overflow-x-auto">
-        {viewMode === "summary"    && <SummaryTable    {...shared} />}
-        {viewMode === "tax"        && <TaxTable        {...shared} />}
-        {viewMode === "property"   && <PropertyTable   {...shared} />}
-        {viewMode === "equity"     && <EquityTable     {...shared} />}
-        {viewMode === "deductions" && <DeductionsTable {...shared} />}
+    <>
+      {/* Toolbar floats above the table on the page background */}
+      <div className="flex items-center justify-between mb-3">
+        <ColumnDrawerTrigger
+          visibleCount={visibleCount}
+          totalCount={activeColumns.length}
+          onClick={() => setDrawerOpen(true)}
+        />
+        <div className="text-[11px] text-fg-muted">
+          {yearData.length} years
+        </div>
       </div>
-    </div>
+
+      <div className="relative w-full bg-card border border-border-subtle rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          {viewMode === "summary"    && <SummaryTable    {...shared} />}
+          {viewMode === "tax"        && <TaxTable        {...shared} />}
+          {viewMode === "property"   && <PropertyTable   {...shared} />}
+          {viewMode === "equity"     && <EquityTable     {...shared} />}
+          {viewMode === "deductions" && <DeductionsTable {...shared} />}
+        </div>
+      </div>
+
+      <ColumnDrawer
+        columns={activeColumns}
+        visibleColumns={visibleCols}
+        onToggleColumn={toggleColumn}
+        onReset={resetColumns}
+        isOpen={drawerOpen}
+        onOpenChange={setDrawerOpen}
+      />
+    </>
   );
 }
