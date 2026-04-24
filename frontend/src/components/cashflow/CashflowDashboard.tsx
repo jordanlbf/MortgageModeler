@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip, CartesianGrid, ReferenceLine, ReferenceDot,
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip, ReferenceLine, ReferenceDot,
   ComposedChart, Area,
 } from "recharts";
 import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
@@ -35,6 +35,25 @@ export default function CashflowDashboard({
   const [viewMode, setViewMode] = useState<ViewMode>(s.effectiveViewMode);
   const [equityExpanded, setEquityExpanded] = useState(false);
   const [loanExpanded, setLoanExpanded] = useState(false);
+
+  // Watchdog: some fast mouse-outs miss onMouseLeave/onPointerLeave due to
+  // React's event batching (a Cell.onMouseEnter can fire AFTER the wrapper's
+  // onMouseLeave, re-setting the hover). A document-level mousemove listener
+  // checks if the pointer is still over the chart; if not, force-clear.
+  const chartRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (hoveredYear === null) return;
+    const handler = (e: MouseEvent) => {
+      const rect = chartRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const inside =
+        e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom;
+      if (!inside) onHoverYear(null);
+    };
+    document.addEventListener("mousemove", handler);
+    return () => document.removeEventListener("mousemove", handler);
+  }, [hoveredYear, onHoverYear]);
 
   const YEARS = s.yearData.length;
   const baseYear = new Date().getFullYear();
@@ -132,10 +151,18 @@ export default function CashflowDashboard({
   const xTicks = (() => {
     const N = chartData.length;
     if (N === 0) return [] as string[];
-    const marks: string[] = ["Yr 1"];
-    for (let i = 5; i < N; i += 5) marks.push(`Yr ${i}`);
-    if (!marks.includes(`Yr ${N}`)) marks.push(`Yr ${N}`);
-    return marks;
+    return N > 1 ? ["Yr 1", `Yr ${N}`] : ["Yr 1"];
+  })();
+
+  // Tight Y-domain so the tallest positive and tallest negative bars both
+  // reach the plot edges. Recharts defaults to ['auto', 'auto'] which adds
+  // ~5% padding and leaves visible gaps. We always keep 0 in the domain so
+  // bars continue to root at the zero baseline (otherwise a positive-only
+  // dataset would shift bars off the bottom).
+  const yDomain = (() => {
+    const values = chartData.map((d) => d[cfg.dataKey] as number);
+    if (values.length === 0) return [0, 0] as [number, number];
+    return [Math.min(0, ...values), Math.max(0, ...values)] as [number, number];
   })();
 
   // ── Hero and indicator row per mode ─────────────────────────────
@@ -418,41 +445,47 @@ export default function CashflowDashboard({
 
           {/* Cashflow Chart */}
           <div
-            className="bg-card border border-border-subtle rounded-xl p-4 flex flex-col min-w-0"
+            className="bg-card border border-border-subtle rounded-xl p-5 flex flex-col min-w-0"
             style={{ gridArea: "chart" }}
           >
-            <div className="flex items-baseline gap-2.5 mb-3 px-1">
-              <span className="text-[16px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary }}>
-                {chartTitle}
-              </span>
-              <span style={{ color: t.fg.tertiary }}>|</span>
-              <span className="text-xs font-medium" style={{ color: t.brand.default }}>Year {displayYear}</span>
-              <span className="text-xs font-medium tabular-nums" style={{ color: heroColor }}>
-                {heroAnnual < 0
-                  ? `−${fmt(Math.abs(heroAnnual))}`
-                  : (viewMode === "summary" || viewMode === "property")
-                    ? `+${fmt(heroAnnual)}`
-                    : fmt(heroAnnual)}
-              </span>
+            <div className="flex items-baseline justify-between mb-3 px-1">
+              <div className="flex items-baseline gap-2.5">
+                <span className="text-[22px] font-semibold tabular-nums leading-none" style={{ color: heroColor, letterSpacing: "-0.01em" }}>
+                  {heroAnnual < 0
+                    ? `−${fmt(Math.abs(heroAnnual))}`
+                    : (viewMode === "summary" || viewMode === "property")
+                      ? `+${fmt(heroAnnual)}`
+                      : fmt(heroAnnual)}
+                </span>
+                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}>
+                  {chartTitle}
+                </span>
+              </div>
+              <div className="text-[14px] tabular-nums flex items-baseline gap-1.5">
+                <span className="font-medium" style={{ color: t.brand.default }}>Year {displayYear}</span>
+                <span style={{ color: t.fg.tertiary, opacity: 0.6 }}>·</span>
+                <span style={{ color: t.fg.tertiary }}>{d.calendarYear}</span>
+              </div>
             </div>
             <div
-              className="h-[280px] [&_*:focus]:outline-none [&_*:focus-visible]:outline-none"
+              ref={chartRef}
+              className="flex-1 min-h-[280px] [&_*:focus]:outline-none [&_*:focus-visible]:outline-none"
               onMouseLeave={() => onHoverYear(null)}
+              onPointerLeave={() => onHoverYear(null)}
+              onPointerCancel={() => onHoverYear(null)}
             >
               <ResponsiveContainer width="100%" height="100%">
                 {viewMode === "equity" ? (
-                  <ComposedChart data={chartData}>
+                  <ComposedChart data={chartData} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
                     <defs>
                       <linearGradient id="equityFill" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor={C.cyan} stopOpacity={0.32} />
                         <stop offset="100%" stopColor={C.cyan} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid vertical={false} stroke={t.chart.gridH} strokeDasharray="2 4" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} ticks={xTicks} />
-                    <YAxis tickFormatter={fmtK} axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} width={40} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 10 }} ticks={xTicks} interval="preserveStartEnd" />
+                    <YAxis hide width={0} domain={yDomain} />
                     <Tooltip cursor={{ stroke: C.cyan, strokeOpacity: 0.25, strokeWidth: 1 }} content={() => null} isAnimationActive={false} />
-                    <ReferenceLine y={0} stroke={t.chart.axisLine} strokeWidth={1} />
                     <ReferenceLine
                       x={`Yr ${selectedYear}`}
                       stroke={C.cyan}
@@ -493,16 +526,15 @@ export default function CashflowDashboard({
                 ) : (
                   <BarChart
                     data={chartData}
+                    margin={{ top: 8, right: 0, bottom: 0, left: 0 }}
                     onClick={(e) => {
                       const idx = e?.activeTooltipIndex;
                       if (typeof idx === "number") onSelectYear(idx + 1);
                     }}
                   >
-                    <CartesianGrid vertical={false} stroke={t.chart.gridH} strokeDasharray="2 4" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} ticks={xTicks} />
-                    <YAxis tickFormatter={fmtK} axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} width={40} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 10 }} ticks={xTicks} interval="preserveStartEnd" />
+                    <YAxis hide width={0} domain={yDomain} />
                     <Tooltip cursor={{ fill: "transparent" }} content={() => null} isAnimationActive={false} />
-                    <ReferenceLine y={0} stroke={t.chart.axisLine} strokeWidth={1} />
                     <Bar dataKey={cfg.dataKey} radius={[2, 2, 0, 0]} isAnimationActive={false}>
                       {chartData.map((entry, index) => {
                         const isSelected = selectedYear === index + 1;
@@ -534,7 +566,7 @@ export default function CashflowDashboard({
           >
 
             {/* Year Navigation Header */}
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-6">
               <button
                 onClick={() => onSelectYear(Math.max(1, selectedYear - 1))}
                 disabled={selectedYear === 1}
@@ -556,18 +588,8 @@ export default function CashflowDashboard({
               </button>
             </div>
 
-            {/* Title */}
-            <div className="text-center mb-2">
-              <span
-                className="text-[11px] font-medium uppercase"
-                style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}
-              >
-                {sideTitle}
-              </span>
-            </div>
-
             {/* Hero */}
-            <div className="mb-3 flex justify-center items-baseline gap-1.5">
+            <div className="flex justify-center items-baseline gap-1.5">
               <span className="text-3xl font-medium tabular-nums" style={{ color: heroColor }}>
                 {heroMonthly !== null
                   ? `${heroMonthly >= 0 ? "+" : "-"}${fmt(Math.abs(heroMonthly))}`
@@ -578,12 +600,25 @@ export default function CashflowDashboard({
               )}
             </div>
 
-            {viewMode === "summary" && <SummarySections d={d} isInvestment={s.isInvestment} />}
-            {viewMode === "property" && <PropertySections d={d} />}
-            {viewMode === "tax" && <TaxSections d={d} isInvestment={s.isInvestment} />}
-            {viewMode === "equity" && <EquitySections d={d} />}
-            {viewMode === "deductions" && <DeductionsSections d={d} />}
-            {viewMode === "costs" && <CostsSections d={d} />}
+            {/* Title (below hero) */}
+            <div className="text-center mb-3">
+              <span
+                className="text-[11px] font-medium uppercase"
+                style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}
+              >
+                {sideTitle}
+              </span>
+            </div>
+
+            {/* Breakdown rows pinned to the bottom of the panel */}
+            <div className="mt-auto pt-6">
+              {viewMode === "summary" && <SummarySections d={d} isInvestment={s.isInvestment} />}
+              {viewMode === "property" && <PropertySections d={d} />}
+              {viewMode === "tax" && <TaxSections d={d} isInvestment={s.isInvestment} />}
+              {viewMode === "equity" && <EquitySections d={d} />}
+              {viewMode === "deductions" && <DeductionsSections d={d} />}
+              {viewMode === "costs" && <CostsSections d={d} />}
+            </div>
           </div>
         </div>
         );
