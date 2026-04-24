@@ -55,12 +55,12 @@ export default function CashflowDashboard({
       holdingCosts: Math.round(y.ongoingCosts),
       interest: Math.round(y.interestPortion),
       principal: Math.round(y.principalPortion),
-      totalCosts: Math.round(y.ongoingCosts + y.loanRepayment),
+      totalCosts: Math.round(y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc),
+      netRentalPosition: Math.round(y.rentalLossOrGain),
       depreciation: Math.round(depreciation),
       depDiv43: Math.round(y.depDiv43),
       depDiv40: Math.round(y.depDiv40),
       totalDeductions: Math.round(y.totalDeductions),
-      taxOffset: Math.round(rental - y.ongoingCosts - y.interestPortion - depreciation),
       taxPayable: Math.round(y.incomeTaxCalc),
       taxRefund: Math.round(y.taxSaved),
       propertyValue: Math.round(y.propertyValue),
@@ -252,13 +252,8 @@ export default function CashflowDashboard({
               </div>
             </div>
 
-            {/* KPI Cards: Property Value, Net Equity, Loan Balance */}
+            {/* KPI Cards */}
             <div className="flex gap-3">
-              <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
-                <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>Property Value</div>
-                <div className="text-2xl font-bold tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.propertyValue)}</div>
-                <div className="text-xs mt-0.5" style={{ color: t.fg.tertiary }}>4% annual growth</div>
-              </div>
               <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
                 <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>Net Equity</div>
                 <div className="text-2xl font-bold tabular-nums" style={{ color: t.data.positive }}>{fmt(d.equity)}</div>
@@ -269,6 +264,30 @@ export default function CashflowDashboard({
                 <div className="text-2xl font-bold tabular-nums" style={{ color: t.data.negative }}>{fmt(d.loanBalance)}</div>
                 <div className="text-xs mt-0.5" style={{ color: t.fg.tertiary }}>remaining principal</div>
               </div>
+              {s.isInvestment && (
+                <>
+                  <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
+                    <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>Net Rental Position</div>
+                    <div className="text-2xl font-bold tabular-nums" style={{ color: d.netRentalPosition >= 0 ? t.data.positive : t.data.negative }}>
+                      {d.netRentalPosition < 0 ? '−' : ''}{fmt(Math.abs(d.netRentalPosition))}
+                    </div>
+                    <div className="text-xs mt-0.5 opacity-60" style={{ color: d.netRentalPosition < 0 ? t.data.negative : t.data.positive }}>
+                      {d.netRentalPosition < 0 ? 'Negatively Geared' : 'Positively Geared'}
+                    </div>
+                  </div>
+                  <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
+                    <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>
+                      {d.taxRefund >= 0 ? 'Tax Refund' : 'Tax Liability'}
+                    </div>
+                    <div className="text-2xl font-bold tabular-nums" style={{ color: d.taxRefund >= 0 ? t.data.positive : t.data.negative }}>
+                      {fmt(Math.abs(d.taxRefund))}
+                    </div>
+                    <div className="text-xs mt-0.5 opacity-60" style={{ color: d.netRentalPosition < 0 ? t.data.negative : t.data.positive }}>
+                      {d.netRentalPosition < 0 ? 'Negatively Geared' : 'Positively Geared'}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -298,20 +317,19 @@ export default function CashflowDashboard({
             </div>
 
             {/* Hero */}
-            <div
-              className="rounded-xl p-4 mb-4 flex items-baseline justify-center gap-2"
-              style={{ backgroundColor: t.surface.subtle }}
-            >
+            <div className="p-2 mb-3 flex flex-col items-center gap-0.5">
               {heroMonthly !== null ? (
                 <>
-                  <span className="text-4xl font-bold tabular-nums" style={{ color: heroColor }}>
+                  <span className="text-3xl font-medium tabular-nums" style={{ color: heroColor }}>
                     {heroMonthly >= 0 ? '+' : '-'}{fmt(Math.abs(heroMonthly))}
                   </span>
-                  <span className="text-lg font-medium" style={{ color: t.fg.tertiary }}>/ Month</span>
+                  <span className="text-xs font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary }}>
+                    Household Monthly Cashflow
+                  </span>
                 </>
               ) : (
                 <>
-                  <span className="text-3xl font-bold tabular-nums" style={{ color: heroColor }}>
+                  <span className="text-3xl font-medium tabular-nums" style={{ color: heroColor }}>
                     {fmt(heroAnnual)}
                   </span>
                   <span className="text-xs font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary }}>
@@ -373,7 +391,7 @@ function Row({ label, value, color, bold, negative, note }: {
 
 function Section({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-4 pb-4 border-b border-border-subtle flex flex-col gap-1.5">
+    <div className="mb-4 pb-4 border-b border-border-subtle flex flex-col gap-2.5 last:mb-0 last:pb-0 last:border-b-0">
       {children}
     </div>
   );
@@ -384,34 +402,35 @@ type D = {
   salary: number; rentalIncome: number; totalIncome: number;
   holdingCosts: number; interest: number; principal: number; totalCosts: number;
   depreciation: number; depDiv43: number; depDiv40: number; totalDeductions: number;
-  taxOffset: number; taxPayable: number; taxRefund: number;
+  netRentalPosition: number; taxPayable: number; taxRefund: number;
   propertyValue: number; loanBalance: number; equity: number;
   offsetBalance: number; lvr: number;
   councilRates: number; waterRates: number; insurance: number; maintenance: number; strataFees: number;
-  propertyCashflow: number;
+  propertyCashflow: number; cashflow: number;
 };
 
 function SummarySections({ d, isInvestment }: { d: D; isInvestment: boolean }) {
   return (
     <>
       <Section>
-        <Row label="Salary" value={d.salary} color={t.fg.primary} />
-        {isInvestment && <Row label="Rental Income" value={d.rentalIncome} color={t.fg.primary} />}
+        <Row label="Salary" value={d.salary} color={t.data.positive} />
+        {isInvestment && <Row label="Rental Income" value={d.rentalIncome} color={t.data.positive} />}
         <Row label="Total Income" value={d.totalIncome} color={t.data.positive} bold />
       </Section>
       <Section>
-        <Row label="Operating" value={d.holdingCosts} color={t.fg.primary} negative />
-        <Row label="Interest" value={d.interest} color={t.fg.primary} negative />
-        <Row label="Principal" value={d.principal} color={t.fg.primary} negative />
+        <Row label="Operating" value={d.holdingCosts} color={t.data.negative} negative />
+        <Row label="Interest" value={d.interest} color={t.data.negative} negative />
+        <Row label="Principal" value={d.principal} color={t.data.negative} negative />
+        <Row label="Tax Paid" value={d.taxPayable} color={t.data.negative} negative />
         <Row label="Total Costs" value={d.totalCosts} color={t.data.negative} bold negative />
       </Section>
       <Section>
-        <Row label="Net Rental Position" value={d.taxOffset} color={t.fg.primary} />
         <Row
-          label={d.taxRefund >= 0 ? "Tax Refund" : "Tax Liability"}
-          value={Math.abs(d.taxRefund)}
-          color={d.taxRefund >= 0 ? t.data.positive : t.data.negative}
+          label="Net Annual Cashflow"
+          value={Math.abs(d.cashflow)}
+          color={d.cashflow >= 0 ? t.data.positive : t.data.negative}
           bold
+          negative={d.cashflow < 0}
         />
       </Section>
     </>
@@ -425,8 +444,8 @@ function PropertySections({ d }: { d: D }) {
         <Row label="Gross Rent" value={d.rentalIncome} color={t.data.positive} />
       </Section>
       <Section>
-        <Row label="Interest" value={d.interest} color={t.fg.primary} negative />
-        <Row label="Rates & Insurance" value={d.holdingCosts} color={t.fg.primary} negative />
+        <Row label="Interest" value={d.interest} color={t.data.negative} negative />
+        <Row label="Rates & Insurance" value={d.holdingCosts} color={t.data.negative} negative />
       </Section>
       <Section>
         <Row
@@ -452,11 +471,11 @@ function TaxSections({ d, isInvestment }: { d: D; isInvestment: boolean }) {
   return (
     <>
       <Section>
-        <Row label="Salary" value={d.salary} color={t.fg.primary} />
-        {isInvestment && <Row label="Rental Income" value={d.rentalIncome} color={t.fg.primary} />}
+        <Row label="Salary" value={d.salary} color={t.data.positive} />
+        {isInvestment && <Row label="Rental Income" value={d.rentalIncome} color={t.data.positive} />}
       </Section>
       <Section>
-        <Row label="Holding Costs" value={d.holdingCosts + d.interest} color={t.fg.primary} negative />
+        <Row label="Holding Costs" value={d.holdingCosts + d.interest} color={t.data.negative} negative />
         <Row label="Depreciation" value={d.depreciation} color={C.purple} negative />
         <Row label="Total Deductions" value={d.totalDeductions} color={t.data.negative} bold negative />
       </Section>
@@ -484,7 +503,7 @@ function EquitySections({ d }: { d: D }) {
         )}
       </Section>
       <Section>
-        <Row label="Loan Balance" value={d.loanBalance} color={t.fg.primary} negative />
+        <Row label="Loan Balance" value={d.loanBalance} color={t.data.negative} negative />
         <div className="flex justify-between items-center">
           <span className="text-xs" style={{ color: t.fg.secondary }}>LVR</span>
           <span className="text-xs tabular-nums font-medium" style={{ color: lvrColor }}>

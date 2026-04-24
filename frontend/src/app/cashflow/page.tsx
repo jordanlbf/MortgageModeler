@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import CashflowCalculator from "@/components/cashflow/CashflowView";
 
 export default function CashflowPage() {
+  const [resetKey, setResetKey] = useState(0);
+
   return (
     <>
       <PageHeader
@@ -13,6 +16,7 @@ export default function CashflowPage() {
         actions={
           <button
             type="button"
+            onClick={() => setResetKey((k) => k + 1)}
             className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-medium transition-all cursor-pointer"
             style={{
               background: "color-mix(in srgb, var(--color-brand) 3%, transparent)",
@@ -37,7 +41,7 @@ export default function CashflowPage() {
           </button>
         }
       />
-      <CashflowCalculator />
+      <CashflowCalculator key={resetKey} />
     </>
   );
 }
