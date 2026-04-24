@@ -515,4 +515,17 @@ thead .cf-zone,
   .auth-cta, .auth-cta-arrow { transition: none; }
   .auth-pulse-ring { animation: none; }
 }
- 
+
+/* ── Auth page background ── */
+/* Solid surface + a very subtle top-centered emerald hint. Noise overlay
+   is rendered as a sibling div in the layout for layered composition. */
+.auth-bg {
+  background:
+    radial-gradient(ellipse 800px 400px at 50% 0%, rgba(52, 211, 153, 0.03) 0%, transparent 70%),
+    var(--color-surface-page);
+}
+
+/* ── Auth bottom-left brand anchor (hidden on mobile) ── */
+@media (max-width: 768px) {
+  .auth-bottom-anchor { display: none; }
+}

@@ -18,7 +18,7 @@ export default function AuthShell({
   compact = false,
 }: Props) {
   const headingSize = compact ? "clamp(22px, 3.2vw, 28px)" : "clamp(26px, 4vw, 34px)";
-  const headingMaxWidth = compact ? 440 : 580;
+  const headingMaxWidth = compact ? 440 : 500;
   const subMaxWidth = compact ? 360 : 440;
   const subMarginBottom = compact ? 36 : 40;
 
