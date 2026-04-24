@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip,
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip, CartesianGrid, ReferenceLine, ReferenceDot,
+  ComposedChart, Area,
 } from "recharts";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
 import { t, CF_COLORS as C, LVR_COLORS } from "@/lib/theme";
 import { parseCurrencyInput } from "@/lib/formatters";
 import type { ViewMode } from "@/lib/cashflow-types";
@@ -34,6 +35,8 @@ export default function CashflowDashboard({
 }: Props) {
   const [activeTab, setActiveTab] = useState<TabMode>("overview");
   const [viewMode, setViewMode] = useState<ViewMode>(s.effectiveViewMode);
+  const [equityExpanded, setEquityExpanded] = useState(false);
+  const [loanExpanded, setLoanExpanded] = useState(false);
 
   const YEARS = s.yearData.length;
   const baseYear = new Date().getFullYear();
@@ -121,6 +124,15 @@ export default function CashflowDashboard({
 
   const cfg = chartCfg[viewMode];
 
+  const xTicks = (() => {
+    const N = chartData.length;
+    if (N === 0) return [] as string[];
+    const marks: string[] = ["Yr 1"];
+    for (let i = 5; i < N; i += 5) marks.push(`Yr ${i}`);
+    if (!marks.includes(`Yr ${N}`)) marks.push(`Yr ${N}`);
+    return marks;
+  })();
+
   // ── Hero and indicator row per mode ─────────────────────────────
   const heroMonthly = viewMode === "summary"
     ? d.cashflowMonthly
@@ -144,11 +156,17 @@ export default function CashflowDashboard({
     : viewMode === "equity" ? "Net Equity"
     : "Total Deductions";
 
-  const chartTitle = viewMode === "summary" ? "Annual Net Cashflow"
-    : viewMode === "property" ? "Annual Property Cashflow"
-    : viewMode === "tax" ? "Annual Tax Payable"
+  const sideTitle = viewMode === "summary" ? "Household Cashflow"
+    : viewMode === "property" ? "Property Cashflow"
+    : viewMode === "tax" ? "Tax Payable"
+    : viewMode === "equity" ? "Net Equity"
+    : "Total Deductions";
+
+  const chartTitle = viewMode === "summary" ? "Net Cashflow"
+    : viewMode === "property" ? "Property Cashflow"
+    : viewMode === "tax" ? "Tax Payable"
     : viewMode === "equity" ? "Net Equity Projection"
-    : "Annual Deductions";
+    : "Deductions";
 
   const heroColor = viewMode === "summary"
     ? (d.cashflow >= 0 ? t.data.positive : t.data.negative)
@@ -233,68 +251,158 @@ export default function CashflowDashboard({
             className="grid grid-cols-2 bg-card border border-border-subtle rounded-xl overflow-hidden"
             style={{ gridArea: "kpi" }}
           >
-            <div className="px-[22px] py-[18px] border-r border-border-subtle">
-              <div className="flex items-baseline justify-between gap-2 mb-3.5">
-                <div className="flex items-baseline gap-2 min-w-0">
-                  <span className="text-[26px] font-medium tabular-nums leading-none" style={{ color: t.fg.primary, letterSpacing: "-0.01em" }}>{fmt(d.equity)}</span>
-                  <span className="text-[13px]" style={{ color: t.fg.tertiary }}>Net Equity</span>
+            <div className="flex flex-col border-r border-border-subtle">
+              <div className="px-6 pt-4 pb-5 flex flex-col gap-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium uppercase" style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}>Net Equity</span>
+                  <button
+                    type="button"
+                    onClick={() => setEquityExpanded((v) => !v)}
+                    className="p-0.5 rounded transition-colors hover:bg-surface-hover cursor-pointer"
+                    aria-label={equityExpanded ? "Collapse" : "Expand"}
+                  >
+                    <ChevronRight
+                      size={14}
+                      style={{
+                        color: t.fg.tertiary,
+                        transform: equityExpanded ? "rotate(90deg)" : "rotate(0)",
+                        transition: "transform 180ms ease-out",
+                      }}
+                    />
+                  </button>
                 </div>
-                {equityGain !== 0 && (
-                  <span className="text-[12px] font-medium tabular-nums shrink-0" style={{ color: equityGain > 0 ? t.data.positive : t.data.negative }}>
-                    {equityGain > 0 ? "↑" : "↓"} {fmtK(Math.abs(equityGain))}
+                <div className="flex items-baseline justify-between gap-3">
+                  <span
+                    className="text-[28px] font-bold tabular-nums leading-none"
+                    style={{ color: t.fg.primary, letterSpacing: "-0.02em" }}
+                  >
+                    {fmt(d.equity)}
                   </span>
-                )}
-              </div>
-              <div className="relative h-1 rounded-sm mb-3" style={{ background: "rgba(240, 253, 250, 0.06)" }}>
-                <div
-                  className="absolute left-0 top-0 h-full rounded-sm transition-colors"
-                  style={{ width: `${Math.min(100, d.lvr)}%`, background: lvrTone }}
-                />
-                <div
-                  className="absolute w-px"
-                  style={{ top: "-3px", height: "10px", left: "80%", background: t.fg.secondary, opacity: 0.8 }}
-                />
-              </div>
-              <div className="flex justify-between items-baseline text-[12px] mt-1">
-                <span style={{ color: lvrTone, opacity: 0.85 }}>{d.lvr}% LVR</span>
-                <span style={{ color: t.fg.tertiary }}>
-                  {fmtK(d.propertyValue)} <span style={{ opacity: 0.7 }}>value</span>
-                </span>
-              </div>
-            </div>
-            <div className="px-[22px] py-[18px]">
-              <div className="flex items-baseline justify-between gap-2 mb-3.5">
-                <div className="flex items-baseline gap-2 min-w-0">
-                  <span className="text-[26px] font-medium tabular-nums leading-none" style={{ color: t.fg.primary, letterSpacing: "-0.01em" }}>{fmt(d.loanBalance)}</span>
-                  <span className="text-[13px]" style={{ color: t.fg.tertiary }}>Loan Balance</span>
-                </div>
-                {cumulativePaid > 0 && (
-                  <span className="text-[12px] font-medium tabular-nums shrink-0" style={{ color: t.data.positive }}>
-                    ↓ {fmtK(cumulativePaid)}
-                  </span>
-                )}
-              </div>
-              <div className="relative h-1 rounded-sm mb-3" style={{ background: "rgba(240, 253, 250, 0.06)" }}>
-                <div
-                  className="absolute left-0 top-0 h-full rounded-sm"
-                  style={{ width: `${paidPct}%`, background: `color-mix(in srgb, ${C.teal} 65%, transparent)` }}
-                />
-                {offsetPct > 0 && (
-                  <div
-                    className="absolute top-0 h-full rounded-sm"
-                    style={{ left: `${paidPct}%`, width: `${offsetPct}%`, background: `color-mix(in srgb, ${C.teal} 30%, transparent)` }}
-                  />
-                )}
-              </div>
-              <div className="flex justify-between items-baseline text-[12px] mt-1">
-                <span style={{ color: t.fg.secondary }}>
-                  {paidPct.toFixed(1)}% paid
-                  {offsetPct > 0 && (
-                    <span style={{ color: C.teal, opacity: 0.8 }}> · ${offsetK}k offset</span>
+                  {equityGain !== 0 && (
+                    <span
+                      className="text-[12px] font-medium tabular-nums shrink-0 inline-flex items-center gap-0.5"
+                      style={{ color: equityGain > 0 ? t.data.positive : t.data.negative }}
+                    >
+                      {equityGain > 0 ? <ArrowUp size={12} strokeWidth={2.5} /> : <ArrowDown size={12} strokeWidth={2.5} />}
+                      {fmtK(Math.abs(equityGain))}
+                    </span>
                   )}
-                </span>
-                <span style={{ color: t.fg.tertiary }}>{yearsRemaining}y left</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="relative h-1.5 rounded-full flex-1" style={{ background: "rgba(240, 253, 250, 0.05)" }}>
+                    <div
+                      className="absolute left-0 top-0 h-full rounded-full transition-colors"
+                      style={{ width: `${Math.min(100, d.lvr)}%`, background: lvrTone }}
+                    />
+                  </div>
+                  <span
+                    className="text-[11px] whitespace-nowrap shrink-0 tabular-nums font-medium"
+                    style={{ color: lvrTone, opacity: 0.9 }}
+                  >
+                    {d.lvr}% LVR
+                  </span>
+                </div>
               </div>
+              {equityExpanded && (
+                <div className="px-6 pt-4 pb-5 border-t border-border-subtle flex flex-col gap-2.5">
+                  <div className="flex justify-between text-[12px]">
+                    <span style={{ color: t.fg.tertiary }}>Property Value</span>
+                    <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.propertyValue)}</span>
+                  </div>
+                  <div className="flex justify-between text-[12px]">
+                    <span style={{ color: t.fg.tertiary }}>Less: Loan</span>
+                    <span className="tabular-nums" style={{ color: t.data.negative }}>-{fmt(d.loanBalance)}</span>
+                  </div>
+                  {d.offsetBalance > 0 && (
+                    <div className="flex justify-between text-[12px]">
+                      <span style={{ color: t.fg.tertiary }}>Plus: Offset</span>
+                      <span className="tabular-nums" style={{ color: t.data.positive }}>+{fmt(d.offsetBalance)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-[13px] font-bold pt-0.5">
+                    <span style={{ color: t.fg.primary }}>Net Equity</span>
+                    <span className="tabular-nums" style={{ color: t.data.positive }}>{fmt(d.equity)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <div className="px-6 pt-4 pb-5 flex flex-col gap-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium uppercase" style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}>Loan Balance</span>
+                  <button
+                    type="button"
+                    onClick={() => setLoanExpanded((v) => !v)}
+                    className="p-0.5 rounded transition-colors hover:bg-surface-hover cursor-pointer"
+                    aria-label={loanExpanded ? "Collapse" : "Expand"}
+                  >
+                    <ChevronRight
+                      size={14}
+                      style={{
+                        color: t.fg.tertiary,
+                        transform: loanExpanded ? "rotate(90deg)" : "rotate(0)",
+                        transition: "transform 180ms ease-out",
+                      }}
+                    />
+                  </button>
+                </div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span
+                    className="text-[28px] font-bold tabular-nums leading-none"
+                    style={{ color: t.fg.primary, letterSpacing: "-0.02em" }}
+                  >
+                    {fmt(d.loanBalance)}
+                  </span>
+                  {cumulativePaid > 0 && (
+                    <span
+                      className="text-[12px] font-medium tabular-nums shrink-0 inline-flex items-center gap-0.5"
+                      style={{ color: t.data.positive }}
+                    >
+                      <ArrowDown size={12} strokeWidth={2.5} />
+                      {fmtK(cumulativePaid)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="relative h-1.5 rounded-full flex-1" style={{ background: "rgba(240, 253, 250, 0.05)" }}>
+                    <div
+                      className="absolute left-0 top-0 h-full rounded-full"
+                      style={{ width: `${paidPct}%`, background: `color-mix(in srgb, ${C.teal} 70%, transparent)` }}
+                    />
+                    {offsetPct > 0 && (
+                      <div
+                        className="absolute top-0 h-full rounded-full"
+                        style={{ left: `${paidPct}%`, width: `${offsetPct}%`, background: `color-mix(in srgb, ${C.teal} 32%, transparent)` }}
+                      />
+                    )}
+                  </div>
+                  <span className="text-[11px] whitespace-nowrap shrink-0 tabular-nums font-medium" style={{ color: C.teal, opacity: 0.9 }}>
+                    {paidPct.toFixed(1)}% paid
+                  </span>
+                </div>
+              </div>
+              {loanExpanded && (
+                <div className="px-6 pt-4 pb-5 border-t border-border-subtle flex flex-col gap-2.5">
+                  <div className="flex justify-between text-[12px]">
+                    <span style={{ color: t.fg.tertiary }}>Original Loan</span>
+                    <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(initialLoan)}</span>
+                  </div>
+                  <div className="flex justify-between text-[12px]">
+                    <span style={{ color: t.fg.tertiary }}>Less: Paid Off</span>
+                    <span className="tabular-nums" style={{ color: t.data.positive }}>-{fmt(cumulativePaid)}</span>
+                  </div>
+                  {d.offsetBalance > 0 && (
+                    <div className="flex justify-between text-[12px]">
+                      <span style={{ color: t.fg.tertiary }}>Less: Offset</span>
+                      <span className="tabular-nums" style={{ color: C.teal }}>-{fmt(d.offsetBalance)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-[13px] font-bold pt-0.5">
+                    <span style={{ color: t.fg.primary }}>Loan Balance</span>
+                    <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.loanBalance - (d.offsetBalance > 0 ? d.offsetBalance : 0))}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -308,7 +416,7 @@ export default function CashflowDashboard({
                 {chartTitle}
               </span>
               <span style={{ color: t.fg.tertiary }}>|</span>
-              <span className="text-xs" style={{ color: t.fg.secondary }}>Year {displayYear}</span>
+              <span className="text-xs font-medium" style={{ color: t.brand.default }}>Year {displayYear}</span>
               <span className="text-xs font-medium tabular-nums" style={{ color: heroColor }}>
                 {heroAnnual < 0
                   ? `−${fmt(Math.abs(heroAnnual))}`
@@ -322,35 +430,89 @@ export default function CashflowDashboard({
               onMouseLeave={() => onHoverYear(null)}
             >
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  onClick={(e) => {
-                    const idx = e?.activeTooltipIndex;
-                    if (typeof idx === "number") onSelectYear(idx + 1);
-                  }}
-                >
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} interval={4} />
-                  <YAxis tickFormatter={fmtK} axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} width={40} />
-                  <Tooltip cursor={{ fill: "transparent" }} content={() => null} isAnimationActive={false} />
-                  <Bar dataKey={cfg.dataKey} radius={[2, 2, 0, 0]} isAnimationActive={false}>
-                    {chartData.map((entry, index) => {
-                      const isSelected = selectedYear === index + 1;
-                      const isHovered = hoveredYear === index + 1;
-                      const rawValue = entry[cfg.dataKey] as number;
-                      const isPositive = rawValue >= 0;
-                      return (
-                        <Cell
-                          key={entry.year}
-                          fill={isSelected ? cfg.selectedColor(isPositive) : cfg.baseColor(isPositive)}
-                          opacity={isSelected ? 1 : isHovered ? 0.95 : 0.55}
-                          style={{ transition: "opacity 120ms ease-out, fill 120ms ease-out", cursor: "pointer" }}
-                          onMouseEnter={() => onHoverYear(index + 1)}
-                          onClick={() => onSelectYear(index + 1)}
-                        />
-                      );
-                    })}
-                  </Bar>
-                </BarChart>
+                {viewMode === "equity" ? (
+                  <ComposedChart data={chartData}>
+                    <defs>
+                      <linearGradient id="equityFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={C.cyan} stopOpacity={0.32} />
+                        <stop offset="100%" stopColor={C.cyan} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} stroke={t.chart.gridH} strokeDasharray="2 4" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} ticks={xTicks} />
+                    <YAxis tickFormatter={fmtK} axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} width={40} />
+                    <Tooltip cursor={{ stroke: C.cyan, strokeOpacity: 0.25, strokeWidth: 1 }} content={() => null} isAnimationActive={false} />
+                    <ReferenceLine y={0} stroke={t.chart.axisLine} strokeWidth={1} />
+                    <ReferenceLine
+                      x={`Yr ${selectedYear}`}
+                      stroke={C.cyan}
+                      strokeOpacity={0.35}
+                      strokeWidth={1}
+                      strokeDasharray="2 3"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="equity"
+                      stroke={C.cyan}
+                      strokeWidth={2}
+                      fill="url(#equityFill)"
+                      isAnimationActive={false}
+                      activeDot={{ r: 4, fill: C.cyanLit, stroke: t.card.base, strokeWidth: 2 }}
+                    />
+                    <ReferenceDot
+                      x={`Yr ${selectedYear}`}
+                      y={chartData[selectedYear - 1]?.equity ?? 0}
+                      r={5}
+                      fill={C.cyan}
+                      stroke={t.card.base}
+                      strokeWidth={2}
+                    />
+                    <Bar
+                      dataKey="equity"
+                      fill="rgba(0,0,0,0.001)"
+                      isAnimationActive={false}
+                      onClick={(_data, index) => {
+                        if (typeof index === "number") onSelectYear(index + 1);
+                      }}
+                      onMouseOver={(_data, index) => {
+                        if (typeof index === "number") onHoverYear(index + 1);
+                      }}
+                      style={{ cursor: "pointer" }}
+                    />
+                  </ComposedChart>
+                ) : (
+                  <BarChart
+                    data={chartData}
+                    onClick={(e) => {
+                      const idx = e?.activeTooltipIndex;
+                      if (typeof idx === "number") onSelectYear(idx + 1);
+                    }}
+                  >
+                    <CartesianGrid vertical={false} stroke={t.chart.gridH} strokeDasharray="2 4" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} ticks={xTicks} />
+                    <YAxis tickFormatter={fmtK} axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} width={40} />
+                    <Tooltip cursor={{ fill: "transparent" }} content={() => null} isAnimationActive={false} />
+                    <ReferenceLine y={0} stroke={t.chart.axisLine} strokeWidth={1} />
+                    <Bar dataKey={cfg.dataKey} radius={[2, 2, 0, 0]} isAnimationActive={false}>
+                      {chartData.map((entry, index) => {
+                        const isSelected = selectedYear === index + 1;
+                        const isHovered = hoveredYear === index + 1;
+                        const rawValue = entry[cfg.dataKey] as number;
+                        const isPositive = rawValue >= 0;
+                        return (
+                          <Cell
+                            key={entry.year}
+                            fill={isSelected ? cfg.selectedColor(isPositive) : cfg.baseColor(isPositive)}
+                            opacity={isSelected ? 1 : isHovered ? 0.95 : 0.55}
+                            style={{ transition: "opacity 120ms ease-out, fill 120ms ease-out", cursor: "pointer" }}
+                            onMouseEnter={() => onHoverYear(index + 1)}
+                            onClick={() => onSelectYear(index + 1)}
+                          />
+                        );
+                      })}
+                    </Bar>
+                  </BarChart>
+                )}
               </ResponsiveContainer>
             </div>
           </div>
@@ -362,7 +524,7 @@ export default function CashflowDashboard({
           >
 
             {/* Year Navigation Header */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2">
               <button
                 onClick={() => onSelectYear(Math.max(1, selectedYear - 1))}
                 disabled={selectedYear === 1}
@@ -370,9 +532,10 @@ export default function CashflowDashboard({
               >
                 <ChevronLeft size={14} style={{ color: t.fg.secondary }} />
               </button>
-              <div className="text-center">
-                <div className="text-xl font-bold" style={{ color: t.brand.default }}>Year {displayYear}</div>
-                <div className="text-xs" style={{ color: t.fg.tertiary }}>{d.calendarYear}</div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-bold" style={{ color: t.brand.default }}>Year {displayYear}</span>
+                <span className="text-sm" style={{ color: t.fg.tertiary }}>|</span>
+                <span className="text-sm" style={{ color: t.fg.tertiary }}>{d.calendarYear}</span>
               </div>
               <button
                 onClick={() => onSelectYear(Math.min(YEARS, selectedYear + 1))}
@@ -383,26 +546,25 @@ export default function CashflowDashboard({
               </button>
             </div>
 
+            {/* Title */}
+            <div className="text-center mb-2">
+              <span
+                className="text-[11px] font-medium uppercase"
+                style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}
+              >
+                {sideTitle}
+              </span>
+            </div>
+
             {/* Hero */}
-            <div className="p-2 mb-3 flex flex-col items-center gap-0.5">
-              {heroMonthly !== null ? (
-                <>
-                  <span className="text-3xl font-medium tabular-nums" style={{ color: heroColor }}>
-                    {heroMonthly >= 0 ? '+' : '-'}{fmt(Math.abs(heroMonthly))}
-                  </span>
-                  <span className="text-xs font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary }}>
-                    Household Monthly Cashflow
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="text-3xl font-medium tabular-nums" style={{ color: heroColor }}>
-                    {fmt(heroAnnual)}
-                  </span>
-                  <span className="text-xs font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary }}>
-                    {heroLabel}
-                  </span>
-                </>
+            <div className="mb-3 flex justify-center items-baseline gap-1.5">
+              <span className="text-3xl font-medium tabular-nums" style={{ color: heroColor }}>
+                {heroMonthly !== null
+                  ? `${heroMonthly >= 0 ? "+" : "-"}${fmt(Math.abs(heroMonthly))}`
+                  : fmt(heroAnnual)}
+              </span>
+              {heroMonthly !== null && (
+                <span className="text-base" style={{ color: t.fg.tertiary }}>/ Month</span>
               )}
             </div>
 
