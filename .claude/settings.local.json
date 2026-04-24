@@ -73,7 +73,8 @@
       "Read(//c/Users/Jordan/AppData/Local/**)",
       "Bash(echo \"EXIT: $?\")",
       "Bash(npx prettier *)",
-      "Bash(/c/Program Files/GitHub CLI/gh.exe issue *)"
+      "Bash(/c/Program Files/GitHub CLI/gh.exe issue *)",
+      "Bash(tee /dev/stderr)"
     ]
   }
 }
