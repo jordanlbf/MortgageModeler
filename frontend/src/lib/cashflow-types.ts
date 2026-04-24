@@ -1,7 +1,7 @@
 export type PropertyUse = "investment" | "ppor";
 export type PurchaseMode = "new" | "existing";
 export type LoanType = "principal-interest" | "interest-only";
-export type ViewMode = "summary" | "property" | "tax" | "equity" | "deductions";
+export type ViewMode = "summary" | "property" | "tax" | "equity" | "deductions" | "costs";
 export type StepId = "setup" | "property" | "loan" | "costs" | "rental" | "tax";
 
 export interface YearData {
@@ -19,6 +19,7 @@ export interface YearData {
   councilRates: number;
   waterRates: number;
   insurance: number;
+  landlordInsurance: number;
   maintenance: number;
   strataFees: number;
   totalExpenses: number;

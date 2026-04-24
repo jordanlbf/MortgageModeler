@@ -15,11 +15,11 @@ export default function SummaryTable({
   const show = (key: string) => visibleCols[key] !== false;
 
   return (
-    <table className="w-full text-[12px]">
+    <table className="w-full text-[12px] table-fixed">
       <thead>
         <tr>
           <th
-            className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1]"
+            className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1] w-16"
             style={{ color: t.fg.tertiary, background: t.surface.subtle }}
           >
             Year

@@ -73,8 +73,10 @@ export default function CashflowDashboard({
       councilRates: Math.round(y.councilRates),
       waterRates: Math.round(y.waterRates),
       insurance: Math.round(y.insurance),
+      landlordInsurance: Math.round(y.landlordInsurance),
       maintenance: Math.round(y.maintenance),
       strataFees: Math.round(y.strataFees),
+      managementFee: Math.round(y.managementFee),
     };
   });
   const d = chartData[displayYear - 1] ?? chartData[0];
@@ -118,6 +120,11 @@ export default function CashflowDashboard({
       baseColor: () => C.purple,
       selectedColor: () => C.purpleLit,
     },
+    costs: {
+      dataKey: "holdingCosts",
+      baseColor: () => C.amber,
+      selectedColor: () => C.amberLit,
+    },
   };
 
   const cfg = chartCfg[viewMode];
@@ -146,24 +153,29 @@ export default function CashflowDashboard({
     ? d.totalDeductions
     : viewMode === "property"
     ? d.propertyCashflow
+    : viewMode === "costs"
+    ? d.holdingCosts
     : d.cashflow;
 
   const heroLabel = viewMode === "summary" ? "Net Cashflow"
     : viewMode === "property" ? "Property Cashflow"
     : viewMode === "tax" ? "Tax Payable"
     : viewMode === "equity" ? "Net Equity"
+    : viewMode === "costs" ? "Costs"
     : "Total Deductions";
 
   const sideTitle = viewMode === "summary" ? "Household Cashflow"
     : viewMode === "property" ? "Property Cashflow"
     : viewMode === "tax" ? "Tax Payable"
     : viewMode === "equity" ? "Net Equity"
+    : viewMode === "costs" ? "Costs"
     : "Total Deductions";
 
   const chartTitle = viewMode === "summary" ? "Net Cashflow"
     : viewMode === "property" ? "Property Cashflow"
     : viewMode === "tax" ? "Tax Payable"
     : viewMode === "equity" ? "Net Equity Projection"
+    : viewMode === "costs" ? "Costs"
     : "Deductions";
 
   const heroColor = viewMode === "summary"
@@ -174,6 +186,8 @@ export default function CashflowDashboard({
     ? t.data.negative
     : viewMode === "equity"
     ? C.cyan
+    : viewMode === "costs"
+    ? C.amber
     : C.purple;
 
   return (
@@ -182,7 +196,7 @@ export default function CashflowDashboard({
       {/* Tabs Row — primary tabs are view modes; secondary toggle is overview/details */}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-border-subtle">
         <div className="flex gap-6">
-          {(["summary", "property", "tax", "equity", "deductions"] as ViewMode[]).map((mode) => {
+          {(["summary", "property", "tax", "equity", "deductions", "costs"] as ViewMode[]).map((mode) => {
             if (mode === "tax" && !s.isInvestment) return null;
             return (
               <button
@@ -569,6 +583,7 @@ export default function CashflowDashboard({
             {viewMode === "tax" && <TaxSections d={d} isInvestment={s.isInvestment} />}
             {viewMode === "equity" && <EquitySections d={d} />}
             {viewMode === "deductions" && <DeductionsSections d={d} />}
+            {viewMode === "costs" && <CostsSections d={d} />}
           </div>
         </div>
         );
@@ -629,7 +644,7 @@ type D = {
   taxPayable: number; taxRefund: number;
   propertyValue: number; loanBalance: number; equity: number;
   offsetBalance: number; lvr: number;
-  councilRates: number; waterRates: number; insurance: number; maintenance: number; strataFees: number;
+  councilRates: number; waterRates: number; insurance: number; landlordInsurance: number; maintenance: number; strataFees: number; managementFee: number;
   propertyCashflow: number; cashflow: number;
 };
 
@@ -759,6 +774,25 @@ function DeductionsSections({ d }: { d: D }) {
       </Section>
       <Section>
         <Row label="Total Deductions" value={d.totalDeductions} color={C.purple} bold />
+      </Section>
+    </>
+  );
+}
+
+function CostsSections({ d }: { d: D }) {
+  return (
+    <>
+      <Section>
+        {d.councilRates > 0      && <Row label="Council Rates"      value={d.councilRates}      color={t.fg.primary} negative />}
+        {d.waterRates > 0        && <Row label="Water Rates"        value={d.waterRates}        color={t.fg.primary} negative />}
+        {d.insurance > 0         && <Row label="Building Insurance" value={d.insurance}         color={t.fg.primary} negative />}
+        {d.landlordInsurance > 0 && <Row label="Landlord Insurance" value={d.landlordInsurance} color={t.fg.primary} negative />}
+        {d.maintenance > 0       && <Row label="Maintenance"        value={d.maintenance}       color={t.fg.primary} negative />}
+        {d.strataFees > 0        && <Row label="Strata"             value={d.strataFees}        color={t.fg.primary} negative />}
+        {d.managementFee > 0     && <Row label="Management"         value={d.managementFee}     color={t.fg.primary} negative />}
+      </Section>
+      <Section>
+        <Row label="Total Costs" value={d.holdingCosts} color={C.amber} bold negative />
       </Section>
     </>
   );

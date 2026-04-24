@@ -36,10 +36,10 @@ export default function EquityTable({
   const show = (key: string) => visibleCols[key] !== false;
 
   return (
-    <table className="w-full text-[12px]">
+    <table className="w-full text-[12px] table-fixed">
       <thead>
         <tr>
-          <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1]" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Year</th>
+          <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1] w-16" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Year</th>
           {show("propertyValue") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.secondary, background: t.surface.subtle, fontWeight: 600 }}>Property value</th>}
           {show("loanBalance") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.subtle }}>Loan balance</th>}
           {show("offsetBalance") && showOffset && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Offset balance</th>}

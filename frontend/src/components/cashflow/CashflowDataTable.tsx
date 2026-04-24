@@ -9,6 +9,7 @@ import TaxTable from "./table/TaxTable";
 import PropertyTable from "./table/PropertyTable";
 import EquityTable from "./table/EquityTable";
 import DeductionsTable from "./table/DeductionsTable";
+import CostsTable from "./table/CostsTable";
 import { ColumnDrawer, ColumnDrawerTrigger } from "@/components/ui/ColumnDrawer";
 import { COLUMN_CONFIGS, defaultVisibility } from "./table/columns";
 
@@ -46,14 +47,30 @@ export default function CashflowDataTable({
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Filter out columns that don't apply to the current context (e.g. PPOR in deductions)
+  // Filter out columns that don't apply to the current context (e.g. PPOR in
+  // deductions) or that have zero values across every year (e.g. strata fees
+  // for a non-strata property).
   const activeColumns = useMemo(() => {
     const raw = COLUMN_CONFIGS[viewMode];
     if (viewMode === "deductions" && !isInvestment) {
       return raw.filter((c) => !PPOR_HIDDEN_DEDUCTIONS.has(c.key));
     }
+    if (viewMode === "costs") {
+      return raw.filter((c) => {
+        switch (c.key) {
+          case "councilRates":      return yearData.some((y) => y.councilRates > 0);
+          case "waterRates":        return yearData.some((y) => y.waterRates > 0);
+          case "buildingInsurance": return yearData.some((y) => y.insurance > 0);
+          case "landlordInsurance": return yearData.some((y) => y.landlordInsurance > 0);
+          case "maintenance":       return yearData.some((y) => y.maintenance > 0);
+          case "strataFees":        return yearData.some((y) => y.strataFees > 0);
+          case "managementFee":     return yearData.some((y) => y.managementFee > 0);
+          default: return true;
+        }
+      });
+    }
     return raw;
-  }, [viewMode, isInvestment]);
+  }, [viewMode, isInvestment, yearData]);
 
   const visibleCols = visibleByMode[viewMode];
   const visibleCount = activeColumns.filter((c) => visibleCols[c.key] !== false).length;
@@ -134,6 +151,7 @@ export default function CashflowDataTable({
           {viewMode === "property"   && <PropertyTable   {...shared} />}
           {viewMode === "equity"     && <EquityTable     {...shared} />}
           {viewMode === "deductions" && <DeductionsTable {...shared} />}
+          {viewMode === "costs"      && <CostsTable      {...shared} />}
         </div>
       </div>
 

@@ -18,15 +18,15 @@ export default function TaxTable({
   const show = (key: string) => visibleCols[key] !== false;
 
   return (
-    <table className="w-full text-[12px]">
+    <table className="w-full text-[12px] table-fixed">
       <thead>
         <tr>
-          <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1]" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Year</th>
+          <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1] w-16" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Year</th>
           {show("holding") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Holding</th>}
           {show("interest") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Interest</th>}
           {show("depr") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Depr.</th>}
           {show("totalDed") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.secondary, background: t.surface.subtle, fontWeight: 600 }}>Total ded.</th>}
-          {show("taxSaved") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.subtle }}>Tax saved</th>}
+          {show("taxSaved") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.subtle }}>Tax effect</th>}
           {show("bracket") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Bracket</th>}
           {show("netTaxCost") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.brand.default, background: t.surface.subtle, fontWeight: 600, borderColor: t.border.subtle }}>Net tax cost</th>}
         </tr>
@@ -66,8 +66,8 @@ export default function TaxTable({
                 </td>
               )}
               {show("taxSaved") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t border-l" style={{ color: t.data.positive, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(y.taxSaved))}
+                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t border-l" style={{ color: y.taxSaved > 0 ? t.data.positive : y.taxSaved < 0 ? t.data.negative : t.fg.primary, borderColor: t.border.subtle }}>
+                  {y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}
                 </td>
               )}
               {show("bracket") && (

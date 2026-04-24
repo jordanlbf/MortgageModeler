@@ -124,75 +124,7 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
   const mapResponseToYearData = useCallback((years: CashflowYearRow[]): YearData[] => {
     const vacRate = parseFloat(form.vacancyRate) / 100 || 0.038;
     const mgmtFee = form.usePropertyManager ? parseFloat(form.managementFee) / 100 || 0.075 : 0;
-
-    return years.map((y) => {
-      const d = y.ongoing_costs_detail;
-      const t = y.tax_deduction_detail;
-      const salary = y.salary;
-      const incomeTaxCalcVal = y.income_tax;
-      const rental = y.rental_income;
-      const interestPaid = y.mortgage_interest;
-      const principalPaid = y.mortgage_principal;
-      const ongoingCostsVal = d ? d.council_rates + d.water_rates + d.building_insurance + d.maintenance_cost + d.strata_fees : y.property_costs;
-      const depDiv43 = t ? t.depreciation_building : 0;
-      const depDiv40 = t ? t.depreciation_plant : 0;
-      const totalDeductionsVal = t ? t.total_deductions : 0;
-      const taxSavedVal = y.tax_saving;
-      const gearingVal = rental - interestPaid - ongoingCostsVal - depDiv43 - depDiv40;
-      const grossIncomeVal = salary + rental;
-      const netCashflowVal = salary + rental - ongoingCostsVal - y.mortgage_repayment - incomeTaxCalcVal;
-      const propertyCashflowVal = gearingVal - principalPaid;
-      const netEquityVal = y.equity + y.offset_balance;
-
-      const vacancyVal = rental * vacRate;
-      const mgmtVal = (rental - vacancyVal) * mgmtFee;
-
-      return {
-        year: y.year + 1,
-        propertyValue: y.property_value,
-        loanBalance: y.loan_balance,
-        equity: y.equity,
-        rentalIncome: rental,
-        vacancy: vacancyVal,
-        managementFee: mgmtVal,
-        netRentalIncome: rental - vacancyVal - mgmtVal,
-        loanRepayment: y.mortgage_repayment,
-        interestPortion: interestPaid,
-        principalPortion: principalPaid,
-        councilRates: d?.council_rates ?? 0,
-        waterRates: d?.water_rates ?? 0,
-        insurance: d?.building_insurance ?? 0,
-        maintenance: d?.maintenance_cost ?? 0,
-        strataFees: d?.strata_fees ?? 0,
-        totalExpenses: ongoingCostsVal + interestPaid,
-        preTaxCashflow: (rental - vacancyVal - mgmtVal) - (ongoingCostsVal + interestPaid),
-        depDiv43,
-        depDiv40,
-        otherDeductibles: t ? t.deductible_expenses : 0,
-        totalDeductions: totalDeductionsVal,
-        rentalLossOrGain: t ? t.net_rental_income : 0,
-        taxBenefit: taxSavedVal,
-        afterTaxCashflow: (rental - vacancyVal - mgmtVal) - (ongoingCostsVal + interestPaid) + taxSavedVal,
-        salary,
-        otherIncome: 0,
-        ongoingCosts: ongoingCostsVal,
-        gearing: gearingVal,
-        totalIncomeAll: grossIncomeVal,
-        totalDeductionsForTax: totalDeductionsVal,
-        taxableIncomeCalc: grossIncomeVal - totalDeductionsVal,
-        incomeTaxCalc: incomeTaxCalcVal,
-        incomeTaxWithout: 0,
-        taxSaved: taxSavedVal,
-        grossIncome: grossIncomeVal,
-        afterTaxIncome: grossIncomeVal - incomeTaxCalcVal,
-        cfTotalIncome: salary + rental - interestPaid - ongoingCostsVal,
-        netCashflow: netCashflowVal,
-        propertyCashflow: propertyCashflowVal,
-        offsetBalanceAtYear: y.offset_balance,
-        propertyEquity: y.equity,
-        netEquity: netEquityVal,
-      };
-    });
+    return years.map((y) => mapYearRow(y, { vacRate, mgmtFee }));
   }, [form.vacancyRate, form.usePropertyManager, form.managementFee]);
 
   // Fetch from API when inputs change (debounced)
@@ -208,4 +140,103 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
   );
 
   return { yearData: data ?? [], error, loading };
+}
+
+// ── Pure mapper (exported for tests) ────────────────────────────────────────
+
+export interface MapYearRowOpts {
+  /** Vacancy rate as a fraction (e.g. 0.038 for 3.8%). */
+  vacRate: number;
+  /** Management fee as a fraction of net rent after vacancy (e.g. 0.075). */
+  mgmtFee: number;
+}
+
+/**
+ * Transform a single backend year row into a frontend YearData object.
+ *
+ * Derivation rules:
+ * - `gearing` = rent − ongoing − interest − depreciation (pre-tax rental position
+ *   using our frontend-visible inputs; for the authoritative tax-engine position,
+ *   consumers should read `rentalLossOrGain`, which includes otherDeductibles).
+ * - `propertyCashflow` = rent − ongoing − interest − principal + taxSaved
+ *   (actual after-tax cash change attributable to the property).
+ * - `afterTaxCashflow` = rent (net of vacancy + management) − ongoing − interest
+ *   + taxSaved (pre-principal variant; kept for legacy consumers).
+ */
+export function mapYearRow(y: CashflowYearRow, opts: MapYearRowOpts): YearData {
+  const { vacRate, mgmtFee } = opts;
+
+  const d = y.ongoing_costs_detail;
+  const t = y.tax_deduction_detail;
+  const salary = y.salary;
+  const incomeTaxCalcVal = y.income_tax;
+  const rental = y.rental_income;
+  const interestPaid = y.mortgage_interest;
+  const principalPaid = y.mortgage_principal;
+  // Match backend's deductible_expenses exactly (7 items). Missing landlord_insurance
+  // or management_fee would undercount Holding and drift from backend's tax engine.
+  const ongoingCostsVal = d
+    ? d.council_rates + d.water_rates + d.building_insurance + d.landlord_insurance
+      + d.strata_fees + d.maintenance_cost + d.management_fee
+    : y.property_costs;
+  const depDiv43 = t ? t.depreciation_building : 0;
+  const depDiv40 = t ? t.depreciation_plant : 0;
+  const totalDeductionsVal = t ? t.total_deductions : 0;
+  const taxSavedVal = y.tax_saving;
+
+  const gearingVal = rental - interestPaid - ongoingCostsVal - depDiv43 - depDiv40;
+  const grossIncomeVal = salary + rental;
+  const netCashflowVal = salary + rental - ongoingCostsVal - y.mortgage_repayment - incomeTaxCalcVal;
+  const propertyCashflowVal = rental - ongoingCostsVal - interestPaid - principalPaid + taxSavedVal;
+  const netEquityVal = y.equity + y.offset_balance;
+
+  const vacancyVal = rental * vacRate;
+  const mgmtVal = (rental - vacancyVal) * mgmtFee;
+
+  return {
+    year: y.year + 1,
+    propertyValue: y.property_value,
+    loanBalance: y.loan_balance,
+    equity: y.equity,
+    rentalIncome: rental,
+    vacancy: vacancyVal,
+    managementFee: d?.management_fee ?? mgmtVal,
+    netRentalIncome: rental - vacancyVal - mgmtVal,
+    loanRepayment: y.mortgage_repayment,
+    interestPortion: interestPaid,
+    principalPortion: principalPaid,
+    councilRates: d?.council_rates ?? 0,
+    waterRates: d?.water_rates ?? 0,
+    insurance: d?.building_insurance ?? 0,
+    landlordInsurance: d?.landlord_insurance ?? 0,
+    maintenance: d?.maintenance_cost ?? 0,
+    strataFees: d?.strata_fees ?? 0,
+    totalExpenses: ongoingCostsVal + interestPaid,
+    preTaxCashflow: rental - ongoingCostsVal - interestPaid,
+    depDiv43,
+    depDiv40,
+    otherDeductibles: t ? t.deductible_expenses : 0,
+    totalDeductions: totalDeductionsVal,
+    rentalLossOrGain: t ? t.net_rental_income : 0,
+    taxBenefit: taxSavedVal,
+    afterTaxCashflow: rental - ongoingCostsVal - interestPaid + taxSavedVal,
+    salary,
+    otherIncome: 0,
+    ongoingCosts: ongoingCostsVal,
+    gearing: gearingVal,
+    totalIncomeAll: grossIncomeVal,
+    totalDeductionsForTax: totalDeductionsVal,
+    taxableIncomeCalc: grossIncomeVal - totalDeductionsVal,
+    incomeTaxCalc: incomeTaxCalcVal,
+    incomeTaxWithout: 0,
+    taxSaved: taxSavedVal,
+    grossIncome: grossIncomeVal,
+    afterTaxIncome: grossIncomeVal - incomeTaxCalcVal,
+    cfTotalIncome: salary + rental - interestPaid - ongoingCostsVal,
+    netCashflow: netCashflowVal,
+    propertyCashflow: propertyCashflowVal,
+    offsetBalanceAtYear: y.offset_balance,
+    propertyEquity: y.equity,
+    netEquity: netEquityVal,
+  };
 }
