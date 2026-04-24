@@ -9,9 +9,15 @@ interface Props {
 }
 
 export default function TaxStep({ s }: Props) {
-  const propPrice = s.isNewPurchase ? parseCurrencyInput(s.purchasePrice) : parseCurrencyInput(s.currentValue);
+  // Anchor the depreciation estimate to the price at time of purchase — for
+  // existing properties that's originalPurchasePrice, not today's currentValue.
+  const depAnchorPrice = s.isNewPurchase
+    ? parseCurrencyInput(s.purchasePrice)
+    : parseCurrencyInput(s.originalPurchasePrice);
   const estYear = s.isNewPurchase ? new Date().getFullYear() : parseInt(s.purchaseYear) || new Date().getFullYear();
-  const estAnnual = estimateAnnualDepreciation(propPrice, s.isNewPurchase, estYear);
+  const estAnnual = estimateAnnualDepreciation(depAnchorPrice, s.isNewPurchase, estYear);
+  const hasDetailedInputs = s.depBuildings.length > 0 || s.depAssets.length > 0;
+  const detailedIgnored = s.isInvestment && s.depreciationMode === "estimate" && hasDetailedInputs;
 
   return (
     <div className="flex flex-col gap-7">
@@ -40,7 +46,24 @@ export default function TaxStep({ s }: Props) {
       {s.isInvestment && s.depreciationMode === "estimate" && (
         <div className="flex flex-col gap-1 py-3 px-4 bg-brand/[0.05] rounded-lg">
           <span className="text-base font-semibold text-brand tabular-nums">~{formatDollarsSigned(estAnnual)}/yr</span>
-          <span className="text-xs text-fg-tertiary">estimated from {formatDollarsSigned(propPrice)} property</span>
+          <span className="text-xs text-fg-tertiary">estimated from {formatDollarsSigned(depAnchorPrice)} {s.isNewPurchase ? "property" : "purchase price"}</span>
+        </div>
+      )}
+
+      {detailedIgnored && (
+        <div
+          className="flex flex-col gap-1 py-3 px-4 rounded-lg"
+          style={{
+            background: "color-mix(in srgb, var(--color-data-warning) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-data-warning) 25%, transparent)",
+          }}
+        >
+          <span className="text-xs font-medium" style={{ color: "var(--color-data-warning)" }}>
+            Detailed inputs are being ignored
+          </span>
+          <span className="text-[11px] text-fg-tertiary">
+            {s.depBuildings.length} building{s.depBuildings.length === 1 ? "" : "s"} and {s.depAssets.length} asset{s.depAssets.length === 1 ? "" : "s"} entered — switch to Detailed mode to use them.
+          </span>
         </div>
       )}
 

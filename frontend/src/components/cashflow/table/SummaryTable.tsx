@@ -19,7 +19,7 @@ export default function SummaryTable({
       <thead>
         <tr>
           <th
-            className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-[1] w-16"
+            className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-10 w-16"
             style={{ color: t.fg.tertiary, background: t.surface.subtle }}
           >
             Year
@@ -101,7 +101,7 @@ export default function SummaryTable({
           return (
             <tr key={y.year} className={getRowClass(y.year)} {...getRowHandlers(y.year)}>
               <td
-                className="px-3 py-2 text-left text-[12px] font-medium sticky left-0 z-[1] border-t"
+                className="px-3 py-2 text-left text-[12px] font-medium sticky left-0 z-10 border-t"
                 style={{
                   color: isSelected ? t.brand.default : t.fg.primary,
                   background: isSelected ? t.surface.hover : t.card.base,

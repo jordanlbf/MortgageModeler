@@ -191,7 +191,7 @@ export default function CashflowDashboard({
     : C.purple;
 
   return (
-    <div className="bg-surface-app p-6" style={{ color: t.fg.primary }}>
+    <div style={{ color: t.fg.primary }}>
 
       {/* Tabs Row — primary tabs are view modes; secondary toggle is overview/details */}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-border-subtle">

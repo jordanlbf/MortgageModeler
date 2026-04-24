@@ -95,7 +95,11 @@ export function generateDepreciationEstimate(
       effective_life_years: template.life,
       purchase_date: purchaseDate,
       method: "diminishing_value" as const,
-      written_down_value: yearsElapsed > 0 ? writtenDownValue : 0,
+      // For new properties (yearsElapsed === 0) writtenDownValue === baseCost;
+      // for existing it's the diminished value computed above. Either way the
+      // backend's diminishing-value formula uses this as the base, so sending
+      // 0 here would zero out every year's Div 40 depreciation.
+      written_down_value: writtenDownValue,
     };
   });
 

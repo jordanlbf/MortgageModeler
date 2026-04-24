@@ -25,12 +25,18 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
     const estYear = isNewPurchase ? new Date().getFullYear() : parseInt(form.purchaseYear) || new Date().getFullYear();
     const purchaseDate = isNewPurchase ? new Date().toISOString().slice(0, 10) : `${estYear}-07-01`;
     const propPrice = isNewPurchase ? parseCurrencyInput(form.purchasePrice) : parseCurrencyInput(form.currentValue);
+    // Construction-cost estimation must anchor to the price at the time of
+    // purchase, not today's appreciated value. For new builds the two match;
+    // for existing properties we use originalPurchasePrice.
+    const depAnchorPrice = isNewPurchase
+      ? parseCurrencyInput(form.purchasePrice)
+      : parseCurrencyInput(form.originalPurchasePrice);
 
     // Depreciation schedules
     let depBuilds = form.depBuildings;
     let depAsts = form.depAssets;
     if (form.depreciationMode === "estimate" && isInvestment) {
-      const est = generateDepreciationEstimate(propPrice, isNewPurchase, estYear);
+      const est = generateDepreciationEstimate(depAnchorPrice, isNewPurchase, estYear);
       depBuilds = est.buildings;
       depAsts = est.assets;
     }

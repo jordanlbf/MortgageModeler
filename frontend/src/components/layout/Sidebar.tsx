@@ -42,7 +42,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="flex flex-col shrink-0 h-screen"
+      className="flex flex-col shrink-0 h-screen sticky top-0"
       style={{
         width: "var(--layout-sidebar-width)",
         background: "var(--color-card)",
