@@ -5,7 +5,8 @@ import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip,
 } from "recharts";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { t, CF_COLORS as C } from "@/lib/theme";
+import { t, CF_COLORS as C, LVR_COLORS } from "@/lib/theme";
+import { parseCurrencyInput } from "@/lib/formatters";
 import type { ViewMode } from "@/lib/cashflow-types";
 import type { useCashflowState } from "@/hooks/useCashflowState";
 import CashflowDataTable from "./CashflowDataTable";
@@ -37,6 +38,7 @@ export default function CashflowDashboard({
   const YEARS = s.yearData.length;
   const baseYear = new Date().getFullYear();
   const selectedYear = s.selectedYear;
+  const displayYear = hoveredYear ?? selectedYear;
 
   const chartData = s.yearData.map((y) => {
     const rental = s.isInvestment ? y.rentalIncome : 0;
@@ -56,7 +58,6 @@ export default function CashflowDashboard({
       interest: Math.round(y.interestPortion),
       principal: Math.round(y.principalPortion),
       totalCosts: Math.round(y.ongoingCosts + y.loanRepayment + y.incomeTaxCalc),
-      netRentalPosition: Math.round(y.rentalLossOrGain),
       depreciation: Math.round(depreciation),
       depDiv43: Math.round(y.depDiv43),
       depDiv40: Math.round(y.depDiv40),
@@ -75,7 +76,7 @@ export default function CashflowDashboard({
       strataFees: Math.round(y.strataFees),
     };
   });
-  const d = chartData[selectedYear - 1] ?? chartData[0];
+  const d = chartData[displayYear - 1] ?? chartData[0];
 
   const setViewModeBoth = (m: ViewMode) => {
     setViewMode(m);
@@ -143,6 +144,12 @@ export default function CashflowDashboard({
     : viewMode === "equity" ? "Net Equity"
     : "Total Deductions";
 
+  const chartTitle = viewMode === "summary" ? "Annual Net Cashflow"
+    : viewMode === "property" ? "Annual Property Cashflow"
+    : viewMode === "tax" ? "Annual Tax Payable"
+    : viewMode === "equity" ? "Net Equity Projection"
+    : "Annual Deductions";
+
   const heroColor = viewMode === "summary"
     ? (d.cashflow >= 0 ? t.data.positive : t.data.negative)
     : viewMode === "property"
@@ -197,102 +204,162 @@ export default function CashflowDashboard({
         )}
       </div>
 
-      {activeTab === "overview" && (
-        <div className="flex gap-4">
+      {activeTab === "overview" && (() => {
+        const initialLoan = s.loanAmount || 1;
+        const paidPct = Math.max(0, Math.min(100, ((initialLoan - d.loanBalance) / initialLoan) * 100));
+        const termYears = parseFloat(s.loanTerm) || 30;
+        const firstZeroIdx = s.yearData.findIndex((y) => y.loanBalance < 1);
+        const effectivePayoffYear = firstZeroIdx >= 0 ? s.yearData[firstZeroIdx].year : termYears;
+        const yearsRemaining = Math.max(0, effectivePayoffYear - displayYear);
+        const offsetPct = s.hasOffset ? Math.max(0, Math.min(100 - paidPct, (d.offsetBalance / initialLoan) * 100)) : 0;
+        const offsetK = Math.round(d.offsetBalance / 1000);
+        const cumulativePaid = Math.max(0, initialLoan - d.loanBalance);
+        const lvrTone = d.lvr >= 90 ? LVR_COLORS.high : d.lvr >= 80 ? LVR_COLORS.moderate : LVR_COLORS.safe;
+        const initialOffset = s.hasOffset ? parseCurrencyInput(s.offsetBalance) : 0;
+        const initialEquity = (s.propertyValue - s.loanAmount) + initialOffset;
+        const equityGain = d.equity - initialEquity;
+        return (
+        <div
+          className="grid gap-3.5"
+          style={{
+            gridTemplateColumns: "1.55fr 1fr",
+            gridTemplateRows: "auto 1fr",
+            gridTemplateAreas: '"kpi side" "chart side"',
+          }}
+        >
 
-          {/* LEFT: Chart + KPI Cards */}
-          <div className="flex-1 flex flex-col gap-3 min-w-0">
-
-            {/* Cashflow Chart */}
-            <div className="bg-card border border-border-subtle rounded-xl p-4 flex flex-col">
-              <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={chartData}
-                    onClick={(e) => {
-                      const idx = e?.activeTooltipIndex;
-                      if (typeof idx === "number") {
-                        onSelectYear(idx + 1);
-                      }
-                    }}
-                  >
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} interval={4} />
-                    <YAxis tickFormatter={fmtK} axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} width={40} />
-                    <Tooltip content={() => null} />
-                    <Bar dataKey={cfg.dataKey} radius={[2, 2, 0, 0]}>
-                      {chartData.map((entry, index) => {
-                        const isSelected = selectedYear === index + 1;
-                        const isHovered = hoveredYear === index + 1;
-                        const rawValue = entry[cfg.dataKey] as number;
-                        const isPositive = rawValue >= 0;
-                        return (
-                          <Cell
-                            key={entry.year}
-                            fill={isSelected ? cfg.selectedColor(isPositive) : cfg.baseColor(isPositive)}
-                            opacity={isSelected ? 1 : isHovered ? 0.8 : 0.6}
-                            onMouseEnter={() => onHoverYear(index + 1)}
-                            onMouseLeave={() => onHoverYear(null)}
-                          />
-                        );
-                      })}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+          {/* KPI Strip */}
+          <div
+            className="grid grid-cols-2 bg-card border border-border-subtle rounded-xl overflow-hidden"
+            style={{ gridArea: "kpi" }}
+          >
+            <div className="px-[22px] py-[18px] border-r border-border-subtle">
+              <div className="flex items-baseline justify-between gap-2 mb-3.5">
+                <div className="flex items-baseline gap-2 min-w-0">
+                  <span className="text-[26px] font-medium tabular-nums leading-none" style={{ color: t.fg.primary, letterSpacing: "-0.01em" }}>{fmt(d.equity)}</span>
+                  <span className="text-[13px]" style={{ color: t.fg.tertiary }}>Net Equity</span>
+                </div>
+                {equityGain !== 0 && (
+                  <span className="text-[12px] font-medium tabular-nums shrink-0" style={{ color: equityGain > 0 ? t.data.positive : t.data.negative }}>
+                    {equityGain > 0 ? "↑" : "↓"} {fmtK(Math.abs(equityGain))}
+                  </span>
+                )}
               </div>
-
-              {/* Year Indicator Row */}
-              <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-border-subtle">
-                <span className="text-base font-semibold" style={{ color: t.brand.default }}>Year {selectedYear}</span>
-                <span className="text-base" style={{ color: t.fg.tertiary }}>{d.calendarYear}</span>
-                <span className="mx-1" style={{ color: t.fg.tertiary }}>|</span>
-                <span className="text-base font-semibold tabular-nums" style={{ color: heroColor }}>
-                  {heroAnnual >= 0 ? '+' : '-'}{fmt(heroAnnual)}
+              <div className="relative h-1 rounded-sm mb-3" style={{ background: "rgba(240, 253, 250, 0.06)" }}>
+                <div
+                  className="absolute left-0 top-0 h-full rounded-sm transition-colors"
+                  style={{ width: `${Math.min(100, d.lvr)}%`, background: lvrTone }}
+                />
+                <div
+                  className="absolute w-px"
+                  style={{ top: "-3px", height: "10px", left: "80%", background: t.fg.secondary, opacity: 0.8 }}
+                />
+              </div>
+              <div className="flex justify-between items-baseline text-[12px] mt-1">
+                <span style={{ color: lvrTone, opacity: 0.85 }}>{d.lvr}% LVR</span>
+                <span style={{ color: t.fg.tertiary }}>
+                  {fmtK(d.propertyValue)} <span style={{ opacity: 0.7 }}>value</span>
                 </span>
-                <span className="text-sm" style={{ color: t.fg.tertiary }}>{heroLabel}</span>
               </div>
             </div>
-
-            {/* KPI Cards */}
-            <div className="flex gap-3">
-              <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
-                <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>Net Equity</div>
-                <div className="text-2xl font-bold tabular-nums" style={{ color: t.data.positive }}>{fmt(d.equity)}</div>
-                <div className="text-xs mt-0.5" style={{ color: t.fg.tertiary }}>{d.lvr}% LVR</div>
+            <div className="px-[22px] py-[18px]">
+              <div className="flex items-baseline justify-between gap-2 mb-3.5">
+                <div className="flex items-baseline gap-2 min-w-0">
+                  <span className="text-[26px] font-medium tabular-nums leading-none" style={{ color: t.fg.primary, letterSpacing: "-0.01em" }}>{fmt(d.loanBalance)}</span>
+                  <span className="text-[13px]" style={{ color: t.fg.tertiary }}>Loan Balance</span>
+                </div>
+                {cumulativePaid > 0 && (
+                  <span className="text-[12px] font-medium tabular-nums shrink-0" style={{ color: t.data.positive }}>
+                    ↓ {fmtK(cumulativePaid)}
+                  </span>
+                )}
               </div>
-              <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
-                <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>Loan Balance</div>
-                <div className="text-2xl font-bold tabular-nums" style={{ color: t.data.negative }}>{fmt(d.loanBalance)}</div>
-                <div className="text-xs mt-0.5" style={{ color: t.fg.tertiary }}>remaining principal</div>
+              <div className="relative h-1 rounded-sm mb-3" style={{ background: "rgba(240, 253, 250, 0.06)" }}>
+                <div
+                  className="absolute left-0 top-0 h-full rounded-sm"
+                  style={{ width: `${paidPct}%`, background: `color-mix(in srgb, ${C.teal} 65%, transparent)` }}
+                />
+                {offsetPct > 0 && (
+                  <div
+                    className="absolute top-0 h-full rounded-sm"
+                    style={{ left: `${paidPct}%`, width: `${offsetPct}%`, background: `color-mix(in srgb, ${C.teal} 30%, transparent)` }}
+                  />
+                )}
               </div>
-              {s.isInvestment && (
-                <>
-                  <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
-                    <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>Net Rental Position</div>
-                    <div className="text-2xl font-bold tabular-nums" style={{ color: d.netRentalPosition >= 0 ? t.data.positive : t.data.negative }}>
-                      {d.netRentalPosition < 0 ? '−' : ''}{fmt(Math.abs(d.netRentalPosition))}
-                    </div>
-                    <div className="text-xs mt-0.5 opacity-60" style={{ color: d.netRentalPosition < 0 ? t.data.negative : t.data.positive }}>
-                      {d.netRentalPosition < 0 ? 'Negatively Geared' : 'Positively Geared'}
-                    </div>
-                  </div>
-                  <div className="flex-1 bg-card border border-border-subtle rounded-xl p-4">
-                    <div className="text-[10px] font-medium tracking-wider uppercase mb-1" style={{ color: t.fg.tertiary }}>
-                      {d.taxRefund >= 0 ? 'Tax Refund' : 'Tax Liability'}
-                    </div>
-                    <div className="text-2xl font-bold tabular-nums" style={{ color: d.taxRefund >= 0 ? t.data.positive : t.data.negative }}>
-                      {fmt(Math.abs(d.taxRefund))}
-                    </div>
-                    <div className="text-xs mt-0.5 opacity-60" style={{ color: d.netRentalPosition < 0 ? t.data.negative : t.data.positive }}>
-                      {d.netRentalPosition < 0 ? 'Negatively Geared' : 'Positively Geared'}
-                    </div>
-                  </div>
-                </>
-              )}
+              <div className="flex justify-between items-baseline text-[12px] mt-1">
+                <span style={{ color: t.fg.secondary }}>
+                  {paidPct.toFixed(1)}% paid
+                  {offsetPct > 0 && (
+                    <span style={{ color: C.teal, opacity: 0.8 }}> · ${offsetK}k offset</span>
+                  )}
+                </span>
+                <span style={{ color: t.fg.tertiary }}>{yearsRemaining}y left</span>
+              </div>
             </div>
           </div>
 
-          {/* RIGHT: Year Summary Panel */}
-          <div className="w-[340px] shrink-0 bg-card border border-border-subtle rounded-xl p-5 flex flex-col">
+          {/* Cashflow Chart */}
+          <div
+            className="bg-card border border-border-subtle rounded-xl p-4 flex flex-col min-w-0"
+            style={{ gridArea: "chart" }}
+          >
+            <div className="flex items-baseline gap-2.5 mb-3 px-1">
+              <span className="text-[16px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary }}>
+                {chartTitle}
+              </span>
+              <span style={{ color: t.fg.tertiary }}>|</span>
+              <span className="text-xs" style={{ color: t.fg.secondary }}>Year {displayYear}</span>
+              <span className="text-xs font-medium tabular-nums" style={{ color: heroColor }}>
+                {heroAnnual < 0
+                  ? `−${fmt(Math.abs(heroAnnual))}`
+                  : (viewMode === "summary" || viewMode === "property")
+                    ? `+${fmt(heroAnnual)}`
+                    : fmt(heroAnnual)}
+              </span>
+            </div>
+            <div
+              className="h-[280px] [&_*:focus]:outline-none [&_*:focus-visible]:outline-none"
+              onMouseLeave={() => onHoverYear(null)}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  onClick={(e) => {
+                    const idx = e?.activeTooltipIndex;
+                    if (typeof idx === "number") onSelectYear(idx + 1);
+                  }}
+                >
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} interval={4} />
+                  <YAxis tickFormatter={fmtK} axisLine={false} tickLine={false} tick={{ fill: t.chart.axisTick, fontSize: 9 }} width={40} />
+                  <Tooltip cursor={{ fill: "transparent" }} content={() => null} isAnimationActive={false} />
+                  <Bar dataKey={cfg.dataKey} radius={[2, 2, 0, 0]} isAnimationActive={false}>
+                    {chartData.map((entry, index) => {
+                      const isSelected = selectedYear === index + 1;
+                      const isHovered = hoveredYear === index + 1;
+                      const rawValue = entry[cfg.dataKey] as number;
+                      const isPositive = rawValue >= 0;
+                      return (
+                        <Cell
+                          key={entry.year}
+                          fill={isSelected ? cfg.selectedColor(isPositive) : cfg.baseColor(isPositive)}
+                          opacity={isSelected ? 1 : isHovered ? 0.95 : 0.55}
+                          style={{ transition: "opacity 120ms ease-out, fill 120ms ease-out", cursor: "pointer" }}
+                          onMouseEnter={() => onHoverYear(index + 1)}
+                          onClick={() => onSelectYear(index + 1)}
+                        />
+                      );
+                    })}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Year Summary Panel */}
+          <div
+            className="bg-card border border-border-subtle rounded-xl p-5 flex flex-col"
+            style={{ gridArea: "side" }}
+          >
 
             {/* Year Navigation Header */}
             <div className="flex items-center justify-between mb-4">
@@ -304,7 +371,7 @@ export default function CashflowDashboard({
                 <ChevronLeft size={14} style={{ color: t.fg.secondary }} />
               </button>
               <div className="text-center">
-                <div className="text-xl font-bold" style={{ color: t.brand.default }}>Year {selectedYear}</div>
+                <div className="text-xl font-bold" style={{ color: t.brand.default }}>Year {displayYear}</div>
                 <div className="text-xs" style={{ color: t.fg.tertiary }}>{d.calendarYear}</div>
               </div>
               <button
@@ -346,7 +413,8 @@ export default function CashflowDashboard({
             {viewMode === "deductions" && <DeductionsSections d={d} />}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {activeTab === "details" && (
         <CashflowDataTable
@@ -378,10 +446,10 @@ function Row({ label, value, color, bold, negative, note }: {
 }) {
   return (
     <div className="flex justify-between items-center">
-      <span className={`text-xs ${bold ? 'font-semibold' : ''}`} style={{ color: bold ? t.fg.primary : t.fg.secondary }}>
+      <span className={`${bold ? 'text-sm font-bold' : 'text-xs'}`} style={{ color: bold ? t.fg.primary : t.fg.secondary, opacity: bold ? 1 : 0.8 }}>
         {label}
       </span>
-      <span className={`text-xs tabular-nums ${bold ? 'font-semibold' : 'font-medium'}`} style={{ color }}>
+      <span className={`tabular-nums ${bold ? 'text-sm font-bold' : 'text-xs font-medium'}`} style={{ color, opacity: bold ? 1 : 0.8 }}>
         {negative && value > 0 ? '-' : ''}{fmt(value)}
         {note && <span className="text-[10px] ml-1" style={{ color: t.fg.tertiary }}>{note}</span>}
       </span>
@@ -402,7 +470,7 @@ type D = {
   salary: number; rentalIncome: number; totalIncome: number;
   holdingCosts: number; interest: number; principal: number; totalCosts: number;
   depreciation: number; depDiv43: number; depDiv40: number; totalDeductions: number;
-  netRentalPosition: number; taxPayable: number; taxRefund: number;
+  taxPayable: number; taxRefund: number;
   propertyValue: number; loanBalance: number; equity: number;
   offsetBalance: number; lvr: number;
   councilRates: number; waterRates: number; insurance: number; maintenance: number; strataFees: number;

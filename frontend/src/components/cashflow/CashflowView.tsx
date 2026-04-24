@@ -1,12 +1,16 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { useCashflowState } from "@/hooks/useCashflowState";
+import type { useCashflowState } from "@/hooks/useCashflowState";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowDashboard from "./CashflowDashboard";
 import CashflowWizardStep from "./CashflowWizardStep";
 import type { StepId } from "@/lib/cashflow-types";
 type ActiveTab = "wizard" | "dashboard";
+
+interface CashflowViewProps {
+  s: ReturnType<typeof useCashflowState>;
+}
 
 const STEP_ORDER_INVESTMENT: StepId[] = ["setup", "property", "loan", "costs", "rental", "tax"];
 const STEP_ORDER_BASE: StepId[] = ["setup", "property", "loan", "costs", "tax"];
@@ -21,8 +25,7 @@ function getNaturalStep(s: ReturnType<typeof useCashflowState>): StepId | null {
   return null;
 }
 
-export default function CashflowCalculator() {
-  const s = useCashflowState();
+export default function CashflowCalculator({ s }: CashflowViewProps) {
   const [inlineStep, setInlineStep] = useState<StepId | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("wizard");
   const [editStep, setEditStep] = useState<StepId>("setup");

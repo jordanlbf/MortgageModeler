@@ -4,9 +4,20 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import CashflowCalculator from "@/components/cashflow/CashflowView";
+import { useCashflowState } from "@/hooks/useCashflowState";
 
 export default function CashflowPage() {
   const [resetKey, setResetKey] = useState(0);
+  return (
+    <CashflowPageContent
+      key={resetKey}
+      onReset={() => setResetKey((k) => k + 1)}
+    />
+  );
+}
+
+function CashflowPageContent({ onReset }: { onReset: () => void }) {
+  const s = useCashflowState();
 
   return (
     <>
@@ -16,24 +27,20 @@ export default function CashflowPage() {
         actions={
           <button
             type="button"
-            onClick={() => setResetKey((k) => k + 1)}
-            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-medium transition-all cursor-pointer"
+            onClick={onReset}
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer"
             style={{
-              background: "color-mix(in srgb, var(--color-brand) 3%, transparent)",
+              background: "transparent",
               borderWidth: "1px",
               borderStyle: "solid",
-              borderColor: "color-mix(in srgb, var(--color-brand) 20%, transparent)",
-              color: "var(--color-fg-secondary)",
+              borderColor: "var(--color-border-default)",
+              color: "var(--color-fg-primary)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "color-mix(in srgb, var(--color-brand) 8%, transparent)";
-              e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-brand) 35%, transparent)";
-              e.currentTarget.style.color = "var(--color-fg-primary)";
+              e.currentTarget.style.borderColor = "var(--color-border-strong)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "color-mix(in srgb, var(--color-brand) 3%, transparent)";
-              e.currentTarget.style.borderColor = "color-mix(in srgb, var(--color-brand) 20%, transparent)";
-              e.currentTarget.style.color = "var(--color-fg-secondary)";
+              e.currentTarget.style.borderColor = "var(--color-border-default)";
             }}
           >
             <Plus size={13} strokeWidth={1.8} />
@@ -41,7 +48,7 @@ export default function CashflowPage() {
           </button>
         }
       />
-      <CashflowCalculator key={resetKey} />
+      <CashflowCalculator s={s} />
     </>
   );
 }
