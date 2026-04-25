@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/contexts/AuthContext";
 import AuthShell from "./AuthShell";
 import AuthCard from "./AuthCard";
 import GoogleButton from "./GoogleButton";
@@ -10,13 +13,34 @@ import PrimaryButton from "./PrimaryButton";
 import PasswordStrength from "./PasswordStrength";
 
 export default function SignupView() {
+  const router = useRouter();
+  const { register, status } = useAuth();
+  // Name is collected for UX but not yet persisted: the platform User model
+  // doesn't store it. Add a column + DTO field before wiring it in.
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/");
+    }
+  }, [status, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("signup submit", { name, email, password });
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await register(email, password);
+      router.replace("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Sign up failed");
+      setSubmitting(false);
+    }
   };
 
   const handleGoogleSignUp = () => {
@@ -53,6 +77,15 @@ export default function SignupView() {
           <OrEmailDivider text="or email" />
         </div>
 
+        {error && (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[13px] text-red-400/80"
+          >
+            {error}
+          </div>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 10 }}>
           <input
             type="text"
@@ -62,6 +95,7 @@ export default function SignupView() {
             aria-label="Full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            disabled={submitting}
           />
           <input
             type="email"
@@ -69,8 +103,10 @@ export default function SignupView() {
             placeholder="Email"
             autoComplete="email"
             aria-label="Email"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={submitting}
           />
         </div>
 
@@ -82,8 +118,10 @@ export default function SignupView() {
             autoComplete="new-password"
             aria-label="Password"
             minLength={8}
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={submitting}
           />
           <PasswordStrength value={password} />
         </div>
@@ -124,7 +162,9 @@ export default function SignupView() {
           .
         </p>
 
-        <PrimaryButton type="submit">Create account</PrimaryButton>
+        <PrimaryButton type="submit" disabled={submitting}>
+          {submitting ? "Creating account…" : "Create account"}
+        </PrimaryButton>
       </AuthCard>
     </AuthShell>
   );
