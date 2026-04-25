@@ -1,47 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+
+import {
+  WizardSidebar,
+  useWizardSteps,
+  type WizardSidebarStep,
+} from "@/components/ui/wizard";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
-import {
-  Home,
-  DollarSign,
-  Percent,
-  Receipt,
-  Building2,
-  Calculator,
-  Check,
-  ChevronDown,
-  ChevronRight
-} from "lucide-react";
-
 import type { StepId } from "@/lib/cashflow-types";
-
-const WIZARD_STEPS: { id: StepId; label: string; icon: typeof Home }[] = [
-  { id: "setup", label: "Property Setup", icon: Home },
-  { id: "property", label: "Property Details", icon: Building2 },
-  { id: "loan", label: "Loan Terms", icon: Percent },
-  { id: "costs", label: "Running Costs", icon: Receipt },
-  { id: "rental", label: "Rental Income", icon: DollarSign },
-  { id: "tax", label: "Tax Details", icon: Calculator },
-];
-
-function getWizardSteps(isInvestment: boolean) {
-  const steps = isInvestment ? WIZARD_STEPS : WIZARD_STEPS.filter(s => s.id !== "rental");
-  return steps.map(s =>
-    s.id === "tax" && !isInvestment ? { ...s, label: "Income & Growth" } : s
-  );
-}
-
-function getNaturalStepIndex(s: CashflowState): number {
-  if (!s.propertyUse || !s.purchaseMode) return 0;
-  if (!s.propertyComplete) return 1;
-  if (!s.loanComplete) return 2;
-  if (!s.costsComplete) return 3;
-  if (s.isInvestment && !s.rentalComplete) return 4;
-  if (!s.taxComplete) return s.isInvestment ? 5 : 4;
-  return -1;
-}
+import { getCashflowSteps } from "./cashflow-steps";
 
 type StepLine =
   | { primary: true; text: string }
@@ -146,41 +116,13 @@ interface Props {
   onStepClick?: (step: StepId) => void;
 }
 
-function StepIndicator({
-  isComplete,
-  isCurrent,
-  Icon,
-  isLast
-}: {
+interface StepBodyProps {
+  step: WizardSidebarStep<StepId>;
+  lines: StepLine[] | null;
   isComplete: boolean;
   isCurrent: boolean;
-  Icon: typeof Home;
-  isLast: boolean;
-}) {
-  return (
-    <div className="flex flex-col items-center shrink-0">
-      <div className={[
-        "w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-250 ease-in-out",
-        isComplete
-          ? "border-[1.5px] border-brand bg-brand text-brand-contrast"
-          : isCurrent
-            ? "border-[1.5px] border-brand text-brand bg-brand/[0.08] shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-brand)_12%,transparent)]"
-            : "border-[1.5px] border-default bg-surface-app text-fg-tertiary"
-      ].join(" ")}>
-        {isComplete ? (
-          <Check size={14} strokeWidth={2.5} />
-        ) : (
-          <Icon size={14} strokeWidth={1.5} />
-        )}
-      </div>
-      {!isLast && (
-        <div className={[
-          "w-0.5 h-6 mt-1.5 rounded-sm transition-colors duration-250 ease-in-out",
-          isComplete ? "bg-brand" : "bg-border"
-        ].join(" ")} />
-      )}
-    </div>
-  );
+  isExpanded: boolean;
+  onToggle: () => void;
 }
 
 function StepBody({
@@ -189,27 +131,26 @@ function StepBody({
   isComplete,
   isCurrent,
   isExpanded,
-  onToggle
-}: {
-  step: { id: StepId; label: string; icon: typeof Home };
-  lines: StepLine[] | null;
-  isComplete: boolean;
-  isCurrent: boolean;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
-  const primary = lines?.find(l => l.primary) as { primary: true; text: string } | undefined;
-  const secondary = lines?.filter(l => !l.primary) as { value: string; descriptor: string }[];
-  const hasDetails = secondary?.length > 0;
+  onToggle,
+}: StepBodyProps) {
+  const primary = lines?.find((l) => l.primary) as { primary: true; text: string } | undefined;
+  const secondary = (lines?.filter((l) => !l.primary) as { value: string; descriptor: string }[]) ?? [];
+  const hasDetails = secondary.length > 0;
 
   return (
     <div className="flex flex-col gap-1 min-w-0 flex-1 pt-[3px]">
       <div className="flex items-center justify-between gap-2">
-        <span className={[
-          "text-[13px] leading-[1.4] transition-colors duration-150 ease-in-out",
-          isCurrent ? "font-semibold text-fg-primary" : isComplete ? "font-medium text-fg-primary" : "font-medium text-fg-tertiary"
-        ].join(" ")}>
-          {primary ? primary.text : step.label}
+        <span
+          className={[
+            "text-[13px] leading-[1.4] transition-colors duration-150 ease-in-out",
+            isCurrent
+              ? "font-semibold text-fg-primary"
+              : isComplete
+                ? "font-medium text-fg-primary"
+                : "font-medium text-fg-tertiary",
+          ].join(" ")}
+        >
+          {primary ? primary.text : step.title}
         </span>
         {isComplete && hasDetails && (
           <span
@@ -234,10 +175,12 @@ function StepBody({
         )}
       </div>
       {hasDetails && (
-        <div className={[
-          "flex flex-col gap-1 mt-1.5 overflow-hidden transition-all duration-300 ease-in-out",
-          !isExpanded && isComplete ? "max-h-0 opacity-0 !mt-0" : "max-h-[200px]"
-        ].join(" ")}>
+        <div
+          className={[
+            "flex flex-col gap-1 mt-1.5 overflow-hidden transition-all duration-300 ease-in-out",
+            !isExpanded && isComplete ? "max-h-0 opacity-0 !mt-0" : "max-h-[200px]",
+          ].join(" ")}
+        >
           {secondary.map((line, i) => (
             <span key={i} className="flex items-baseline gap-1.5 text-[11px] leading-[1.4]">
               <span className="text-brand font-semibold text-[11px]">{line.value}</span>
@@ -251,95 +194,81 @@ function StepBody({
 }
 
 export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) {
-  const steps = getWizardSteps(s.isInvestment);
-  const naturalStepIndex = getNaturalStepIndex(s);
-  const isAllComplete = naturalStepIndex === -1;
+  const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment), [s.isInvestment]);
+  const wizard = useWizardSteps(cashflowSteps, s);
 
-  const activeStepIndex = currentStep
-    ? steps.findIndex(st => st.id === currentStep)
-    : naturalStepIndex;
+  const sidebarSteps: WizardSidebarStep<StepId>[] = useMemo(
+    () =>
+      cashflowSteps.map((st) => ({
+        id: st.id,
+        title: st.sidebarTitle,
+        icon: st.sidebarIcon,
+      })),
+    [cashflowSteps],
+  );
 
-  // Track which steps are expanded (completed steps start collapsed)
+  const currentStepId =
+    (currentStep as StepId | undefined) ?? wizard.naturalStep ?? null;
+
   const [expandedSteps, setExpandedSteps] = useState<Set<StepId>>(new Set());
-
   const toggleStep = (stepId: StepId) => {
-    setExpandedSteps(prev => {
+    setExpandedSteps((prev) => {
       const next = new Set(prev);
-      if (next.has(stepId)) {
-        next.delete(stepId);
-      } else {
-        next.add(stepId);
-      }
+      if (next.has(stepId)) next.delete(stepId);
+      else next.add(stepId);
       return next;
     });
   };
 
-  const completedCount = isAllComplete ? steps.length : naturalStepIndex;
-  const progressPercent = Math.round((completedCount / steps.length) * 100);
+  const completedCount = wizard.allComplete
+    ? cashflowSteps.length
+    : Math.max(0, cashflowSteps.findIndex((st) => st.id === wizard.naturalStep));
+  const progressPercent = Math.round((completedCount / cashflowSteps.length) * 100);
 
   return (
-    <aside className="w-[300px] min-w-[300px] max-w-[300px] border-r border-default bg-surface-app shrink-0">
-      <div className="py-2 pb-8 flex flex-col">
-        <div className="flex flex-col">
+    <WizardSidebar
+      steps={sidebarSteps}
+      currentStepId={currentStepId}
+      isComplete={(id) => wizard.isComplete(id)}
+      selectable={(id) => wizard.allComplete || wizard.isComplete(id)}
+      onSelect={(id) => onStepClick?.(id)}
+      header={
+        <>
           <div className="flex items-center justify-between px-6 h-4 mb-3 leading-none">
-            <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-secondary">Setup Progress</span>
+            <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-secondary">
+              Setup Progress
+            </span>
             <span className="text-xs font-semibold text-brand tabular-nums">
               {progressPercent}%
             </span>
           </div>
-
-          {/* Progress bar */}
           <div className="h-[3px] bg-[rgba(255,255,255,0.06)] rounded-sm mx-6 mb-5 overflow-hidden">
             <div
               className="h-full bg-brand rounded-sm transition-[width] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-
-          <div className="flex flex-col">
-            {steps.map((step, index) => {
-              const isComplete = isAllComplete || index < naturalStepIndex;
-              const isCurrent = !isAllComplete && index === activeStepIndex;
-              const isUpcoming = !isComplete && !isCurrent;
-              const lines = getStepLines(step.id, s);
-              const isExpanded = expandedSteps.has(step.id) || isCurrent;
-
-              return (
-                <button
-                  key={step.id}
-                  className={[
-                    "flex items-start gap-3.5 py-3 px-6 relative bg-none border-none w-full text-left font-[inherit] transition-colors duration-150 ease-in-out",
-                    isComplete ? "cursor-pointer hover:bg-surface-hover" : "cursor-default",
-                    isCurrent && "!bg-brand/[0.04]",
-                    isUpcoming && "opacity-50",
-                  ].filter(Boolean).join(" ")}
-                  onClick={() => isComplete && onStepClick?.(step.id)}
-                  disabled={!isComplete}
-                >
-                  <StepIndicator
-                    isComplete={isComplete}
-                    isCurrent={isCurrent}
-                    Icon={step.icon}
-                    isLast={index === steps.length - 1}
-                  />
-                  <StepBody
-                    step={step}
-                    lines={lines}
-                    isComplete={isComplete}
-                    isCurrent={isCurrent}
-                    isExpanded={isExpanded}
-                    onToggle={() => toggleStep(step.id)}
-                  />
-                </button>
-              );
-            })}
-          </div>
-
-          <span className="text-[11px] text-fg-tertiary px-6 mt-5">
-            {completedCount} of {steps.length} steps complete
-          </span>
-        </div>
-      </div>
-    </aside>
+        </>
+      }
+      footer={
+        <span className="text-[11px] text-fg-tertiary px-6 mt-5">
+          {completedCount} of {cashflowSteps.length} steps complete
+        </span>
+      }
+      renderStepBody={({ step, isCurrent, isComplete }) => {
+        const lines = getStepLines(step.id, s);
+        const isExpanded = expandedSteps.has(step.id) || isCurrent;
+        return (
+          <StepBody
+            step={step}
+            lines={lines}
+            isComplete={isComplete}
+            isCurrent={isCurrent}
+            isExpanded={isExpanded}
+            onToggle={() => toggleStep(step.id)}
+          />
+        );
+      }}
+    />
   );
 }

@@ -1,28 +1,18 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { useCashflowState } from "@/hooks/useCashflowState";
+import { useWizardSteps } from "@/components/ui/wizard";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowDashboard from "./CashflowDashboard";
 import CashflowWizardStep from "./CashflowWizardStep";
 import type { StepId } from "@/lib/cashflow-types";
+import { getCashflowSteps } from "./cashflow-steps";
+
 type ActiveTab = "wizard" | "dashboard";
 
 interface CashflowViewProps {
   s: ReturnType<typeof useCashflowState>;
-}
-
-const STEP_ORDER_INVESTMENT: StepId[] = ["setup", "property", "loan", "costs", "rental", "tax"];
-const STEP_ORDER_BASE: StepId[] = ["setup", "property", "loan", "costs", "tax"];
-
-function getNaturalStep(s: ReturnType<typeof useCashflowState>): StepId | null {
-  if (!s.propertyUse || !s.purchaseMode || !s.setupComplete) return "setup";
-  if (!s.propertyComplete) return "property";
-  if (!s.loanComplete) return "loan";
-  if (!s.costsComplete) return "costs";
-  if (s.isInvestment && !s.rentalComplete) return "rental";
-  if (!s.taxComplete) return "tax";
-  return null;
 }
 
 export default function CashflowCalculator({ s }: CashflowViewProps) {
@@ -35,10 +25,10 @@ export default function CashflowCalculator({ s }: CashflowViewProps) {
     s.setSelectedYear(year);
   }, [s]);
 
+  const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment), [s.isInvestment]);
+  const wizard = useWizardSteps(cashflowSteps, s);
 
-  const stepOrder = s.isInvestment ? STEP_ORDER_INVESTMENT : STEP_ORDER_BASE;
-  const naturalStep = getNaturalStep(s);
-  const currentWizardStep = inlineStep ?? naturalStep;
+  const currentWizardStep = inlineStep ?? wizard.naturalStep;
   const showWizard = !s.allComplete || activeTab === "wizard";
 
   const goToStep = useCallback((step: StepId) => {
@@ -72,11 +62,13 @@ export default function CashflowCalculator({ s }: CashflowViewProps) {
   }, [editStep, s]);
 
   const handleWizardStepBack = useCallback(() => {
-    const currentIdx = stepOrder.indexOf(currentWizardStep as StepId);
-    if (currentIdx > 0) {
-      setInlineStep(stepOrder[currentIdx - 1]);
+    if (!currentWizardStep) return;
+    const currentIdx = wizard.indexOf(currentWizardStep);
+    const previous = cashflowSteps[currentIdx - 1];
+    if (previous) {
+      setInlineStep(previous.id);
     }
-  }, [currentWizardStep, stepOrder]);
+  }, [currentWizardStep, wizard, cashflowSteps]);
 
   const sidebarStep = s.allComplete
     ? (activeTab === "wizard" ? editStep : undefined)
@@ -104,7 +96,7 @@ export default function CashflowCalculator({ s }: CashflowViewProps) {
                   currentStep={currentWizardStep}
                   onStepComplete={handleWizardStepComplete}
                   onStepBack={handleWizardStepBack}
-                  canGoBack={stepOrder.indexOf(currentWizardStep as StepId) > 0}
+                  canGoBack={wizard.indexOf(currentWizardStep) > 0}
                 />
               )}
               {s.allComplete && (
@@ -131,7 +123,7 @@ export default function CashflowCalculator({ s }: CashflowViewProps) {
 
       {/* ── Dashboard view ── */}
       {s.allComplete && s.yearData.length > 0 && activeTab === "dashboard" && (
-<CashflowDashboard
+        <CashflowDashboard
           s={s}
           hoveredYear={hoveredYear}
           onHoverYear={setHoveredYear}
