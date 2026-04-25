@@ -15,7 +15,7 @@ function ProgressiveStepsDivider() {
       <svg width="120" height="24" viewBox="0 0 120 24" fill="none">
         <polyline
           points="0,2 24,2 24,8 48,8 48,14 72,14 72,20 120,20"
-          stroke={mix("var(--color-accent)", 35)}
+          stroke={mix("var(--color-brand)", 35)}
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -40,11 +40,11 @@ function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
         {/* Gross Income */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-foreground)", 35) }}>
+            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-fg-primary)", 35) }}>
               Gross Income
             </span>
           </div>
-          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: mix("var(--color-foreground)", 74) }}>
+          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: mix("var(--color-fg-primary)", 74) }}>
             {formatCurrencyShort(gross)}
           </div>
         </div>
@@ -55,11 +55,11 @@ function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
         {/* Tax Deducted */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-negative)", 58) }}>
+            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-data-negative)", 58) }}>
               Tax Deducted
             </span>
           </div>
-          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-negative)" }}>
+          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-data-negative)" }}>
             {formatCurrencyShort(totalTax)}
           </div>
         </div>
@@ -70,11 +70,11 @@ function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
         {/* Net Income */}
         <div className="text-center">
           <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-accent)", 58) }}>
+            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-brand)", 58) }}>
               Net Income
             </span>
           </div>
-          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-accent)" }}>
+          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-brand)" }}>
             {formatCurrencyShort(netIncome)}
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function TaxView() {
               <div
                 key={i}
                 className="h-1 w-1 rounded-full"
-                style={{ background: mix("var(--color-accent)", 30) }}
+                style={{ background: mix("var(--color-brand)", 30) }}
               />
             ))}
           </div>

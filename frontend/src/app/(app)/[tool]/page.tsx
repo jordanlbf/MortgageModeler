@@ -23,14 +23,14 @@ export default async function ToolPlaceholder({ params }: Props) {
         className="rounded-[14px] backdrop-blur-md text-center"
         style={{
           padding: "40px 48px",
-          background: t.bg.card,
+          background: t.surface.raised,
           border: `1px solid ${t.border.default}`,
           boxShadow: "0 1px 4px rgba(0,0,0,0.20), 0 0 0 0.5px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.02)",
           maxWidth: 360,
         }}
       >
         <div className="text-[36px] mb-4">{meta.icon}</div>
-        <h1 className="text-[18px] font-medium text-foreground/80 tracking-tight m-0 mb-2">
+        <h1 className="text-[18px] font-medium text-fg-primary/80 tracking-tight m-0 mb-2">
           {meta.title}
         </h1>
         <p className="text-[11px] m-0 mb-5" style={{ color: "rgba(148,163,184,0.35)", lineHeight: 1.5 }}>

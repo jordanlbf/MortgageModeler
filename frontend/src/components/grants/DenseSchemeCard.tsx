@@ -35,7 +35,7 @@ function CardContent({ scheme, color }: { scheme: GrantScheme; color: string }) 
           { label: "LMI", icon: Check, value: scheme.meta.lmi },
           { label: "Buyer type", icon: BadgeCheck, value: scheme.meta.buyer },
         ].map((fact) => (
-          <div key={fact.label} className="rounded-[14px] border border-white/[0.08] bg-white/[0.045] px-3 py-[11px]">
+          <div key={fact.label} className="rounded-[14px] bg-white/[0.045] px-3 py-[11px]">
             <div className="flex items-center justify-between gap-2 text-[12px] uppercase tracking-widest text-white/[0.42]">
               <span>{fact.label}</span>
               <fact.icon className="h-4 w-4" style={{ color }} />
@@ -50,7 +50,7 @@ function CardContent({ scheme, color }: { scheme: GrantScheme; color: string }) 
           { title: "Benefits", items: scheme.benefits },
           { title: "Eligibility", items: scheme.eligibility },
         ].map((section) => (
-          <div key={section.title} className="rounded-[14px] border border-white/[0.08] bg-white/[0.03] px-4 py-3.5">
+          <div key={section.title} className="rounded-[14px] bg-white/[0.03] px-4 py-3.5">
             <SectionTitle>{section.title}</SectionTitle>
             <BulletList items={section.items} color={color} />
           </div>
@@ -63,7 +63,7 @@ function CardContent({ scheme, color }: { scheme: GrantScheme; color: string }) 
 function ExpandedContent({ scheme, result, color }: { scheme: GrantScheme; result: GrantEligibilityResult; color: string }) {
   return (
     <div className="mt-2.5 flex flex-col gap-2.5">
-      <div className="rounded-[14px] border border-white/[0.08] bg-white/[0.03] px-3 py-[11px]">
+      <div className="rounded-[14px] bg-white/[0.03] px-3 py-[11px]">
         <SectionTitle>Overview</SectionTitle>
         <p className="m-0 text-[14px] leading-[1.5] text-white/[0.68]">
           {scheme.details ?? scheme.theme}
@@ -71,13 +71,13 @@ function ExpandedContent({ scheme, result, color }: { scheme: GrantScheme; resul
       </div>
 
       {!!scheme.rules?.length && (
-        <div className="rounded-[14px] border border-white/[0.08] bg-white/[0.03] px-3 py-[11px]">
+        <div className="rounded-[14px] bg-white/[0.03] px-3 py-[11px]">
           <SectionTitle>Key Rules</SectionTitle>
           <BulletList items={scheme.rules} color={color} />
         </div>
       )}
 
-      <div className="rounded-[14px] border border-white/[0.08] bg-white/[0.03] px-3 py-[11px]">
+      <div className="rounded-[14px] bg-white/[0.03] px-3 py-[11px]">
         <SectionTitle>Current Match Status</SectionTitle>
         {result.eligible ? (
           <p className="m-0 text-[14px] leading-[1.5] text-white/[0.68]">
@@ -155,7 +155,7 @@ export default function DenseSchemeCard({ scheme, result, isExpanded, onToggleEx
     <div className="relative flex justify-between items-center gap-3 mb-3">
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <div
-          className="inline-flex items-baseline justify-center h-9 rounded-[14px] border border-white/[0.08] px-3 text-[13px] font-semibold uppercase tracking-widest"
+          className="inline-flex items-baseline justify-center h-9 rounded-[14px] px-3 text-[13px] font-semibold uppercase tracking-widest"
           style={{ color, background: mix(color, 10) }}
         >
           {scheme.level === "Federal" ? "Federal" : scheme.state}

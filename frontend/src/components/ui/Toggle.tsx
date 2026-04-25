@@ -8,7 +8,7 @@ interface ToggleProps {
   reverse?: boolean;
 }
 
-function ToggleButton({ checked, onClick, accent = "var(--color-accent)" }: { checked: boolean; onClick: () => void; accent?: string }) {
+function ToggleButton({ checked, onClick, accent = "var(--color-brand)" }: { checked: boolean; onClick: () => void; accent?: string }) {
   return (
     <button
       role="switch"
@@ -30,11 +30,11 @@ function ToggleButton({ checked, onClick, accent = "var(--color-accent)" }: { ch
   );
 }
 
-export default function Toggle({ label, checked, onChange, accent = "var(--color-accent)", reverse = false }: ToggleProps) {
+export default function Toggle({ label, checked, onChange, accent = "var(--color-brand)", reverse = false }: ToggleProps) {
   const labelSpan = (
     <span
       className="text-[15px] font-medium transition-colors duration-200"
-      style={{ color: checked ? "var(--color-foreground)" : mix("var(--color-muted)", 50) }}
+      style={{ color: checked ? "var(--color-fg-primary)" : mix("var(--color-fg-primary)", 50) }}
     >
       {label}
     </span>

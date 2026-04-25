@@ -1,11 +1,10 @@
-// ── Theme: Graphite Teal ─────────────────────────────────────
+// ── Theme: Graphite Emerald ──────────────────────────────────
 // Single source of truth for all colour tokens.
 //
 // Usage:
 //   import { t, SERIES, mix } from "@/lib/theme";
 //
 // Themeable values use CSS custom properties (defined in globals.css).
-// Tailwind classes use the same tokens: text-accent, bg-card, etc.
 // SERIES colors, chart chrome, and tooltip stay as hex (single-file usage).
 // ──────────────────────────────────────────────────────────────
 
@@ -14,48 +13,111 @@ export const mix = (color: string, pct: number) =>
   `color-mix(in srgb, ${color} ${pct}%, transparent)`;
 
 export const t = {
-  // ── Backgrounds ──────────────────────────────────
-  bg: {
-    page: "var(--color-surface-page)",
-    card: "var(--color-card)",
-    cardElevated: "var(--color-card-elevated)",
-    raised: "var(--color-surface-raised)",
-    hover: "var(--color-surface-hover)",
-    active: "var(--color-surface-active)",
-    control: "var(--color-control)",
-    sliderThumb: "var(--color-slider-thumb)",
+  brand: {
+    default:     "var(--color-brand)",
+    contrast:    "var(--color-brand-contrast)",
+    hover:       "var(--color-brand-hover)",
+    subtle:      "var(--color-brand-subtle)",
+    subtleHover: "var(--color-brand-subtle-hover)",
+    border:      "var(--color-brand-border)",
   },
 
-  // ── Text ──────────────────────────────────────────
-  fg: "var(--color-foreground)",
-  muted: "var(--color-muted)",
-  subtle: "var(--color-subtle)",
-  faint: "var(--color-faint)",
-  fgTable: "var(--color-fg-table)",
+  surface: {
+    page:    "var(--color-surface-page)",
+    sidebar: "var(--color-surface-sidebar)",       // ADD: for sidebar bg
+    app:     "var(--color-surface-app)",
+    raised:  "var(--color-surface-raised)",
+    hover:   "var(--color-surface-hover)",
+    active:  "var(--color-surface-active)",
+    overlay: "var(--color-surface-overlay)",
+    subtle:  "var(--color-surface-subtle)",
+    kpi:     "var(--color-surface-kpi)",           // ADD: for KPI tile bg
+  },
 
-  // ── Accent ───────────────────────────────────────
-  accent: "var(--color-accent)",
-  accentBorder: "var(--color-accent-border)",
+  card: {
+    base:     "var(--color-card)",
+    elevated: "var(--color-card-elevated)",
+    control:  "var(--color-control)",
+  },
 
-  // ── Borders ──────────────────────────────────────
+  fg: {
+    primary:   "var(--color-fg-primary)",
+    secondary: "var(--color-fg-secondary)",
+    tertiary:  "var(--color-fg-tertiary)",
+    muted:     "var(--color-fg-muted)",            // ADD: missing from original
+    disabled:  "var(--color-fg-disabled)",
+  },
+
+  data: {
+    primary:      "var(--color-data-primary)",
+    emphasis:     "var(--color-data-emphasis)",
+    muted:        "var(--color-data-muted)",
+    positive:     "var(--color-data-positive)",
+    positiveDim:  "var(--color-data-positive-dim)",   // ADD
+    positiveWash: "var(--color-data-positive-wash)",  // ADD
+    negative:     "var(--color-data-negative)",
+    negativeDim:  "var(--color-data-negative-dim)",
+    negativeWash: "var(--color-data-negative-wash)",  // ADD
+    warning:      "var(--color-data-warning)",
+    warningDim:   "var(--color-data-warning-dim)",    // ADD
+    warningWash:  "var(--color-data-warning-wash)",   // ADD
+    neutral:      "var(--color-data-neutral)",
+  },
+
+  series: {
+    cashflow:         "var(--color-series-cashflow)",          // ADD: chart series
+    cashflowDim:      "var(--color-series-cashflow-dim)",
+    cashflowSelected: "var(--color-series-cashflow-selected)",
+    cashflowWash:     "var(--color-series-cashflow-wash)",
+    equity:           "var(--color-series-equity)",
+    equityDim:        "var(--color-series-equity-dim)",
+    equityWash:       "var(--color-series-equity-wash)",
+    debt:             "var(--color-series-debt)",
+    debtDim:          "var(--color-series-debt-dim)",
+  },
+
+  status: {
+    success:   "var(--color-status-success)",
+    error:     "var(--color-status-error)",
+    warning:   "var(--color-status-warning)",
+    info:      "var(--color-status-info)",
+    successBg: "var(--color-status-success-bg)",
+    errorBg:   "var(--color-status-error-bg)",
+    warningBg: "var(--color-status-warning-bg)",
+  },
+
   border: {
-    default: "var(--color-border)",
-    hover: "var(--color-border-hover)",
+    subtle:  "var(--color-border-subtle)",
+    default: "var(--color-border-default)",
+    strong:  "var(--color-border-strong)",
+    brand:   "var(--color-border-brand)",
   },
 
-  // ── Chart chrome ─────────────────────────────────
+  focus: {
+    ring:       "var(--color-focus-ring)",
+    ringOffset: "var(--color-focus-ring-offset)",
+  },
+
+  elevation: {
+    flat:   "var(--shadow-flat)",
+    raised: "var(--shadow-raised)",
+    float:  "var(--shadow-float)",
+  },
+
   chart: {
-    gridH: "var(--color-chart-grid-h)",
-    gridV: "var(--color-chart-grid-v)",
-    axisTick: "var(--color-chart-axis)",
-    axisTickMuted: "var(--color-chart-axis-muted)",
-    axisLine: "var(--color-chart-axis-line)",
-    cursor: "var(--color-chart-cursor)",
-    legendInactive: "var(--color-chart-legend-inactive)",
+    gridH:             "var(--color-chart-grid-h)",
+    gridV:             "var(--color-chart-grid-v)",
+    axisTick:          "var(--color-chart-axis)",
+    axisTickMuted:     "var(--color-chart-axis-muted)",
+    axisLine:          "var(--color-chart-axis-line)",
+    cursor:            "var(--color-chart-cursor)",
+    barDefault:        "var(--color-chart-bar-default)",
+    barSelected:       "var(--color-chart-bar-selected)",
+    barHover:          "var(--color-chart-bar-hover)",
+    legendInactive:    "var(--color-chart-legend-inactive)",
     legendDotInactive: "var(--color-chart-legend-dot-inactive)",
   },
 
-  // ── Tooltip ──────────────────────────────────────
   tooltip: {
     bg: "rgba(8,8,12,0.94)",
     shadow:
@@ -79,21 +141,27 @@ export const SERIES = {
 } as const;
 
 // ── Cashflow chart palette ────────────────────────
+// Updated to use emerald for positive (matching brand)
 export const CF_COLORS = {
-  positive:     "#4ade80",
-  positiveDark: "#16a34a",
-  positiveLit:  "#86efac",
+  positive:     "#34d399",    // emerald-400 (was #4ade80 green)
+  positiveDark: "#059669",    // emerald-600 (was #16a34a)
+  positiveLit:  "#6ee7b7",    // emerald-300 (was #86efac)
   teal:         "#2dd4bf",
   tealDark:     "#0d9488",
   tealLit:      "#5eead4",
-  negative:     "#ef4444",
-  negativeDark: "#dc2626",
-  negativeLit:  "#f87171",
-  amber:        "#f59e0b",
-  amberLit:     "#fcd34d",
+  cyan:         "#22d3ee",    // ADD: for equity series
+  cyanDark:     "#06b6d4",    // ADD
+  cyanLit:      "#67e8f9",    // ADD
+  negative:     "#fb7185",    // rose-400 (was #ef4444 red)
+  negativeDark: "#e11d48",    // rose-600 (was #dc2626)
+  negativeLit:  "#fda4af",    // rose-300 (was #f87171)
+  amber:        "#fbbf24",    // amber-400 (was #f59e0b)
+  amberLit:     "#fde047",    // yellow-300 (was #fcd34d)
+  pink:         "#f472b6",    // ADD: for debt line
+  pinkDark:     "#db2777",    // ADD
   purple:       "#a78bfa",
   purpleLit:    "#c4b5fd",
-  axisTick:     "#71717a",
+  axisTick:     "#71717a",    // zinc-500 (unchanged)
 } as const;
 
 // ── Tax breakdown palette ─────────────────────────
@@ -116,21 +184,21 @@ export const TAX_CATEGORY_COLORS = {
 
 // ── Tax bracket severity ladder ───────────────────
 // Five-tier ramp for marginal-rate KPI tiles. Mixes semantic tokens
-// (zero/medium/top use --color-positive/--color-warning/--color-negative)
-// with literals for the in-between green and amber tiers.
+// (zero/medium/top use --color-data-*) with literals for the in-between
+// green and amber tiers.
 export const TAX_BRACKET_COLORS = {
-  zero:   "var(--color-positive)",
-  low:    "#86efac",
-  medium: "var(--color-warning)",
+  zero:   "var(--color-data-positive)",
+  low:    "#6ee7b7",    // emerald-300 (was #86efac)
+  medium: "var(--color-data-warning)",
   high:   "#f59e0b",
   top:    "#ef4444",
 } as const;
 
 // ── LVR severity thresholds ───────────────────────
 export const LVR_COLORS = {
-  safe:     "var(--color-positive)",
-  moderate: "var(--color-warning)",
-  high:     "var(--color-negative)",
+  safe:     "var(--color-data-positive)",
+  moderate: "var(--color-data-warning)",
+  high:     "var(--color-data-negative)",
 } as const;
 
 // ── Depreciation series colour ────────────────────

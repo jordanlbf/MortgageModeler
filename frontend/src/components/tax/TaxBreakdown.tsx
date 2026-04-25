@@ -13,7 +13,7 @@ const DONUT_SEGMENTS = [
   { key: "net_income", label: "Net Income", legendLabel: "Net Income", color: TC.netIncome },
 ] as const;
 
-const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.accentBorder, background: t.bg.cardElevated };
+const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.brand.border, background: t.surface.raised };
 
 // ── Donut chart ──────────────────────────────────
 
@@ -148,18 +148,18 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
     <div className="flex w-full flex-col gap-5">
       {/* Gross Income */}
       <div className="flex items-center gap-3 transition-opacity duration-200" style={{ opacity: hoveredKey != null ? 0.3 : 1 }}>
-        <span className="min-w-[120px] text-[15px] font-semibold text-foreground">Gross Income</span>
+        <span className="min-w-[120px] text-[15px] font-semibold text-fg-primary">Gross Income</span>
         <div className="relative flex-1 h-[22px] rounded-[4px]" style={{ background: "rgba(255,255,255,0.02)" }}>
           <div
             className="absolute inset-y-0 left-0 rounded-[4px] transition-all duration-500"
             style={{
               width: `${grossPct}%`,
-              background: mix("var(--color-foreground)", 25),
-              border: `1px solid ${mix("var(--color-foreground)", 15)}`,
+              background: mix("var(--color-fg-primary)", 25),
+              border: `1px solid ${mix("var(--color-fg-primary)", 15)}`,
             }}
           />
         </div>
-        <span className="min-w-[80px] text-right text-[16px] font-semibold tabular-nums text-foreground">
+        <span className="min-w-[80px] text-right text-[16px] font-semibold tabular-nums text-fg-primary">
           {formatCurrencyShort(gross)}
         </span>
       </div>
@@ -177,7 +177,7 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
             onMouseLeave={() => onHover(null)}
             onClick={() => onClick?.(row.key)}
           >
-            <span className="min-w-[120px] text-[15px] text-muted/50">{row.label}</span>
+            <span className="min-w-[120px] text-[15px] text-fg-primary/50">{row.label}</span>
             <div className="relative flex-1 rounded-[4px] transition-all duration-300" style={{ height: isHovered ? 28 : 22, background: "rgba(255,255,255,0.02)" }}>
               <div
                 className="absolute inset-y-0 rounded-[4px] transition-all duration-300"
@@ -209,7 +209,7 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
             onMouseLeave={() => onHover(null)}
             onClick={() => onClick?.(row.key)}
           >
-            <span className="min-w-[120px] text-[15px] text-muted/50">{row.label}</span>
+            <span className="min-w-[120px] text-[15px] text-fg-primary/50">{row.label}</span>
             <div className="relative flex-1 rounded-[4px] transition-all duration-300" style={{ height: isHovered ? 28 : 22, background: "rgba(255,255,255,0.02)" }}>
               <div
                 className="absolute inset-y-0 rounded-[4px] transition-all duration-300"
@@ -236,18 +236,18 @@ function WaterfallSection({ gross, taxSegments, netIncome, hoveredKey, onHover, 
         onMouseLeave={() => onHover(null)}
         onClick={() => onClick?.("net_income")}
       >
-        <span className="min-w-[120px] text-[15px] font-semibold" style={{ color: t.accent }}>Net Income</span>
+        <span className="min-w-[120px] text-[15px] font-semibold" style={{ color: t.brand.default }}>Net Income</span>
         <div className="relative flex-1 rounded-[4px] transition-all duration-300" style={{ height: hoveredKey === "net_income" ? 28 : 22, background: "rgba(255,255,255,0.02)" }}>
           <div
             className="absolute inset-y-0 left-0 rounded-[4px] transition-all duration-300"
             style={{
               width: `${netPct}%`,
-              background: mix(t.accent, hoveredKey === "net_income" ? 45 : 30),
-              border: `1px solid ${mix(t.accent, hoveredKey === "net_income" ? 25 : 15)}`,
+              background: mix(t.brand.default, hoveredKey === "net_income" ? 45 : 30),
+              border: `1px solid ${mix(t.brand.default, hoveredKey === "net_income" ? 25 : 15)}`,
             }}
           />
         </div>
-        <span className="min-w-[80px] text-right text-[16px] font-semibold tabular-nums" style={{ color: t.accent }}>
+        <span className="min-w-[80px] text-right text-[16px] font-semibold tabular-nums" style={{ color: t.brand.default }}>
           {formatCurrencyShort(netIncome)}
         </span>
       </div>
@@ -317,7 +317,7 @@ export default function TaxComposition({
       <div className="custom-scrollbar flex flex-col items-center gap-8 overflow-y-auto px-7 py-5">
         <span
           className="text-[20px] font-semibold uppercase tracking-widest"
-          style={{ color: t.accent }}
+          style={{ color: t.brand.default }}
         >
           Tax Composition
         </span>
@@ -368,7 +368,7 @@ export default function TaxComposition({
                   onClick={() => handleClick(s.key)}
                 >
                   <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                  <span className="text-[16px] font-medium text-muted/60">{s.legendLabel}</span>
+                  <span className="text-[16px] font-medium text-fg-primary/60">{s.legendLabel}</span>
                 </div>
               );
             })}

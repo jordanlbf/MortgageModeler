@@ -140,7 +140,7 @@ export function useCashflowState(): CashflowState {
 
   const allComplete = isInvestment
     ? form.setupComplete && form.propertyComplete && form.loanComplete && form.costsComplete && form.rentalComplete && form.taxComplete
-    : form.setupComplete && form.propertyComplete && form.loanComplete && form.costsComplete;
+    : form.setupComplete && form.propertyComplete && form.loanComplete && form.costsComplete && form.taxComplete;
 
   const loanAmount = isNewPurchase
     ? parseCurrencyInput(form.purchasePrice) - parseCurrencyInput(form.depositAmount)
@@ -165,6 +165,7 @@ export function useCashflowState(): CashflowState {
         case "tax": return { year: y.year, value: -y.incomeTaxCalc };
         case "equity": return { year: y.year, value: y.netEquity };
         case "deductions": return { year: y.year, value: isInvestment ? y.totalDeductions : y.ongoingCosts };
+        case "costs": return { year: y.year, value: y.ongoingCosts };
       }
     });
   }, [yearData, form.viewMode, isInvestment]);

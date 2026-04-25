@@ -1,6 +1,7 @@
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
-import { INPUT_CLS, currencyInput } from "./shared";
+import Input from "@/components/ui/Input";
+import { currencyInput } from "./shared";
 
 interface Props {
   s: CashflowState;
@@ -18,28 +19,28 @@ export default function PropertyStep({ s }: Props) {
       <div className="flex flex-col gap-7">
         <div className="flex gap-3.5">
           <div className="flex flex-col gap-2 flex-1">
-            <label className="text-xs font-medium text-subtle">Purchase price</label>
-            <input type="text" className={INPUT_CLS} value={s.purchasePrice} {...currencyInput(s.setPurchasePrice)} />
+            <label className="text-xs font-medium text-fg-secondary">Purchase price</label>
+            <Input value={s.purchasePrice} {...currencyInput(s.setPurchasePrice)} />
           </div>
           <div className="flex flex-col gap-2 flex-1">
-            <label className="text-xs font-medium text-subtle">Deposit</label>
-            <input type="text" className={INPUT_CLS} value={s.depositAmount} {...currencyInput(s.setDepositAmount)} />
+            <label className="text-xs font-medium text-fg-secondary">Deposit</label>
+            <Input value={s.depositAmount} {...currencyInput(s.setDepositAmount)} />
           </div>
         </div>
-        <div className="flex items-stretch bg-accent/[0.04] border border-accent/[0.12] rounded-[14px] overflow-hidden">
+        <div className="flex items-stretch bg-brand/[0.04] rounded-[14px] overflow-hidden">
           <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
-            <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">Loan amount</span>
-            <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{formatDollarsSigned(loanAmount)}</span>
+            <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-brand/50">Loan amount</span>
+            <span className="text-lg font-semibold text-brand tabular-nums tracking-tight">{formatDollarsSigned(loanAmount)}</span>
           </div>
-          <div className="w-px bg-accent/10 shrink-0 my-3" />
+          <div className="w-px bg-brand/10 shrink-0 my-3" />
           <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
-            <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">LVR</span>
-            <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{lvrPct}%</span>
+            <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-brand/50">LVR</span>
+            <span className="text-lg font-semibold text-brand tabular-nums tracking-tight">{lvrPct}%</span>
           </div>
-          <div className="w-px bg-accent/10 shrink-0 my-3" />
+          <div className="w-px bg-brand/10 shrink-0 my-3" />
           <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
-            <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">Deposit</span>
-            <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{depositPct}%</span>
+            <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-brand/50">Deposit</span>
+            <span className="text-lg font-semibold text-brand tabular-nums tracking-tight">{depositPct}%</span>
           </div>
         </div>
       </div>
@@ -57,36 +58,36 @@ export default function PropertyStep({ s }: Props) {
     <div className="flex flex-col gap-7">
       <div className="flex gap-3.5">
         <div className="flex flex-col gap-2 flex-1">
-          <label className="text-xs font-medium text-subtle">Current value</label>
-          <input type="text" className={INPUT_CLS} value={s.currentValue} {...currencyInput(s.setCurrentValue)} />
+          <label className="text-xs font-medium text-fg-secondary">Current value</label>
+          <Input value={s.currentValue} {...currencyInput(s.setCurrentValue)} />
         </div>
         <div className="flex flex-col gap-2 flex-1">
-          <label className="text-xs font-medium text-subtle">Loan balance</label>
-          <input type="text" className={INPUT_CLS} value={s.currentLoanBalance} {...currencyInput(s.setCurrentLoanBalance)} />
+          <label className="text-xs font-medium text-fg-secondary">Loan balance</label>
+          <Input value={s.currentLoanBalance} {...currencyInput(s.setCurrentLoanBalance)} />
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-medium text-subtle">Original purchase price</label>
-        <input type="text" className={INPUT_CLS} value={s.originalPurchasePrice} {...currencyInput(s.setOriginalPurchasePrice)} />
+        <label className="text-xs font-medium text-fg-secondary">Original purchase price</label>
+        <Input value={s.originalPurchasePrice} {...currencyInput(s.setOriginalPurchasePrice)} />
       </div>
       <div className="flex flex-col gap-2">
-        <label className="text-xs font-medium text-subtle">Year purchased</label>
-        <input type="text" className={INPUT_CLS} value={s.purchaseYear} onChange={(e) => s.setPurchaseYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="2021" />
+        <label className="text-xs font-medium text-fg-secondary">Year purchased</label>
+        <Input value={s.purchaseYear} onChange={(e) => s.setPurchaseYear(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="2021" />
       </div>
-      <div className="flex items-stretch bg-accent/[0.04] border border-accent/[0.12] rounded-[14px] overflow-hidden">
+      <div className="flex items-stretch bg-brand/[0.04] rounded-[14px] overflow-hidden">
         <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
-          <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">Equity</span>
-          <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{formatDollarsSigned(equity)}</span>
+          <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-brand/50">Equity</span>
+          <span className="text-lg font-semibold text-brand tabular-nums tracking-tight">{formatDollarsSigned(equity)}</span>
         </div>
-        <div className="w-px bg-accent/10 shrink-0 my-3" />
+        <div className="w-px bg-brand/10 shrink-0 my-3" />
         <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
-          <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">LVR</span>
-          <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{lvrPct}%</span>
+          <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-brand/50">LVR</span>
+          <span className="text-lg font-semibold text-brand tabular-nums tracking-tight">{lvrPct}%</span>
         </div>
-        <div className="w-px bg-accent/10 shrink-0 my-3" />
+        <div className="w-px bg-brand/10 shrink-0 my-3" />
         <div className="flex-1 flex flex-col gap-1.5 py-4 px-5">
-          <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-accent/50">Growth</span>
-          <span className="text-lg font-semibold text-accent tabular-nums tracking-tight">{growthDisplay}</span>
+          <span className="text-[11px] font-medium tracking-[0.06em] uppercase text-brand/50">Growth</span>
+          <span className="text-lg font-semibold text-brand tabular-nums tracking-tight">{growthDisplay}</span>
         </div>
       </div>
     </div>

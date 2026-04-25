@@ -7,6 +7,7 @@ import type { GrantSchemeWithEligibility } from "@/lib/api";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import { useApiCall } from "@/hooks/useApiCall";
 import { mix, STATE_COLORS } from "@/lib/theme";
+import PillButton from "@/components/ui/PillButton";
 import DenseSchemeCard from "./DenseSchemeCard";
 
 // ── Types ───────────────────────────────────────
@@ -14,29 +15,7 @@ import DenseSchemeCard from "./DenseSchemeCard";
 const ALL_REGIONS = ["Federal", "NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
 type Region = (typeof ALL_REGIONS)[number];
 
-// ── Pill button ─────────────────────────────────
-
-function Pill({ label, active, color, onClick }: { label: string; active: boolean; color?: string; onClick: () => void }) {
-  const accent = color ?? "var(--color-accent)";
-  return (
-    <button
-      className="h-[26px] px-2.5 rounded-full border text-[14px] font-semibold cursor-pointer whitespace-nowrap outline-none leading-none transition-all duration-150 min-w-[72px] text-center justify-center"
-      style={active ? {
-        background: mix(accent, 14),
-        color: accent,
-        borderColor: mix(accent, 25),
-        boxShadow: `0 0 8px ${mix(accent, 10)}`,
-      } : {
-        background: "transparent",
-        color: mix("var(--color-muted)", 50),
-        borderColor: "rgba(255,255,255,0.07)",
-      }}
-      onClick={onClick}
-    >
-      {label}
-    </button>
-  );
-}
+// ── Tri-state pill (domain-specific: yes/no with red "no" state) ─
 
 function TriPill({ label, active, isNo, onClick }: { label: string; active: boolean; isNo?: boolean; onClick: () => void }) {
   const red = active && isNo;
@@ -44,18 +23,18 @@ function TriPill({ label, active, isNo, onClick }: { label: string; active: bool
     <button
       className="h-[26px] px-2.5 rounded-full border text-[14px] font-semibold cursor-pointer whitespace-nowrap outline-none leading-none transition-all duration-150 min-w-[72px] text-center justify-center"
       style={red ? {
-        background: mix("var(--color-negative)", 12),
-        color: "var(--color-negative)",
-        borderColor: mix("var(--color-negative)", 25),
-        boxShadow: `0 0 8px ${mix("var(--color-negative)", 8)}`,
+        background: mix("var(--color-data-negative)", 12),
+        color: "var(--color-data-negative)",
+        borderColor: mix("var(--color-data-negative)", 25),
+        boxShadow: `0 0 8px ${mix("var(--color-data-negative)", 8)}`,
       } : active ? {
-        background: mix("var(--color-accent)", 14),
-        color: "var(--color-accent)",
-        borderColor: mix("var(--color-accent)", 25),
-        boxShadow: `0 0 8px ${mix("var(--color-accent)", 10)}`,
+        background: mix("var(--color-brand)", 14),
+        color: "var(--color-brand)",
+        borderColor: mix("var(--color-brand)", 25),
+        boxShadow: `0 0 8px ${mix("var(--color-brand)", 10)}`,
       } : {
         background: "transparent",
-        color: mix("var(--color-muted)", 50),
+        color: mix("var(--color-fg-primary)", 50),
         borderColor: "rgba(255,255,255,0.07)",
       }}
       onClick={onClick}
@@ -70,9 +49,9 @@ function TriPill({ label, active, isNo, onClick }: { label: string; active: bool
 function BarInput({ label, value, placeholder, onChange }: { label: string; value: string; placeholder: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
   return (
     <div className="flex flex-col items-center gap-4 flex-1 min-w-0">
-      <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">{label}</label>
+      <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">{label}</label>
       <input
-        className="w-full h-[30px] px-2.5 text-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-foreground/90 text-[15px] font-semibold tabular-nums outline-none caret-accent transition-all duration-150 hover:border-white/10 hover:bg-white/[0.06] focus:border-accent/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] placeholder:text-subtle/35 placeholder:font-normal"
+        className="w-full h-[30px] px-2.5 text-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-fg-primary/90 text-[15px] font-semibold tabular-nums outline-none caret-accent transition-all duration-150 hover:border-white/10 hover:bg-white/[0.06] focus:border-brand/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-brand)_10%,transparent)] placeholder:text-fg-secondary/35 placeholder:font-normal"
         type="text"
         inputMode="numeric"
         placeholder={placeholder}
@@ -94,7 +73,7 @@ function Divider({ tight }: { tight?: boolean }) {
 function TriField({ label, value, onToggle, wide }: { label: string; value: boolean | null; onToggle: (v: boolean | null) => void; wide?: boolean }) {
   return (
     <div className={`flex flex-col items-center gap-4 shrink-0 ${wide ? "w-[220px]" : "w-[140px]"}`}>
-      <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">{label}</label>
+      <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">{label}</label>
       <div className="flex gap-1.5">
         <TriPill label="Yes" active={value === true} onClick={() => onToggle(value === true ? null : true)} />
         <TriPill label="No" active={value === false} isNo onClick={() => onToggle(value === false ? null : false)} />
@@ -169,7 +148,7 @@ export default function GrantsView() {
         {/* Hero + Filter bar */}
         <div className="flex flex-col items-center mb-5">
           {/* Filter bar */}
-          <div className="flex items-center min-h-[80px] px-6 py-3.5 rounded-[14px] bg-card-elevated border border-border border-t-2 border-t-accent-border shadow-[0_1px_4px_rgba(0,0,0,0.20)] shrink-0 w-full overflow-visible animate-fade-up [animation-delay:0.1s]">
+          <div className="flex items-center min-h-[80px] px-6 py-3.5 rounded-[14px] bg-surface-raised border-t-2 border-t-accent-border shadow-[0_1px_4px_rgba(0,0,0,0.20)] shrink-0 w-full overflow-visible animate-fade-up [animation-delay:0.1s]">
             <BarInput label="Purchase Price" value={priceStr} placeholder="$0" onChange={handleCurrencyInput(setPriceStr)} />
             <Divider />
             <BarInput label="Annual Income" value={incomeStr} placeholder="$0" onChange={handleCurrencyInput(setIncomeStr)} />
@@ -185,12 +164,12 @@ export default function GrantsView() {
 
             {/* Region pills */}
             <div className="flex flex-col items-center gap-4 shrink-0">
-              <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">State</label>
+              <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">State</label>
               <div className="grid grid-flow-col auto-cols-fr gap-5">
                 {ALL_REGIONS.map((r) => {
                   const color = r === "Federal" ? STATE_COLORS.FEDERAL : STATE_COLORS[r];
                   return (
-                    <Pill key={r} label={r} active={regions.has(r)} color={color} onClick={() => toggleRegion(r)} />
+                    <PillButton key={r} active={regions.has(r)} color={color} onClick={() => toggleRegion(r)}>{r}</PillButton>
                   );
                 })}
               </div>
@@ -201,7 +180,7 @@ export default function GrantsView() {
             {/* Toggle fields */}
             <div className="flex items-center shrink-0 ml-auto">
               <div className="flex flex-col items-center gap-4 shrink-0 w-[220px]">
-                <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">Property</label>
+                <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">Property</label>
                 <div className="flex gap-1.5">
                   {([
                     { value: "new" as const, label: "New" },
@@ -209,7 +188,7 @@ export default function GrantsView() {
                     { value: "land" as const, label: "Land" },
                     { value: "off-the-plan" as const, label: "OTP" },
                   ]).map((o) => (
-                    <Pill key={o.value} label={o.label} active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)} />
+                    <PillButton key={o.value} active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)}>{o.label}</PillButton>
                   ))}
                 </div>
               </div>
@@ -217,10 +196,10 @@ export default function GrantsView() {
               <Divider tight />
 
               <div className="flex flex-col items-center gap-4 shrink-0 w-[220px]">
-                <label className="text-[15px] font-semibold uppercase tracking-widest text-muted/70 leading-none whitespace-nowrap">Buyer</label>
+                <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">Buyer</label>
                 <div className="flex gap-1.5">
                   {([{ value: "individual" as const, label: "Individual" }, { value: "couple" as const, label: "Couple" }]).map((o) => (
-                    <Pill key={o.value} label={o.label} active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)} />
+                    <PillButton key={o.value} active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)}>{o.label}</PillButton>
                   ))}
                 </div>
               </div>
@@ -243,9 +222,9 @@ export default function GrantsView() {
         </div>
 
         {/* Results bar */}
-        <div className="flex justify-center items-center py-4 text-[16px] text-muted/40 animate-fade-up [animation-delay:0.2s]">
+        <div className="flex justify-center items-center py-4 text-[16px] text-fg-primary/40 animate-fade-up [animation-delay:0.2s]">
           <span>
-            <strong className="text-accent font-semibold">{eligibleCount}</strong> {eligibleCount === 1 ? "scheme" : "schemes"} matched
+            <strong className="text-brand font-semibold">{eligibleCount}</strong> {eligibleCount === 1 ? "scheme" : "schemes"} matched
           </span>
         </div>
 
@@ -271,7 +250,7 @@ export default function GrantsView() {
         {/* Footer */}
         <Link
           href="/"
-          className="group mt-auto flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-muted/30 no-underline transition-colors duration-300 hover:text-accent/70"
+          className="group mt-auto flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-fg-primary/30 no-underline transition-colors duration-300 hover:text-brand/70"
         >
           <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
           All Tools

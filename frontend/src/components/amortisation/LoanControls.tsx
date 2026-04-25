@@ -27,7 +27,7 @@ interface LoanControlsProps {
   onOffsetContributionChange: (v: number) => void;
 }
 
-const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.accentBorder };
+const CARD_BORDER = { borderTopWidth: 3, borderTopColor: t.brand.border };
 
 const OFFSET_BORDER = { borderTopWidth: 3, borderTopColor: mix(SERIES.offset.color, 35) };
 const EQUITY_BORDER = { borderTopWidth: 3, borderTopColor: mix(SERIES.eq.color, 35) };
@@ -59,7 +59,7 @@ export default memo(function LoanControls({
       showEquity ? "grid-cols-[4fr_1fr]" :
       "grid-cols-[4fr]"
     }`}>
-      <GlassCard className="border-accent/20" style={CARD_BORDER}>
+      <GlassCard className="border-brand/20" style={CARD_BORDER}>
         <div className="grid grid-cols-4">
           <div className="px-4 py-2.5">
             <Slider
@@ -117,7 +117,7 @@ export default memo(function LoanControls({
       </GlassCard>
 
       {showOffset && (
-        <GlassCard className="border-accent/20" style={OFFSET_BORDER}>
+        <GlassCard className="border-brand/20" style={OFFSET_BORDER}>
           <div className="grid grid-cols-2">
             <div className="px-4 py-2.5">
               <Slider
@@ -152,7 +152,7 @@ export default memo(function LoanControls({
       )}
 
       {showEquity && (
-        <GlassCard className="border-accent/20" style={EQUITY_BORDER}>
+        <GlassCard className="border-brand/20" style={EQUITY_BORDER}>
           <div className="px-4 py-2.5">
             <Slider
               label="Appreciation"

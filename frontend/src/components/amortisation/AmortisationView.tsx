@@ -113,7 +113,7 @@ export default function AmortisationView() {
               {view === "chart" ? (
                 <ChartLegend visibleSeries={visibleSeries} onToggle={toggleSeries} />
               ) : data ? (
-                <span className="text-[12px] font-medium tabular-nums text-muted/25">
+                <span className="text-[12px] font-medium tabular-nums text-fg-primary/25">
                   {data.total_periods} periods
                 </span>
               ) : null}
@@ -125,10 +125,10 @@ export default function AmortisationView() {
                   onClick={() => setView("chart")}
                   className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
                   style={view === "chart" ? {
-                    background: mix(t.accent, 12),
-                    color: t.accent,
-                    border: `1px solid ${mix(t.accent, 40)}`,
-                    boxShadow: `0 0 12px ${mix(t.accent, 15)}`,
+                    background: mix(t.brand.default, 12),
+                    color: t.brand.default,
+                    border: `1px solid ${mix(t.brand.default, 40)}`,
+                    boxShadow: `0 0 12px ${mix(t.brand.default, 15)}`,
                   } : {
                     background: "rgba(255,255,255,0.04)",
                     color: "rgba(255,255,255,0.35)",
@@ -146,10 +146,10 @@ export default function AmortisationView() {
                   onClick={() => setView("table")}
                   className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
                   style={view === "table" ? {
-                    background: mix(t.accent, 12),
-                    color: t.accent,
-                    border: `1px solid ${mix(t.accent, 40)}`,
-                    boxShadow: `0 0 12px ${mix(t.accent, 15)}`,
+                    background: mix(t.brand.default, 12),
+                    color: t.brand.default,
+                    border: `1px solid ${mix(t.brand.default, 40)}`,
+                    boxShadow: `0 0 12px ${mix(t.brand.default, 15)}`,
                   } : {
                     background: "rgba(255,255,255,0.04)",
                     color: "rgba(255,255,255,0.35)",
@@ -168,7 +168,7 @@ export default function AmortisationView() {
 
               <button
                 onClick={handleFocusToggle}
-                className="rounded-lg p-2 text-muted/25 transition-all duration-200 hover:text-muted/50 hover:bg-white/[0.04] active:scale-90"
+                className="rounded-lg p-2 text-fg-primary/25 transition-all duration-200 hover:text-fg-primary/50 hover:bg-white/[0.04] active:scale-90"
                 style={{ border: "1px solid transparent" }}
                 title={focused ? "Exit focus mode (Esc)" : "Focus mode"}
               >

@@ -73,12 +73,12 @@ describe("formatCurrencyShort", () => {
 });
 
 describe("formatCompact", () => {
-  it("formats millions with 'm' suffix", () => {
-    expect(formatCompact(1_500_000)).toBe("1.5m");
+  it("formats millions with 'M' suffix", () => {
+    expect(formatCompact(1_500_000)).toBe("1.5M");
   });
 
-  it("formats thousands with 'k' suffix", () => {
-    expect(formatCompact(50_000)).toBe("50k");
+  it("formats thousands with 'K' suffix", () => {
+    expect(formatCompact(50_000)).toBe("50K");
   });
 
   it("formats small numbers as-is", () => {
@@ -86,21 +86,21 @@ describe("formatCompact", () => {
   });
 
   it("formats exactly 1 million", () => {
-    expect(formatCompact(1_000_000)).toBe("1.0m");
+    expect(formatCompact(1_000_000)).toBe("1.0M");
   });
 
   it("formats exactly 1 thousand", () => {
-    expect(formatCompact(1_000)).toBe("1k");
+    expect(formatCompact(1_000)).toBe("1K");
   });
 });
 
 describe("formatCompactCurrency", () => {
   it("formats positive millions", () => {
-    expect(formatCompactCurrency(1_500_000)).toBe("$1.5m");
+    expect(formatCompactCurrency(1_500_000)).toBe("$1.5M");
   });
 
   it("formats positive thousands", () => {
-    expect(formatCompactCurrency(50_000)).toBe("$50k");
+    expect(formatCompactCurrency(50_000)).toBe("$50K");
   });
 
   it("formats small values", () => {
@@ -108,7 +108,7 @@ describe("formatCompactCurrency", () => {
   });
 
   it("formats negative with unicode minus", () => {
-    expect(formatCompactCurrency(-50_000)).toBe("\u2212$50k");
+    expect(formatCompactCurrency(-50_000)).toBe("\u2212$50K");
   });
 
   it("formats negative small values", () => {

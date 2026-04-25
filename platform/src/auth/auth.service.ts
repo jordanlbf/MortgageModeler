@@ -8,18 +8,36 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import type { StringValue } from 'ms';
+import ms, { type StringValue } from 'ms';
 import { randomBytes } from 'node:crypto';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { TokenResponseDto } from './dto/token-response.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 
 interface JwtPayload {
   sub: string;
   email: string;
+}
+
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+}
+
+export interface RefreshCookieOptions {
+  httpOnly: true;
+  secure: boolean;
+  sameSite: 'lax';
+  path: '/auth';
+  maxAge: number;
+}
+
+export interface RefreshCookieConfig {
+  name: string;
+  options: RefreshCookieOptions;
 }
 
 const BCRYPT_COST = 10;
@@ -29,6 +47,8 @@ export class AuthService implements OnModuleInit {
   private dummyHash!: string;
   private readonly refreshSecret: string;
   private readonly refreshExpiration: StringValue;
+  private readonly refreshCookieName: string;
+  private readonly cookieSecure: boolean;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -39,6 +59,9 @@ export class AuthService implements OnModuleInit {
     this.refreshExpiration = config.getOrThrow<string>(
       'JWT_REFRESH_EXPIRATION',
     ) as StringValue;
+    this.refreshCookieName =
+      config.get<string>('REFRESH_COOKIE_NAME') ?? 'mm_refresh';
+    this.cookieSecure = config.get<string>('NODE_ENV') === 'production';
   }
 
   async onModuleInit(): Promise<void> {
@@ -64,7 +87,7 @@ export class AuthService implements OnModuleInit {
     }
   }
 
-  async login(dto: LoginDto): Promise<TokenResponseDto> {
+  async login(dto: LoginDto): Promise<TokenPair> {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -79,7 +102,7 @@ export class AuthService implements OnModuleInit {
     return this.issueTokens({ sub: user.id, email: user.email });
   }
 
-  async refreshToken(token: string): Promise<TokenResponseDto> {
+  async refreshToken(token: string): Promise<TokenPair> {
     let payload: JwtPayload;
     try {
       payload = await this.jwt.verifyAsync<JwtPayload>(token, {
@@ -102,7 +125,20 @@ export class AuthService implements OnModuleInit {
     }
   }
 
-  private async issueTokens(payload: JwtPayload): Promise<TokenResponseDto> {
+  getRefreshCookieConfig(): RefreshCookieConfig {
+    return {
+      name: this.refreshCookieName,
+      options: {
+        httpOnly: true,
+        secure: this.cookieSecure,
+        sameSite: 'lax',
+        path: '/auth',
+        maxAge: ms(this.refreshExpiration),
+      },
+    };
+  }
+
+  private async issueTokens(payload: JwtPayload): Promise<TokenPair> {
     const accessToken = await this.jwt.signAsync(payload);
     const refreshToken = await this.jwt.signAsync(payload, {
       secret: this.refreshSecret,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -11,8 +12,12 @@ import {
   Landmark,
   Settings,
   HelpCircle,
+  LogIn,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
+
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavItem {
   href: string;
@@ -42,49 +47,153 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="flex flex-col shrink-0"
+      className="flex flex-col shrink-0 h-screen sticky top-0"
       style={{
         width: "var(--layout-sidebar-width)",
-        background: "var(--color-surface-page)",
+        background: "var(--color-card)",
+        borderRight: "1px solid var(--color-border-default)",
       }}
     >
+      {/* Logo */}
       <Link
         href="/"
-        className="block px-6 py-6 transition-opacity hover:opacity-85"
+        className="flex items-center gap-2 px-4 py-4 transition-opacity hover:opacity-85"
       >
         <span
-          className="text-[15px] font-semibold tracking-tight"
-          style={{ color: "var(--color-foreground)" }}
+          aria-hidden="true"
+          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-sm font-bold shrink-0"
+          style={{
+            background: "var(--color-brand)",
+            color: "var(--color-surface-page)",
+          }}
+        >
+          M
+        </span>
+        <span
+          className="font-semibold"
+          style={{ color: "var(--color-fg-primary)" }}
         >
           MortgageModeler
         </span>
+        <span
+          className="ml-auto text-xs"
+          style={{ color: "var(--color-fg-muted)" }}
+        >
+          v0.8
+        </span>
       </Link>
 
-      <NavSection header="Dashboard" firstSection>
-        {DASHBOARD_NAV.map((item) => (
-          <NavItemRow key={item.href} {...item} pathname={pathname} />
-        ))}
-      </NavSection>
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4">
+        <NavSection header="Dashboard" firstSection>
+          {DASHBOARD_NAV.map((item) => (
+            <NavItemRow key={item.href} {...item} pathname={pathname} />
+          ))}
+        </NavSection>
 
-      <NavSection header="Tools">
-        {TOOLS_NAV.map((item) => (
-          <NavItemRow key={item.href} {...item} pathname={pathname} />
-        ))}
-      </NavSection>
+        <NavSection header="Tools">
+          {TOOLS_NAV.map((item) => (
+            <NavItemRow key={item.href} {...item} pathname={pathname} />
+          ))}
+        </NavSection>
+      </nav>
 
-      <div className="flex-1" />
-
-      <div className="px-3 pb-4 flex flex-col gap-0.5">
-        {UTILITY_NAV.map((item) => (
-          <NavItemRow
-            key={item.label}
-            {...item}
-            pathname={pathname}
-            variant="utility"
-          />
-        ))}
+      {/* Account + utilities */}
+      <div
+        className="flex flex-col"
+        style={{ borderTop: "1px solid var(--color-border-default)" }}
+      >
+        <AccountSection />
+        <div
+          className="px-3 py-4 flex flex-col gap-0.5"
+          style={{ borderTop: "1px solid var(--color-border-default)" }}
+        >
+          {UTILITY_NAV.map((item) => (
+            <NavItemRow
+              key={item.label}
+              {...item}
+              pathname={pathname}
+              variant="utility"
+            />
+          ))}
+        </div>
       </div>
     </aside>
+  );
+}
+
+function AccountSection() {
+  const { user, status, logout } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+
+  if (status === "loading") {
+    // Reserve space so layout doesn't shift once bootstrap resolves.
+    return <div className="h-[52px]" aria-hidden="true" />;
+  }
+
+  if (status === "anonymous") {
+    return (
+      <div className="px-3 py-3">
+        <Link
+          href="/login"
+          className="flex items-center gap-3 px-2 py-2 rounded-md text-sm transition-colors"
+          style={{ color: "var(--color-fg-secondary)" }}
+        >
+          <LogIn
+            size={16}
+            strokeWidth={1.5}
+            style={{ color: "var(--color-fg-muted)" }}
+            className="shrink-0"
+          />
+          <span>Sign in</span>
+        </Link>
+      </div>
+    );
+  }
+
+  const email = user?.email ?? "";
+  const initial = email.charAt(0).toUpperCase() || "?";
+
+  const handleLogout = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await logout();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="px-3 py-3 flex items-center gap-2">
+      <div
+        aria-hidden="true"
+        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-xs font-semibold shrink-0"
+        style={{
+          background: "var(--color-surface-active)",
+          color: "var(--color-fg-primary)",
+        }}
+      >
+        {initial}
+      </div>
+      <span
+        className="text-[12px] truncate min-w-0 flex-1"
+        style={{ color: "var(--color-fg-secondary)" }}
+        title={email}
+      >
+        {email}
+      </span>
+      <button
+        type="button"
+        onClick={handleLogout}
+        disabled={submitting}
+        aria-label="Sign out"
+        className="p-1.5 rounded transition-colors disabled:opacity-50"
+        style={{ color: "var(--color-fg-muted)" }}
+      >
+        <LogOut size={14} strokeWidth={1.5} />
+      </button>
+    </div>
   );
 }
 
@@ -98,15 +207,15 @@ function NavSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="px-3 flex flex-col">
-      <div
-        className={`text-[10px] font-semibold uppercase tracking-[0.08em] px-3 ${
-          firstSection ? "mt-2 mb-2" : "mt-6 mb-2"
+    <div className={firstSection ? "mb-6" : ""}>
+      <p
+        className={`px-2 mb-2 text-[10px] font-semibold uppercase tracking-wider ${
+          firstSection ? "" : "mt-6"
         }`}
-        style={{ color: "var(--color-faint)" }}
+        style={{ color: "var(--color-fg-muted)" }}
       >
         {header}
-      </div>
+      </p>
       <div className="flex flex-col gap-0.5">{children}</div>
     </div>
   );
@@ -120,38 +229,30 @@ function NavItemRow({
   variant = "default",
 }: NavItem & { pathname: string | null; variant?: "default" | "utility" }) {
   const isActive = variant === "default" && pathname === href;
-
-  const bgStyle: React.CSSProperties = isActive
-    ? { background: "color-mix(in srgb, var(--color-accent) 10%, transparent)" }
-    : {};
-
-  const textColor = isActive
-    ? "var(--color-foreground)"
-    : variant === "utility"
-    ? "var(--color-faint)"
-    : "var(--color-subtle)";
-
-  const iconColor = isActive
-    ? "var(--color-accent)"
-    : variant === "utility"
-    ? "var(--color-faint)"
-    : "var(--color-subtle)";
+  const isUtility = variant === "utility";
 
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 px-3 rounded-lg text-[14px] font-medium transition-colors hover:bg-[color-mix(in_srgb,var(--color-foreground)_4%,transparent)]"
+      className="flex items-center gap-3 px-2 py-2 rounded-md text-sm transition-colors"
       style={{
-        ...bgStyle,
-        height: "var(--layout-nav-item-height)",
-        color: textColor,
+        backgroundColor: isActive ? "var(--color-surface-active)" : "transparent",
+        color: isActive
+          ? "var(--color-fg-primary)"
+          : isUtility
+            ? "var(--color-fg-tertiary)"
+            : "var(--color-fg-secondary)",
       }}
     >
       <Icon
-        size={16}
+        size={isUtility ? 14 : 16}
         strokeWidth={1.5}
-        style={{ color: iconColor }}
-        className="shrink-0 transition-colors"
+        style={{
+          color: isActive
+            ? "var(--color-brand)"
+            : "var(--color-fg-muted)"
+        }}
+        className="shrink-0"
       />
       <span>{label}</span>
     </Link>

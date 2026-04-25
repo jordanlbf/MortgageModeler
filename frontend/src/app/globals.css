@@ -2,118 +2,325 @@
 
 /* ── Theme tokens synced with src/lib/theme.ts ── */
 @theme {
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Typography                                                         */
+  /* ───────────────────────────────────────────────────────────────── */
   --font-sans: var(--font-sora), "system-ui", "sans-serif";
 
-  /* ── Core palette ── */
-  --color-background: #111215;
-  --color-foreground: #f0fdfa;
-  --color-accent: #2dd4bf;
-  --color-accent-contrast: #18181b;
-  --color-muted: #f4f4f5;
-  --color-subtle: #a1a1aa;
-  --color-faint: #71717a;
-  /* Tabular data row text — softer than --color-foreground so numbers breathe */
-  --color-fg-table: #ccccd2;
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Brand — Emerald identity, used for selection, active tabs,        */
+  /* column group accents, hero labels.                                */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-brand: #34d399;             /* emerald-400 */
+  --color-brand-contrast: #022c22;
+  --color-brand-hover: #6ee7b7;       /* emerald-300 */
+  --color-brand-subtle: #064e3b;      /* emerald-900 */
+  --color-brand-subtle-hover: #065f46; /* emerald-800 */
+  --color-brand-border: color-mix(in srgb, var(--color-brand) 32%, transparent);
 
-  /* ── Surfaces ── */
-  --color-card: rgba(42,42,46,0.72);
-  --color-card-elevated: rgba(44,44,48,0.82);
-  --color-control: rgba(24,24,27,0.60);
-  --color-slider-thumb: #1a1c20;
-  --color-surface-subtle: rgba(255,255,255,0.02);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Surface ramp — pure zinc family (no blue tint)                    */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-surface-page:     #09090b;              /* zinc-950 — outer page bg (darkest) */
+  --color-surface-sidebar:  rgba(24, 24, 27, 0.80); /* same as card — glassmorphism */
+  --color-surface-app:      #09090b;              /* zinc-950 — main app content bg */
+  --color-surface-raised:   #18181b;              /* zinc-900 — elevated solid panels */
+  --color-surface-hover:    #27272a;              /* zinc-800 — interactive hover */
+  --color-surface-active:   #27272a;              /* zinc-800 — active nav items */
+  --color-surface-overlay:  rgba(9, 9, 11, 0.74);
 
-  /* ── Surface lightness ramp ── */
-  --color-surface-page: #08090a;
-  --color-surface-raised: #17181c;
-  --color-surface-hover: #1a1b1e;
-  --color-surface-active: #1c1d21;
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Card surfaces — translucent glassmorphism panels                  */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-card:            rgba(24, 24, 27, 0.80);   /* zinc-900/80 — more visible */
+  --color-card-elevated:   rgba(39, 39, 42, 0.85);   /* zinc-800/85 */
+  --color-control:         rgba(24, 24, 27, 0.70);   /* zinc-900/70 */
+  --color-surface-subtle:  rgba(255, 255, 255, 0.03);
+  --color-surface-kpi:     rgba(39, 39, 42, 0.60);   /* zinc-800/60 — more visible */
 
-  /* ── Column group tints ── */
-  --color-out-tint: rgba(255,255,255,0.018);
-  --color-out-tint-hover: rgba(255,255,255,0.038);
-  --color-out-tint-raised: rgba(255,255,255,0.025);
-  --color-cf-wash: rgba(45,212,191,0.05);
-  --color-cf-wash-hover: rgba(45,212,191,0.07);
-  --color-cf-wash-strong: rgba(45,212,191,0.08);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Foreground ramp — zinc family, fully neutral                      */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-fg-primary:   #ffffff;    /* white */
+  --color-fg-secondary: #a1a1aa;    /* zinc-400 */
+  --color-fg-tertiary:  #71717a;    /* zinc-500 */
+  --color-fg-muted:     #52525b;    /* zinc-600 */
+  --color-fg-disabled:  #3f3f46;    /* zinc-700 */
 
-  /* ── Borders ── */
-  --color-border: rgba(113,113,122,0.08);
-  --color-border-hover: rgba(113,113,122,0.15);
-  --color-accent-border: rgba(45,212,191,0.35);
-  --color-scrollbar: rgba(148,163,184,0.12);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Data ink — zinc for numbers                                       */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-data-primary:   #a1a1aa;    /* zinc-400 — tabular numbers */
+  --color-data-emphasis:  #ffffff;    /* white — headline values */
+  --color-data-muted:     #71717a;    /* zinc-500 — YoY, secondary data */
 
-  /* ── Semantic ── */
-  --color-negative: #f87171;
-  --color-positive: #4ade80;
-  --color-warning: #fbbf24;
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Data semantic — chromatic signal against neutral base             */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-data-positive:     #34d399;    /* emerald-400 */
+  --color-data-positive-dim: #059669;    /* emerald-600 */
+  --color-data-positive-wash: rgba(16, 185, 129, 0.2); /* emerald-500/20 */
+  --color-data-negative:     #fb7185;    /* rose-400 — shortfall, errors */
+  --color-data-negative-dim: #be475e;    /* routine recurring outgoings */
+  --color-data-negative-wash: rgba(251, 113, 133, 0.1);
+  --color-data-warning:      #fbbf24;    /* amber-400 */
+  --color-data-warning-dim:  #d97706;    /* amber-600 */
+  --color-data-warning-wash: rgba(251, 191, 36, 0.1);
+  --color-data-neutral:      var(--color-fg-tertiary);
 
-  /* ── Chart chrome ── */
-  --color-chart-grid-h: rgba(148,163,184,0.06);
-  --color-chart-grid-v: rgba(148,163,184,0.035);
-  --color-chart-axis: rgba(148,163,184,0.50);
-  --color-chart-axis-muted: rgba(148,163,184,0.40);
-  --color-chart-axis-line: rgba(148,163,184,0.08);
-  --color-chart-cursor: rgba(148,163,184,0.15);
-  --color-chart-legend-inactive: rgba(148,163,184,0.30);
-  --color-chart-legend-dot-inactive: rgba(148,163,184,0.20);
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Chart Series — distinct colors for multi-chart dashboards         */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-series-cashflow:          #34d399;    /* emerald-400 — cash/income growth */
+  --color-series-cashflow-dim:      #059669;    /* emerald-600 — gradient end */
+  --color-series-cashflow-selected: #5eead4;    /* teal-300 — selected bar */
+  --color-series-cashflow-wash:     rgba(52, 211, 153, 0.10);
 
-  /* ── Tool card defaults ── */
-  --color-tool-default: #94a3b8;
-  --color-tool-default-glow: rgba(148,163,184,0.08);
+  --color-series-equity:            #22d3ee;    /* cyan-400 — net worth/equity */
+  --color-series-equity-dim:        #06b6d4;    /* cyan-500 — gradient end */
+  --color-series-equity-wash:       rgba(34, 211, 238, 0.10);
 
-  /* ── Layout ── */
-  --layout-sidebar-width: 240px;
-  --layout-content-max: 1200px;
-  --layout-page-padding-x: 36px;
-  --layout-page-padding-y: 32px;
-  --layout-nav-item-height: 36px;
-  --layout-global-btn-size: 34px;
-  /* Reservation on the right of page headers to keep clear of the globals tray */
-  --layout-header-actions-reserve: 64px;
+  --color-series-debt:              #f472b6;    /* pink-400 — loan balance line */
+  --color-series-debt-dim:          rgba(244, 114, 182, 0.20);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Status semantic — UI feedback (toasts, validation, banners)       */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-status-success: #34d399;
+  --color-status-error:   #fb7185;
+  --color-status-warning: #fbbf24;
+  --color-status-info:    var(--color-brand);
+
+  /* Status surfaces */
+  --color-status-success-bg: rgba(52, 211, 153, 0.10);
+  --color-status-error-bg:   rgba(251, 113, 133, 0.10);
+  --color-status-warning-bg: rgba(251, 191, 36, 0.10);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Borders — zinc-based, visible                                     */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-border-subtle:  rgba(63, 63, 70, 0.50);   /* zinc-700/50 */
+  --color-border-default: rgba(63, 63, 70, 0.70);   /* zinc-700/70 */
+  --color-border-strong:  #52525b;                  /* zinc-600 */
+  --color-border-brand:   var(--color-brand-border);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Focus                                                              */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-focus-ring:        color-mix(in srgb, var(--color-brand) 35%, transparent);
+  --color-focus-ring-offset: var(--color-surface-app);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Elevation                                                          */
+  /* ───────────────────────────────────────────────────────────────── */
+  --shadow-flat:
+    0 0 0 0.5px rgba(255, 255, 255, 0.02);
+  --shadow-raised:
+    0 1px 3px rgba(0, 0, 0, 0.28),
+    0 0 0 0.5px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  --shadow-float:
+    0 8px 24px rgba(0, 0, 0, 0.44),
+    0 0 0 0.5px rgba(113, 113, 122, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Column group washes                                                */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-inc-tint:         transparent;
+  --color-inc-tint-hover:   transparent;
+  --color-inc-tint-raised:  transparent;
+  --color-out-tint:         transparent;
+  --color-out-tint-hover:   transparent;
+  --color-out-tint-raised:  transparent;
+  --color-cf-wash:          transparent;
+  --color-cf-wash-hover:    transparent;
+  --color-cf-wash-strong:   transparent;
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Chart chrome — zinc family                                        */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-chart-grid-h:              rgba(113, 113, 122, 0.06);
+  --color-chart-grid-v:              rgba(113, 113, 122, 0.035);
+  --color-chart-axis:                rgba(113, 113, 122, 0.50);
+  --color-chart-axis-muted:          rgba(113, 113, 122, 0.40);
+  --color-chart-axis-line:           rgba(113, 113, 122, 0.08);
+  --color-chart-cursor:              rgba(113, 113, 122, 0.15);
+  --color-chart-bar-default:         var(--color-surface-active);
+  --color-chart-bar-selected:        var(--color-brand);
+  --color-chart-bar-hover:           var(--color-surface-hover);
+  --color-chart-legend-inactive:     rgba(113, 113, 122, 0.30);
+  --color-chart-legend-dot-inactive: rgba(113, 113, 122, 0.20);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Tool card defaults                                                 */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-tool-default:      #71717a;   /* zinc-500 */
+  --color-tool-default-glow: rgba(113, 113, 122, 0.08);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Layout                                                             */
+  /* ───────────────────────────────────────────────────────────────── */
+  --layout-sidebar-width:            240px;
+  --layout-content-max:              1200px;
+  --layout-page-padding-x:           36px;
+  --layout-page-padding-y:           32px;
+  --layout-nav-item-height:          28px;
+  --layout-nav-item-utility-height:  24px;
+  --layout-global-btn-size:          34px;
+  --layout-header-actions-reserve:   64px;
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Scrollbar                                                         */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-scrollbar: rgba(113, 113, 122, 0.14);
 }
 
-
-/* ── Slate Arctic theme ── */
-@layer base {
-  [data-theme="arctic"] {
-    --color-background: #0e1117;
-    --color-foreground: #f0f9ff;
-    --color-accent: #38bdf8;
-    --color-accent-contrast: #0c1825;
-    --color-accent-border: rgba(56,189,248,0.30);
-  }
-}
 
 body {
-  background: var(--color-background);
-  color: var(--color-foreground);
+  background: var(--color-surface-app);
+  color: var(--color-fg-primary);
 }
 
 ::selection {
-  background: rgba(45, 212, 191, 0.25);
-  color: var(--color-foreground);
+  background: color-mix(in srgb, var(--color-brand) 25%, transparent);
+  color: var(--color-fg-primary);
 }
 
+/* ── Cashflow table: column group header utility ── */
+.col-group-h {
+  height: 28px;
+  box-sizing: border-box;
+  text-align: center;
+  vertical-align: bottom;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  position: relative;
+  user-select: none;
+}
+.col-group-h::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  border-radius: 0 0 2px 2px;
+  background: var(--col-bar, currentColor);
+  opacity: var(--col-bar-alpha, 0.75);
+}
+.col-group-h--income   { --col-bar: var(--color-fg-tertiary);       --col-bar-alpha: 0.35; }
+.col-group-h--outgoing { --col-bar: var(--color-data-negative-dim); --col-bar-alpha: 0.55; }
+.col-group-h--cashflow { --col-bar: var(--color-brand);             --col-bar-alpha: 0.75; }
+.col-group-h--clickable {
+  cursor: pointer;
+  transition: background 150ms ease-in-out;
+}
+.col-group-h--clickable:hover { background: var(--color-surface-hover); }
+
+/* ── Sidebar nav ── */
+.sb-nav-item { position: relative; }
+.sb-nav-item--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--color-brand);
+}
+
+/* ── Hover tooltip utility ── */
+.tip {
+  position: relative;
+  cursor: default;
+}
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-surface-app) 95%, transparent);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-fg-secondary);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease-in-out;
+  z-index: 10;
+}
+.tip:hover::after { opacity: 1; }
+
 /* ── Cashflow table: column group zones ── */
+.inc-zone { background: var(--color-inc-tint); }
 .out-zone { background: var(--color-out-tint); }
 .cf-zone { background: var(--color-cf-wash); }
 
-/* Group gap: applied to first cell of a column group */
+.zone-start { box-shadow: inset 1px 0 0 var(--color-border-subtle); }
 .row-gsep { padding-left: 24px !important; }
 
-/* Hover compound: row hover brightens the zone tint */
+tr:hover .inc-zone { background: var(--color-inc-tint-hover); }
 tr:hover .out-zone { background: var(--color-out-tint-hover); }
 tr:hover .cf-zone { background: var(--color-cf-wash-hover); }
 
-/* Selected row keeps its accent wash */
-tr.row-selected .out-zone { background: rgba(45,212,191,0.05); }
-tr.row-selected .cf-zone { background: rgba(45,212,191,0.08); }
+tbody tr:not(.row-summary):hover > td:first-child {
+  background: var(--color-surface-hover);
+}
 
-/* Header and summary rows use the raised/strong tint */
+tr.row-selected .out-zone { background: transparent; }
+tr.row-selected .cf-zone { background: transparent; }
+
+thead .inc-zone,
+.row-summary .inc-zone { background: transparent; }
 thead .out-zone,
-.row-summary .out-zone { background: var(--color-out-tint-raised); }
+.row-summary .out-zone { background: transparent; }
 thead .cf-zone,
-.row-summary .cf-zone { background: var(--color-cf-wash-strong); }
+.row-summary .cf-zone { background: transparent; }
+
+.row-milestone > td {
+  border-top: 1px solid var(--color-border-default);
+}
+.row-milestone > td:first-child {
+  color: var(--color-fg-primary);
+  font-weight: 500;
+}
+
+/* Cashflow table body: per-zone number treatments */
+.tbl .num--income {
+  color: var(--color-fg-secondary);
+  font-weight: 400;
+}
+.tbl .num--cashflow {
+  color: var(--color-data-emphasis);
+  font-weight: 500;
+}
+.tbl .num--cashflow[data-shortfall="true"] {
+  color: var(--color-data-negative);
+}
+.tbl .num--outgoing {
+  color: var(--color-data-negative-dim);
+  font-weight: 400;
+}
+.tbl .num--outgoing[data-shortfall="true"] {
+  color: var(--color-data-negative);
+}
+
+.cashflow-table-shell {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
 
 /* Summary row */
 .row-summary {
@@ -125,15 +332,7 @@ thead .cf-zone,
 .row-summary > td {
   height: 56px;
   border-bottom: none;
-  border-top: 0.5px solid rgba(255,255,255,0.10);
-}
-
-@layer base {
-  /* Slate Arctic logo */
-  [data-theme="arctic"] .header-logo {
-    background: #38bdf8 !important;
-    color: #0c1825 !important;
-  }
+  border-top: 1px solid var(--color-border-strong);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -147,15 +346,14 @@ thead .cf-zone,
   border-radius: 2px;
 }
 
-/* GlassCard hover shadow (replaces JS onMouseEnter/Leave) */
 /* ── Shared form input styles ── */
 .form-input {
   height: 44px;
   padding: 0 16px;
   border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 3%, transparent);
-  color: var(--color-foreground);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-surface-raised);
+  color: var(--color-fg-primary);
   font-size: 15px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -164,16 +362,16 @@ thead .cf-zone,
   width: 100%;
 }
 .form-input:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 20%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover);
 }
 .form-input:focus {
-  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
+  background: color-mix(in srgb, var(--color-brand) 5%, transparent);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 .form-input::placeholder {
-  color: color-mix(in srgb, var(--color-subtle) 40%, transparent);
+  color: color-mix(in srgb, var(--color-fg-secondary) 40%, transparent);
   font-weight: 400;
 }
 
@@ -181,31 +379,31 @@ thead .cf-zone,
   height: 44px;
   padding: 0 32px 0 16px;
   border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-accent) 12%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 3%, transparent);
-  color: var(--color-foreground);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-surface-raised);
+  color: var(--color-fg-primary);
   font-size: 15px;
   font-weight: 500;
   outline: none;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(45,212,191,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(113,113,122,0.55)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   transition: border-color 0.2s ease, background 0.2s ease;
   width: 100%;
 }
 .form-select:hover {
-  border-color: color-mix(in srgb, var(--color-accent) 20%, transparent);
-  background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-hover);
 }
 .form-select:focus {
-  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 .form-select option {
-  background: var(--color-background);
-  color: var(--color-foreground);
+  background: var(--color-surface-app);
+  color: var(--color-fg-primary);
 }
 
 /* ── Entrance animation ── */
@@ -239,28 +437,13 @@ thead .cf-zone,
 /* ── Home page background effects ── */
 .home-bg-glow {
   background:
-    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(45,212,191,0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 35% at 50% 5%, rgba(45,212,191,0.10) 0%, transparent 65%);
+    radial-gradient(ellipse 60% 45% at 50% 0%, color-mix(in srgb, var(--color-brand) 4%, transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 35% at 50% 5%, color-mix(in srgb, var(--color-brand) 10%, transparent) 0%, transparent 65%),
+    var(--color-surface-page);
 }
 .home-bg-noise {
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: 0.025;
-}
-
-@layer base {
-  [data-theme="arctic"] .home-bg-glow {
-    background:
-      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(56,189,248,0.04) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 35% at 50% 5%, rgba(56,189,248,0.10) 0%, transparent 65%);
-  }
-  [data-theme="arctic"] .home-bg-noise { opacity: 0.015; }
-}
-
-/* ── Slate Arctic select arrow ── */
-@layer base {
-  [data-theme="arctic"] .form-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(56,189,248,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  }
 }
 
 .glass-card {
@@ -277,3 +460,72 @@ thead .cf-zone,
               inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
+/* ── Auth CTA button with emerald glow ── */
+.auth-cta {
+  width: 100%;
+  height: 46px;
+  background: var(--color-brand);
+  color: var(--color-brand-contrast);
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow:
+    0 4px 16px rgba(52, 211, 153, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+.auth-cta:hover {
+  background: var(--color-brand-hover);
+  box-shadow:
+    0 6px 24px rgba(52, 211, 153, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.auth-cta:active { transform: scale(0.99); }
+.auth-cta:focus-visible {
+  outline: none;
+  box-shadow:
+    0 4px 16px rgba(52, 211, 153, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    0 0 0 3px var(--color-focus-ring);
+}
+.auth-cta-arrow {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-weight: 500;
+}
+.auth-cta:hover .auth-cta-arrow { transform: translateX(3px); }
+
+@keyframes auth-pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand) 40%, transparent); }
+  100% { box-shadow: 0 0 0 14px rgba(52, 211, 153, 0); }
+}
+.auth-pulse-ring {
+  animation: auth-pulse-ring 2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-cta, .auth-cta-arrow { transition: none; }
+  .auth-pulse-ring { animation: none; }
+}
+
+/* ── Auth page background ── */
+/* Solid surface + a very subtle top-centered emerald hint. Noise overlay
+   is rendered as a sibling div in the layout for layered composition. */
+.auth-bg {
+  background:
+    radial-gradient(ellipse 800px 400px at 50% 0%, rgba(52, 211, 153, 0.03) 0%, transparent 70%),
+    var(--color-surface-page);
+}
+
+/* ── Auth bottom-left brand anchor (hidden on mobile) ── */
+@media (max-width: 768px) {
+  .auth-bottom-anchor { display: none; }
+}

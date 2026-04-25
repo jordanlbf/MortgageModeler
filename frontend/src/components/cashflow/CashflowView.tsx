@@ -1,15 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { useCashflowState } from "@/hooks/useCashflowState";
+import { useCallback, useState } from "react";
+import type { useCashflowState } from "@/hooks/useCashflowState";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowDashboard from "./CashflowDashboard";
 import CashflowWizardStep from "./CashflowWizardStep";
 import type { StepId } from "@/lib/cashflow-types";
 type ActiveTab = "wizard" | "dashboard";
 
+interface CashflowViewProps {
+  s: ReturnType<typeof useCashflowState>;
+}
+
 const STEP_ORDER_INVESTMENT: StepId[] = ["setup", "property", "loan", "costs", "rental", "tax"];
-const STEP_ORDER_BASE: StepId[] = ["setup", "property", "loan", "costs"];
+const STEP_ORDER_BASE: StepId[] = ["setup", "property", "loan", "costs", "tax"];
 
 function getNaturalStep(s: ReturnType<typeof useCashflowState>): StepId | null {
   if (!s.propertyUse || !s.purchaseMode || !s.setupComplete) return "setup";
@@ -17,53 +21,19 @@ function getNaturalStep(s: ReturnType<typeof useCashflowState>): StepId | null {
   if (!s.loanComplete) return "loan";
   if (!s.costsComplete) return "costs";
   if (s.isInvestment && !s.rentalComplete) return "rental";
-  if (s.isInvestment && !s.taxComplete) return "tax";
+  if (!s.taxComplete) return "tax";
   return null;
 }
 
-export default function CashflowCalculator() {
-  const s = useCashflowState();
+export default function CashflowCalculator({ s }: CashflowViewProps) {
   const [inlineStep, setInlineStep] = useState<StepId | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("wizard");
   const [editStep, setEditStep] = useState<StepId>("setup");
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
-  const [tableExpanded, setTableExpanded] = useState<Set<number>>(new Set());
-  const autoExpandedRef = useRef<Set<number>>(new Set());
-
-  const isMilestoneYear = (year: number) => year === 1 || (year - 1) % 5 === 0;
-  const getMilestoneForYear = (year: number) => year === 1 ? 1 : Math.floor((year - 1) / 5) * 5 + 1;
 
   const handleSelectYear = useCallback((year: number) => {
     s.setSelectedYear(year);
-
-    const milestone = getMilestoneForYear(year);
-    const isVisible = isMilestoneYear(year) || tableExpanded.has(milestone);
-
-    // Collapse previously auto-expanded groups that no longer contain selection
-    const toCollapse = [...autoExpandedRef.current].filter(m => m !== milestone);
-    const next = new Set(tableExpanded);
-    let changed = false;
-
-    for (const m of toCollapse) {
-      if (next.has(m)) { next.delete(m); changed = true; }
-      autoExpandedRef.current.delete(m);
-    }
-
-    // Auto-expand if needed
-    if (!isVisible) {
-      next.add(milestone);
-      autoExpandedRef.current.add(milestone);
-      changed = true;
-    }
-
-    if (changed) setTableExpanded(next);
-  }, [s, tableExpanded]);
-
-  // Manual expand/collapse from table — clear auto-tracking for toggled milestones
-  const handleManualExpand = useCallback((expanded: Set<number>) => {
-    autoExpandedRef.current.clear();
-    setTableExpanded(expanded);
-  }, []);
+  }, [s]);
 
 
   const stepOrder = s.isInvestment ? STEP_ORDER_INVESTMENT : STEP_ORDER_BASE;
@@ -123,7 +93,7 @@ export default function CashflowCalculator() {
     <>
       {/* ── Wizard view: sidebar + wizard centered together ── */}
       {showWizard && (
-        <div className="flex justify-center items-start bg-background text-foreground">
+        <div className="flex justify-center items-start bg-surface-app text-fg-primary">
           <div className="flex w-full max-w-[960px]">
             <CashflowSidebar s={s} currentStep={sidebarStep} onStepClick={goToStep} />
 
@@ -161,13 +131,11 @@ export default function CashflowCalculator() {
 
       {/* ── Dashboard view ── */}
       {s.allComplete && s.yearData.length > 0 && activeTab === "dashboard" && (
-        <CashflowDashboard
+<CashflowDashboard
           s={s}
           hoveredYear={hoveredYear}
-          tableExpanded={tableExpanded}
           onHoverYear={setHoveredYear}
           onSelectYear={handleSelectYear}
-          onManualExpand={handleManualExpand}
         />
       )}
     </>

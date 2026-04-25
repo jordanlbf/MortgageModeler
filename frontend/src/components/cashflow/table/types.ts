@@ -7,15 +7,12 @@ export interface SubTableProps {
   showOffset: boolean;
   propertyValue: number;
   depColor: string;
-  isGroupExpanded: (group: string) => boolean;
-  toggleGroup: (group: string) => void;
-  isRowVisible: (year: number) => boolean;
-  isMilestoneYear: (year: number) => boolean;
-  formatYearCell: (year: number, index: number, isMilestoneRow?: boolean) => ReactNode;
-  getRowClass: (year: number, isMilestoneRow?: boolean) => string;
-  getRowHandlers: (year: number, isMilestone: boolean) => {
+  formatYearCell: (year: number, index: number) => ReactNode;
+  getRowClass: (year: number) => string;
+  getRowHandlers: (year: number) => {
     onClick: () => void;
     onMouseEnter: () => void;
     onMouseLeave: () => void;
   };
+  visibleCols?: Record<string, boolean>;
 }
