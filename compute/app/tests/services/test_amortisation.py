@@ -218,10 +218,12 @@ class TestExtraRepayments:
         assert result_extra.schedule.total_interest < result_normal.schedule.total_interest
 
     def test_extra_repayments_shorten_loan(self):
-        """Extra repayments should reduce the number of periods."""
+        """Extra repayments should bring the payoff period earlier."""
         result_normal = _build(loan=_make_loan(extra_repayment=0))
         result_extra = _build(loan=_make_loan(extra_repayment=500))
-        assert result_extra.schedule.total_periods < result_normal.schedule.total_periods
+        assert result_extra.schedule.paid_off_at_period is not None
+        assert result_normal.schedule.paid_off_at_period is not None
+        assert result_extra.schedule.paid_off_at_period < result_normal.schedule.paid_off_at_period
 
 
 # ──────────────────────────────────────────────
@@ -665,7 +667,7 @@ class TestBuildExistingLoanScheduleValues:
         assert loan_with_offset.schedule.total_interest < loan_no_offset.schedule.total_interest
 
     def test_extra_repayment_reduces_term(self):
-        """Extra repayments should result in fewer schedule rows."""
+        """Extra repayments should bring the payoff period earlier."""
         loan_normal = build_existing_loan(
             current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
         )
@@ -673,7 +675,9 @@ class TestBuildExistingLoanScheduleValues:
             current_balance=350_000, remaining_term_years=25, annual_rate=0.06,
             extra_repayment=500,
         )
-        assert loan_extra.schedule.total_periods < loan_normal.schedule.total_periods
+        assert loan_extra.schedule.paid_off_at_period is not None
+        assert loan_normal.schedule.paid_off_at_period is not None
+        assert loan_extra.schedule.paid_off_at_period < loan_normal.schedule.paid_off_at_period
 
     def test_rate_changes_applied(self):
         """Rate change mid-loan should change periodic interest."""

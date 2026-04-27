@@ -369,6 +369,55 @@ class TestScheduleWithOffsetGrowth:
             assert a.offset_balance == pytest.approx(b.offset_balance, abs=0.01)
 
 
+class TestPostPayoffOffsetPreservation:
+    """
+    When the loan is paid off before the contracted term ends (extras + offset
+    eat the balance), the offset account must keep accruing — the cash sitting
+    in the offset is still real wealth, even with no loan to offset against.
+    Regression cover for the bug where post-payoff years showed zero offset
+    balance and dropped the offset out of the net-equity rollup downstream.
+    """
+
+    @pytest.fixture
+    def schedule(self):
+        # 1-year, $12k loan with $2k/period extra → pays off well before period 12.
+        return generate_schedule(
+            12_000,
+            0.06,
+            1,
+            offset_balance=5_000,
+            offset_contribution=500,
+            extra_repayment=2_000,
+        )
+
+    def test_pays_off_early(self, schedule):
+        assert schedule.paid_off_at_period is not None
+        assert schedule.paid_off_at_period < schedule.total_periods
+
+    def test_full_term_rows(self, schedule):
+        """Schedule still spans the contracted 12 periods despite early payoff."""
+        assert schedule.total_periods == 12
+        assert len(schedule.rows) == 12
+
+    def test_post_payoff_rows_are_zero_payment(self, schedule):
+        for row in schedule.rows[schedule.paid_off_at_period:]:
+            assert row.interest == 0.0
+            assert row.principal_paid == 0.0
+            assert row.extra_paid == 0.0
+            assert row.closing_balance == 0.0
+
+    def test_offset_keeps_growing_after_payoff(self, schedule):
+        """Offset must add offset_contribution each post-payoff period."""
+        post_payoff = schedule.rows[schedule.paid_off_at_period:]
+        for prev, curr in zip(post_payoff, post_payoff[1:]):
+            assert curr.offset_balance == pytest.approx(prev.offset_balance + 500, abs=0.01)
+
+    def test_final_offset_includes_all_term_contributions(self, schedule):
+        """Period 1 uses the starting balance (no contribution); periods 2..12 each add 500."""
+        expected_final = 5_000 + 500 * 11
+        assert schedule.rows[-1].offset_balance == pytest.approx(expected_final, abs=0.01)
+
+
 class TestInputValidation:
     """Tests for ValueError guards on invalid inputs."""
 

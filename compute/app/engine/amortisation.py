@@ -167,9 +167,14 @@ def generate_schedule(
 
     The offset account starts at offset_balance and grows by
     offset_contribution each period. Interest floors at zero when offset
-    exceeds the loan balance, but the offset itself keeps growing.
+    exceeds the loan balance, but the offset itself keeps growing — even
+    after the loan is paid off — because the cash in the offset account
+    is still real wealth and continues to count toward net equity.
 
-    The loan terminates early if the balance reaches zero.
+    The schedule always covers the full contracted term. If the balance
+    reaches zero early (extras / offset / rate moves), remaining periods
+    are recorded as zero-payment rows. ``paid_off_at_period`` on the
+    returned schedule marks when the balance first hit zero.
 
     Args:
         principal: Loan amount in dollars
@@ -186,6 +191,16 @@ def generate_schedule(
     """
     max_periods = loan_term_years * frequency.periods_per_year
 
+    # Zero-loan short-circuit: no debt to schedule.
+    if principal <= 0:
+        return AmortisationSchedule(
+            rows=[],
+            total_interest=0.0,
+            total_periods=0,
+            periods_per_year=frequency.periods_per_year,
+            paid_off_at_period=None,
+        )
+
     # Build a lookup: period -> new annual rate
     rate_change_map: dict[int, float] = {}
     if rate_changes:
@@ -201,43 +216,50 @@ def generate_schedule(
     balance = principal
     total_interest = 0.0
     current_offset = offset_balance
+    paid_off_at: int | None = None
 
     for period in range(1, max_periods + 1):
-        if balance <= 0:
-            break
-
-        # Check for rate change at this period
-        if period in rate_change_map:
+        # Check for rate change at this period (skip if the loan is already paid off — no
+        # remaining balance to recompute against).
+        if balance > 0 and period in rate_change_map:
             current_rate = rate_change_map[period]
             r = effective_periodic_rate(current_rate, frequency)
             remaining = max_periods - period + 1
             scheduled = _recalculate_repayment(balance, current_rate, remaining, frequency)
 
-        # Grow offset each period (balance keeps growing uncapped)
+        # Offset grows every period — including post-payoff — so the cash position keeps
+        # accruing for the equity rollup downstream.
         if period > 1:
             current_offset += offset_contribution
 
-        # Interest on effective balance (offset can't reduce below zero)
-        effective_balance = max(balance - current_offset, 0.0)
-        interest = effective_balance * r
+        if balance > 0:
+            # Active loan — charge interest on the offset-reduced balance.
+            effective_balance = max(balance - current_offset, 0.0)
+            interest = effective_balance * r
+            principal_component = scheduled - interest
+            extra = extra_repayment
 
-        # Principal from scheduled repayment
-        principal_component = scheduled - interest
+            # Cap total principal reduction to remaining balance. Use a half-cent
+            # tolerance so the closed-form scheduled repayment, which can drift a few
+            # nano-cents below the residual balance over a long term due to daily
+            # compounding precision, still resolves cleanly to a zero closing balance.
+            total_reduction = principal_component + extra
+            if total_reduction >= balance - 0.005:
+                # Final period — adjust to pay off exactly
+                principal_component = min(principal_component, balance)
+                extra = max(0.0, balance - principal_component)
+                balance = 0.0
+                if paid_off_at is None:
+                    paid_off_at = period
+            else:
+                balance -= total_reduction
 
-        # Extra repayment on top
-        extra = extra_repayment
-
-        # Cap total principal reduction to remaining balance
-        total_reduction = principal_component + extra
-        if total_reduction >= balance:
-            # Final period — adjust to pay off exactly
-            principal_component = min(principal_component, balance)
-            extra = balance - principal_component
-            balance = 0.0
+            total_interest += interest
         else:
-            balance -= total_reduction
-
-        total_interest += interest
+            # Post-payoff — no payment, balance stays at zero, offset still grows above.
+            interest = 0.0
+            principal_component = 0.0
+            extra = 0.0
 
         rows.append(
             ScheduleRow(
@@ -258,4 +280,5 @@ def generate_schedule(
         total_interest=total_interest,
         total_periods=len(rows),
         periods_per_year=frequency.periods_per_year,
+        paid_off_at_period=paid_off_at,
     )
