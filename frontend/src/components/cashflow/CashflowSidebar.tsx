@@ -232,29 +232,11 @@ export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) 
       isComplete={(id) => wizard.isComplete(id)}
       selectable={(id) => wizard.allComplete || wizard.isComplete(id)}
       onSelect={(id) => onStepClick?.(id)}
-      header={
-        <>
-          <div className="flex items-center justify-between px-6 h-4 mb-3 leading-none">
-            <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-fg-secondary">
-              Setup Progress
-            </span>
-            <span className="text-xs font-semibold text-brand tabular-nums">
-              {progressPercent}%
-            </span>
-          </div>
-          <div className="h-[3px] bg-[rgba(255,255,255,0.06)] rounded-sm mx-6 mb-5 overflow-hidden">
-            <div
-              className="h-full bg-brand rounded-sm transition-[width] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </>
-      }
-      footer={
-        <span className="text-[11px] text-fg-tertiary px-6 mt-5">
-          {completedCount} of {cashflowSteps.length} steps complete
-        </span>
-      }
+      progress={{
+        percent: progressPercent,
+        completedCount,
+        totalCount: cashflowSteps.length,
+      }}
       renderStepBody={({ step, isCurrent, isComplete }) => {
         const lines = getStepLines(step.id, s);
         const isExpanded = expandedSteps.has(step.id) || isCurrent;

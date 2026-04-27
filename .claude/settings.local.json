@@ -75,7 +75,8 @@
       "Bash(npx prettier *)",
       "Bash(/c/Program Files/GitHub CLI/gh.exe issue *)",
       "Bash(tee /dev/stderr)",
-      "PowerShell(gh issue list --milestone 6 --repo jordanlbf/MortgageModeler --state all --json number,title,state,labels --limit 50)"
+      "PowerShell(gh issue list --milestone 6 --repo jordanlbf/MortgageModeler --state all --json number,title,state,labels --limit 50)",
+      "PowerShell(gh issue *)"
     ]
   }
 }

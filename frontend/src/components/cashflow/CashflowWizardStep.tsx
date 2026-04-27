@@ -58,7 +58,6 @@ export default function CashflowWizardStep({
       totalSteps={wizard.totalSteps}
       ctaLabel={ctaLabel}
       ctaDisabled={!wizard.isValid(step)}
-      ctaCompact={step === "setup"}
       onContinue={onStepComplete}
       showBack={canGoBack}
       backLabel={isModal ? "Cancel" : "Back"}
