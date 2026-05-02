@@ -1,122 +1,84 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { useCashflowState } from "@/hooks/useCashflowState";
+import { ModalWizardShell, useWizardSteps } from "@/components/ui/wizard";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowDashboard from "./CashflowDashboard";
 import CashflowWizardStep from "./CashflowWizardStep";
 import type { StepId } from "@/lib/cashflow-types";
-type ActiveTab = "wizard" | "dashboard";
+import { getCashflowSteps } from "./cashflow-steps";
 
 interface CashflowViewProps {
   s: ReturnType<typeof useCashflowState>;
+  /** Step currently open in the edit modal, or null when closed. Owned by the page so it can render the Edit trigger in the page header. */
+  editingStep: StepId | null;
+  onEditingStepChange: (step: StepId | null) => void;
 }
 
-const STEP_ORDER_INVESTMENT: StepId[] = ["setup", "property", "loan", "costs", "rental", "tax"];
-const STEP_ORDER_BASE: StepId[] = ["setup", "property", "loan", "costs", "tax"];
-
-function getNaturalStep(s: ReturnType<typeof useCashflowState>): StepId | null {
-  if (!s.propertyUse || !s.purchaseMode || !s.setupComplete) return "setup";
-  if (!s.propertyComplete) return "property";
-  if (!s.loanComplete) return "loan";
-  if (!s.costsComplete) return "costs";
-  if (s.isInvestment && !s.rentalComplete) return "rental";
-  if (!s.taxComplete) return "tax";
-  return null;
-}
-
-export default function CashflowCalculator({ s }: CashflowViewProps) {
+export default function CashflowCalculator({
+  s,
+  editingStep,
+  onEditingStepChange,
+}: CashflowViewProps) {
   const [inlineStep, setInlineStep] = useState<StepId | null>(null);
-  const [activeTab, setActiveTab] = useState<ActiveTab>("wizard");
-  const [editStep, setEditStep] = useState<StepId>("setup");
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
 
   const handleSelectYear = useCallback((year: number) => {
     s.setSelectedYear(year);
   }, [s]);
 
+  const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment), [s.isInvestment]);
+  const wizard = useWizardSteps(cashflowSteps, s);
 
-  const stepOrder = s.isInvestment ? STEP_ORDER_INVESTMENT : STEP_ORDER_BASE;
-  const naturalStep = getNaturalStep(s);
-  const currentWizardStep = inlineStep ?? naturalStep;
-  const showWizard = !s.allComplete || activeTab === "wizard";
-
-  const goToStep = useCallback((step: StepId) => {
-    if (s.allComplete) {
-      setEditStep(step);
-      setActiveTab("wizard");
-    }
-  }, [s.allComplete]);
+  const currentWizardStep = inlineStep ?? wizard.naturalStep;
+  const isEditing = editingStep !== null;
 
   const handleWizardStepComplete = useCallback(() => {
     switch (currentWizardStep) {
       case "setup": s.setSetupComplete(true); break;
-      case "property": s.setPropertyComplete(true); break;
       case "loan": s.setLoanComplete(true); break;
       case "costs": s.setCostsComplete(true); break;
       case "rental": s.setRentalComplete(true); break;
-      case "tax": s.setTaxComplete(true); break;
+      case "income": s.setIncomeComplete(true); break;
+      case "depreciation": s.setDepreciationComplete(true); break;
     }
     setInlineStep(null);
   }, [currentWizardStep, s]);
 
-  const handleEditStepComplete = useCallback(() => {
-    switch (editStep) {
-      case "property": s.setPropertyComplete(true); break;
-      case "loan": s.setLoanComplete(true); break;
-      case "costs": s.setCostsComplete(true); break;
-      case "rental": s.setRentalComplete(true); break;
-      case "tax": s.setTaxComplete(true); break;
-    }
-    setActiveTab("dashboard");
-  }, [editStep, s]);
-
   const handleWizardStepBack = useCallback(() => {
-    const currentIdx = stepOrder.indexOf(currentWizardStep as StepId);
-    if (currentIdx > 0) {
-      setInlineStep(stepOrder[currentIdx - 1]);
-    }
-  }, [currentWizardStep, stepOrder]);
+    if (!currentWizardStep) return;
+    const currentIdx = wizard.indexOf(currentWizardStep);
+    const previous = cashflowSteps[currentIdx - 1];
+    if (previous) setInlineStep(previous.id);
+  }, [currentWizardStep, wizard, cashflowSteps]);
 
-  const sidebarStep = s.allComplete
-    ? (activeTab === "wizard" ? editStep : undefined)
-    : (currentWizardStep ?? undefined);
+  const handleEditNavigate = useCallback((step: StepId) => {
+    onEditingStepChange(step);
+  }, [onEditingStepChange]);
 
-  // Auto-switch to dashboard when wizard first completes
-  const [wasComplete, setWasComplete] = useState(false);
-  if (s.allComplete && !wasComplete) {
-    setWasComplete(true);
-    setActiveTab("dashboard");
-  }
+  const handleCloseEdit = useCallback(() => {
+    onEditingStepChange(null);
+  }, [onEditingStepChange]);
 
   return (
     <>
-      {/* ── Wizard view: sidebar + wizard centered together ── */}
-      {showWizard && (
-        <div className="flex justify-center items-start bg-surface-app text-fg-primary">
-          <div className="flex w-full max-w-[960px]">
-            <CashflowSidebar s={s} currentStep={sidebarStep} onStepClick={goToStep} />
-
-            <div className="flex-1 min-w-0 px-14 py-2 pb-8 flex items-start">
-              {!s.allComplete && currentWizardStep && (
-                <CashflowWizardStep
-                  s={s}
-                  currentStep={currentWizardStep}
-                  onStepComplete={handleWizardStepComplete}
-                  onStepBack={handleWizardStepBack}
-                  canGoBack={stepOrder.indexOf(currentWizardStep as StepId) > 0}
-                />
-              )}
-              {s.allComplete && (
-                <CashflowWizardStep
-                  s={s}
-                  currentStep={editStep}
-                  onStepComplete={handleEditStepComplete}
-                  onStepBack={() => setActiveTab("dashboard")}
-                  canGoBack={true}
-                />
-              )}
-            </div>
+      {/* Inline wizard — pre-completion */}
+      {!s.allComplete && currentWizardStep && (
+        <div className="flex justify-center items-start py-6 px-4 sm:py-8 sm:px-6 bg-surface-app text-fg-primary min-h-0">
+          <div className="w-full max-w-[960px] max-h-[calc(100vh-140px)] flex rounded-2xl overflow-hidden border border-white/[0.06] bg-surface-raised/60 backdrop-blur-xl shadow-float">
+            <CashflowSidebar
+              s={s}
+              currentStep={currentWizardStep}
+              onStepClick={(step) => setInlineStep(step)}
+            />
+            <CashflowWizardStep
+              s={s}
+              currentStep={currentWizardStep}
+              onStepComplete={handleWizardStepComplete}
+              onStepBack={handleWizardStepBack}
+              canGoBack={wizard.indexOf(currentWizardStep) > 0}
+            />
           </div>
         </div>
       )}
@@ -129,15 +91,36 @@ export default function CashflowCalculator({ s }: CashflowViewProps) {
         </div>
       )}
 
-      {/* ── Dashboard view ── */}
-      {s.allComplete && s.yearData.length > 0 && activeTab === "dashboard" && (
-<CashflowDashboard
+      {/* Dashboard — post-completion */}
+      {s.allComplete && s.yearData.length > 0 && (
+        <CashflowDashboard
           s={s}
           hoveredYear={hoveredYear}
           onHoverYear={setHoveredYear}
           onSelectYear={handleSelectYear}
         />
       )}
+
+      {/* Edit modal — post-completion */}
+      <ModalWizardShell isOpen={isEditing} onClose={handleCloseEdit}>
+        {editingStep && (
+          <>
+            <CashflowSidebar
+              s={s}
+              currentStep={editingStep}
+              onStepClick={handleEditNavigate}
+            />
+            <CashflowWizardStep
+              s={s}
+              currentStep={editingStep}
+              onStepComplete={handleCloseEdit}
+              onStepBack={handleCloseEdit}
+              canGoBack
+              isModal
+            />
+          </>
+        )}
+      </ModalWizardShell>
     </>
   );
 }

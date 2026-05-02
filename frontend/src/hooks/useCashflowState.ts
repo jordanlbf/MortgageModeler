@@ -18,11 +18,11 @@ export interface CashflowState {
 
   // Completion
   setupComplete: boolean;
-  propertyComplete: boolean;
   loanComplete: boolean;
   costsComplete: boolean;
   rentalComplete: boolean;
-  taxComplete: boolean;
+  incomeComplete: boolean;
+  depreciationComplete: boolean;
   allComplete: boolean;
 
   // Derived
@@ -44,13 +44,16 @@ export interface CashflowState {
   loanTerm: string;
   hasOffset: boolean;
   offsetBalance: string;
+  offsetMonthlyContribution: string;
   extraRepayments: string;
 
   // Form values – Costs
   councilRates: string;
   waterRates: string;
   insurance: string;
+  landlordInsurance: string;
   maintenance: string;
+  annualCostGrowthRate: string;
   hasStrata: boolean;
   strataFees: string;
 
@@ -62,7 +65,6 @@ export interface CashflowState {
 
   // Form values – Tax
   taxableIncome: string;
-  depreciation: string;
   depreciationMode: "estimate" | "detailed";
   depBuildings: Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>;
   depAssets: Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: "diminishing_value" | "prime_cost"; written_down_value: number }>;
@@ -87,11 +89,11 @@ export interface CashflowState {
   setPropertyUse: (v: import("@/lib/cashflow-types").PropertyUse | null) => void;
   setPurchaseMode: (v: import("@/lib/cashflow-types").PurchaseMode | null) => void;
   setSetupComplete: (v: boolean) => void;
-  setPropertyComplete: (v: boolean) => void;
   setLoanComplete: (v: boolean) => void;
   setCostsComplete: (v: boolean) => void;
   setRentalComplete: (v: boolean) => void;
-  setTaxComplete: (v: boolean) => void;
+  setIncomeComplete: (v: boolean) => void;
+  setDepreciationComplete: (v: boolean) => void;
   setPurchasePrice: (v: string) => void;
   setDepositAmount: (v: string) => void;
   setCurrentValue: (v: string) => void;
@@ -102,11 +104,14 @@ export interface CashflowState {
   setLoanTerm: (v: string) => void;
   setHasOffset: (v: boolean) => void;
   setOffsetBalance: (v: string) => void;
+  setOffsetMonthlyContribution: (v: string) => void;
   setExtraRepayments: (v: string) => void;
   setCouncilRates: (v: string) => void;
   setWaterRates: (v: string) => void;
   setInsurance: (v: string) => void;
+  setLandlordInsurance: (v: string) => void;
   setMaintenance: (v: string) => void;
+  setAnnualCostGrowthRate: (v: string) => void;
   setHasStrata: (v: boolean) => void;
   setStrataFees: (v: string) => void;
   setWeeklyRent: (v: string) => void;
@@ -114,7 +119,6 @@ export interface CashflowState {
   setUsePropertyManager: (v: boolean) => void;
   setManagementFee: (v: string) => void;
   setTaxableIncome: (v: string) => void;
-  setDepreciation: (v: string) => void;
   setDepreciationMode: (v: "estimate" | "detailed") => void;
   setDepBuildings: (v: Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>) => void;
   setDepAssets: (v: Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: "diminishing_value" | "prime_cost"; written_down_value: number }>) => void;
@@ -139,8 +143,8 @@ export function useCashflowState(): CashflowState {
   const isNewPurchase = form.purchaseMode === "new";
 
   const allComplete = isInvestment
-    ? form.setupComplete && form.propertyComplete && form.loanComplete && form.costsComplete && form.rentalComplete && form.taxComplete
-    : form.setupComplete && form.propertyComplete && form.loanComplete && form.costsComplete && form.taxComplete;
+    ? form.setupComplete && form.loanComplete && form.costsComplete && form.rentalComplete && form.incomeComplete && form.depreciationComplete
+    : form.setupComplete && form.loanComplete && form.costsComplete && form.incomeComplete;
 
   const loanAmount = isNewPurchase
     ? parseCurrencyInput(form.purchasePrice) - parseCurrencyInput(form.depositAmount)

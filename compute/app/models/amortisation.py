@@ -41,17 +41,27 @@ class AmortisationSchedule:
     """
     Full amortisation schedule with summary stats.
 
+    The schedule always spans the full loan term; if extra repayments or
+    offset reduce the balance to zero before the contracted term ends, the
+    remaining periods are recorded as zero-payment rows so the offset
+    account can keep accruing alongside the property.
+
     Attributes:
-        rows: Per-period schedule rows
+        rows: Per-period schedule rows (length = full contracted term)
         total_interest: Total interest paid over the life of the loan
-        total_periods: Number of periods until loan is paid off
+        total_periods: Length of the schedule in periods
         periods_per_year: Number of repayment periods per year
+        paid_off_at_period: 1-based period at which the loan first reached
+            zero balance, or None if the loan still has a balance at term
+            end. Use this to detect early payoff (instead of comparing
+            ``total_periods``, which is now always the full term).
     """
 
     rows: list[ScheduleRow]
     total_interest: float
     total_periods: int
     periods_per_year: int
+    paid_off_at_period: int | None = None
 
 
 @dataclass
