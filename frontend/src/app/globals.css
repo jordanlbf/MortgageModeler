@@ -97,12 +97,19 @@
   --color-status-warning-bg: rgba(251, 191, 36, 0.10);
 
   /* ───────────────────────────────────────────────────────────────── */
-  /* Borders — zinc-based, visible                                     */
+  /* Borders — zinc-based, subtle                                      */
   /* ───────────────────────────────────────────────────────────────── */
-  --color-border-subtle:  rgba(63, 63, 70, 0.50);   /* zinc-700/50 */
-  --color-border-default: rgba(63, 63, 70, 0.70);   /* zinc-700/70 */
-  --color-border-strong:  #52525b;                  /* zinc-600 */
+  --color-border-subtle:  rgba(63, 63, 70, 0.40);   /* zinc-700/40 — near invisible */
+  --color-border-default: rgba(63, 63, 70, 0.60);   /* zinc-700/60 — subtle */
+  --color-border-strong:  rgba(63, 63, 70, 0.80);   /* zinc-700/80 — hover */
   --color-border-brand:   var(--color-brand-border);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Input surfaces — background-based styling for form controls       */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-input-bg:       rgba(39, 39, 42, 0.50);    /* zinc-800/50 */
+  --color-input-bg-hover: rgba(39, 39, 42, 0.70);    /* zinc-800/70 */
+  --color-input-bg-focus: rgba(39, 39, 42, 0.80);    /* zinc-800/80 */
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Focus                                                              */

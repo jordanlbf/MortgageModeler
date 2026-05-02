@@ -17,7 +17,8 @@ describe("useCashflowFormState", () => {
     expect(form.propertyUse).toBeNull();
     expect(form.purchaseMode).toBeNull();
     expect(form.setupComplete).toBe(false);
-    expect(form.propertyComplete).toBe(false);
+    expect(form.incomeComplete).toBe(false);
+    expect(form.depreciationComplete).toBe(false);
     expect(form.viewMode).toBe("summary");
     expect(form.depreciationMode).toBe("estimate");
   });
@@ -43,48 +44,53 @@ describe("useCashflowFormState", () => {
     expect(result.current.setters).toBe(settersBefore);
   });
 
-  it('RESET_SECTION "property" cascades to reset propertyComplete, loanComplete, costsComplete, rentalComplete, taxComplete', () => {
+  it('RESET_SECTION "setup" cascades to reset setupComplete, loanComplete, costsComplete, rentalComplete, incomeComplete, depreciationComplete', () => {
     const { result } = renderHook(() => useCashflowFormState());
 
     // Set all completion flags to true first
     act(() => {
-      result.current.setters.setPropertyComplete(true);
+      result.current.setters.setSetupComplete(true);
       result.current.setters.setLoanComplete(true);
       result.current.setters.setCostsComplete(true);
       result.current.setters.setRentalComplete(true);
-      result.current.setters.setTaxComplete(true);
+      result.current.setters.setIncomeComplete(true);
+      result.current.setters.setDepreciationComplete(true);
     });
 
-    expect(result.current.form.propertyComplete).toBe(true);
+    expect(result.current.form.setupComplete).toBe(true);
     expect(result.current.form.loanComplete).toBe(true);
     expect(result.current.form.costsComplete).toBe(true);
     expect(result.current.form.rentalComplete).toBe(true);
-    expect(result.current.form.taxComplete).toBe(true);
+    expect(result.current.form.incomeComplete).toBe(true);
+    expect(result.current.form.depreciationComplete).toBe(true);
 
-    act(() => result.current.resetSection("property"));
+    act(() => result.current.resetSection("setup"));
 
-    expect(result.current.form.propertyComplete).toBe(false);
+    expect(result.current.form.setupComplete).toBe(false);
     expect(result.current.form.loanComplete).toBe(false);
     expect(result.current.form.costsComplete).toBe(false);
     expect(result.current.form.rentalComplete).toBe(false);
-    expect(result.current.form.taxComplete).toBe(false);
+    expect(result.current.form.incomeComplete).toBe(false);
+    expect(result.current.form.depreciationComplete).toBe(false);
   });
 
-  it('RESET_SECTION "tax" only resets taxComplete', () => {
+  it('RESET_SECTION "depreciation" only resets depreciationComplete', () => {
     const { result } = renderHook(() => useCashflowFormState());
 
     act(() => {
-      result.current.setters.setPropertyComplete(true);
+      result.current.setters.setSetupComplete(true);
       result.current.setters.setLoanComplete(true);
-      result.current.setters.setTaxComplete(true);
+      result.current.setters.setIncomeComplete(true);
+      result.current.setters.setDepreciationComplete(true);
     });
 
-    act(() => result.current.resetSection("tax"));
+    act(() => result.current.resetSection("depreciation"));
 
-    expect(result.current.form.taxComplete).toBe(false);
+    expect(result.current.form.depreciationComplete).toBe(false);
     // Others remain true
-    expect(result.current.form.propertyComplete).toBe(true);
+    expect(result.current.form.setupComplete).toBe(true);
     expect(result.current.form.loanComplete).toBe(true);
+    expect(result.current.form.incomeComplete).toBe(true);
   });
 
   it("toggleSection adds and removes from expandedSections set", () => {
@@ -109,9 +115,9 @@ describe("useCashflowFormState", () => {
   it("resetSection adds section to expandedSections", () => {
     const { result } = renderHook(() => useCashflowFormState());
 
-    expect(result.current.expandedSections.has("property")).toBe(false);
+    expect(result.current.expandedSections.has("income")).toBe(false);
 
-    act(() => result.current.resetSection("property"));
-    expect(result.current.expandedSections.has("property")).toBe(true);
+    act(() => result.current.resetSection("income"));
+    expect(result.current.expandedSections.has("income")).toBe(true);
   });
 });

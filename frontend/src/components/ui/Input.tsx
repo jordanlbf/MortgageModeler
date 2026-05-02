@@ -8,10 +8,10 @@ interface Props extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"
 }
 
 const BASE_MD =
-  "py-3.5 px-4 bg-transparent border border-default rounded-xl text-fg-primary font-[inherit] text-base font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-brand/40";
+  "py-3 px-4 bg-input-bg border-0 rounded-lg text-fg-primary font-[inherit] text-base font-medium tabular-nums transition-all duration-150 focus:outline-none focus:bg-input-bg-focus focus:ring-1 focus:ring-brand/25 placeholder:text-fg-muted";
 
 const BASE_SM =
-  "flex-1 min-w-0 text-[13px] py-1.5 px-2.5 bg-transparent border border-default rounded-xl text-fg-primary font-[inherit] font-medium tabular-nums transition-[border-color] duration-200 focus:outline-none focus:border-brand/40";
+  "flex-1 min-w-0 text-[13px] py-1.5 px-2.5 bg-input-bg border-0 rounded-lg text-fg-primary font-[inherit] font-medium tabular-nums transition-all duration-150 focus:outline-none focus:bg-input-bg-focus focus:ring-1 focus:ring-brand/25 placeholder:text-fg-muted";
 
 const Input = forwardRef<HTMLInputElement, Props>(function Input(
   { size = "md", suffix, className, type = "text", ...rest },

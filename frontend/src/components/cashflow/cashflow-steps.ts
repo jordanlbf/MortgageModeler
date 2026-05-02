@@ -1,6 +1,6 @@
 import {
+  Briefcase,
   Building2,
-  Calculator,
   Coins,
   DollarSign,
   Home,
@@ -36,14 +36,6 @@ const ALL_STEPS: CashflowStep[] = [
     isValid: (s) => !!s.propertyUse && !!s.purchaseMode,
   },
   {
-    id: "property",
-    title: "Property",
-    sidebarTitle: "Property Details",
-    icon: Building2,
-    sidebarIcon: Building2,
-    isComplete: (s) => s.propertyComplete,
-  },
-  {
     id: "loan",
     title: "Loan",
     sidebarTitle: "Loan Terms",
@@ -68,20 +60,25 @@ const ALL_STEPS: CashflowStep[] = [
     isComplete: (s) => s.rentalComplete,
   },
   {
-    id: "tax",
-    title: "Tax",
-    sidebarTitle: "Tax Details",
-    icon: Calculator,
-    sidebarIcon: Calculator,
-    isComplete: (s) => s.taxComplete,
+    id: "income",
+    title: "Income Details",
+    sidebarTitle: "Income Details",
+    icon: Briefcase,
+    sidebarIcon: Briefcase,
+    isComplete: (s) => s.incomeComplete,
+  },
+  {
+    id: "depreciation",
+    title: "Depreciation",
+    sidebarTitle: "Depreciation",
+    icon: Building2,
+    sidebarIcon: Building2,
+    isComplete: (s) => s.depreciationComplete,
   },
 ];
 
 export function getCashflowSteps(isInvestment: boolean): CashflowStep[] {
   if (isInvestment) return ALL_STEPS;
-  return ALL_STEPS.filter((s) => s.id !== "rental").map((s) =>
-    s.id === "tax"
-      ? { ...s, title: "Income", sidebarTitle: "Income & Growth" }
-      : s,
-  );
+  // PPOR: no rental, no depreciation
+  return ALL_STEPS.filter((s) => s.id !== "rental" && s.id !== "depreciation");
 }

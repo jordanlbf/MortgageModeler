@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 
 interface WizardShellProps {
   /** Title of the active step (e.g. "Property Setup"). */
@@ -47,25 +47,26 @@ export default function WizardShell({
   return (
     <div className="flex-1 flex flex-col min-w-0">
       {/* Header */}
-      <div className="px-10 pt-10 pb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs font-semibold text-brand uppercase tracking-wider tabular-nums">
+      <header className="px-10 pt-6 pb-3">
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <span className="text-[10px] font-semibold text-brand uppercase tracking-wider tabular-nums">
             Step {stepIndex}
           </span>
-          <span className="text-xs text-fg-muted">/</span>
-          <span className="text-xs text-fg-muted tabular-nums">{totalSteps}</span>
+          <span className="text-[10px] text-fg-muted/50">of {totalSteps}</span>
         </div>
-        <h2 className="text-2xl font-semibold text-fg-primary leading-tight">{stepTitle}</h2>
+        <h2 className="text-lg font-semibold text-fg-primary leading-snug">
+          {stepTitle}
+        </h2>
         {stepSubtitle && (
-          <p className="text-sm text-fg-secondary mt-1">{stepSubtitle}</p>
+          <p className="text-sm text-fg-secondary mt-1.5 leading-relaxed">{stepSubtitle}</p>
         )}
-      </div>
+      </header>
 
       {/* Content */}
       <div
         className={[
-          "flex-1 px-10 py-4 overflow-y-auto",
-          bodyAlign === "center" && "flex flex-col items-center",
+          "flex-1 px-10 py-5 overflow-y-auto",
+          bodyAlign === "center" && "flex flex-col items-center justify-center",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -74,31 +75,31 @@ export default function WizardShell({
       </div>
 
       {/* Footer Actions */}
-      <div className="px-10 py-6 border-t border-white/[0.06]">
-        <div className="flex items-center justify-between gap-3">
-          {showBack && onBack ? (
-            <button
-              type="button"
-              onClick={onBack}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-fg-secondary hover:text-fg-primary transition-colors rounded-lg hover:bg-white/[0.03]"
-            >
-              {backIcon}
-              {backLabel}
-            </button>
-          ) : (
-            <div />
-          )}
+      <footer className="px-10 py-5 border-t border-white/[0.04]">
+        <div className="flex items-center justify-between">
+          <div>
+            {showBack && onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-fg-tertiary hover:text-fg-primary transition-colors rounded-lg hover:bg-white/[0.04]"
+              >
+                {backIcon ?? <ArrowLeft size={14} />}
+                {backLabel}
+              </button>
+            )}
+          </div>
           <button
             type="button"
             onClick={onContinue}
             disabled={ctaDisabled}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-brand-contrast bg-brand rounded-lg transition-all duration-150 hover:enabled:brightness-[1.08] disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-brand-contrast bg-brand rounded-lg transition-all duration-150 hover:enabled:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {ctaLabel}
-            <ArrowRight size={16} />
+            <ArrowRight size={14} />
           </button>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

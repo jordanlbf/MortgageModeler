@@ -26,30 +26,7 @@ function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
         { value: s.purchaseMode === "new" ? "New" : "Existing", descriptor: "Purchase" },
       ];
     }
-    case "property": {
-      if (!s.propertyComplete) return null;
-      if (s.isNewPurchase) {
-        const price = parseCurrencyInput(s.purchasePrice);
-        const deposit = parseCurrencyInput(s.depositAmount);
-        const loanAmt = price - deposit;
-        const lvr = price > 0 ? Math.round((loanAmt / price) * 100) : 0;
-        return [
-          { primary: true, text: `${formatDollarsSigned(price)} Purchase Price` },
-          { value: formatDollarsSigned(loanAmt), descriptor: "Loan Balance" },
-          { value: `${lvr}%`, descriptor: "LVR" },
-        ];
-      } else {
-        const value = parseCurrencyInput(s.currentValue);
-        const loan = parseCurrencyInput(s.currentLoanBalance);
-        const equity = value - loan;
-        const lvr = value > 0 ? Math.round((loan / value) * 100) : 0;
-        return [
-          { primary: true, text: `${formatDollarsSigned(value)} Current Value` },
-          { value: formatDollarsSigned(equity), descriptor: "Equity" },
-          { value: `${lvr}%`, descriptor: "LVR" },
-        ];
-      }
-    }
+
     case "loan": {
       if (!s.loanComplete) return null;
       const loanAmt = s.isNewPurchase
@@ -91,19 +68,25 @@ function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
         { value: `${mgmt}%`, descriptor: "Management" },
       ];
     }
-    case "tax": {
-      if (!s.taxComplete) return null;
+    case "income": {
+      if (!s.incomeComplete) return null;
       const income = parseCurrencyInput(s.taxableIncome);
       const rate =
         income > 190000 ? "45%" :
         income > 135000 ? "37%" :
         income > 45000  ? "30%" : "16%";
-      const lines: StepLine[] = [
+      return [
         { primary: true, text: `${formatDollarsSigned(income)} Taxable Income` },
+        { value: rate, descriptor: "Tax Bracket" },
+        { value: `${s.capitalGrowth}%`, descriptor: "Capital Growth" },
       ];
-      if (s.isInvestment) lines.push({ value: rate, descriptor: "Tax Bracket" });
-      else lines.push({ value: `${s.capitalGrowth}%`, descriptor: "Capital Growth" });
-      return lines;
+    }
+    case "depreciation": {
+      if (!s.depreciationComplete) return null;
+      const mode = s.depreciationMode === "estimate" ? "Estimated" : "Detailed";
+      return [
+        { primary: true, text: `${mode} Depreciation` },
+      ];
     }
     default:
       return null;
@@ -138,23 +121,23 @@ function StepBody({
   const hasDetails = secondary.length > 0;
 
   return (
-    <div className="flex flex-col gap-1 min-w-0 flex-1 pt-[3px]">
+    <div className="flex flex-col min-w-0 flex-1">
       <div className="flex items-center justify-between gap-2">
         <span
           className={[
-            "text-[13px] leading-[1.4] transition-colors duration-150 ease-in-out",
+            "text-[13px] leading-snug transition-colors duration-150",
             isCurrent
               ? "font-semibold text-fg-primary"
               : isComplete
-                ? "font-medium text-fg-primary"
-                : "font-medium text-fg-tertiary",
+                ? "font-medium text-fg-secondary"
+                : "font-medium text-fg-tertiary group-hover:text-fg-secondary",
           ].join(" ")}
         >
           {primary ? primary.text : step.title}
         </span>
         {isComplete && hasDetails && (
           <span
-            className="flex items-center justify-center w-5 h-5 border-none bg-[rgba(255,255,255,0.04)] rounded text-fg-tertiary cursor-pointer transition-all duration-150 ease-in-out shrink-0 hover:bg-[rgba(255,255,255,0.08)] hover:text-fg-primary"
+            className="flex items-center justify-center w-5 h-5 bg-white/[0.04] rounded text-fg-tertiary cursor-pointer transition-all duration-150 shrink-0 hover:bg-white/[0.08] hover:text-fg-primary"
             role="button"
             tabIndex={0}
             onClick={(e) => {
@@ -170,21 +153,21 @@ function StepBody({
             }}
             aria-label={isExpanded ? "Collapse details" : "Expand details"}
           >
-            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
           </span>
         )}
       </div>
       {hasDetails && (
         <div
           className={[
-            "flex flex-col gap-1 mt-1.5 overflow-hidden transition-all duration-300 ease-in-out",
-            !isExpanded && isComplete ? "max-h-0 opacity-0 !mt-0" : "max-h-[200px]",
+            "flex flex-wrap gap-x-3 gap-y-1 mt-1.5 overflow-hidden transition-all duration-200",
+            !isExpanded && isComplete ? "max-h-0 opacity-0 !mt-0" : "max-h-[100px] opacity-100",
           ].join(" ")}
         >
           {secondary.map((line, i) => (
-            <span key={i} className="flex items-baseline gap-1.5 text-[11px] leading-[1.4]">
+            <span key={i} className="flex items-baseline gap-1">
               <span className="text-brand font-semibold text-[11px]">{line.value}</span>
-              <span className="text-fg-tertiary text-[11px]">{line.descriptor}</span>
+              <span className="text-fg-muted text-[10px]">{line.descriptor}</span>
             </span>
           ))}
         </div>

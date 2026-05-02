@@ -37,11 +37,11 @@ export default function CashflowCalculator({
   const handleWizardStepComplete = useCallback(() => {
     switch (currentWizardStep) {
       case "setup": s.setSetupComplete(true); break;
-      case "property": s.setPropertyComplete(true); break;
       case "loan": s.setLoanComplete(true); break;
       case "costs": s.setCostsComplete(true); break;
       case "rental": s.setRentalComplete(true); break;
-      case "tax": s.setTaxComplete(true); break;
+      case "income": s.setIncomeComplete(true); break;
+      case "depreciation": s.setDepreciationComplete(true); break;
     }
     setInlineStep(null);
   }, [currentWizardStep, s]);
@@ -65,8 +65,8 @@ export default function CashflowCalculator({
     <>
       {/* Inline wizard — pre-completion */}
       {!s.allComplete && currentWizardStep && (
-        <div className="flex justify-center items-start py-8 px-6 bg-surface-app text-fg-primary">
-          <div className="w-full max-w-[1100px] flex rounded-2xl overflow-hidden border border-white/[0.08] bg-surface-raised/80 backdrop-blur-xl shadow-float">
+        <div className="flex justify-center items-start py-6 px-4 sm:py-8 sm:px-6 bg-surface-app text-fg-primary min-h-0">
+          <div className="w-full max-w-[960px] max-h-[calc(100vh-140px)] flex rounded-2xl overflow-hidden border border-white/[0.06] bg-surface-raised/60 backdrop-blur-xl shadow-float">
             <CashflowSidebar
               s={s}
               currentStep={currentWizardStep}

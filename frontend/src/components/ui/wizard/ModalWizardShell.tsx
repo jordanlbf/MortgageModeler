@@ -57,7 +57,7 @@ export default function ModalWizardShell({
 
       {/* Modal Card */}
       <div
-        className="relative w-full rounded-2xl overflow-hidden shadow-float animate-card-pop-in flex bg-surface-raised border border-white/[0.08] transition-[min-height] duration-300 ease-out"
+        className="relative w-full rounded-2xl overflow-hidden shadow-[0_24px_80px_-12px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset] animate-card-pop-in flex bg-surface-raised/80 backdrop-blur-xl border border-white/[0.06] transition-[min-height] duration-300 ease-out"
         style={{
           maxWidth: `${maxWidth}px`,
           minHeight: `${minHeight}px`,
@@ -68,7 +68,7 @@ export default function ModalWizardShell({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-5 right-5 z-20 w-9 h-9 flex items-center justify-center rounded-xl bg-white/[0.04] text-fg-tertiary hover:text-fg-primary hover:bg-white/[0.08] transition-colors"
+          className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-white/[0.04] text-fg-tertiary hover:text-fg-primary hover:bg-white/[0.08] transition-all duration-150 hover:scale-105"
         >
           <X className="w-4 h-4" />
         </button>

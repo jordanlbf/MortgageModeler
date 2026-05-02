@@ -21,6 +21,9 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
     const vacWeeks = Math.round((parseFloat(form.vacancyRate) || 3.8) / 100 * 52);
     const mgmtRate = form.usePropertyManager ? (parseFloat(form.managementFee) / 100 || 0.075) : 0;
     const maintenanceRate = parseFloat(form.maintenance) / 100 || 0.005;
+    const annualCostGrowth = parseFloat(form.annualCostGrowthRate) / 100 || 0.03;
+    const offsetContribution = parseCurrencyInput(form.offsetMonthlyContribution);
+    const landlordInsurance = isInvestment ? parseCurrencyInput(form.landlordInsurance) : 0;
     const income = parseCurrencyInput(form.taxableIncome);
     const estYear = isNewPurchase ? new Date().getFullYear() : parseInt(form.purchaseYear) || new Date().getFullYear();
     const purchaseDate = isNewPurchase ? new Date().toISOString().slice(0, 10) : `${estYear}-07-01`;
@@ -59,9 +62,9 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
         building_insurance: parseCurrencyInput(form.insurance),
         strata_fees: form.hasStrata ? parseCurrencyInput(form.strataFees) * 4 : 0,
         maintenance_rate: maintenanceRate,
-        landlord_insurance: 0,
+        landlord_insurance: landlordInsurance,
         management_rate: mgmtRate,
-        annual_cost_growth_rate: 0.03,
+        annual_cost_growth_rate: annualCostGrowth,
       },
       rental: isInvestment ? {
         weekly_rent: parseCurrencyInput(form.weeklyRent),
@@ -88,7 +91,7 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
         loan_term_years: parseInt(form.loanTerm) || 30,
         frequency: "monthly",
         offset_balance: form.hasOffset ? parseCurrencyInput(form.offsetBalance) : 0,
-        offset_contribution: 0,
+        offset_contribution: form.hasOffset ? offsetContribution : 0,
         extra_repayment: parseCurrencyInput(form.extraRepayments),
         rate_changes: [],
         borrowing_costs: {
@@ -118,7 +121,7 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
         annual_rate: parseFloat(form.interestRate) / 100 || 0.065,
         frequency: "monthly",
         offset_balance: form.hasOffset ? parseCurrencyInput(form.offsetBalance) : 0,
-        offset_contribution: 0,
+        offset_contribution: form.hasOffset ? offsetContribution : 0,
         extra_repayment: parseCurrencyInput(form.extraRepayments),
         rate_changes: [],
       };

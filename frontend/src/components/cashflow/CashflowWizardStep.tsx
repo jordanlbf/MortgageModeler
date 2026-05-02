@@ -8,11 +8,11 @@ import type { CashflowState } from "@/hooks/useCashflowState";
 import type { StepId } from "@/lib/cashflow-types";
 import { getCashflowSteps } from "./cashflow-steps";
 import SetupStep from "./wizard/SetupStep";
-import PropertyStep from "./wizard/PropertyStep";
 import LoanStep from "./wizard/LoanStep";
 import CostsStep from "./wizard/CostsStep";
 import RentalStep from "./wizard/RentalStep";
-import TaxStep from "./wizard/TaxStep";
+import IncomeStep from "./wizard/IncomeStep";
+import DepreciationStep from "./wizard/DepreciationStep";
 
 interface Props {
   s: CashflowState;
@@ -25,11 +25,11 @@ interface Props {
 
 const STEP_COMPONENTS: Record<StepId, React.ComponentType<{ s: CashflowState }>> = {
   setup: SetupStep,
-  property: PropertyStep,
   loan: LoanStep,
   costs: CostsStep,
   rental: RentalStep,
-  tax: TaxStep,
+  income: IncomeStep,
+  depreciation: DepreciationStep,
 };
 
 export default function CashflowWizardStep({
@@ -48,7 +48,7 @@ export default function CashflowWizardStep({
 
   if (!stepDescriptor || !StepComponent) return null;
 
-  const isLastStep = step === "tax";
+  const isLastStep = wizard.indexOf(step) === wizard.totalSteps - 1;
   const ctaLabel = isModal ? "Save" : isLastStep ? "Calculate" : "Continue";
 
   return (
@@ -63,7 +63,7 @@ export default function CashflowWizardStep({
       backLabel={isModal ? "Cancel" : "Back"}
       backIcon={isModal ? <X size={16} /> : undefined}
       onBack={onStepBack}
-      bodyAlign={step === "setup" ? "center" : "start"}
+      bodyAlign="start"
     >
       <StepComponent s={s} />
     </WizardShell>
