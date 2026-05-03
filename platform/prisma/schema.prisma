@@ -13,11 +13,46 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
+  id             String     @id @default(cuid())
+  email          String     @unique
   hashedPassword String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  properties     Property[]
 
   @@map("users")
+}
+
+enum PropertyUse {
+  INVESTMENT
+  PPOR
+}
+
+enum PurchaseMode {
+  NEW
+  EXISTING
+}
+
+model Property {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address         String?
+  suburb          String?
+  propertyUse     PropertyUse
+  purchaseMode    PurchaseMode
+  purchasePrice   Decimal      @db.Decimal(14, 2)
+  purchaseDate    DateTime     @db.Date
+  inputs          Json
+  inputsVersion   Int          @default(1)
+  cashflowResult  Json?
+  cashflowVersion Int?
+  annualCashflow  Decimal?     @db.Decimal(14, 2)
+  currentEquity   Decimal?     @db.Decimal(14, 2)
+  computedAt      DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId, updatedAt])
+  @@map("properties")
 }

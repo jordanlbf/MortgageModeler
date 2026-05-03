@@ -77,7 +77,8 @@
       "Bash(tee /dev/stderr)",
       "PowerShell(gh issue list --milestone 6 --repo jordanlbf/MortgageModeler --state all --json number,title,state,labels --limit 50)",
       "PowerShell(gh issue *)",
-      "Bash(npx --prefix frontend tsc -p frontend --noEmit)"
+      "Bash(npx --prefix frontend tsc -p frontend --noEmit)",
+      "PowerShell(Set-Location D:\\\\MortgageModeler\\\\platform; $env:PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION = \"yes\"; npx prisma migrate reset --force)"
     ]
   }
 }
