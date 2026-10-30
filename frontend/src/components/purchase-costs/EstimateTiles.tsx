@@ -14,19 +14,12 @@ function Money({ value }: { value: number }) {
   return <>{formatDollars(Math.round(v)) || "$0"}</>;
 }
 
-function Tile({ label, value, visual, hero }: { label: string; value: React.ReactNode; visual?: React.ReactNode; hero?: boolean }) {
+function Tile({ label, value, visual }: { label: string; value: React.ReactNode; visual?: React.ReactNode }) {
   return (
-    <Card variant="panel" className="relative flex h-full min-w-0 flex-col gap-3 overflow-hidden px-5 py-4">
-      {hero && <span className="absolute inset-x-0 top-0 h-px bg-brand/50" aria-hidden="true" />}
-      <span className={hero ? `${CAPTION} text-brand/80` : CAPTION}>{label}</span>
-      <div
-        className={`font-semibold leading-none tracking-[-0.025em] tabular-nums ${
-          hero ? "text-[32px] text-brand" : "text-[26px] text-fg-primary"
-        }`}
-      >
-        {value}
-      </div>
-      {visual && <div className="mt-auto">{visual}</div>}
+    <Card variant="panel" className="flex h-full min-w-0 flex-col gap-3 rounded-2xl px-6 py-5">
+      <span className={CAPTION}>{label}</span>
+      <div className="text-[26px] font-semibold leading-none tracking-[-0.025em] tabular-nums text-fg-primary">{value}</div>
+      {visual && <div className="mt-auto pt-1">{visual}</div>}
     </Card>
   );
 }
@@ -71,14 +64,11 @@ function LvrMeter({ lvr }: { lvr: number | null }) {
   );
 }
 
-/** Headline numbers: cash needed, loan, LVR. "—" until there's an estimate. */
-export default function EstimateTiles({ total, loanAmount, lvr }: { total: number | null; loanAmount: number | null; lvr: number | null }) {
+/** Supporting numbers beside the hero: loan amount and LVR. "—" until there's an estimate. */
+export default function EstimateTiles({ loanAmount, lvr }: { loanAmount: number | null; lvr: number | null }) {
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
-      <div className="col-span-2 lg:col-span-1">
-        <Tile hero label="Cash needed" value={total === null ? EMPTY : <Money value={total} />} />
-      </div>
-      <Tile label="Loan" value={loanAmount === null ? EMPTY : <Money value={loanAmount} />} />
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Tile label="Loan amount" value={loanAmount === null ? EMPTY : <Money value={loanAmount} />} />
       <Tile
         label="LVR"
         value={lvr === null ? EMPTY : <span style={{ color: lvrColor(lvr) }}>{Math.round(lvr * 100)}%</span>}

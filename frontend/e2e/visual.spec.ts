@@ -169,8 +169,11 @@ test.describe("purchase costs", () => {
   test("toggles and breakdown", async ({ page }) => {
     await go(page, "/purchase-costs");
     await snap(page, "purchase-costs");
-    await page.locator("label", { hasText: "First Home" }).click();
-    await page.locator("label", { hasText: "Couple" }).click();
+    await page.getByRole("textbox", { name: "Purchase price" }).fill("600000");
+    await page.getByRole("textbox", { name: "Deposit" }).fill("60000");
+    await page.getByRole("switch", { name: /First home/ }).click();
+    await page.getByRole("button", { name: /^Advanced/ }).click();
+    await page.getByRole("switch", { name: /Couple/ }).click();
     await snap(page, "purchase-costs-toggled");
     await page.getByRole("button", { name: /^Fees/ }).click();
     await snap(page, "purchase-costs-fees-open", 800);
@@ -178,7 +181,7 @@ test.describe("purchase costs", () => {
 
   test("focused input", async ({ page }) => {
     await go(page, "/purchase-costs");
-    await page.locator('input[placeholder="$600,000"]').focus();
+    await page.getByRole("textbox", { name: "Purchase price" }).focus();
     await snap(page, "purchase-costs-input-focused", 400);
   });
 

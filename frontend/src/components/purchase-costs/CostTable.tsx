@@ -12,8 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 const SHORT_NAME: Partial<Record<CostItem["key"], string>> = { lmi: "LMI" };
 
 /**
- * Itemised list: the deposit, then each cost. The colour dots double as the
- * cash bar's legend. Line items (fees, concessions) fold away under their row.
+ * Itemised list: the deposit, then each cost. Dots match the donut and its
+ * legend. Line items (fees, concessions) fold away under their row.
  * `empty` shows "—" before there's an estimate.
  */
 export default function CostTable({
@@ -73,33 +73,35 @@ export default function CostTable({
                       style={{ background: item.saving ? "var(--color-data-positive)" : item.color, opacity: zero ? 0.4 : 1 }}
                       aria-hidden="true"
                     />
-                    {lines.length > 0 ? (
-                      <Button
-                        variant="ghost-muted"
-                        aria-expanded={expanded}
-                        onClick={() => toggle(item.key)}
-                        className="-my-1 -ml-1.5 flex h-7 min-w-0 items-center gap-1 rounded-md px-1.5 text-[13.5px] font-medium text-fg-primary"
-                      >
-                        <span className="truncate">{item.name}</span>
-                        <ChevronRight
-                          size={14}
-                          className={`shrink-0 text-fg-tertiary transition-transform duration-200 ${expanded ? "rotate-90" : ""}`}
-                          aria-hidden="true"
-                        />
-                      </Button>
-                    ) : (
-                      <span className={`truncate text-[13.5px] font-medium ${zero ? "text-fg-tertiary" : "text-fg-primary"}`}>
-                        {SHORT_NAME[item.key] ? (
-                          <>
-                            <span className="max-sm:hidden">{item.name}</span>
-                            <span className="sm:hidden">{SHORT_NAME[item.key]}</span>
-                          </>
-                        ) : item.name}
-                      </span>
-                    )}
-                    {item.subtitle && !empty && (
-                      <span className="truncate text-[12px] tabular-nums text-fg-tertiary max-sm:hidden">{item.subtitle}</span>
-                    )}
+                    <span className="flex min-w-0 flex-col items-start gap-0.5">
+                      {lines.length > 0 ? (
+                        <Button
+                          variant="ghost-muted"
+                          aria-expanded={expanded}
+                          onClick={() => toggle(item.key)}
+                          className="-my-1 -ml-1.5 flex h-7 min-w-0 items-center gap-1 rounded-md px-1.5 text-[13.5px] font-medium text-fg-primary"
+                        >
+                          <span className="truncate">{item.name}</span>
+                          <ChevronRight
+                            size={14}
+                            className={`shrink-0 text-fg-tertiary transition-transform duration-200 ${expanded ? "rotate-90" : ""}`}
+                            aria-hidden="true"
+                          />
+                        </Button>
+                      ) : (
+                        <span className={`truncate text-[13.5px] font-medium ${zero ? "text-fg-tertiary" : "text-fg-primary"}`}>
+                          {SHORT_NAME[item.key] ? (
+                            <>
+                              <span className="max-sm:hidden">{item.name}</span>
+                              <span className="sm:hidden">{SHORT_NAME[item.key]}</span>
+                            </>
+                          ) : item.name}
+                        </span>
+                      )}
+                      {item.subtitle && !empty && (
+                        <span className="max-w-full truncate text-[12px] tabular-nums text-fg-tertiary">{item.subtitle}</span>
+                      )}
+                    </span>
                   </span>
                 </TableCell>
                 <TableCell
