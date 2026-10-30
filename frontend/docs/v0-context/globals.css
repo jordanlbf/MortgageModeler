@@ -1,0 +1,373 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── Theme tokens synced with src/lib/theme.ts ── */
+@theme {
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Typography                                                         */
+  /* ───────────────────────────────────────────────────────────────── */
+  --font-sans: var(--font-sora), "system-ui", "sans-serif";
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Brand — Emerald identity, used for selection, active tabs,        */
+  /* column group accents, hero labels.                                */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-brand: #34d399;             /* emerald-400 */
+  --color-brand-contrast: #022c22;
+  --color-brand-hover: #6ee7b7;       /* emerald-300 */
+  --color-brand-subtle: #064e3b;      /* emerald-900 */
+  --color-brand-subtle-hover: #065f46; /* emerald-800 */
+  --color-brand-border: color-mix(in srgb, var(--color-brand) 32%, transparent);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Surface ramp — pure zinc family (no blue tint)                    */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-surface-page:     #09090b;              /* zinc-950 — outer page bg (darkest) */
+  --color-surface-sidebar:  rgba(24, 24, 27, 0.80); /* same as card — glassmorphism */
+  --color-surface-app:      #09090b;              /* zinc-950 — main app content bg */
+  --color-surface-raised:   #18181b;              /* zinc-900 — elevated solid panels */
+  --color-surface-hover:    #27272a;              /* zinc-800 — interactive hover */
+  --color-surface-active:   #27272a;              /* zinc-800 — active nav items */
+  --color-surface-overlay:  rgba(9, 9, 11, 0.74);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Card surfaces — translucent glassmorphism panels                  */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-card:            rgba(24, 24, 27, 0.80);   /* zinc-900/80 — more visible */
+  --color-card-elevated:   rgba(39, 39, 42, 0.85);   /* zinc-800/85 */
+  --color-control:         rgba(24, 24, 27, 0.70);   /* zinc-900/70 */
+  --color-surface-subtle:  rgba(255, 255, 255, 0.03);
+  --color-surface-kpi:     rgba(39, 39, 42, 0.60);   /* zinc-800/60 — more visible */
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Foreground ramp — zinc family, fully neutral                      */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-fg-primary:   #ffffff;    /* white */
+  --color-fg-secondary: #a1a1aa;    /* zinc-400 */
+  --color-fg-tertiary:  #71717a;    /* zinc-500 */
+  --color-fg-muted:     #52525b;    /* zinc-600 */
+  --color-fg-disabled:  #3f3f46;    /* zinc-700 */
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Data ink — zinc for numbers                                       */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-data-primary:   #a1a1aa;    /* zinc-400 — tabular numbers */
+  --color-data-emphasis:  #ffffff;    /* white — headline values */
+  --color-data-muted:     #71717a;    /* zinc-500 — YoY, secondary data */
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Data semantic — chromatic signal against neutral base             */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-data-positive:     #34d399;    /* emerald-400 */
+  --color-data-positive-dim: #059669;    /* emerald-600 */
+  --color-data-positive-wash: rgba(16, 185, 129, 0.2); /* emerald-500/20 */
+  --color-data-negative:     #fb7185;    /* rose-400 — shortfall, errors */
+  --color-data-negative-dim: #be475e;    /* routine recurring outgoings */
+  --color-data-negative-wash: rgba(251, 113, 133, 0.1);
+  --color-data-warning:      #fbbf24;    /* amber-400 */
+  --color-data-warning-dim:  #d97706;    /* amber-600 */
+  --color-data-warning-wash: rgba(251, 191, 36, 0.1);
+  --color-data-neutral:      var(--color-fg-tertiary);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Chart Series — distinct colors for multi-chart dashboards         */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-series-cashflow:          #34d399;    /* emerald-400 — cash/income growth */
+  --color-series-cashflow-dim:      #059669;    /* emerald-600 — gradient end */
+  --color-series-cashflow-selected: #5eead4;    /* teal-300 — selected bar */
+  --color-series-cashflow-wash:     rgba(52, 211, 153, 0.10);
+
+  --color-series-equity:            #22d3ee;    /* cyan-400 — net worth/equity */
+  --color-series-equity-dim:        #06b6d4;    /* cyan-500 — gradient end */
+  --color-series-equity-wash:       rgba(34, 211, 238, 0.10);
+
+  --color-series-debt:              #f472b6;    /* pink-400 — loan balance line */
+  --color-series-debt-dim:          rgba(244, 114, 182, 0.20);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Status semantic — UI feedback (toasts, validation, banners)       */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-status-success: #34d399;
+  --color-status-error:   #fb7185;
+  --color-status-warning: #fbbf24;
+  --color-status-info:    var(--color-brand);
+
+  /* Status surfaces */
+  --color-status-success-bg: rgba(52, 211, 153, 0.10);
+  --color-status-error-bg:   rgba(251, 113, 133, 0.10);
+  --color-status-warning-bg: rgba(251, 191, 36, 0.10);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Borders — zinc-based, subtle                                      */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-border-subtle:  rgba(63, 63, 70, 0.40);   /* zinc-700/40 — near invisible */
+  --color-border-default: rgba(63, 63, 70, 0.60);   /* zinc-700/60 — subtle */
+  --color-border-strong:  rgba(63, 63, 70, 0.80);   /* zinc-700/80 — hover */
+  --color-border-brand:   var(--color-brand-border);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Input surfaces — background-based styling for form controls       */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-input-bg:       rgba(39, 39, 42, 0.50);    /* zinc-800/50 */
+  --color-input-bg-hover: rgba(39, 39, 42, 0.70);    /* zinc-800/70 */
+  --color-input-bg-focus: rgba(39, 39, 42, 0.80);    /* zinc-800/80 */
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Focus                                                              */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-focus-ring:        color-mix(in srgb, var(--color-brand) 35%, transparent);
+  --color-focus-ring-offset: var(--color-surface-app);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Elevation                                                          */
+  /* ───────────────────────────────────────────────────────────────── */
+  --shadow-flat:
+    0 0 0 0.5px rgba(255, 255, 255, 0.02);
+  --shadow-raised:
+    0 1px 3px rgba(0, 0, 0, 0.28),
+    0 0 0 0.5px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  --shadow-float:
+    0 8px 24px rgba(0, 0, 0, 0.44),
+    0 0 0 0.5px rgba(113, 113, 122, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Column group washes                                                */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-inc-tint:         transparent;
+  --color-inc-tint-hover:   transparent;
+  --color-inc-tint-raised:  transparent;
+  --color-out-tint:         transparent;
+  --color-out-tint-hover:   transparent;
+  --color-out-tint-raised:  transparent;
+  --color-cf-wash:          transparent;
+  --color-cf-wash-hover:    transparent;
+  --color-cf-wash-strong:   transparent;
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Chart chrome — zinc family                                        */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-chart-grid-h:              rgba(113, 113, 122, 0.06);
+  --color-chart-grid-v:              rgba(113, 113, 122, 0.035);
+  --color-chart-axis:                rgba(113, 113, 122, 0.50);
+  --color-chart-axis-muted:          rgba(113, 113, 122, 0.40);
+  --color-chart-axis-line:           rgba(113, 113, 122, 0.08);
+  --color-chart-cursor:              rgba(113, 113, 122, 0.15);
+  --color-chart-bar-default:         var(--color-surface-active);
+  --color-chart-bar-selected:        var(--color-brand);
+  --color-chart-bar-hover:           var(--color-surface-hover);
+  --color-chart-legend-inactive:     rgba(113, 113, 122, 0.30);
+  --color-chart-legend-dot-inactive: rgba(113, 113, 122, 0.20);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Tool card defaults                                                 */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-tool-default:      #71717a;   /* zinc-500 */
+  --color-tool-default-glow: rgba(113, 113, 122, 0.08);
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Layout                                                             */
+  /* ───────────────────────────────────────────────────────────────── */
+  --layout-sidebar-width:            240px;
+  --layout-content-max:              1200px;
+  --layout-page-padding-x:           36px;
+  --layout-page-padding-y:           32px;
+  --layout-nav-item-height:          28px;
+  --layout-nav-item-utility-height:  24px;
+  --layout-global-btn-size:          34px;
+  --layout-header-actions-reserve:   64px;
+
+  /* ───────────────────────────────────────────────────────────────── */
+  /* Scrollbar                                                         */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-scrollbar: rgba(113, 113, 122, 0.14);
+}
+
+body {
+  background: var(--color-surface-app);
+  color: var(--color-fg-primary);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-brand) 25%, transparent);
+  color: var(--color-fg-primary);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar);
+  border-radius: 2px;
+}
+
+/* ── Entrance animation ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.5s ease-out both; }
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes card-pop-in {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-overlay-in { animation: overlay-in 0.3s ease-out both; }
+.animate-card-pop-in { animation: card-pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Right-hand drawer (Sheet variant "bare" in ui/ColumnDrawer): slide in/out over 300ms ease-out. */
+@keyframes drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes drawer-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up, .animate-overlay-in, .animate-card-pop-in { animation: none !important; }
+}
+
+/* ── Auth page noise overlay ── */
+.home-bg-noise {
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+}
+
+/* ── Auth "check your email" icon pulse ── */
+@keyframes auth-pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand) 40%, transparent); }
+  100% { box-shadow: 0 0 0 14px rgba(52, 211, 153, 0); }
+}
+.auth-pulse-ring {
+  animation: auth-pulse-ring 2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-pulse-ring { animation: none; }
+}
+
+/* ── Auth page background ── */
+/* Solid surface + a very subtle top-centered emerald hint. Noise overlay
+   is rendered as a sibling div in the layout for layered composition. */
+.auth-bg {
+  background:
+    radial-gradient(ellipse 800px 400px at 50% 0%, rgba(52, 211, 153, 0.03) 0%, transparent 70%),
+    var(--color-surface-page);
+}
+
+/* ── Auth bottom-left brand anchor (hidden on mobile) ── */
+@media (max-width: 768px) {
+  .auth-bottom-anchor { display: none; }
+}
+
+/* ───────────────────────────────────────────────────────────────────── */
+/* shadcn/ui bridge                                                       */
+/*                                                                        */
+/* shadcn components read the variables below. Every one points at an    */
+/* existing token in the @theme block above — our tokens are the source   */
+/* of truth and no colour values live here.                               */
+/*                                                                        */
+/* Deliberately omitted from shadcn's defaults (they would change the     */
+/* current look):                                                          */
+/*  - the radius scale override (Tailwind's rounded-* stay as they are)    */
+/*  - --color-card (we already own it; --card points at it instead)        */
+/*  - the base-layer "* { border-color; outline-color }" rule              */
+/*                                                                        */
+/* The app is dark-only, so there is no .dark block and the dark: variant */
+/* always applies (shadcn components put their dark styles behind it).    */
+/* ───────────────────────────────────────────────────────────────────── */
+@custom-variant dark (&:where(:root, :root *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.5rem;                                     /* rounded-lg */
+
+  --background: var(--color-surface-app);
+  --foreground: var(--color-fg-primary);
+  --card: var(--color-card);
+  --card-foreground: var(--color-fg-primary);
+  --popover: var(--color-card-elevated);
+  --popover-foreground: var(--color-fg-primary);
+  --primary: var(--color-brand);
+  --primary-foreground: var(--color-brand-contrast);
+  --secondary: var(--color-surface-hover);
+  --secondary-foreground: var(--color-fg-primary);
+  --muted: var(--color-surface-raised);
+  --muted-foreground: var(--color-fg-secondary);
+  --accent: var(--color-surface-hover);
+  --accent-foreground: var(--color-fg-primary);
+  --destructive: var(--color-status-error);
+  --border: var(--color-border-default);
+  --input: var(--color-input-bg);
+  --ring: var(--color-brand);
+
+  --chart-1: var(--color-series-cashflow);
+  --chart-2: var(--color-series-equity);
+  --chart-3: var(--color-series-debt);
+  --chart-4: var(--color-data-warning);
+  --chart-5: var(--color-data-negative);
+
+  --sidebar: var(--color-surface-sidebar);
+  --sidebar-foreground: var(--color-fg-primary);
+  --sidebar-primary: var(--color-brand);
+  --sidebar-primary-foreground: var(--color-brand-contrast);
+  --sidebar-accent: var(--color-surface-active);
+  --sidebar-accent-foreground: var(--color-fg-primary);
+  --sidebar-border: var(--color-border-default);
+  --sidebar-ring: var(--color-brand);
+}
+
+@layer base {
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
