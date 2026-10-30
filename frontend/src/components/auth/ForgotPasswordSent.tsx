@@ -1,6 +1,8 @@
 "use client";
 
 import { Mail } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import AuthCard from "./AuthCard";
 import BackToSignIn from "./BackToSignIn";
 import MortgageModelerLogo from "./MortgageModelerLogo";
@@ -99,33 +101,9 @@ export default function ForgotPasswordSent({ email, onRetry }: Props) {
             arrive.
           </div>
 
-          <button
-            type="button"
-            onClick={onRetry}
-            style={{
-              width: "100%",
-              height: 44,
-              background: "transparent",
-              color: "var(--color-fg-primary)",
-              border: "1px solid var(--color-border-default)",
-              borderRadius: 8,
-              fontFamily: "inherit",
-              fontSize: 14,
-              fontWeight: 500,
-              cursor: "pointer",
-              transition: "background 0.2s ease, border-color 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--color-surface-hover)";
-              e.currentTarget.style.borderColor = "var(--color-border-strong)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.borderColor = "var(--color-border-default)";
-            }}
-          >
+          <Button variant="outline-block" type="button" onClick={onRetry}>
             Use a different email
-          </button>
+          </Button>
         </div>
       </AuthCard>
 

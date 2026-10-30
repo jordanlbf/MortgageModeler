@@ -460,49 +460,7 @@ thead .cf-zone,
   opacity: 0.025;
 }
 
-/* ── Auth CTA button with emerald glow ── */
-.auth-cta {
-  width: 100%;
-  height: 46px;
-  background: var(--color-brand);
-  color: var(--color-brand-contrast);
-  border: none;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow:
-    0 4px 16px rgba(52, 211, 153, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.20);
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
-}
-.auth-cta:hover {
-  background: var(--color-brand-hover);
-  box-shadow:
-    0 6px 24px rgba(52, 211, 153, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-.auth-cta:active { transform: scale(0.99); }
-.auth-cta:focus-visible {
-  outline: none;
-  box-shadow:
-    0 4px 16px rgba(52, 211, 153, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.20),
-    0 0 0 3px var(--color-focus-ring);
-}
-.auth-cta-arrow {
-  display: inline-block;
-  transition: transform 0.2s ease;
-  font-weight: 500;
-}
-.auth-cta:hover .auth-cta-arrow { transform: translateX(3px); }
-
+/* ── Auth "check your email" icon pulse ── */
 @keyframes auth-pulse-ring {
   0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand) 40%, transparent); }
   100% { box-shadow: 0 0 0 14px rgba(52, 211, 153, 0); }
@@ -512,7 +470,6 @@ thead .cf-zone,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .auth-cta, .auth-cta-arrow { transition: none; }
   .auth-pulse-ring { animation: none; }
 }
 

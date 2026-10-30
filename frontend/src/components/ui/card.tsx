@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "cn"
+import { Slot } from "radix-ui"
 
 /**
  * Card variants:
@@ -7,6 +8,9 @@ import { cn } from "cn"
  * - `glass` (ours, was GlassCard): raised surface, rounded-2xl, backdrop blur,
  *   soft shadow and a 1px hover lift. No padding or layout: callers own that
  *   (and may pass e.g. a coloured `borderTop` through `style`).
+ * - `auth` (ours, was AuthCard's inline style): full-width card capped at
+ *   400px, --color-card fill, 1px border-default, 12px radius, 28px padding
+ *   and a deep drop shadow. Use `asChild` to render it as a `<form>`.
  */
 const CARD_STOCK =
   "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl"
@@ -17,23 +21,33 @@ const CARD_GLASS =
   "transition-[translate,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] " +
   "hover:-translate-y-px hover:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.35),0_0_0_0.5px_rgba(113,113,122,0.06),inset_0_1px_0_rgba(255,255,255,0.03)]"
 
-type CardVariant = "default" | "glass"
+const CARD_AUTH =
+  "w-full max-w-[400px] rounded-xl border border-border-default bg-card p-7 " +
+  "shadow-[0_8px_24px_rgba(0,0,0,0.44),0_0_0_0.5px_rgba(113,113,122,0.08),inset_0_1px_0_rgba(255,255,255,0.03)]"
+
+const CARD_VARIANTS = { default: CARD_STOCK, glass: CARD_GLASS, auth: CARD_AUTH } as const
+
+type CardVariant = keyof typeof CARD_VARIANTS
 
 function Card({
   className,
   size = "default",
   variant = "default",
+  asChild = false,
   ...props
 }: React.ComponentProps<"div"> & {
   size?: "default" | "sm"
   variant?: CardVariant
+  /** Render the single child element (e.g. a `<form>`) with the card's props. */
+  asChild?: boolean
 }) {
+  const Comp = asChild ? Slot.Root : "div"
   return (
-    <div
+    <Comp
       data-slot="card"
       data-size={size}
       data-variant={variant}
-      className={cn(variant === "glass" ? CARD_GLASS : CARD_STOCK, className)}
+      className={cn(CARD_VARIANTS[variant], className)}
       {...props}
     />
   )

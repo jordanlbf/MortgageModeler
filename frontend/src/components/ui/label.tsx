@@ -11,11 +11,14 @@ import { Label as LabelPrimitive } from "radix-ui"
  * - `bare` (ours): no classes at all; the caller styles the label (used for
  *   whole-row clickable labels around a Switch or Checkbox). Note the stock
  *   `leading-none` would otherwise change the line height of the row.
+ * - `form` (ours): 13px fg-secondary regular caption above an auth input.
+ *   Display and spacing come from the caller.
  */
 const LABEL_VARIANTS = {
   default:
     "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
   field: "text-xs font-medium text-fg-secondary",
+  form: "text-[13px] font-normal text-fg-secondary",
   bare: "",
 } as const
 

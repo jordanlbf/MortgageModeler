@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import AuthShell from "./AuthShell";
 import AuthCard from "./AuthCard";
 import PrimaryButton from "./PrimaryButton";
@@ -36,22 +38,13 @@ export default function ForgotPasswordView() {
     >
       <AuthCard onSubmit={handleSubmit}>
         <div style={{ marginBottom: 16 }}>
-          <label
-            htmlFor="forgot-email"
-            style={{
-              display: "block",
-              fontSize: 13,
-              color: "var(--color-fg-secondary)",
-              fontWeight: 400,
-              marginBottom: 6,
-            }}
-          >
+          <Label variant="form" htmlFor="forgot-email" className="mb-1.5 block">
             Email
-          </label>
-          <input
+          </Label>
+          <Input
+            variant="form"
             id="forgot-email"
             type="email"
-            className="form-input"
             placeholder="you@example.com"
             autoComplete="email"
             required

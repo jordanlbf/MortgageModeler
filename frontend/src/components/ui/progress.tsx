@@ -11,6 +11,9 @@ import { Progress as ProgressPrimitive } from "radix-ui"
  *   animates its WIDTH over 500ms ease-out (inventory risk R7: a translateX
  *   indicator eases differently and clips the rounded end differently).
  *   Override colours with `className` / `indicatorClassName`.
+ * - `meter` (ours, password strength): 3px surface-raised track with 2px
+ *   radius; the indicator's WIDTH and colour ease over 250ms. Colour via
+ *   `--progress-accent` (set it in `style`). Width comes from the caller.
  */
 function Progress({
   className,
@@ -19,9 +22,30 @@ function Progress({
   variant = "default",
   ...props
 }: React.ComponentProps<typeof ProgressPrimitive.Root> & {
-  variant?: "default" | "bar"
+  variant?: "default" | "bar" | "meter"
   indicatorClassName?: string
 }) {
+  if (variant === "meter") {
+    return (
+      <ProgressPrimitive.Root
+        data-slot="progress"
+        data-variant="meter"
+        value={value}
+        className={cn("h-[3px] overflow-hidden rounded-[2px] bg-surface-raised", className)}
+        {...props}
+      >
+        <ProgressPrimitive.Indicator
+          data-slot="progress-indicator"
+          className={cn(
+            "h-full rounded-[2px] bg-[var(--progress-accent)] [transition:width_0.25s_ease,background_0.25s_ease]",
+            indicatorClassName
+          )}
+          style={{ width: `${value ?? 0}%` }}
+        />
+      </ProgressPrimitive.Root>
+    )
+  }
+
   if (variant === "bar") {
     return (
       <ProgressPrimitive.Root

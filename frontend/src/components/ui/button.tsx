@@ -38,6 +38,8 @@ const STOCK_BASE =
 const CUSTOM_BASE =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed"
 
+const CUSTOM_BASE_NO_FOCUS = "disabled:cursor-not-allowed"
+
 const STOCK_VARIANTS = [
   "default",
   "outline",
@@ -51,6 +53,16 @@ const STOCK_VARIANTS = [
 const PILL =
   "[--pill-accent:var(--color-brand)] h-[26px] min-w-[72px] justify-center rounded-full border border-[color:rgba(255,255,255,0.07)] bg-transparent px-2.5 text-center text-[14px] leading-none font-semibold whitespace-nowrap text-[color:color-mix(in_srgb,var(--color-fg-primary)_50%,transparent)] cursor-pointer transition-all duration-150 " +
   "aria-pressed:border-[color:color-mix(in_srgb,var(--pill-accent)_25%,transparent)] aria-pressed:bg-[color:color-mix(in_srgb,var(--pill-accent)_14%,transparent)] aria-pressed:text-[color:var(--pill-accent)] aria-pressed:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_10%,transparent)]"
+
+/** Shared shape of the full-width outlined auth buttons. */
+const OUTLINE_BLOCK =
+  "flex h-11 w-full items-center justify-center gap-2.5 rounded-lg border border-border-default text-[14px] font-medium text-fg-primary cursor-pointer [transition:background_0.2s_ease,border-color_0.2s_ease] hover:border-border-strong hover:bg-surface-hover"
+
+/**
+ * Custom variants that draw their own focus indicator (so CUSTOM_BASE's
+ * outline ring would double it up).
+ */
+const OWN_FOCUS_VARIANTS = ["cta-glow"] as const
 
 const buttonVariantStyles = cva("", {
   variants: {
@@ -104,6 +116,32 @@ const buttonVariantStyles = cva("", {
        */
       "legend-row":
         "flex cursor-pointer items-center gap-2 rounded-md bg-transparent px-2 py-1 text-left transition-all duration-200 data-[dimmed=true]:opacity-30 data-[highlighted=true]:bg-[color:color-mix(in_srgb,var(--legend-accent)_8%,transparent)]",
+      /**
+       * Full-width 46px brand CTA with an emerald glow (auth Sign in / Create
+       * account / Send reset link). Owns its focus style: a 3px focus-ring
+       * box-shadow on top of the glow. A child with `data-cta-arrow` slides
+       * 3px right on hover.
+       */
+      "cta-glow":
+        "group/cta flex h-[46px] w-full items-center justify-center gap-2 rounded-lg bg-brand text-[14px] font-semibold tracking-[-0.005em] text-brand-contrast cursor-pointer outline-none " +
+        "shadow-[0_4px_16px_rgba(52,211,153,0.18),inset_0_1px_0_rgba(255,255,255,0.20)] [transition:background_0.2s_ease,box-shadow_0.2s_ease,transform_0.1s_ease] motion-reduce:[transition:none] " +
+        "hover:bg-brand-hover hover:shadow-[0_6px_24px_rgba(52,211,153,0.28),inset_0_1px_0_rgba(255,255,255,0.25)] active:[transform:scale(0.99)] " +
+        "focus-visible:shadow-[0_4px_16px_rgba(52,211,153,0.18),inset_0_1px_0_rgba(255,255,255,0.20),0_0_0_3px_var(--color-focus-ring)] " +
+        "[&>[data-cta-arrow]]:inline-block [&>[data-cta-arrow]]:font-medium [&>[data-cta-arrow]]:[transition:transform_0.2s_ease] motion-reduce:[&>[data-cta-arrow]]:[transition:none] hover:[&>[data-cta-arrow]]:[transform:translateX(3px)]",
+      /**
+       * Full-width 44px outlined button (auth "Use a different email"):
+       * transparent, 1px border-default, 14px medium. Hover: surface-hover
+       * wash + border-strong.
+       */
+      "outline-block": OUTLINE_BLOCK + " bg-transparent",
+      /** As `outline-block` on a `--color-control` fill (Continue with Google). */
+      "outline-filled": OUTLINE_BLOCK + " bg-control",
+      /** Text link, fg-secondary → fg-primary; the gap widens 6→8px on hover ("← Back to sign in"). */
+      "link-back":
+        "inline-flex items-center gap-1.5 text-fg-secondary no-underline [transition:color_0.2s_ease,gap_0.2s_ease] hover:gap-2 hover:text-fg-primary",
+      /** Quiet text link, fg-tertiary → fg-secondary (login "Forgot?"). Size comes from the caller. */
+      "link-muted":
+        "text-fg-tertiary no-underline [transition:color_0.2s_ease] hover:text-fg-secondary",
     },
     size: {
       /** No size classes (default for custom variants). */
@@ -130,6 +168,10 @@ function isStockVariant(variant: ButtonVariant): boolean {
   return (STOCK_VARIANTS as readonly string[]).includes(variant)
 }
 
+function ownsFocus(variant: ButtonVariant): boolean {
+  return (OWN_FOCUS_VARIANTS as readonly string[]).includes(variant)
+}
+
 function buttonVariants({
   variant = "default",
   size,
@@ -138,7 +180,7 @@ function buttonVariants({
   const v = variant ?? "default"
   const stock = isStockVariant(v)
   return cn(
-    stock ? STOCK_BASE : CUSTOM_BASE,
+    stock ? STOCK_BASE : ownsFocus(v) ? CUSTOM_BASE_NO_FOCUS : CUSTOM_BASE,
     buttonVariantStyles({ variant: v, size: size ?? (stock ? "default" : "none") }),
     className
   )

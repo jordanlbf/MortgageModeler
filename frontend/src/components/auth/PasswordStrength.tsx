@@ -1,5 +1,7 @@
 "use client";
 
+import { Progress } from "@/components/ui/progress";
+
 interface Props {
   value: string;
 }
@@ -34,43 +36,18 @@ export default function PasswordStrength({ value }: Props) {
   const s = calcStrength(value);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        fontSize: 11,
-        color: "var(--color-fg-tertiary)",
-        padding: "0 2px",
-      }}
-    >
-      <div
-        style={{
-          flex: 1,
-          height: 3,
-          background: "var(--color-surface-raised)",
-          borderRadius: 2,
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            height: "100%",
-            width: `${s.pct}%`,
-            background: s.color,
-            borderRadius: 2,
-            transition: "width 0.25s ease, background 0.25s ease",
-          }}
-        />
-      </div>
+    <div className="flex items-center gap-2 px-0.5 text-[11px] text-fg-tertiary">
+      <Progress
+        variant="meter"
+        value={s.pct}
+        aria-label="Password strength"
+        aria-valuetext={s.label}
+        className="flex-1"
+        style={{ "--progress-accent": s.color } as React.CSSProperties}
+      />
       <span
-        style={{
-          whiteSpace: "nowrap",
-          fontVariantNumeric: "tabular-nums",
-          minWidth: 54,
-          textAlign: "right",
-          color: s.color,
-        }}
+        className="min-w-[54px] whitespace-nowrap text-right tabular-nums"
+        style={{ color: s.color }}
       >
         {s.label}
       </span>
