@@ -9,9 +9,12 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useState, useEffect, useMemo, useRef } from "react";
+import type * as React from "react";
 import type { ChartDataPoint } from "@/lib/types";
 import { formatCurrency, formatCompactCurrency } from "@/lib/formatters";
 import { t, SERIES, SERIES_LIST } from "@/lib/theme";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ToggleLegendDot } from "@/components/ui/toggle";
 
 const SERIES_KEYS = Object.keys(SERIES) as (keyof typeof SERIES)[];
 
@@ -92,46 +95,36 @@ interface ChartLegendProps {
 }
 
 export function ChartLegend({ visibleSeries, onToggle }: ChartLegendProps) {
+  // Each click adds or removes exactly one key; forward that key so the
+  // parent's rules (e.g. never hide the last series) stay in one place.
+  const value = SERIES_LIST.filter(({ key }) => visibleSeries.has(key)).map(({ key }) => key);
+  const handleValueChange = (next: string[]) => {
+    const changed =
+      next.find((key) => !visibleSeries.has(key)) ??
+      value.find((key) => !next.includes(key));
+    if (changed) onToggle(changed);
+  };
+
   return (
-    <>
-      {SERIES_LIST.map(({ key, color, label }) => {
-        const active = visibleSeries.has(key);
-        return (
-          <button
-            key={key}
-            onClick={() => onToggle(key)}
-            aria-pressed={active}
-            className="flex items-center gap-2 rounded-md px-2.5 py-1 text-[13px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
-            style={{
-              background: active ? `color-mix(in srgb, ${color} 12%, transparent)` : "transparent",
-              border: `1px solid ${active ? `color-mix(in srgb, ${color} 25%, transparent)` : "transparent"}`,
-              color: active ? color : t.chart.legendInactive,
-            }}
-            onMouseEnter={(e) => {
-              if (!active) {
-                e.currentTarget.style.color = `color-mix(in srgb, ${color} 50%, transparent)`;
-                e.currentTarget.style.background = `color-mix(in srgb, ${color} 5%, transparent)`;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!active) {
-                e.currentTarget.style.color = t.chart.legendInactive;
-                e.currentTarget.style.background = "transparent";
-              }
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full transition-all duration-200"
-              style={{
-                background: active ? color : t.chart.legendDotInactive,
-                boxShadow: active ? `0 0 6px ${color}50` : "none",
-              }}
-            />
-            {label}
-          </button>
-        );
-      })}
-    </>
+    <ToggleGroup
+      type="multiple"
+      variant="legend"
+      aria-label="Chart series"
+      value={value}
+      onValueChange={handleValueChange}
+      className="contents"
+    >
+      {SERIES_LIST.map(({ key, color, label }) => (
+        <ToggleGroupItem
+          key={key}
+          value={key}
+          style={{ "--legend-accent": color } as React.CSSProperties}
+        >
+          <ToggleLegendDot />
+          {label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }
 

@@ -4,11 +4,12 @@ import type { ScheduleResponse } from "@/lib/api";
 import { PERIODS_PER_YEAR, FREQ_OPTIONS, FREQ_LABELS } from "@/lib/constants";
 import { formatCurrency, formatCurrencyShort, parseCurrencyInput } from "@/lib/formatters";
 import { loanAmountFromPayment } from "@/lib/calculations";
-import { t, mix } from "@/lib/theme";
+import { t } from "@/lib/theme";
 import { useAnimatedValue } from "@/hooks/useAnimatedValue";
-import GlassCard from "@/components/ui/GlassCard";
-import EditableValue from "@/components/ui/EditableValue";
-import Skeleton from "@/components/ui/Skeleton";
+import { Card } from "@/components/ui/card";
+import EditableValue from "@/components/domain/EditableValue";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface KpiCardsProps {
   data: ScheduleResponse | null;
@@ -47,7 +48,7 @@ export default memo(function KpiCards({
   return (
     <div className="mb-4 grid gap-4 grid-cols-[1fr_1fr_1fr]">
       {/* Repayment — editable */}
-      <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
+      <Card variant="glass" className={CARD_STYLE} style={CARD_BORDER}>
         <div className="text-[18px] font-medium uppercase tracking-widest text-brand/40">
           Repayment
         </div>
@@ -59,54 +60,52 @@ export default memo(function KpiCards({
               onCommit={handleRepaymentCommit}
               className="w-full text-center text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums"
             />
-          ) : <Skeleton width="160px" height="34px" />}
+          ) : <Skeleton variant="inline" width="160px" height="34px" />}
         </div>
         <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-fg-primary/30">
-          {data ? `per ${FREQ_LABELS[frequency]}` : <Skeleton width="80px" height="11px" />}
+          {data ? `per ${FREQ_LABELS[frequency]}` : <Skeleton variant="inline" width="80px" height="11px" />}
         </div>
-      </GlassCard>
+      </Card>
 
       {/* Frequency */}
-      <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
+      <Card variant="glass" className={CARD_STYLE} style={CARD_BORDER}>
         <div className="text-[18px] font-medium uppercase tracking-widest text-brand/40">
           Frequency
         </div>
-        <div className="mt-auto mb-auto flex gap-1.5 px-4 w-full">
-          {data ? FREQ_OPTIONS.map((opt) => {
-            const isActive = frequency === opt.value;
-            return (
-              <button
-                key={opt.value}
-                onClick={() => onFrequencyChange(opt.value)}
-                className="flex-1 rounded-full text-[11px] tracking-[0.5px] transition-all duration-200 cursor-pointer"
-                style={{
-                  padding: "14px 4px",
-                  background: isActive ? mix(t.brand.default, 15) : "transparent",
-                  border: isActive ? `1px solid ${t.brand.default}` : "1px solid rgba(255,255,255,0.12)",
-                  color: isActive ? t.brand.default : "rgba(255,255,255,0.4)",
-                  fontWeight: isActive ? 700 : 400,
-                  boxShadow: isActive ? `0 0 10px ${mix(t.brand.default, 20)}` : "none",
-                }}
-              >
+        {data ? (
+          <ToggleGroup
+            type="single"
+            variant="segment-pill"
+            aria-label="Repayment frequency"
+            value={frequency}
+            onValueChange={(v) => { if (v) onFrequencyChange(v as Frequency); }}
+            className="mt-auto mb-auto flex gap-1.5 px-4 w-full"
+          >
+            {FREQ_OPTIONS.map((opt) => (
+              <ToggleGroupItem key={opt.value} value={opt.value} className="flex-1 px-1 py-[14px]">
                 {opt.label}
-              </button>
-            );
-          }) : <Skeleton width="200px" height="32px" />}
-        </div>
-      </GlassCard>
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        ) : (
+          <div className="mt-auto mb-auto flex gap-1.5 px-4 w-full">
+            <Skeleton variant="inline" width="200px" height="32px" />
+          </div>
+        )}
+      </Card>
 
       {/* Loan Amount */}
-      <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
+      <Card variant="glass" className={CARD_STYLE} style={CARD_BORDER}>
         <div className="text-[18px] font-medium uppercase tracking-widest text-brand/40">
           Loan Amount
         </div>
         <div className="mt-1.5 flex items-center h-[38px] text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums text-fg-primary">
-          {data ? formatCurrencyShort(animLoan) : <Skeleton width="160px" height="34px" />}
+          {data ? formatCurrencyShort(animLoan) : <Skeleton variant="inline" width="160px" height="34px" />}
         </div>
         <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-fg-primary/30">
-          {data ? `${lvrPct}% LVR` : <Skeleton width="60px" height="11px" />}
+          {data ? `${lvrPct}% LVR` : <Skeleton variant="inline" width="60px" height="11px" />}
         </div>
-      </GlassCard>
+      </Card>
     </div>
   );
 })

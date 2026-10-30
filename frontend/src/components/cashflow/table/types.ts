@@ -1,18 +1,19 @@
 import type { ReactNode } from "react";
 import type { YearData } from "@/lib/cashflow-types";
 
+/** Props spread onto each body `TableRow` (selection state + row handlers). */
+export interface YearRowProps {
+  "data-state"?: "selected";
+  onClick: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}
+
 export interface SubTableProps {
   yearData: YearData[];
   isInvestment: boolean;
   showOffset: boolean;
-  propertyValue: number;
-  depColor: string;
-  formatYearCell: (year: number, index: number) => ReactNode;
-  getRowClass: (year: number) => string;
-  getRowHandlers: (year: number) => {
-    onClick: () => void;
-    onMouseEnter: () => void;
-    onMouseLeave: () => void;
-  };
+  formatYearCell: (year: number) => ReactNode;
+  getRowProps: (year: number) => YearRowProps;
   visibleCols?: Record<string, boolean>;
 }

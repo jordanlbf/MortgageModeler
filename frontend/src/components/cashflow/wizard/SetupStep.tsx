@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 import { currencyInput, InputField } from "./shared";
@@ -9,42 +11,57 @@ interface Props {
 }
 
 export default function SetupStep({ s }: Props) {
+  const id = useId();
   const showInputs = s.propertyUse && s.purchaseMode;
 
   return (
     <div className="flex flex-col gap-6 max-w-lg">
       {/* Property Type Row */}
       <div className="flex flex-col gap-3">
-        <FieldLabel>Property type</FieldLabel>
-        <div className="flex gap-2">
-          <PillButton
-            label="Investment"
-            active={s.propertyUse === "investment"}
+        <FieldLabel id={`${id}-use`}>Property type</FieldLabel>
+        {/* Click handlers live on the items (not onValueChange) so re-clicking
+            the active option behaves as before: it re-applies the choice and
+            never deselects it. */}
+        <ToggleGroup
+          type="single"
+          variant="choice"
+          value={s.propertyUse ?? ""}
+          aria-labelledby={`${id}-use`}
+          className="flex gap-2"
+        >
+          <ToggleGroupItem
+            value="investment"
             onClick={() => { s.setPropertyUse("investment"); s.setPurchaseMode(null); }}
-          />
-          <PillButton
-            label="Owner-occupied"
-            active={s.propertyUse === "ppor"}
+          >
+            Investment
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="ppor"
             onClick={() => { s.setPropertyUse("ppor"); s.setPurchaseMode(null); }}
-          />
-        </div>
+          >
+            Owner-occupied
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       {/* Purchase Status Row */}
       <div className={`flex flex-col gap-3 transition-opacity duration-200 ${!s.propertyUse ? "opacity-30 pointer-events-none" : ""}`}>
-        <FieldLabel>Purchase status</FieldLabel>
-        <div className="flex gap-2">
-          <PillButton
-            label="New purchase"
-            active={s.purchaseMode === "new"}
-            onClick={() => s.setPurchaseMode("new")}
-          />
-          <PillButton
-            label="Existing property"
-            active={s.purchaseMode === "existing"}
-            onClick={() => s.setPurchaseMode("existing")}
-          />
-        </div>
+        <FieldLabel id={`${id}-mode`}>Purchase status</FieldLabel>
+        <ToggleGroup
+          type="single"
+          variant="choice"
+          value={s.purchaseMode ?? ""}
+          disabled={!s.propertyUse}
+          aria-labelledby={`${id}-mode`}
+          className="flex gap-2"
+        >
+          <ToggleGroupItem value="new" onClick={() => s.setPurchaseMode("new")}>
+            New purchase
+          </ToggleGroupItem>
+          <ToggleGroupItem value="existing" onClick={() => s.setPurchaseMode("existing")}>
+            Existing property
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       {/* Property Inputs - appear after both selections */}
@@ -113,33 +130,11 @@ function PropertyInputs({ s }: Props) {
  * UI Components
  * ───────────────────────────────────────────────────────────────────────────── */
 
-function FieldLabel({ children }: { children: React.ReactNode }) {
+function FieldLabel({ id, children }: { id: string; children: React.ReactNode }) {
   return (
-    <span className="text-sm font-medium text-fg-primary">
+    <span id={id} className="text-sm font-medium text-fg-primary">
       {children}
     </span>
-  );
-}
-
-function PillButton({ label, active, onClick }: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`
-        px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 whitespace-nowrap
-        ${active 
-          ? "bg-brand/[0.12] text-brand ring-1 ring-brand/30" 
-          : "bg-zinc-800/40 text-fg-secondary hover:bg-zinc-800/60 hover:text-fg-primary"
-        }
-      `}
-    >
-      {label}
-    </button>
   );
 }
 

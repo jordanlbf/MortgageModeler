@@ -1,83 +1,75 @@
 "use client";
 
 import { formatDollarsSigned } from "@/lib/formatters";
-import { t } from "@/lib/theme";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { SubTableProps } from "./types";
 
 export default function DeductionsTable({
   yearData,
   isInvestment,
   formatYearCell,
-  getRowClass,
-  getRowHandlers,
+  getRowProps,
   visibleCols = {},
 }: SubTableProps) {
   const show = (key: string) => visibleCols[key] !== false;
   const showInv = (key: string) => isInvestment && show(key);
 
   return (
-    <table className="w-full text-[12px] table-fixed">
-      <thead>
-        <tr>
-          <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-10 w-16" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Year</th>
-          {show("holding") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Holding</th>}
-          {showInv("interest") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Interest</th>}
-          {showInv("div43") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.subtle }}>Div 43</th>}
-          {showInv("div40") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Div 40</th>}
-          {showInv("totalDepr") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.secondary, background: t.surface.subtle, fontWeight: 600 }}>Total depreciation</th>}
+    <Table variant="dense">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Year</TableHead>
+          {show("holding") && <TableHead>Holding</TableHead>}
+          {showInv("interest") && <TableHead>Interest</TableHead>}
+          {showInv("div43") && <TableHead data-divider="subtle">Div 43</TableHead>}
+          {showInv("div40") && <TableHead>Div 40</TableHead>}
+          {showInv("totalDepr") && <TableHead data-tone="total">Total depreciation</TableHead>}
           {show("totalDed") && (
-            <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.brand.default, background: t.surface.subtle, fontWeight: 600, borderColor: t.border.subtle }}>
+            <TableHead data-tone="net" data-divider="subtle">
               {isInvestment ? "Total deductions" : "Total expenses"}
-            </th>
+            </TableHead>
           )}
-        </tr>
-      </thead>
-      <tbody>
-        {yearData.map((y, i) => {
-          const isSelected = getRowClass(y.year).includes("bg-brand");
-
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {yearData.map((y) => {
           const depr = y.depDiv43 + y.depDiv40;
           const totalDed = isInvestment ? y.ongoingCosts + y.interestPortion + depr : y.ongoingCosts;
 
           return (
-            <tr key={y.year} className={getRowClass(y.year)} {...getRowHandlers(y.year)}>
-              <td className="px-3 py-2 text-left text-[12px] font-medium sticky left-0 z-10 border-t" style={{ color: isSelected ? t.brand.default : t.fg.primary, background: isSelected ? t.surface.hover : t.card.base, borderColor: t.border.subtle }}>
-                {formatYearCell(y.year, i)}
-              </td>
+            <TableRow key={y.year} {...getRowProps(y.year)}>
+              <TableCell>{formatYearCell(y.year)}</TableCell>
               {show("holding") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(y.ongoingCosts))}
-                </td>
+                <TableCell>{formatDollarsSigned(Math.round(y.ongoingCosts))}</TableCell>
               )}
               {showInv("interest") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(y.interestPortion))}
-                </td>
+                <TableCell>{formatDollarsSigned(Math.round(y.interestPortion))}</TableCell>
               )}
               {showInv("div43") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t border-l" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(y.depDiv43))}
-                </td>
+                <TableCell data-divider="subtle">{formatDollarsSigned(Math.round(y.depDiv43))}</TableCell>
               )}
               {showInv("div40") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(y.depDiv40))}
-                </td>
+                <TableCell>{formatDollarsSigned(Math.round(y.depDiv40))}</TableCell>
               )}
               {showInv("totalDepr") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, fontWeight: 500, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(depr))}
-                </td>
+                <TableCell data-tone="total">{formatDollarsSigned(Math.round(depr))}</TableCell>
               )}
               {show("totalDed") && (
-                <td className="px-3 py-2 text-right text-[13px] tabular-nums border-t border-l" style={{ color: t.data.positive, fontWeight: 600, borderColor: t.border.subtle }}>
+                <TableCell data-tone="net" data-divider="subtle" className="text-data-positive">
                   {formatDollarsSigned(Math.round(totalDed))}
-                </td>
+                </TableCell>
               )}
-            </tr>
+            </TableRow>
           );
         })}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 }

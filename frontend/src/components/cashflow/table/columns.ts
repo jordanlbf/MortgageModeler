@@ -1,4 +1,4 @@
-import type { ColumnConfig } from "@/components/ui/ColumnDrawer";
+import type { ColumnConfig } from "@/components/domain/ColumnDrawer";
 import type { ViewMode } from "@/lib/cashflow-types";
 
 export const COLUMN_CONFIGS: Record<ViewMode, ColumnConfig[]> = {

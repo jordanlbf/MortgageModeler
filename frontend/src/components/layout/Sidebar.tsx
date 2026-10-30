@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * Types & Data
@@ -82,13 +83,11 @@ export default function Sidebar() {
           </span>
           <span className="font-semibold text-[var(--color-fg-primary)] text-[14px]">Modeler</span>
         </Link>
-        <Link
-          href="/cashflow"
-          className="p-2 rounded-lg bg-[var(--color-brand)] hover:bg-[var(--color-brand-hover)] text-[var(--color-brand-contrast)] transition-all hover:scale-105"
-          title="New analysis"
-        >
-          <Plus size={14} strokeWidth={2.5} />
-        </Link>
+        <Button asChild variant="icon-brand">
+          <Link href="/cashflow" title="New analysis" aria-label="New analysis">
+            <Plus size={14} strokeWidth={2.5} aria-hidden="true" />
+          </Link>
+        </Button>
       </div>
 
       {/* Portfolio Cashflow Summary */}
@@ -141,31 +140,30 @@ function PropertyRow({ property }: { property: RecentProperty }) {
   const isPositive = (property.cashflow ?? 0) >= 0;
 
   return (
-    <Link
-      href={`/cashflow?id=${property.id}`}
-      className="group flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-[var(--color-surface-hover)] transition-colors"
-    >
-      <div className={`flex items-center justify-center w-7 h-7 rounded-md shrink-0 ${
-        property.type === "investment" 
-          ? "bg-[var(--color-brand-subtle)] text-[var(--color-brand)]" 
-          : "bg-[var(--color-surface-hover)] text-[var(--color-fg-muted)]"
-      }`}>
-        <Icon size={14} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-[var(--color-fg-primary)] truncate">{property.address}</p>
-      </div>
-      {property.cashflow !== undefined && (
-        <span className={`text-[11px] font-medium tabular-nums shrink-0 ${
-          isPositive ? "text-[var(--color-data-positive)]" : "text-[var(--color-data-negative)]"
+    <Button asChild variant="nav-row">
+      <Link href={`/cashflow?id=${property.id}`}>
+        <div className={`flex items-center justify-center w-7 h-7 rounded-md shrink-0 ${
+          property.type === "investment" 
+            ? "bg-[var(--color-brand-subtle)] text-[var(--color-brand)]" 
+            : "bg-[var(--color-surface-hover)] text-[var(--color-fg-muted)]"
         }`}>
-          {isPositive ? "+" : ""}{(property.cashflow / 1000).toFixed(1)}k
-        </span>
-      )}
-      {property.status === "draft" && (
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Draft" />
-      )}
-    </Link>
+          <Icon size={14} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-medium text-[var(--color-fg-primary)] truncate">{property.address}</p>
+        </div>
+        {property.cashflow !== undefined && (
+          <span className={`text-[11px] font-medium tabular-nums shrink-0 ${
+            isPositive ? "text-[var(--color-data-positive)]" : "text-[var(--color-data-negative)]"
+          }`}>
+            {isPositive ? "+" : ""}{(property.cashflow / 1000).toFixed(1)}k
+          </span>
+        )}
+        {property.status === "draft" && (
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" title="Draft" />
+        )}
+      </Link>
+    </Button>
   );
 }
 
@@ -177,17 +175,12 @@ function NavItemRow({ href, label, icon: Icon, pathname }: NavItem & { pathname:
   const isActive = pathname === href;
 
   return (
-    <Link
-      href={href}
-      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] transition-colors ${
-        isActive 
-          ? "bg-[var(--color-surface-active)] text-[var(--color-fg-primary)]" 
-          : "text-[var(--color-fg-secondary)] hover:bg-[var(--color-surface-subtle)]"
-      }`}
-    >
-      <Icon size={15} strokeWidth={1.75} className={isActive ? "text-[var(--color-brand)]" : "text-[var(--color-fg-muted)]"} />
-      {label}
-    </Link>
+    <Button asChild variant="nav-item">
+      <Link href={href} aria-current={isActive ? "page" : undefined}>
+        <Icon size={15} strokeWidth={1.75} className={isActive ? "text-[var(--color-brand)]" : "text-[var(--color-fg-muted)]"} />
+        {label}
+      </Link>
+    </Button>
   );
 }
 
@@ -218,21 +211,25 @@ function SidebarFooter() {
             {(user.email ?? "?")[0].toUpperCase()}
           </div>
           <span className="flex-1 text-[12px] text-[var(--color-fg-secondary)] truncate">{user.email}</span>
-          <button
+          <Button
+            variant="icon-quiet"
+            className="p-1"
             onClick={handleLogout}
             disabled={submitting}
-            className="p-1 text-[var(--color-fg-muted)] hover:text-[var(--color-fg-secondary)] disabled:opacity-50 transition-colors"
             title="Sign out"
+            aria-label="Sign out"
           >
-            <LogOut size={13} />
-          </button>
+            <LogOut size={13} aria-hidden="true" />
+          </Button>
         </div>
       ) : status === "anonymous" ? (
         <div className="px-4 py-3">
-          <Link href="/login" className="flex items-center gap-2 px-2 py-1.5 text-[12px] text-[var(--color-fg-secondary)] hover:text-[var(--color-fg-primary)] transition-colors">
-            <LogIn size={13} />
-            Sign in
-          </Link>
+          <Button asChild variant="link-subtle" className="flex items-center gap-2 px-2 py-1.5 text-[12px]">
+            <Link href="/login">
+              <LogIn size={13} aria-hidden="true" />
+              Sign in
+            </Link>
+          </Button>
         </div>
       ) : (
         <div className="h-[52px]" aria-hidden="true" />
@@ -240,20 +237,18 @@ function SidebarFooter() {
 
       {/* Utility links */}
       <div className="px-4 py-2 flex gap-1 border-t border-[var(--color-border-subtle)]">
-        <Link
-          href="#"
-          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[11px] text-[var(--color-fg-muted)] hover:text-[var(--color-fg-secondary)] hover:bg-[var(--color-surface-subtle)] transition-colors"
-        >
-          <Settings size={12} />
-          Settings
-        </Link>
-        <Link
-          href="#"
-          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[11px] text-[var(--color-fg-muted)] hover:text-[var(--color-fg-secondary)] hover:bg-[var(--color-surface-subtle)] transition-colors"
-        >
-          <HelpCircle size={12} />
-          Help
-        </Link>
+        <Button asChild variant="nav-utility">
+          <Link href="#">
+            <Settings size={12} aria-hidden="true" />
+            Settings
+          </Link>
+        </Button>
+        <Button asChild variant="nav-utility">
+          <Link href="#">
+            <HelpCircle size={12} aria-hidden="true" />
+            Help
+          </Link>
+        </Button>
       </div>
     </div>
   );

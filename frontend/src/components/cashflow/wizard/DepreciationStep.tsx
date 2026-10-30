@@ -4,16 +4,16 @@ import { useState } from "react";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 import { estimateAnnualDepreciation } from "@/lib/depreciation-estimate";
-import { ModeButton, ModeToggle } from "./shared";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { type EstimateMode, ModeTabs } from "./shared";
 
 interface Props {
   s: CashflowState;
 }
 
-type DepMode = "quick" | "custom";
-
 export default function DepreciationStep({ s }: Props) {
-  const [mode, setMode] = useState<DepMode>(
+  const [mode, setMode] = useState<EstimateMode>(
     s.depreciationMode === "detailed" ? "custom" : "quick"
   );
 
@@ -26,32 +26,24 @@ export default function DepreciationStep({ s }: Props) {
     : parseInt(s.purchaseYear) || new Date().getFullYear();
   const estAnnual = estimateAnnualDepreciation(depAnchorPrice, s.isNewPurchase, estYear);
 
-  const handleModeChange = (newMode: DepMode) => {
+  const handleModeChange = (newMode: EstimateMode) => {
     setMode(newMode);
     s.setDepreciationMode(newMode === "quick" ? "estimate" : "detailed");
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-lg">
-      <ModeToggle>
-        <ModeButton active={mode === "quick"} onClick={() => handleModeChange("quick")}>
-          Quick estimate
-        </ModeButton>
-        <ModeButton active={mode === "custom"} onClick={() => handleModeChange("custom")}>
-          Custom
-        </ModeButton>
-      </ModeToggle>
-
-      {mode === "quick" ? (
+    <ModeTabs
+      value={mode}
+      onValueChange={handleModeChange}
+      quick={
         <QuickEstimateView
           estAnnual={estAnnual}
           depAnchorPrice={depAnchorPrice}
           isNewPurchase={s.isNewPurchase}
         />
-      ) : (
-        <DetailedView s={s} estYear={estYear} />
-      )}
-    </div>
+      }
+      custom={<DetailedView s={s} estYear={estYear} />}
+    />
   );
 }
 
@@ -152,8 +144,9 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
             <div className="flex flex-col gap-2">
               {s.depBuildings.map((b, i) => (
                 <div key={i} className="flex gap-2 items-center">
-                  <input
+                  <Input
                     type="text"
+                    variant="underline"
                     value={b.name}
                     onChange={(e) => {
                       const next = [...s.depBuildings];
@@ -161,11 +154,12 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
                       s.setDepBuildings(next);
                     }}
                     placeholder="Description"
-                    className="flex-1 text-sm bg-transparent border-b border-transparent hover:border-zinc-700 focus:border-brand focus:outline-none py-1 text-fg-secondary placeholder:text-fg-muted/50 transition-colors"
+                    className="flex-1"
                   />
                   <div className="flex items-center w-32">
-                    <input
+                    <Input
                       type="text"
+                      variant="underline"
                       value={b.construction_cost ? `$${b.construction_cost.toLocaleString()}` : ""}
                       onChange={(e) => {
                         const next = [...s.depBuildings];
@@ -173,11 +167,14 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
                         s.setDepBuildings(next);
                       }}
                       placeholder="$0"
-                      className="w-full text-right text-sm tabular-nums bg-transparent border-b border-transparent hover:border-zinc-700 focus:border-brand focus:outline-none py-1 text-fg-secondary placeholder:text-fg-muted/50 transition-colors"
+                      className="w-full text-right tabular-nums"
                     />
                   </div>
-                  <button
-                    className="text-fg-muted hover:text-red-400 transition-colors p-1 text-lg leading-none"
+                  <Button
+                    type="button"
+                    variant="icon-quiet"
+                    className="p-1 text-lg leading-none hover:text-red-400"
+                    aria-label={`Remove ${b.name || "building"}`}
                     onClick={() => {
                       const next = [...s.depBuildings];
                       next.splice(i, 1);
@@ -185,15 +182,17 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
                     }}
                   >
                     ×
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        <button
-          className="text-sm text-fg-muted hover:text-brand transition-colors text-left"
+        <Button
+          type="button"
+          variant="link-quiet"
+          className="text-sm text-left hover:text-brand"
           onClick={() =>
             s.setDepBuildings([
               ...s.depBuildings,
@@ -207,7 +206,7 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
           }
         >
           + Add building
-        </button>
+        </Button>
       </div>
 
       {/* Assets (Div 40) */}
@@ -232,8 +231,9 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
 
               {s.depAssets.map((a, i) => (
                 <div key={i} className="flex gap-2 items-center">
-                  <input
+                  <Input
                     type="text"
+                    variant="underline"
                     value={a.name}
                     onChange={(e) => {
                       const next = [...s.depAssets];
@@ -241,10 +241,11 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
                       s.setDepAssets(next);
                     }}
                     placeholder="Item name"
-                    className="flex-1 text-sm bg-transparent border-b border-transparent hover:border-zinc-700 focus:border-brand focus:outline-none py-1 text-fg-secondary placeholder:text-fg-muted/50 transition-colors"
+                    className="flex-1"
                   />
-                  <input
+                  <Input
                     type="text"
+                    variant="underline"
                     value={a.cost ? `$${a.cost.toLocaleString()}` : ""}
                     onChange={(e) => {
                       const next = [...s.depAssets];
@@ -253,11 +254,12 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
                       s.setDepAssets(next);
                     }}
                     placeholder="$0"
-                    className="w-24 text-right text-sm tabular-nums bg-transparent border-b border-transparent hover:border-zinc-700 focus:border-brand focus:outline-none py-1 text-fg-secondary placeholder:text-fg-muted/50 transition-colors"
+                    className="w-24 text-right tabular-nums"
                   />
                   <div className="w-16 flex items-center justify-end gap-0.5">
-                    <input
+                    <Input
                       type="text"
+                      variant="underline"
                       value={a.effective_life_years || ""}
                       onChange={(e) => {
                         const next = [...s.depAssets];
@@ -265,12 +267,15 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
                         s.setDepAssets(next);
                       }}
                       placeholder="10"
-                      className="w-10 text-right text-sm tabular-nums bg-transparent border-b border-transparent hover:border-zinc-700 focus:border-brand focus:outline-none py-1 text-fg-secondary placeholder:text-fg-muted/50 transition-colors"
+                      className="w-10 text-right tabular-nums"
                     />
                     <span className="text-xs text-fg-muted">yr</span>
                   </div>
-                  <button
-                    className="w-6 text-fg-muted hover:text-red-400 transition-colors text-lg leading-none"
+                  <Button
+                    type="button"
+                    variant="icon-quiet"
+                    className="w-6 text-lg leading-none hover:text-red-400"
+                    aria-label={`Remove ${a.name || "asset"}`}
                     onClick={() => {
                       const next = [...s.depAssets];
                       next.splice(i, 1);
@@ -278,7 +283,7 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
                     }}
                   >
                     ×
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -286,8 +291,10 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
         )}
 
         {/* Add asset button */}
-        <button
-          className="text-sm text-fg-muted hover:text-brand transition-colors text-left"
+        <Button
+          type="button"
+          variant="link-quiet"
+          className="text-sm text-left hover:text-brand"
           onClick={() =>
             s.setDepAssets([
               ...s.depAssets,
@@ -303,7 +310,7 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
           }
         >
           + Add asset
-        </button>
+        </Button>
 
         {/* Quick add presets */}
         <div className="flex flex-wrap gap-1.5">
@@ -312,13 +319,14 @@ function DetailedView({ s, estYear }: { s: CashflowState; estYear: number }) {
             .filter((p) => !s.depAssets.some((a) => a.name === p.name))
             .slice(0, 4)
             .map((preset) => (
-              <button
+              <Button
                 key={preset.name}
+                type="button"
+                variant="chip"
                 onClick={() => addPresetAsset(preset)}
-                className="text-xs px-2 py-0.5 rounded bg-zinc-800/50 text-fg-muted hover:text-fg-secondary hover:bg-zinc-800 transition-colors"
               >
                 {preset.name}
-              </button>
+              </Button>
             ))}
         </div>
       </div>

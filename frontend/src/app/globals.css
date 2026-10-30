@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* ── Theme tokens synced with src/lib/theme.ts ── */
 @theme {
@@ -183,7 +187,6 @@
   --color-scrollbar: rgba(113, 113, 122, 0.14);
 }
 
-
 body {
   background: var(--color-surface-app);
   color: var(--color-fg-primary);
@@ -192,154 +195,6 @@ body {
 ::selection {
   background: color-mix(in srgb, var(--color-brand) 25%, transparent);
   color: var(--color-fg-primary);
-}
-
-/* ── Cashflow table: column group header utility ── */
-.col-group-h {
-  height: 28px;
-  box-sizing: border-box;
-  text-align: center;
-  vertical-align: bottom;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  position: relative;
-  user-select: none;
-}
-.col-group-h::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 8px;
-  right: 8px;
-  height: 3px;
-  border-radius: 0 0 2px 2px;
-  background: var(--col-bar, currentColor);
-  opacity: var(--col-bar-alpha, 0.75);
-}
-.col-group-h--income   { --col-bar: var(--color-fg-tertiary);       --col-bar-alpha: 0.35; }
-.col-group-h--outgoing { --col-bar: var(--color-data-negative-dim); --col-bar-alpha: 0.55; }
-.col-group-h--cashflow { --col-bar: var(--color-brand);             --col-bar-alpha: 0.75; }
-.col-group-h--clickable {
-  cursor: pointer;
-  transition: background 150ms ease-in-out;
-}
-.col-group-h--clickable:hover { background: var(--color-surface-hover); }
-
-/* ── Sidebar nav ── */
-.sb-nav-item { position: relative; }
-.sb-nav-item--active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 6px;
-  bottom: 6px;
-  width: 2px;
-  border-radius: 0 2px 2px 0;
-  background: var(--color-brand);
-}
-
-/* ── Hover tooltip utility ── */
-.tip {
-  position: relative;
-  cursor: default;
-}
-.tip::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 5px 10px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--color-surface-app) 95%, transparent);
-  border: 1px solid var(--color-border-default);
-  color: var(--color-fg-secondary);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: normal;
-  text-transform: none;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 150ms ease-in-out;
-  z-index: 10;
-}
-.tip:hover::after { opacity: 1; }
-
-/* ── Cashflow table: column group zones ── */
-.inc-zone { background: var(--color-inc-tint); }
-.out-zone { background: var(--color-out-tint); }
-.cf-zone { background: var(--color-cf-wash); }
-
-.zone-start { box-shadow: inset 1px 0 0 var(--color-border-subtle); }
-.row-gsep { padding-left: 24px !important; }
-
-tr:hover .inc-zone { background: var(--color-inc-tint-hover); }
-tr:hover .out-zone { background: var(--color-out-tint-hover); }
-tr:hover .cf-zone { background: var(--color-cf-wash-hover); }
-
-tbody tr:not(.row-summary):hover > td:first-child {
-  background: var(--color-surface-hover);
-}
-
-tr.row-selected .out-zone { background: transparent; }
-tr.row-selected .cf-zone { background: transparent; }
-
-thead .inc-zone,
-.row-summary .inc-zone { background: transparent; }
-thead .out-zone,
-.row-summary .out-zone { background: transparent; }
-thead .cf-zone,
-.row-summary .cf-zone { background: transparent; }
-
-.row-milestone > td {
-  border-top: 1px solid var(--color-border-default);
-}
-.row-milestone > td:first-child {
-  color: var(--color-fg-primary);
-  font-weight: 500;
-}
-
-/* Cashflow table body: per-zone number treatments */
-.tbl .num--income {
-  color: var(--color-fg-secondary);
-  font-weight: 400;
-}
-.tbl .num--cashflow {
-  color: var(--color-data-emphasis);
-  font-weight: 500;
-}
-.tbl .num--cashflow[data-shortfall="true"] {
-  color: var(--color-data-negative);
-}
-.tbl .num--outgoing {
-  color: var(--color-data-negative-dim);
-  font-weight: 400;
-}
-.tbl .num--outgoing[data-shortfall="true"] {
-  color: var(--color-data-negative);
-}
-
-.cashflow-table-shell {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  overflow: visible;
-}
-
-/* Summary row */
-.row-summary {
-  height: 56px;
-  background: var(--color-surface-active);
-  cursor: default;
-}
-.row-summary:hover { background: var(--color-surface-active) !important; }
-.row-summary > td {
-  height: 56px;
-  border-bottom: none;
-  border-top: 1px solid var(--color-border-strong);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -351,66 +206,6 @@ thead .cf-zone,
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--color-scrollbar);
   border-radius: 2px;
-}
-
-/* ── Shared form input styles ── */
-.form-input {
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border-default);
-  background: var(--color-surface-raised);
-  color: var(--color-fg-primary);
-  font-size: 15px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  outline: none;
-  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-  width: 100%;
-}
-.form-input:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-hover);
-}
-.form-input:focus {
-  border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
-  background: color-mix(in srgb, var(--color-brand) 5%, transparent);
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
-}
-.form-input::placeholder {
-  color: color-mix(in srgb, var(--color-fg-secondary) 40%, transparent);
-  font-weight: 400;
-}
-
-.form-select {
-  height: 44px;
-  padding: 0 32px 0 16px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border-default);
-  background: var(--color-surface-raised);
-  color: var(--color-fg-primary);
-  font-size: 15px;
-  font-weight: 500;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='rgba(113,113,122,0.55)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  transition: border-color 0.2s ease, background 0.2s ease;
-  width: 100%;
-}
-.form-select:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-surface-hover);
-}
-.form-select:focus {
-  border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
-}
-.form-select option {
-  background: var(--color-surface-app);
-  color: var(--color-fg-primary);
 }
 
 /* ── Entrance animation ── */
@@ -431,85 +226,27 @@ thead .cf-zone,
 .animate-overlay-in { animation: overlay-in 0.3s ease-out both; }
 .animate-card-pop-in { animation: card-pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-@keyframes col-fade-in {
-  from { opacity: 0; transform: translateX(-8px); }
-  to { opacity: 1; transform: translateX(0); }
+/* Right-hand drawer (Sheet variant "bare" in ui/ColumnDrawer): slide in/out over 300ms ease-out. */
+@keyframes drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
-.animate-col-fade-in { animation: col-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes drawer-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-up, .animate-overlay-in, .animate-card-pop-in, .animate-col-fade-in { animation: none !important; }
+  .animate-fade-up, .animate-overlay-in, .animate-card-pop-in { animation: none !important; }
 }
 
-/* ── Home page background effects ── */
-.home-bg-glow {
-  background:
-    radial-gradient(ellipse 60% 45% at 50% 0%, color-mix(in srgb, var(--color-brand) 4%, transparent) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 35% at 50% 5%, color-mix(in srgb, var(--color-brand) 10%, transparent) 0%, transparent 65%),
-    var(--color-surface-page);
-}
+/* ── Auth page noise overlay ── */
 .home-bg-noise {
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: 0.025;
 }
 
-.glass-card {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.20),
-              0 0 0 0.5px rgba(255, 255, 255, 0.03),
-              inset 0 1px 0 rgba(255, 255, 255, 0.02);
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.glass-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35),
-              0 0 0 0.5px rgba(113, 113, 122, 0.06),
-              inset 0 1px 0 rgba(255, 255, 255, 0.03);
-}
-
-/* ── Auth CTA button with emerald glow ── */
-.auth-cta {
-  width: 100%;
-  height: 46px;
-  background: var(--color-brand);
-  color: var(--color-brand-contrast);
-  border: none;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow:
-    0 4px 16px rgba(52, 211, 153, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.20);
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
-}
-.auth-cta:hover {
-  background: var(--color-brand-hover);
-  box-shadow:
-    0 6px 24px rgba(52, 211, 153, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-.auth-cta:active { transform: scale(0.99); }
-.auth-cta:focus-visible {
-  outline: none;
-  box-shadow:
-    0 4px 16px rgba(52, 211, 153, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.20),
-    0 0 0 3px var(--color-focus-ring);
-}
-.auth-cta-arrow {
-  display: inline-block;
-  transition: transform 0.2s ease;
-  font-weight: 500;
-}
-.auth-cta:hover .auth-cta-arrow { transform: translateX(3px); }
-
+/* ── Auth "check your email" icon pulse ── */
 @keyframes auth-pulse-ring {
   0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand) 40%, transparent); }
   100% { box-shadow: 0 0 0 14px rgba(52, 211, 153, 0); }
@@ -519,7 +256,6 @@ thead .cf-zone,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .auth-cta, .auth-cta-arrow { transition: none; }
   .auth-pulse-ring { animation: none; }
 }
 
@@ -537,14 +273,101 @@ thead .cf-zone,
   .auth-bottom-anchor { display: none; }
 }
 
+/* ───────────────────────────────────────────────────────────────────── */
+/* shadcn/ui bridge                                                       */
+/*                                                                        */
+/* shadcn components read the variables below. Every one points at an    */
+/* existing token in the @theme block above — our tokens are the source   */
+/* of truth and no colour values live here.                               */
+/*                                                                        */
+/* Deliberately omitted from shadcn's defaults (they would change the     */
+/* current look):                                                          */
+/*  - the radius scale override (Tailwind's rounded-* stay as they are)    */
+/*  - --color-card (we already own it; --card points at it instead)        */
+/*  - the base-layer "* { border-color; outline-color }" rule              */
+/*                                                                        */
+/* The app is dark-only, so there is no .dark block and the dark: variant */
+/* always applies (shadcn components put their dark styles behind it).    */
+/* ───────────────────────────────────────────────────────────────────── */
+@custom-variant dark (&:where(:root, :root *));
 
-.glass-card-hover {
-  background: rgba(39, 39, 42, 0.60);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25),
-              0 0 0 0.5px rgba(255, 255, 255, 0.04),
-              inset 0 1px 0 rgba(255, 255, 255, 0.03);
+@theme inline {
+  --font-heading: var(--font-sans);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
-.shadow-glow-sm {
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-brand) 30%, transparent);
+:root {
+  --radius: 0.5rem;                                     /* rounded-lg */
+
+  --background: var(--color-surface-app);
+  --foreground: var(--color-fg-primary);
+  --card: var(--color-card);
+  --card-foreground: var(--color-fg-primary);
+  --popover: var(--color-card-elevated);
+  --popover-foreground: var(--color-fg-primary);
+  --primary: var(--color-brand);
+  --primary-foreground: var(--color-brand-contrast);
+  --secondary: var(--color-surface-hover);
+  --secondary-foreground: var(--color-fg-primary);
+  --muted: var(--color-surface-raised);
+  --muted-foreground: var(--color-fg-secondary);
+  --accent: var(--color-surface-hover);
+  --accent-foreground: var(--color-fg-primary);
+  --destructive: var(--color-status-error);
+  --border: var(--color-border-default);
+  --input: var(--color-input-bg);
+  --ring: var(--color-brand);
+
+  --chart-1: var(--color-series-cashflow);
+  --chart-2: var(--color-series-equity);
+  --chart-3: var(--color-series-debt);
+  --chart-4: var(--color-data-warning);
+  --chart-5: var(--color-data-negative);
+
+  --sidebar: var(--color-surface-sidebar);
+  --sidebar-foreground: var(--color-fg-primary);
+  --sidebar-primary: var(--color-brand);
+  --sidebar-primary-foreground: var(--color-brand-contrast);
+  --sidebar-accent: var(--color-surface-active);
+  --sidebar-accent-foreground: var(--color-fg-primary);
+  --sidebar-border: var(--color-border-default);
+  --sidebar-ring: var(--color-brand);
+}
+
+@layer base {
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }

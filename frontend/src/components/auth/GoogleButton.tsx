@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 interface Props {
   mode: "signin" | "signup";
   onClick?: () => void;
@@ -9,35 +11,7 @@ export default function GoogleButton({ mode, onClick }: Props) {
   const label = mode === "signup" ? "Sign up with Google" : "Continue with Google";
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        width: "100%",
-        height: 44,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 10,
-        background: "var(--color-control)",
-        border: "1px solid var(--color-border-default)",
-        borderRadius: 8,
-        color: "var(--color-fg-primary)",
-        fontFamily: "inherit",
-        fontSize: 14,
-        fontWeight: 500,
-        cursor: "pointer",
-        transition: "background 0.2s ease, border-color 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = "var(--color-surface-hover)";
-        e.currentTarget.style.borderColor = "var(--color-border-strong)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "var(--color-control)";
-        e.currentTarget.style.borderColor = "var(--color-border-default)";
-      }}
-    >
+    <Button variant="outline-filled" type="button" onClick={onClick}>
       <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
         <path
           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -57,6 +31,6 @@ export default function GoogleButton({ mode, onClick }: Props) {
         />
       </svg>
       {label}
-    </button>
+    </Button>
   );
 }

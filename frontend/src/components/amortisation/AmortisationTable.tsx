@@ -2,6 +2,14 @@ import { memo } from "react";
 import type { ScheduleRow } from "@/lib/api";
 import { formatCurrency } from "@/lib/formatters";
 import { t } from "@/lib/theme";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface AmortisationTableProps {
   rows: ScheduleRow[];
@@ -10,41 +18,49 @@ interface AmortisationTableProps {
 
 const COLUMNS = ["#", "Opening", "Payment", "Interest", "Principal", "Closing"];
 
+/**
+ * Real <table> rendered with grid rows (Table variant "bare"): the header
+ * stays fixed while the body scrolls, and columns size exactly like the
+ * original `52px 1fr…` grid.
+ */
+const ROW = "grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] px-5 py-2.5";
+const BORDER = `1px solid ${t.border.default}`;
+
 export default memo(function AmortisationTable({ rows, height }: AmortisationTableProps) {
   return (
-    <>
-      <div
-        className="grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] px-5 py-2.5"
-        style={{ borderBottom: `1px solid ${t.border.default}` }}
-      >
-        {COLUMNS.map((h, i) => (
-          <div
-            key={h}
-            className={`text-[10px] font-semibold uppercase tracking-widest text-fg-primary/25 ${
-              i === 0 ? "text-left" : "text-right"
-            }`}
-          >
-            {h}
-          </div>
-        ))}
-      </div>
+    <Table variant="bare" className="block">
+      <TableHeader className="block">
+        <TableRow className={ROW} style={{ borderBottom: BORDER }}>
+          {COLUMNS.map((h, i) => (
+            <TableHead
+              key={h}
+              scope="col"
+              className={`text-[10px] font-semibold uppercase tracking-widest text-fg-primary/25 ${
+                i === 0 ? "text-left" : "text-right"
+              }`}
+            >
+              {h}
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
 
-      <div className="custom-scrollbar overflow-y-auto" style={{ maxHeight: height }}>
+      <TableBody className="custom-scrollbar block overflow-y-auto" style={{ maxHeight: height }}>
         {rows.map((row, ri) => (
-          <div
+          <TableRow
             key={row.period}
-            className="grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] px-5 py-2.5 text-[15px] tabular-nums transition-colors hover:bg-subtle/[0.04]"
-            style={{ borderBottom: ri < rows.length - 1 ? `1px solid ${t.border.default}` : "none" }}
+            className={`${ROW} text-[15px] tabular-nums transition-colors`}
+            style={{ borderBottom: ri < rows.length - 1 ? BORDER : "none" }}
           >
-            <div className="text-sm text-fg-primary/25">{row.period}</div>
-            <div className="text-right text-fg-primary/35">{formatCurrency(row.opening_balance)}</div>
-            <div className="text-right text-fg-primary/60">{formatCurrency(row.scheduled_repayment)}</div>
-            <div className="text-right text-red-400/85">{formatCurrency(row.interest)}</div>
-            <div className="text-right text-brand/85">{formatCurrency(row.principal_paid)}</div>
-            <div className="text-right text-fg-primary/35">{formatCurrency(row.closing_balance)}</div>
-          </div>
+            <TableCell className="text-sm text-fg-primary/25">{row.period}</TableCell>
+            <TableCell className="text-right text-fg-primary/35">{formatCurrency(row.opening_balance)}</TableCell>
+            <TableCell className="text-right text-fg-primary/60">{formatCurrency(row.scheduled_repayment)}</TableCell>
+            <TableCell className="text-right text-red-400/85">{formatCurrency(row.interest)}</TableCell>
+            <TableCell className="text-right text-brand/85">{formatCurrency(row.principal_paid)}</TableCell>
+            <TableCell className="text-right text-fg-primary/35">{formatCurrency(row.closing_balance)}</TableCell>
+          </TableRow>
         ))}
-      </div>
-    </>
+      </TableBody>
+    </Table>
   );
 })

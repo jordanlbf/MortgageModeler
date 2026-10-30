@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import AuthShell from "./AuthShell";
 import AuthCard from "./AuthCard";
 import GoogleButton from "./GoogleButton";
@@ -58,10 +61,7 @@ export default function LoginView() {
       footer={
         <>
           Don&apos;t have an account?{" "}
-          <Link
-            href="/signup"
-            style={{ color: "var(--color-brand)", textDecoration: "none", fontWeight: 500 }}
-          >
+          <Link href="/signup" className="font-medium text-brand no-underline">
             Sign up
           </Link>
         </>
@@ -78,6 +78,7 @@ export default function LoginView() {
 
         {error && (
           <div
+            id="login-error"
             role="alert"
             className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[13px] text-red-400/80"
           >
@@ -86,28 +87,21 @@ export default function LoginView() {
         )}
 
         <div style={{ marginBottom: 14 }}>
-          <label
-            htmlFor="login-email"
-            style={{
-              display: "block",
-              fontSize: 13,
-              color: "var(--color-fg-secondary)",
-              fontWeight: 400,
-              marginBottom: 6,
-            }}
-          >
+          <Label variant="form" htmlFor="login-email" className="mb-1.5 block">
             Email
-          </label>
-          <input
+          </Label>
+          <Input
+            variant="form"
             id="login-email"
             type="email"
-            className="form-input"
             placeholder="you@example.com"
             autoComplete="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={submitting}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "login-error" : undefined}
           />
         </div>
 
@@ -120,40 +114,25 @@ export default function LoginView() {
               marginBottom: 6,
             }}
           >
-            <label
-              htmlFor="login-password"
-              style={{ fontSize: 13, color: "var(--color-fg-secondary)", fontWeight: 400 }}
-            >
+            <Label variant="form" htmlFor="login-password">
               Password
-            </label>
-            <Link
-              href="/forgot-password"
-              style={{
-                fontSize: 12,
-                color: "var(--color-fg-tertiary)",
-                textDecoration: "none",
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "var(--color-fg-secondary)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "var(--color-fg-tertiary)";
-              }}
-            >
-              Forgot?
-            </Link>
+            </Label>
+            <Button asChild variant="link-muted" className="text-[12px]">
+              <Link href="/forgot-password">Forgot?</Link>
+            </Button>
           </div>
-          <input
+          <Input
+            variant="form"
             id="login-password"
             type="password"
-            className="form-input"
             placeholder="••••••••"
             autoComplete="current-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={submitting}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "login-error" : undefined}
           />
         </div>
 

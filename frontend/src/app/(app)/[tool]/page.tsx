@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { t } from "@/lib/theme";
+import { Badge } from "@/components/ui/badge";
 import { TOOLS } from "@/lib/constants";
 
 const PLACEHOLDER_IDS = TOOLS.filter((tool) => !tool.active).map((tool) => tool.id);
@@ -36,16 +37,7 @@ export default async function ToolPlaceholder({ params }: Props) {
         <p className="text-[11px] m-0 mb-5" style={{ color: "rgba(148,163,184,0.35)", lineHeight: 1.5 }}>
           {meta.desc}
         </p>
-        <span
-          className="inline-block rounded-[3px] text-[8px] font-semibold uppercase tracking-widest leading-none"
-          style={{
-            padding: "3px 8px",
-            color: "rgba(148,163,184,0.35)",
-            background: "rgba(148,163,184,0.08)",
-          }}
-        >
-          Coming soon
-        </span>
+        <Badge variant="tag">Coming soon</Badge>
       </div>
     </div>
   );

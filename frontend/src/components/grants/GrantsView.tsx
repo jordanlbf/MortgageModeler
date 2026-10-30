@@ -1,57 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { fetchGrantsEligibility } from "@/lib/api";
 import type { GrantSchemeWithEligibility } from "@/lib/api";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import { useApiCall } from "@/hooks/useApiCall";
-import { mix, STATE_COLORS } from "@/lib/theme";
-import PillButton from "@/components/ui/PillButton";
+import { STATE_COLORS } from "@/lib/theme";
+import { cn } from "cn";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import DenseSchemeCard from "./DenseSchemeCard";
 
 // ── Types ───────────────────────────────────────
 
 const ALL_REGIONS = ["Federal", "NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
-type Region = (typeof ALL_REGIONS)[number];
 
-// ── Tri-state pill (domain-specific: yes/no with red "no" state) ─
+type PropertyType = "new" | "existing" | "land" | "off-the-plan";
+type BuyerType = "individual" | "couple";
 
-function TriPill({ label, active, isNo, onClick }: { label: string; active: boolean; isNo?: boolean; onClick: () => void }) {
-  const red = active && isNo;
-  return (
-    <button
-      className="h-[26px] px-2.5 rounded-full border text-[14px] font-semibold cursor-pointer whitespace-nowrap outline-none leading-none transition-all duration-150 min-w-[72px] text-center justify-center"
-      style={red ? {
-        background: mix("var(--color-data-negative)", 12),
-        color: "var(--color-data-negative)",
-        borderColor: mix("var(--color-data-negative)", 25),
-        boxShadow: `0 0 8px ${mix("var(--color-data-negative)", 8)}`,
-      } : active ? {
-        background: mix("var(--color-brand)", 14),
-        color: "var(--color-brand)",
-        borderColor: mix("var(--color-brand)", 25),
-        boxShadow: `0 0 8px ${mix("var(--color-brand)", 10)}`,
-      } : {
-        background: "transparent",
-        color: mix("var(--color-fg-primary)", 50),
-        borderColor: "rgba(255,255,255,0.07)",
-      }}
-      onClick={onClick}
-    >
-      {label}
-    </button>
-  );
-}
+const PROPERTY_OPTIONS = [
+  { value: "new", label: "New" },
+  { value: "existing", label: "Existing" },
+  { value: "land", label: "Land" },
+  { value: "off-the-plan", label: "OTP" },
+] as const satisfies readonly { value: PropertyType; label: string }[];
+
+const BUYER_OPTIONS = [
+  { value: "individual", label: "Individual" },
+  { value: "couple", label: "Couple" },
+] as const satisfies readonly { value: BuyerType; label: string }[];
+
+/** Caption above a filter-bar field (15px uppercase, fg-primary 70%). */
+const CAPTION = "text-[15px] text-fg-primary/70 leading-none";
 
 // ── Compact bar input ───────────────────────────
 
 function BarInput({ label, value, placeholder, onChange }: { label: string; value: string; placeholder: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+  const id = useId();
   return (
     <div className="flex flex-col items-center gap-4 flex-1 min-w-0">
-      <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">{label}</label>
-      <input
-        className="w-full h-[30px] px-2.5 text-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-fg-primary/90 text-[15px] font-semibold tabular-nums outline-none caret-accent transition-all duration-150 hover:border-white/10 hover:bg-white/[0.06] focus:border-brand/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-brand)_10%,transparent)] placeholder:text-fg-secondary/35 placeholder:font-normal"
+      <Label variant="caps" htmlFor={id} className={CAPTION}>{label}</Label>
+      <Input
+        id={id}
+        variant="bar"
         type="text"
         inputMode="numeric"
         placeholder={placeholder}
@@ -65,20 +60,58 @@ function BarInput({ label, value, placeholder, onChange }: { label: string; valu
 // ── Divider ─────────────────────────────────────
 
 function Divider({ tight }: { tight?: boolean }) {
-  return <div className={`w-px h-7 bg-white/[0.05] shrink-0 ${tight ? "mx-2" : "mx-4"}`} />;
+  return <Separator orientation="vertical" className={cn("w-px h-7 bg-white/[0.05] shrink-0 data-vertical:self-auto", tight ? "mx-2" : "mx-4")} />;
 }
 
-// ── Tri-state toggle field ──────────────────────
+// ── Labelled pill group ─────────────────────────
 
-function TriField({ label, value, onToggle, wide }: { label: string; value: boolean | null; onToggle: (v: boolean | null) => void; wide?: boolean }) {
+/**
+ * Caption + single-choice pill group. Clicking the active pill clears the
+ * choice (Radix single ToggleGroup deselects to ""), mapped back to `null`.
+ */
+function PillField<T extends string>({ label, value, options, onChange, className }: {
+  label: string;
+  value: T | null;
+  options: readonly { value: T; label: string; tone?: "negative" }[];
+  onChange: (v: T | null) => void;
+  className?: string;
+}) {
+  const id = useId();
   return (
-    <div className={`flex flex-col items-center gap-4 shrink-0 ${wide ? "w-[220px]" : "w-[140px]"}`}>
-      <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">{label}</label>
-      <div className="flex gap-1.5">
-        <TriPill label="Yes" active={value === true} onClick={() => onToggle(value === true ? null : true)} />
-        <TriPill label="No" active={value === false} isNo onClick={() => onToggle(value === false ? null : false)} />
-      </div>
+    <div className={cn("flex flex-col items-center gap-4 shrink-0", className)}>
+      <Label asChild variant="caps" className={CAPTION}><span id={id}>{label}</span></Label>
+      <ToggleGroup
+        type="single"
+        variant="pill"
+        aria-labelledby={id}
+        className="flex gap-1.5"
+        value={value ?? ""}
+        onValueChange={(v) => onChange(v ? (v as T) : null)}
+      >
+        {options.map((o) => (
+          <ToggleGroupItem key={o.value} value={o.value} data-tone={o.tone}>{o.label}</ToggleGroupItem>
+        ))}
+      </ToggleGroup>
     </div>
+  );
+}
+
+// ── Tri-state toggle field (Yes / No / unset) ───
+
+const YES_NO = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No", tone: "negative" },
+] as const;
+
+function TriField({ label, value, onToggle }: { label: string; value: boolean | null; onToggle: (v: boolean | null) => void }) {
+  return (
+    <PillField
+      label={label}
+      className="w-[140px]"
+      options={YES_NO}
+      value={value === null ? null : value ? "yes" : "no"}
+      onChange={(v) => onToggle(v === null ? null : v === "yes")}
+    />
   );
 }
 
@@ -88,8 +121,8 @@ export default function GrantsView() {
   const [regions, setRegions] = useState<Set<string>>(() => new Set(["Federal"]));
   const [priceStr, setPriceStr] = useState("");
   const [incomeStr, setIncomeStr] = useState("");
-  const [propertyType, setPropertyType] = useState<"new" | "existing" | "land" | "off-the-plan" | null>(null);
-  const [buyerType, setBuyerType] = useState<"individual" | "couple" | null>(null);
+  const [propertyType, setPropertyType] = useState<PropertyType | null>(null);
+  const [buyerType, setBuyerType] = useState<BuyerType | null>(null);
   const [firstHomeBuyer, setFirstHomeBuyer] = useState<boolean | null>(null);
   const [ownerOccupier, setOwnerOccupier] = useState<boolean | null>(null);
   const [singleParent, setSingleParent] = useState<boolean | null>(null);
@@ -97,13 +130,7 @@ export default function GrantsView() {
   const [ownedPropertyRecently, setOwnedPropertyRecently] = useState<boolean | null>(null);
   const [expandedSchemeId, setExpandedSchemeId] = useState<string | null>(null);
 
-  const toggleRegion = (r: Region) => {
-    setRegions((prev) => {
-      const next = new Set(prev);
-      if (next.has(r)) next.delete(r); else next.add(r);
-      return next;
-    });
-  };
+  const stateLabelId = useId();
 
   const price = parseCurrencyInput(priceStr);
   const income = parseCurrencyInput(incomeStr);
@@ -164,45 +191,33 @@ export default function GrantsView() {
 
             {/* Region pills */}
             <div className="flex flex-col items-center gap-4 shrink-0">
-              <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">State</label>
-              <div className="grid grid-flow-col auto-cols-fr gap-5">
+              <Label asChild variant="caps" className={CAPTION}><span id={stateLabelId}>State</span></Label>
+              <ToggleGroup
+                type="multiple"
+                variant="pill"
+                aria-labelledby={stateLabelId}
+                className="grid grid-flow-col auto-cols-fr gap-5"
+                value={Array.from(regions)}
+                onValueChange={(v) => setRegions(new Set(v))}
+              >
                 {ALL_REGIONS.map((r) => {
                   const color = r === "Federal" ? STATE_COLORS.FEDERAL : STATE_COLORS[r];
                   return (
-                    <PillButton key={r} active={regions.has(r)} color={color} onClick={() => toggleRegion(r)}>{r}</PillButton>
+                    <ToggleGroupItem key={r} value={r} style={{ "--pill-accent": color } as CSSProperties}>{r}</ToggleGroupItem>
                   );
                 })}
-              </div>
+              </ToggleGroup>
             </div>
 
             <Divider />
 
             {/* Toggle fields */}
             <div className="flex items-center shrink-0 ml-auto">
-              <div className="flex flex-col items-center gap-4 shrink-0 w-[220px]">
-                <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">Property</label>
-                <div className="flex gap-1.5">
-                  {([
-                    { value: "new" as const, label: "New" },
-                    { value: "existing" as const, label: "Existing" },
-                    { value: "land" as const, label: "Land" },
-                    { value: "off-the-plan" as const, label: "OTP" },
-                  ]).map((o) => (
-                    <PillButton key={o.value} active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)}>{o.label}</PillButton>
-                  ))}
-                </div>
-              </div>
+              <PillField label="Property" className="w-[220px]" options={PROPERTY_OPTIONS} value={propertyType} onChange={setPropertyType} />
 
               <Divider tight />
 
-              <div className="flex flex-col items-center gap-4 shrink-0 w-[220px]">
-                <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">Buyer</label>
-                <div className="flex gap-1.5">
-                  {([{ value: "individual" as const, label: "Individual" }, { value: "couple" as const, label: "Couple" }]).map((o) => (
-                    <PillButton key={o.value} active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)}>{o.label}</PillButton>
-                  ))}
-                </div>
-              </div>
+              <PillField label="Buyer" className="w-[220px]" options={BUYER_OPTIONS} value={buyerType} onChange={setBuyerType} />
 
               <Divider tight />
               <TriField label="First Home" value={firstHomeBuyer} onToggle={setFirstHomeBuyer} />
@@ -248,13 +263,12 @@ export default function GrantsView() {
         </div>
 
         {/* Footer */}
-        <Link
-          href="/"
-          className="group mt-auto flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-fg-primary/30 no-underline transition-colors duration-300 hover:text-brand/70"
-        >
-          <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
-          All Tools
-        </Link>
+        <Button asChild variant="link-back-footer" className="mt-auto">
+          <Link href="/">
+            <span data-back-arrow aria-hidden="true">&larr;</span>
+            All Tools
+          </Link>
+        </Button>
       </div>
     </>
   );

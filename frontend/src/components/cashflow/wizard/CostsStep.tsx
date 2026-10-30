@@ -2,17 +2,15 @@
 
 import { useState } from "react";
 import type { CashflowState } from "@/hooks/useCashflowState";
-import { Checkbox, currencyInput, EditableRow, InputField, ModeButton, ModeToggle } from "./shared";
+import { CheckboxField, currencyInput, EditableRow, type EstimateMode, InputField, ModeTabs } from "./shared";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 
 interface Props {
   s: CashflowState;
 }
 
-type CostMode = "quick" | "custom";
-
 export default function CostsStep({ s }: Props) {
-  const [mode, setMode] = useState<CostMode>("quick");
+  const [mode, setMode] = useState<EstimateMode>("quick");
 
   // Calculate property value for estimates
   const propertyValue = s.isNewPurchase
@@ -31,22 +29,12 @@ export default function CostsStep({ s }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-lg">
-      <ModeToggle>
-        <ModeButton active={mode === "quick"} onClick={() => setMode("quick")}>
-          Quick estimate
-        </ModeButton>
-        <ModeButton active={mode === "custom"} onClick={() => setMode("custom")}>
-          Custom
-        </ModeButton>
-      </ModeToggle>
-
-      {mode === "quick" ? (
-        <QuickEstimateView s={s} estimates={estimates} />
-      ) : (
-        <CustomCostsView s={s} />
-      )}
-    </div>
+    <ModeTabs
+      value={mode}
+      onValueChange={setMode}
+      quick={<QuickEstimateView s={s} estimates={estimates} />}
+      custom={<CustomCostsView s={s} />}
+    />
   );
 }
 
@@ -85,9 +73,9 @@ function QuickEstimateView({ s, estimates }: {
         We&apos;ve estimated typical costs. Edit any value below or switch to Custom for more options.
       </p>
 
-      <Checkbox checked={s.hasStrata} onChange={s.setHasStrata}>
+      <CheckboxField checked={s.hasStrata} onChange={s.setHasStrata}>
         Include strata / body corp
-      </Checkbox>
+      </CheckboxField>
 
       {/* Editable costs table */}
       <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/50">
@@ -159,9 +147,9 @@ function CustomCostsView({ s }: { s: CashflowState }) {
       </div>
 
       <div className="pt-1">
-        <Checkbox checked={s.hasStrata} onChange={s.setHasStrata}>
+        <CheckboxField checked={s.hasStrata} onChange={s.setHasStrata}>
           Strata / Body corp
-        </Checkbox>
+        </CheckboxField>
       </div>
 
       {/* Strata fees (conditional) */}

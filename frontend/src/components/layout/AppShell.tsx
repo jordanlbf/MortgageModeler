@@ -1,25 +1,11 @@
 import Sidebar from "./Sidebar";
-import GlobalsTray from "./GlobalsTray";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen" style={{ background: "var(--color-surface-app)" }}>
+    <div className="flex min-h-screen bg-surface-app">
       <Sidebar />
-      <main
-        className="flex-1 min-w-0 relative"
-        style={{ background: "var(--color-surface-app)" }}
-      >
-        <GlobalsTray />
-        <div
-          className="mx-auto"
-          style={{
-            maxWidth: "var(--layout-content-max)",
-            paddingLeft: "var(--layout-page-padding-x)",
-            paddingRight: "var(--layout-page-padding-x)",
-            paddingTop: "var(--layout-page-padding-y)",
-            paddingBottom: "var(--layout-page-padding-y)",
-          }}
-        >
+      <main className="flex-1 min-w-0 relative bg-surface-app">
+        <div className="mx-auto max-w-(--layout-content-max) px-(--layout-page-padding-x) py-(--layout-page-padding-y)">
           {children}
         </div>
       </main>

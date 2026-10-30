@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef, type CSSProperties } from "react";
 import { Maximize2, Minimize2, House, BadgeCheck, Check } from "lucide-react";
 import type { GrantScheme, GrantEligibilityResult } from "@/lib/api";
 import { mix, STATE_COLORS } from "@/lib/theme";
+import { cn } from "cn";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // ── Small helpers ───────────────────────────────
 
@@ -116,12 +121,11 @@ function CardFooter({ scheme, result, color }: { scheme: GrantScheme; result: Gr
   );
 }
 
-// ── Card shadow ─────────────────────────────────
-
-const CARD_SHADOW = "0 1px 4px rgba(0,0,0,0.2), 0 0 0 0.5px rgba(255,255,255,0.02), inset 0 1px 0 rgba(255,255,255,0.02)";
-const CARD_HOVER_SHADOW = "0 8px 28px rgba(0,0,0,0.3), 0 0 0 0.5px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.03)";
-
 // ── Main card ───────────────────────────────────
+
+/** Hover lift + deeper shadow for the compact (in-grid) card. */
+const COMPACT_HOVER =
+  "hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(0,0,0,0.3),0_0_0_0.5px_rgba(255,255,255,0.03),inset_0_1px_0_rgba(255,255,255,0.03)]";
 
 interface DenseSchemeCardProps {
   scheme: GrantScheme;
@@ -130,6 +134,13 @@ interface DenseSchemeCardProps {
   onToggleExpand: () => void;
 }
 
+/**
+ * Grant scheme card. "View grant details" opens the same card, expanded,
+ * in a Radix Dialog rendered in place (no portal, own backdrop) so it keeps
+ * the original stacking and positioning; the compact card stays as an
+ * invisible placeholder. Escape, a press outside the card and the
+ * minimise button close it.
+ */
 export default function DenseSchemeCard({ scheme, result, isExpanded, onToggleExpand }: DenseSchemeCardProps) {
   const color =
     scheme.level === "Federal"
@@ -137,94 +148,89 @@ export default function DenseSchemeCard({ scheme, result, isExpanded, onToggleEx
       : scheme.state
         ? (STATE_COLORS as Record<string, string>)[scheme.state]
         : STATE_COLORS.FEDERAL;
+  const accent = { "--card-accent": color } as CSSProperties;
 
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!isExpanded) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onToggleExpand(); };
-    const onClick = (e: MouseEvent) => {
-      if (overlayRef.current && !overlayRef.current.contains(e.target as Node)) onToggleExpand();
-    };
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("mousedown", onClick);
-    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("mousedown", onClick); };
-  }, [isExpanded, onToggleExpand]);
-
-  const header = (
-    <div className="relative flex justify-between items-center gap-3 mb-3">
-      <div className="flex items-center gap-2 min-w-0 flex-1">
-        <div
-          className="inline-flex items-baseline justify-center h-9 rounded-[14px] px-3 text-[13px] font-semibold uppercase tracking-widest"
-          style={{ color, background: mix(color, 10) }}
-        >
-          {scheme.level === "Federal" ? "Federal" : scheme.state}
-        </div>
-        <h3 className="absolute left-0 right-0 m-0 text-[20px] leading-[1.2] font-semibold tracking-[-0.02em] text-center pointer-events-none">
-          {scheme.name}
-        </h3>
-      </div>
-      <button
+  const header = (expanded: boolean) => {
+    const icon = (
+      <Button
         type="button"
-        className="inline-flex items-center justify-center w-9 h-9 rounded-[14px] border cursor-pointer shrink-0 outline-none transition-all duration-200 hover:-translate-y-px"
-        style={{
-          borderColor: mix(color, 24),
-          background: mix(color, 12),
-          color,
-        }}
-        aria-expanded={isExpanded}
-        aria-controls={`grant-details-${scheme.id}`}
-        aria-label={isExpanded ? "Close grant details" : "View grant details"}
-        onClick={onToggleExpand}
+        variant="tinted-icon"
+        style={{ "--tint-accent": color } as CSSProperties}
+        aria-label={expanded ? "Close grant details" : "View grant details"}
       >
-        {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-      </button>
-    </div>
-  );
+        {expanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+      </Button>
+    );
+    return (
+      <div className="relative flex justify-between items-center gap-3 mb-3">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <Badge variant="tinted" style={{ "--badge-accent": color } as CSSProperties}>
+            {scheme.level === "Federal" ? "Federal" : scheme.state}
+          </Badge>
+          <h3 className="absolute left-0 right-0 m-0 text-[20px] leading-[1.2] font-semibold tracking-[-0.02em] text-center pointer-events-none">
+            {scheme.name}
+          </h3>
+        </div>
+        {expanded ? <DialogClose asChild>{icon}</DialogClose> : <DialogTrigger asChild>{icon}</DialogTrigger>}
+      </div>
+    );
+  };
 
   const subheader = (
     <p className="m-0 mb-2 text-[14px] leading-[1.45] text-white/[0.62]">{scheme.theme}</p>
   );
 
-  const cardClasses = "flex flex-col rounded-[18px] bg-white/[0.04] border border-white/[0.08] transition-all duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)]";
-
   return (
-    <>
+    <Dialog open={isExpanded} onOpenChange={(open) => { if (open !== isExpanded) onToggleExpand(); }}>
       {/* Compact card */}
-      <div
-        className={`${cardClasses} hover:-translate-y-0.5 ${isExpanded ? "invisible" : ""}`}
-        style={{ borderTop: `3px solid ${mix(color, 55)}`, boxShadow: CARD_SHADOW }}
-        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = CARD_HOVER_SHADOW; }}
-        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = CARD_SHADOW; }}
-      >
+      <Card variant="scheme" className={cn(COMPACT_HOVER, isExpanded && "invisible")} style={accent}>
         <div className="px-5 pt-5 pb-4 min-h-0 flex-1">
-          {header}
+          {header(false)}
           {subheader}
           <CardContent scheme={scheme} color={color} />
         </div>
         <CardFooter scheme={scheme} result={result} color={color} />
-      </div>
+      </Card>
 
-      {/* Expanded overlay */}
-      {isExpanded && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-12 animate-overlay-in max-[900px]:p-4">
-          <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" />
-          <div
-            ref={overlayRef}
-            id={`grant-details-${scheme.id}`}
-            className={`${cardClasses} relative z-[1] w-full max-w-[720px] max-h-[calc(100vh-96px)] overflow-y-auto animate-card-pop-in`}
-            style={{ borderTop: `3px solid ${mix(color, 55)}`, boxShadow: CARD_SHADOW }}
-          >
-            <div className="px-5 pt-5 pb-4 min-h-0 flex-1">
-              {header}
-              {subheader}
-              <CardContent scheme={scheme} color={color} />
-              <ExpandedContent scheme={scheme} result={result} color={color} />
-            </div>
-            <CardFooter scheme={scheme} result={result} color={color} />
+      {/* Expanded card */}
+      <DialogContent
+        ref={contentRef}
+        variant="bare"
+        portal={false}
+        overlay={false}
+        aria-describedby={undefined}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-12 animate-overlay-in outline-none max-[900px]:p-4"
+        // Nothing was focused on open before; focus the dialog itself rather
+        // than its first button so no focus ring appears.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          contentRef.current?.focus({ preventScroll: true });
+        }}
+        // The backdrop is inside the dialog: a press anywhere off the card closes it.
+        onPointerDown={(e) => {
+          if (!cardRef.current?.contains(e.target as Node)) onToggleExpand();
+        }}
+      >
+        <DialogTitle className="sr-only">{scheme.name}</DialogTitle>
+        <div className="absolute inset-0 bg-black/65 backdrop-blur-sm" />
+        <Card
+          ref={cardRef}
+          variant="scheme"
+          className="relative z-[1] w-full max-w-[720px] max-h-[calc(100vh-96px)] overflow-y-auto animate-card-pop-in"
+          style={accent}
+        >
+          <div className="px-5 pt-5 pb-4 min-h-0 flex-1">
+            {header(true)}
+            {subheader}
+            <CardContent scheme={scheme} color={color} />
+            <ExpandedContent scheme={scheme} result={result} color={color} />
           </div>
-        </div>
-      )}
-    </>
+          <CardFooter scheme={scheme} result={result} color={color} />
+        </Card>
+      </DialogContent>
+    </Dialog>
   );
 }

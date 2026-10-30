@@ -11,7 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import type { WizardStep } from "@/components/ui/wizard";
+import type { WizardStep } from "@/components/domain/wizard";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import type { StepId } from "@/lib/cashflow-types";
 

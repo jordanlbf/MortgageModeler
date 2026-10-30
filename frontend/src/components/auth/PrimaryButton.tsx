@@ -1,4 +1,4 @@
-"use client";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   type?: "button" | "submit";
@@ -7,6 +7,7 @@ interface Props {
   disabled?: boolean;
 }
 
+/** Auth CTA: Button variant "cta-glow" with the trailing arrow that slides on hover. */
 export default function PrimaryButton({
   type = "submit",
   onClick,
@@ -14,9 +15,11 @@ export default function PrimaryButton({
   disabled = false,
 }: Props) {
   return (
-    <button type={type} onClick={onClick} disabled={disabled} className="auth-cta">
+    <Button variant="cta-glow" type={type} onClick={onClick} disabled={disabled}>
       {children}
-      <span className="auth-cta-arrow">→</span>
-    </button>
+      <span data-cta-arrow aria-hidden="true">
+        →
+      </span>
+    </Button>
   );
 }

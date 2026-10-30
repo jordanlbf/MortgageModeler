@@ -1,0 +1,219 @@
+"use client"
+
+import * as React from "react"
+import { cn } from "cn"
+import { useReturnFocus } from "@/components/ui/use-return-focus"
+import { Dialog as DialogPrimitive } from "radix-ui"
+
+import { Button } from "@/components/ui/button"
+import { XIcon } from "lucide-react"
+
+function Dialog({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  return <DialogPrimitive.Root data-slot="dialog" {...props} />
+}
+
+function DialogTrigger({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
+  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+}
+
+function DialogPortal({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Portal>) {
+  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+}
+
+function DialogClose({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Close>) {
+  return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
+}
+
+/**
+ * Dialog variants (DialogOverlay / DialogContent `variant`):
+ * - `default` (stock shadcn): centred popover card with padding and an X.
+ * - `bare` (ours): no stock classes, no built-in close button. The caller
+ *   styles the overlay (`overlayClassName`) and content completely, e.g. the
+ *   wizard modal in ui/wizard/ModalWizardShell.
+ *   `portal={false}` renders the content in place instead of in a body
+ *   portal (it then sits in its parent's stacking/containing context), and
+ *   `overlay={false}` omits the Radix overlay (and with it the scroll lock)
+ *   for callers that draw their own backdrop (grants DenseSchemeCard).
+ */
+function DialogOverlay({
+  className,
+  variant = "default",
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Overlay> & {
+  variant?: "default" | "bare"
+}) {
+  return (
+    <DialogPrimitive.Overlay
+      data-slot="dialog-overlay"
+      className={cn(
+        variant === "default" &&
+          "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function DialogContent({
+  className,
+  children,
+  showCloseButton = true,
+  variant = "default",
+  overlayClassName,
+  portal = true,
+  overlay = true,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Content> & {
+  showCloseButton?: boolean
+  variant?: "default" | "bare"
+  /** Extra classes for the overlay (the only overlay styling for `bare`). */
+  overlayClassName?: string
+  /** `bare` only: false renders in place instead of in a body portal. */
+  portal?: boolean
+  /** `bare` only: false omits the Radix overlay (no scroll lock). */
+  overlay?: boolean
+}) {
+  const returnFocus = useReturnFocus(onOpenAutoFocus, onCloseAutoFocus)
+  if (variant === "bare") {
+    const body = (
+      <>
+        {overlay && <DialogOverlay variant="bare" className={overlayClassName} />}
+        <DialogPrimitive.Content
+          data-slot="dialog-content"
+          data-variant="bare"
+          className={className}
+          {...props}
+          onOpenAutoFocus={returnFocus.onOpenAutoFocus}
+          onCloseAutoFocus={returnFocus.onCloseAutoFocus}
+        >
+          {children}
+        </DialogPrimitive.Content>
+      </>
+    )
+    return portal ? <DialogPortal>{body}</DialogPortal> : body
+  }
+
+  return (
+    <DialogPortal>
+      <DialogOverlay className={overlayClassName} />
+      <DialogPrimitive.Content
+        data-slot="dialog-content"
+        className={cn(
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          className
+        )}
+        {...props}
+          onOpenAutoFocus={returnFocus.onOpenAutoFocus}
+          onCloseAutoFocus={returnFocus.onCloseAutoFocus}
+      >
+        {children}
+        {showCloseButton && (
+          <DialogPrimitive.Close data-slot="dialog-close" asChild>
+            <Button
+              variant="ghost"
+              className="absolute top-2 right-2"
+              size="icon-sm"
+            >
+              <XIcon
+              />
+              <span className="sr-only">Close</span>
+            </Button>
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Content>
+    </DialogPortal>
+  )
+}
+
+function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dialog-header"
+      className={cn("flex flex-col gap-2", className)}
+      {...props}
+    />
+  )
+}
+
+function DialogFooter({
+  className,
+  showCloseButton = false,
+  children,
+  ...props
+}: React.ComponentProps<"div"> & {
+  showCloseButton?: boolean
+}) {
+  return (
+    <div
+      data-slot="dialog-footer"
+      className={cn(
+        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      {showCloseButton && (
+        <DialogPrimitive.Close asChild>
+          <Button variant="outline">Close</Button>
+        </DialogPrimitive.Close>
+      )}
+    </div>
+  )
+}
+
+function DialogTitle({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Title>) {
+  return (
+    <DialogPrimitive.Title
+      data-slot="dialog-title"
+      className={cn(
+        "font-heading text-base leading-none font-medium",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function DialogDescription({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Description>) {
+  return (
+    <DialogPrimitive.Description
+      data-slot="dialog-description"
+      className={cn(
+        "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+}

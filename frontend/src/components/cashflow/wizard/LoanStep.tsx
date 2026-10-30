@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 import { paymentFromLoanAmount } from "@/lib/calculations";
@@ -51,7 +52,7 @@ export default function LoanStep({ s }: Props) {
       {/* Core fields in one row */}
       <div className="grid grid-cols-3 gap-4">
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-medium text-fg-secondary">Loan amount</label>
+          <span className="text-xs font-medium text-fg-secondary">Loan amount</span>
           <div className="py-3 text-fg-primary text-base font-medium tabular-nums">
             {formatDollarsSigned(principal)}
           </div>
@@ -82,22 +83,21 @@ export default function LoanStep({ s }: Props) {
       <div className="pt-6 border-t border-white/[0.06] flex flex-col gap-3">
         {/* Offset account */}
         {!showOffset ? (
-          <button
+          <Button
+            type="button"
+            variant="link-quiet"
             onClick={toggleOffset}
-            className="flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg-secondary transition-colors"
+            className="flex items-center gap-1.5 text-sm"
           >
             <Plus size={14} />
             <span>Add offset account</span>
-          </button>
+          </Button>
         ) : (
           <div className="rounded-lg border border-zinc-800/50 overflow-hidden">
-            <button
-              onClick={toggleOffset}
-              className="w-full flex items-center justify-between px-4 py-3 text-sm text-fg-secondary hover:bg-zinc-800/20 transition-colors"
-            >
+            <Button type="button" variant="disclosure" onClick={toggleOffset}>
               <span>Offset account</span>
               <ChevronDown size={16} className="text-fg-muted rotate-180" />
-            </button>
+            </Button>
             <div className="px-4 pb-4 pt-2 border-t border-zinc-800/30">
               <div className="grid grid-cols-2 gap-3">
                 <InputField label="Current balance" value={s.offsetBalance} {...currencyInput(s.setOffsetBalance)} placeholder="$50,000" />
@@ -109,22 +109,21 @@ export default function LoanStep({ s }: Props) {
 
         {/* Extra repayments */}
         {!showExtra ? (
-          <button
+          <Button
+            type="button"
+            variant="link-quiet"
             onClick={toggleExtra}
-            className="flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg-secondary transition-colors"
+            className="flex items-center gap-1.5 text-sm"
           >
             <Plus size={14} />
             <span>Add extra repayments</span>
-          </button>
+          </Button>
         ) : (
           <div className="rounded-lg border border-zinc-800/50 overflow-hidden">
-            <button
-              onClick={toggleExtra}
-              className="w-full flex items-center justify-between px-4 py-3 text-sm text-fg-secondary hover:bg-zinc-800/20 transition-colors"
-            >
+            <Button type="button" variant="disclosure" onClick={toggleExtra}>
               <span>Extra repayments</span>
               <ChevronDown size={16} className="text-fg-muted rotate-180" />
-            </button>
+            </Button>
             <div className="px-4 pb-4 pt-2 border-t border-zinc-800/30">
               <InputField label="Monthly amount" value={s.extraRepayments} {...currencyInput(s.setExtraRepayments)} placeholder="$0" />
             </div>

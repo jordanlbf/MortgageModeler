@@ -1,6 +1,9 @@
 import { formatCurrencyShort } from "@/lib/formatters";
 import { t, mix, TAX_COLORS as TC } from "@/lib/theme";
-import GlassCard from "@/components/ui/GlassCard";
+import type * as React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useHighlight } from "@/hooks/useHighlight";
 
 // ── Shared constants ─────────────────────────────
@@ -92,10 +95,6 @@ function DonutChart({ segments, totalTax, hoveredKey, onHover, onClick, activeSe
     </svg>
   );
 }
-
-// ── Legend ────────────────────────────────────────
-
-/* Legend is now rendered inline in the main component */
 
 // ── Waterfall (net position) ─────────────────────
 
@@ -313,7 +312,7 @@ export default function TaxComposition({
     : null;
 
   return (
-    <GlassCard className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
+    <Card variant="glass" className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar flex flex-col items-center gap-8 overflow-y-auto px-7 py-5">
         <span
           className="text-[20px] font-semibold uppercase tracking-widest"
@@ -327,20 +326,14 @@ export default function TaxComposition({
           <div className="flex flex-1 flex-col items-end gap-5">
             {effectiveRate != null && marginalRate != null && (
               <>
-                <div
-                  className="flex flex-col items-center rounded-full px-5 py-2 text-center"
-                  style={{ background: mix(TC.mls, 10), border: `1px solid ${mix(TC.mls, 25)}` }}
-                >
-                  <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: mix(TC.mls, 58) }}>Effective Rate</span>
-                  <span className="text-[18px] font-semibold tabular-nums" style={{ color: TC.mls }}>{effectiveRate.toFixed(1)}%</span>
-                </div>
-                <div
-                  className="flex flex-col items-center rounded-full px-5 py-2 text-center"
-                  style={{ background: mix(TC.hecs, 10), border: `1px solid ${mix(TC.hecs, 25)}` }}
-                >
-                  <span className="text-[11px] font-medium uppercase tracking-widest" style={{ color: mix(TC.hecs, 58) }}>Marginal Rate</span>
-                  <span className="text-[18px] font-semibold tabular-nums" style={{ color: TC.hecs }}>{marginalRate.toFixed(1)}%</span>
-                </div>
+                <Badge variant="stat" style={{ "--badge-accent": TC.mls } as React.CSSProperties}>
+                  <span data-slot="badge-label" className="text-[11px] font-medium uppercase tracking-widest">Effective Rate</span>
+                  <span className="text-[18px] font-semibold tabular-nums">{effectiveRate.toFixed(1)}%</span>
+                </Badge>
+                <Badge variant="stat" style={{ "--badge-accent": TC.hecs } as React.CSSProperties}>
+                  <span data-slot="badge-label" className="text-[11px] font-medium uppercase tracking-widest">Marginal Rate</span>
+                  <span className="text-[18px] font-semibold tabular-nums">{marginalRate.toFixed(1)}%</span>
+                </Badge>
               </>
             )}
           </div>
@@ -352,26 +345,21 @@ export default function TaxComposition({
 
           {/* Legend — right */}
           <div className="flex flex-1 flex-col gap-2">
-            {allSegments.filter((s) => s.value > 0).map((s) => {
-              const highlighted = activeKey === s.key;
-              return (
-                <div
-                  key={s.key}
-                  className="flex items-center gap-2 rounded-md px-2 py-1 transition-all duration-200"
-                  style={{
-                    opacity: isDimmed(s.key) ? 0.3 : 1,
-                    background: highlighted ? mix(s.color, 8) : "transparent",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={() => handleHover(s.key)}
-                  onMouseLeave={() => handleHover(null)}
-                  onClick={() => handleClick(s.key)}
-                >
-                  <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                  <span className="text-[16px] font-medium text-fg-primary/60">{s.legendLabel}</span>
-                </div>
-              );
-            })}
+            {allSegments.filter((s) => s.value > 0).map((s) => (
+              <Button
+                key={s.key}
+                variant="legend-row"
+                data-highlighted={activeKey === s.key}
+                data-dimmed={isDimmed(s.key)}
+                style={{ "--legend-accent": s.color } as React.CSSProperties}
+                onMouseEnter={() => handleHover(s.key)}
+                onMouseLeave={() => handleHover(null)}
+                onClick={() => handleClick(s.key)}
+              >
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
+                <span className="text-[16px] font-medium text-fg-primary/60">{s.legendLabel}</span>
+              </Button>
+            ))}
           </div>
         </div>
 
@@ -379,6 +367,6 @@ export default function TaxComposition({
 
         <WaterfallSection gross={gross} taxSegments={waterfallSegments} netIncome={netIncome} hoveredKey={activeKey} onHover={handleHover} onClick={handleClick} />
       </div>
-    </GlassCard>
+    </Card>
   );
 }
