@@ -254,7 +254,7 @@ export default function PurchaseCostsView() {
                   <div className="text-[22px] font-semibold text-fg-primary tabular-nums">{formatDollars(data.deposit_amount)}</div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-fg-secondary mt-1">Deposit ({(depositPct * 100).toFixed(0)}%)</div>
                 </div>
-                <div className="w-px h-9 bg-border" />
+                <div className="w-px h-9" />
                 <div className="text-center">
                   <div className="text-[22px] font-semibold text-fg-primary tabular-nums">{formatDollars(data.stamp_duty_payable + effectiveLmi + data.total_fees - data.total_grant_savings)}</div>
                   <div className="text-[10px] font-semibold uppercase tracking-widest text-fg-secondary mt-1">Purchase Costs</div>

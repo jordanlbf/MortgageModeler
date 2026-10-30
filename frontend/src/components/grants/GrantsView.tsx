@@ -51,7 +51,7 @@ function BarInput({ label, value, placeholder, onChange }: { label: string; valu
     <div className="flex flex-col items-center gap-4 flex-1 min-w-0">
       <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">{label}</label>
       <input
-        className="w-full h-[30px] px-2.5 text-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-fg-primary/90 text-[15px] font-semibold tabular-nums outline-none caret-accent transition-all duration-150 hover:border-white/10 hover:bg-white/[0.06] focus:border-brand/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-brand)_10%,transparent)] placeholder:text-fg-secondary/35 placeholder:font-normal"
+        className="w-full h-[30px] px-2.5 text-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-fg-primary/90 text-[15px] font-semibold tabular-nums outline-none transition-all duration-150 hover:border-white/10 hover:bg-white/[0.06] focus:border-brand/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-brand)_10%,transparent)] placeholder:text-fg-secondary/35 placeholder:font-normal"
         type="text"
         inputMode="numeric"
         placeholder={placeholder}

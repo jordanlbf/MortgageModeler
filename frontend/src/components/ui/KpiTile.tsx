@@ -10,7 +10,7 @@ interface Props {
 
 export default function KpiTile({ label, value, color, divider, children }: Props) {
   const dividerCls = divider
-    ? "before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-px before:bg-border max-[768px]:before:hidden"
+    ? "before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-px max-[768px]:before:hidden"
     : "";
 
   return (

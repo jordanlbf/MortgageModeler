@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* ── Theme tokens synced with src/lib/theme.ts ── */
 @theme {
@@ -182,7 +186,6 @@
   /* ───────────────────────────────────────────────────────────────── */
   --color-scrollbar: rgba(113, 113, 122, 0.14);
 }
-
 
 body {
   background: var(--color-surface-app);
@@ -537,7 +540,6 @@ thead .cf-zone,
   .auth-bottom-anchor { display: none; }
 }
 
-
 .glass-card-hover {
   background: rgba(39, 39, 42, 0.60);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25),
@@ -547,4 +549,103 @@ thead .cf-zone,
 
 .shadow-glow-sm {
   box-shadow: 0 0 12px color-mix(in srgb, var(--color-brand) 30%, transparent);
+}
+
+/* ───────────────────────────────────────────────────────────────────── */
+/* shadcn/ui bridge                                                       */
+/*                                                                        */
+/* shadcn components read the variables below. Every one points at an    */
+/* existing token in the @theme block above — our tokens are the source   */
+/* of truth and no colour values live here.                               */
+/*                                                                        */
+/* Deliberately omitted from shadcn's defaults (they would change the     */
+/* current look):                                                          */
+/*  - the radius scale override (Tailwind's rounded-* stay as they are)    */
+/*  - --color-card (we already own it; --card points at it instead)        */
+/*  - the base-layer "* { border-color; outline-color }" rule              */
+/*                                                                        */
+/* The app is dark-only, so there is no .dark block and the dark: variant */
+/* always applies (shadcn components put their dark styles behind it).    */
+/* ───────────────────────────────────────────────────────────────────── */
+@custom-variant dark (&:where(:root, :root *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.5rem;                                     /* rounded-lg */
+
+  --background: var(--color-surface-app);
+  --foreground: var(--color-fg-primary);
+  --card: var(--color-card);
+  --card-foreground: var(--color-fg-primary);
+  --popover: var(--color-card-elevated);
+  --popover-foreground: var(--color-fg-primary);
+  --primary: var(--color-brand);
+  --primary-foreground: var(--color-brand-contrast);
+  --secondary: var(--color-surface-hover);
+  --secondary-foreground: var(--color-fg-primary);
+  --muted: var(--color-surface-raised);
+  --muted-foreground: var(--color-fg-secondary);
+  --accent: var(--color-surface-hover);
+  --accent-foreground: var(--color-fg-primary);
+  --destructive: var(--color-status-error);
+  --border: var(--color-border-default);
+  --input: var(--color-input-bg);
+  --ring: var(--color-brand);
+
+  --chart-1: var(--color-series-cashflow);
+  --chart-2: var(--color-series-equity);
+  --chart-3: var(--color-series-debt);
+  --chart-4: var(--color-data-warning);
+  --chart-5: var(--color-data-negative);
+
+  --sidebar: var(--color-surface-sidebar);
+  --sidebar-foreground: var(--color-fg-primary);
+  --sidebar-primary: var(--color-brand);
+  --sidebar-primary-foreground: var(--color-brand-contrast);
+  --sidebar-accent: var(--color-surface-active);
+  --sidebar-accent-foreground: var(--color-fg-primary);
+  --sidebar-border: var(--color-border-default);
+  --sidebar-ring: var(--color-brand);
+}
+
+@layer base {
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
