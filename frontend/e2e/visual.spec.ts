@@ -169,8 +169,8 @@ test.describe("purchase costs", () => {
   test("toggles and breakdown", async ({ page }) => {
     await go(page, "/purchase-costs");
     await snap(page, "purchase-costs");
-    await page.getByRole("button", { name: "First Home" }).click();
-    await page.getByRole("button", { name: "Couple" }).click();
+    await page.locator("label", { hasText: "First Home" }).click();
+    await page.locator("label", { hasText: "Couple" }).click();
     await snap(page, "purchase-costs-toggled");
     await page.getByText("Fees", { exact: true }).click();
     await snap(page, "purchase-costs-fees-open", 800);

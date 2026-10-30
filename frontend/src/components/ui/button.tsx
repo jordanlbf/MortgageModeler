@@ -141,6 +141,13 @@ const buttonVariantStyles = cva("", {
         "flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-fg-primary/30 no-underline transition-colors duration-300 hover:text-brand/70 " +
         "[&>[data-back-arrow]]:inline-block [&>[data-back-arrow]]:transition-transform [&>[data-back-arrow]]:duration-300 hover:[&>[data-back-arrow]]:-translate-x-1",
       /**
+       * Full-width disclosure row header (Purchase costs breakdown): flex
+       * justify-between, px-7 py-3.5, brand 4% wash on hover. Stays a
+       * pointer when disabled (rows with nothing to expand).
+       */
+      "disclosure-row":
+        "flex w-full cursor-pointer items-center justify-between px-7 py-3.5 text-left transition-colors hover:bg-brand/[0.04] disabled:cursor-pointer",
+      /**
        * 36×36 tinted icon button with a 1px lift on hover (grant card
        * expand / close). Colour via `--tint-accent`: 24% border, 12% bg,
        * accent icon.

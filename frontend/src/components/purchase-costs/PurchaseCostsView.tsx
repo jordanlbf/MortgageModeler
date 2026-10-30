@@ -1,37 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { fetchPurchaseCosts } from "@/lib/api";
 import type { PurchaseCostsResponse } from "@/lib/api";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import { useApiCall } from "@/hooks/useApiCall";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Switch } from "@/components/ui/switch";
 
 const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"] as const;
 
 type CostsData = PurchaseCostsResponse;
 
-// ── Toggle component ────────────────────────────
+// ── Labelled switch ─────────────────────────────
 
-function Toggle({ label, active, onToggle }: { label: string; active: boolean; onToggle: () => void }) {
+function ToggleField({ label, active, onToggle }: { label: string; active: boolean; onToggle: (v: boolean) => void }) {
   return (
-    <button type="button" className="flex items-center gap-2 cursor-pointer select-none" onClick={onToggle}>
-      <div className={`relative w-9 h-5 rounded-full shrink-0 border transition-all duration-200 ${
-        active
-          ? "bg-brand/35 border-brand/50"
-          : "bg-brand/12 border-brand/15"
-      }`}>
-        <div className={`absolute top-[1px] left-[1px] w-4 h-4 rounded-full transition-all duration-200 ${
-          active
-            ? "translate-x-4 bg-brand shadow-[0_0_8px_var(--color-brand)]"
-            : "bg-subtle/50"
-        }`} />
-      </div>
+    <Label variant="bare" className="flex items-center gap-2 cursor-pointer select-none text-center">
+      <Switch variant="glow" checked={active} onCheckedChange={onToggle} />
       <span className={`text-[13px] font-medium transition-colors duration-150 ${
         active ? "text-fg-primary/85" : "text-fg-primary/55"
       }`}>{label}</span>
-    </button>
+    </Label>
   );
 }
 
@@ -60,26 +56,33 @@ function BreakdownRow({
     : 0;
 
   return (
-    <>
-      <div
-        className="flex justify-between items-center px-7 py-3.5 cursor-pointer transition-colors hover:bg-brand/[0.04] [&+&]:border-t [&+&]:border-brand/[0.08]"
-        onClick={() => hasDetails && setOpen(!open)}
-      >
-        <div className="flex items-center gap-2">
-          {hasDetails ? (
-            <ChevronRight className={`text-brand/50 shrink-0 transition-transform duration-200 ${open ? "rotate-90" : ""}`} size={14} />
-          ) : (
-            <span className="w-3.5" />
-          )}
-          <span className="text-[15px] font-semibold text-fg-primary/85">{name}</span>
-          {note && <span className="text-[11px] font-medium text-fg-tertiary ml-1.5">{note}</span>}
-        </div>
-        <span className={`text-[15px] font-semibold tabular-nums ${isSavings ? "text-brand" : "text-fg-primary/85"}`}>
-          {formatDollars(amount)}
-        </span>
-      </div>
-      {open && details && (
-        <div className="flex flex-col gap-1.5 px-7 py-2 pl-[52px] border-t border-brand/[0.06] bg-brand/[0.02]">
+    <Collapsible
+      open={!!hasDetails && open}
+      onOpenChange={setOpen}
+      disabled={!hasDetails}
+      className="group/row"
+    >
+      <CollapsibleTrigger asChild>
+        <Button
+          variant="disclosure-row"
+          className="[[data-slot=collapsible][data-state=closed]+[data-slot=collapsible]>&]:border-t [[data-slot=collapsible][data-state=closed]+[data-slot=collapsible]>&]:border-brand/[0.08]"
+        >
+          <span className="flex items-center gap-2">
+            {hasDetails ? (
+              <ChevronRight className="text-brand/50 shrink-0 transition-transform duration-200 group-data-[state=open]/row:rotate-90" size={14} />
+            ) : (
+              <span className="w-3.5" />
+            )}
+            <span className="text-[15px] font-semibold text-fg-primary/85">{name}</span>
+            {note && <span className="text-[11px] font-medium text-fg-tertiary ml-1.5">{note}</span>}
+          </span>
+          <span className={`text-[15px] font-semibold tabular-nums ${isSavings ? "text-brand" : "text-fg-primary/85"}`}>
+            {formatDollars(amount)}
+          </span>
+        </Button>
+      </CollapsibleTrigger>
+      {details && (
+        <CollapsibleContent className="flex flex-col gap-1.5 px-7 py-2 pl-[52px] border-t border-brand/[0.06] bg-brand/[0.02]">
           {details.map((d) => {
             const val = parseCurrencyInput(d.value);
             const pct = waterfall && maxDetail > 0 ? (val / maxDetail) * 100 : 0;
@@ -95,9 +98,9 @@ function BreakdownRow({
               </div>
             );
           })}
-        </div>
+        </CollapsibleContent>
       )}
-    </>
+    </Collapsible>
   );
 }
 
@@ -116,6 +119,7 @@ export default function PurchaseCostsView() {
   const [ownerOcc, setOwnerOcc] = useState(true);
   const [couple, setCouple] = useState(false);
   const [lmiExempt, setLmiExempt] = useState(false);
+  const fieldId = useId();
 
   const price = parseCurrencyInput(priceStr);
   const depositPct = parseFloat(depositStr.replace("%", "")) / 100 || 0;
@@ -195,36 +199,36 @@ export default function PurchaseCostsView() {
         <div className={`w-full max-w-[720px] rounded-2xl bg-surface-raised px-9 py-8 ${CARD_SHADOW} animate-fade-up [animation-delay:0.1s]`}>
           <div className="flex gap-6 items-end max-sm:flex-wrap">
             <div className="flex flex-col gap-2.5 flex-[0_0_100px] min-w-[100px]">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-fg-primary/50 whitespace-nowrap">State</label>
-              <select className="form-select" value={state} onChange={(e) => setState(e.target.value)}>
+              <Label variant="caps" htmlFor={`${fieldId}-state`}>State</Label>
+              <NativeSelect variant="form" id={`${fieldId}-state`} value={state} onChange={(e) => setState(e.target.value)}>
                 {STATES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <NativeSelectOption variant="form" key={s} value={s}>{s}</NativeSelectOption>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
             <div className="flex flex-col gap-2.5 flex-[1_1_180px] min-w-[160px]">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-fg-primary/50 whitespace-nowrap">Purchase Price</label>
-              <input className="form-input" type="text" inputMode="numeric" placeholder="$600,000" value={priceStr} onChange={handlePriceChange} />
+              <Label variant="caps" htmlFor={`${fieldId}-price`}>Purchase Price</Label>
+              <Input variant="form" id={`${fieldId}-price`} type="text" inputMode="numeric" placeholder="$600,000" value={priceStr} onChange={handlePriceChange} />
             </div>
             <div className="flex flex-col gap-2.5 flex-[0_0_100px] min-w-[100px]">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-fg-primary/50 whitespace-nowrap">Deposit</label>
-              <input className="form-input" type="text" inputMode="numeric" placeholder="10%" value={depositStr} onChange={handleDepositChange} />
+              <Label variant="caps" htmlFor={`${fieldId}-deposit`}>Deposit</Label>
+              <Input variant="form" id={`${fieldId}-deposit`} type="text" inputMode="numeric" placeholder="10%" value={depositStr} onChange={handleDepositChange} />
             </div>
             <div className="flex flex-col gap-2.5 flex-[0_0_130px] min-w-[130px]">
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-fg-primary/50 whitespace-nowrap">Type</label>
-              <select className="form-select" value={propertyType} onChange={(e) => setPropertyType(e.target.value)}>
-                <option value="existing">Existing</option>
-                <option value="new">New</option>
-                <option value="land">Land</option>
-              </select>
+              <Label variant="caps" htmlFor={`${fieldId}-type`}>Type</Label>
+              <NativeSelect variant="form" id={`${fieldId}-type`} value={propertyType} onChange={(e) => setPropertyType(e.target.value)}>
+                <NativeSelectOption variant="form" value="existing">Existing</NativeSelectOption>
+                <NativeSelectOption variant="form" value="new">New</NativeSelectOption>
+                <NativeSelectOption variant="form" value="land">Land</NativeSelectOption>
+              </NativeSelect>
             </div>
           </div>
 
           <div className="flex gap-8 mt-8 pt-7 border-t border-brand/10 max-sm:flex-wrap max-sm:gap-4">
-            <Toggle label="First Home" active={firstHome} onToggle={() => setFirstHome(!firstHome)} />
-            <Toggle label="Owner Occupied" active={ownerOcc} onToggle={() => setOwnerOcc(!ownerOcc)} />
-            <Toggle label="Couple" active={couple} onToggle={() => setCouple(!couple)} />
-            <Toggle label="LMI Exempt" active={lmiExempt} onToggle={() => setLmiExempt(!lmiExempt)} />
+            <ToggleField label="First Home" active={firstHome} onToggle={setFirstHome} />
+            <ToggleField label="Owner Occupied" active={ownerOcc} onToggle={setOwnerOcc} />
+            <ToggleField label="Couple" active={couple} onToggle={setCouple} />
+            <ToggleField label="LMI Exempt" active={lmiExempt} onToggle={setLmiExempt} />
           </div>
         </div>
 
@@ -318,13 +322,12 @@ export default function PurchaseCostsView() {
 
         {/* Footer */}
         <div className="mt-auto pt-2">
-          <Link
-            href="/"
-            className="group flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-fg-primary/30 no-underline transition-colors duration-300 hover:text-brand/70"
-          >
-            <span className="inline-block transition-transform duration-300 group-hover:-translate-x-1">&larr;</span>
-            All Tools
-          </Link>
+          <Button asChild variant="link-back-footer">
+            <Link href="/">
+              <span data-back-arrow aria-hidden="true">&larr;</span>
+              All Tools
+            </Link>
+          </Button>
         </div>
       </div>
     </>

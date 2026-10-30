@@ -2,15 +2,48 @@ import * as React from "react"
 import { cn } from "cn"
 import { ChevronDownIcon } from "lucide-react"
 
+/**
+ * NativeSelect variants:
+ * - `default` (stock shadcn): wrapper + bordered select + lucide chevron.
+ * - `form` (ours, was the global `.form-select`): a bare 44px select (no
+ *   wrapper, no icon) on surface-raised with a 1px border-default, 15px
+ *   medium text and a 12px chevron drawn as a background image at right
+ *   12px. Hover: border-strong + surface-hover; focus: brand 50% border +
+ *   3px focus-ring shadow. Pair it with `NativeSelectOption variant="form"`.
+ *   Known quirk kept for parity: the hover rule sets the `background`
+ *   shorthand, which also clears the chevron image while hovered.
+ */
+const FORM_CHEVRON =
+  "bg-[url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2712%27%20height=%2712%27%20viewBox=%270%200%2012%2012%27%3E%3Cpath%20d=%27M3%205l3%203%203-3%27%20stroke=%27rgba%28113,113,122,0.55%29%27%20stroke-width=%271.5%27%20fill=%27none%27%20stroke-linecap=%27round%27/%3E%3C/svg%3E)]"
+
+const FORM_SELECT =
+  "h-11 w-full cursor-pointer appearance-none rounded-lg border border-border-default bg-surface-raised py-0 pr-8 pl-4 text-[15px] font-medium text-fg-primary outline-none " +
+  FORM_CHEVRON +
+  " bg-no-repeat bg-[position:right_12px_center] [transition:border-color_0.2s_ease,background_0.2s_ease] " +
+  "hover:border-border-strong hover:[background:var(--color-surface-hover)] " +
+  "focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] focus:shadow-[0_0_0_3px_var(--color-focus-ring)]"
+
 type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> & {
   size?: "sm" | "default"
+  variant?: "default" | "form"
 }
 
 function NativeSelect({
   className,
   size = "default",
+  variant = "default",
   ...props
 }: NativeSelectProps) {
+  if (variant === "form") {
+    return (
+      <select
+        data-slot="native-select"
+        data-variant="form"
+        className={cn(FORM_SELECT, className)}
+        {...props}
+      />
+    )
+  }
   return (
     <div
       className={cn(
@@ -33,12 +66,18 @@ function NativeSelect({
 
 function NativeSelectOption({
   className,
+  variant = "default",
   ...props
-}: React.ComponentProps<"option">) {
+}: React.ComponentProps<"option"> & { variant?: "default" | "form" }) {
   return (
     <option
       data-slot="native-select-option"
-      className={cn("bg-[Canvas] text-[CanvasText]", className)}
+      className={cn(
+        variant === "form"
+          ? "bg-surface-app text-fg-primary"
+          : "bg-[Canvas] text-[CanvasText]",
+        className
+      )}
       {...props}
     />
   )
