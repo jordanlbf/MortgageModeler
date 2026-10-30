@@ -2,6 +2,14 @@
 
 import { formatDollarsSigned } from "@/lib/formatters";
 import { t } from "@/lib/theme";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { SubTableProps } from "./types";
 
 function signedColor(v: number): string {
@@ -18,8 +26,7 @@ export default function PropertyTable({
   yearData,
   isInvestment,
   formatYearCell,
-  getRowClass,
-  getRowHandlers,
+  getRowProps,
   visibleCols = {},
 }: SubTableProps) {
   if (!isInvestment) return null;
@@ -27,19 +34,23 @@ export default function PropertyTable({
   const show = (key: string) => visibleCols[key] !== false;
 
   return (
-    <table className="w-full text-[12px] table-fixed">
-      <thead>
-        <tr>
-          <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-10 w-16" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Year</th>
+    <Table variant="dense">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Year</TableHead>
 
           {/* ── Gearing (tax) view ─── */}
-          {show("rent")       && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Rent</th>}
-          {show("deductions") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Deductions</th>}
-          {show("netGearing") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.secondary, background: t.surface.subtle, fontWeight: 600 }}>Gearing</th>}
+          {show("rent")       && <TableHead>Rent</TableHead>}
+          {show("deductions") && <TableHead>Deductions</TableHead>}
+          {show("netGearing") && <TableHead data-tone="total">Gearing</TableHead>}
 
           {/* ── Cashflow view (divider) ─── */}
-          {show("taxSaved")    && (
-            <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l-2" style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.default }}>
+          {show("taxSaved") && (
+            <TableHead data-divider="strong">
+              {/* Instant CSS hover hint. Deliberately not a Radix Tooltip: its
+                  portalled, position:fixed popper is composited by Chrome, so
+                  the text loses LCD antialiasing and renders visibly
+                  different from this in-flow hint. */}
               <span className="relative group inline-block cursor-help">
                 Tax
                 <span
@@ -49,18 +60,16 @@ export default function PropertyTable({
                   Tax refund (+) or additional tax (−)
                 </span>
               </span>
-            </th>
+            </TableHead>
           )}
-          {show("rent")        && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Rent</th>}
-          {show("costs")       && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Costs</th>}
-          {show("repayments")  && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Repayments</th>}
-          {show("netCashflow") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.brand.default, background: t.surface.subtle, fontWeight: 600 }}>Cashflow</th>}
-        </tr>
-      </thead>
-      <tbody>
-        {yearData.map((y, i) => {
-          const isSelected = getRowClass(y.year).includes("bg-brand");
-
+          {show("rent")        && <TableHead>Rent</TableHead>}
+          {show("costs")       && <TableHead>Costs</TableHead>}
+          {show("repayments")  && <TableHead>Repayments</TableHead>}
+          {show("netCashflow") && <TableHead data-tone="net">Cashflow</TableHead>}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {yearData.map((y) => {
           // Backend-authoritative aggregates. `totalDeductions` already folds
           // ongoing + interest + depreciation (Div 43 + Div 40) + borrowing-cost
           // amortisation; `rentalLossOrGain` already = rent − totalDeductions.
@@ -72,58 +81,56 @@ export default function PropertyTable({
           const netCashflow = y.rentalIncome - y.ongoingCosts - y.loanRepayment + y.taxSaved;
 
           return (
-            <tr key={y.year} className={getRowClass(y.year)} {...getRowHandlers(y.year)}>
-              <td className="px-3 py-2 text-left text-[12px] font-medium sticky left-0 z-10 border-t" style={{ color: isSelected ? t.brand.default : t.fg.primary, background: isSelected ? t.surface.hover : t.card.base, borderColor: t.border.subtle }}>
-                {formatYearCell(y.year, i)}
-              </td>
+            <TableRow key={y.year} {...getRowProps(y.year)}>
+              <TableCell>{formatYearCell(y.year)}</TableCell>
 
               {/* ── Gearing view ─── */}
               {show("rent") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.data.positive, borderColor: t.border.subtle }}>
+                <TableCell className="text-data-positive">
                   {formatDollarsSigned(Math.round(y.rentalIncome))}
-                </td>
+                </TableCell>
               )}
               {show("deductions") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.data.negative, borderColor: t.border.subtle }}>
+                <TableCell className="text-data-negative">
                   {formatDollarsSigned(-Math.round(deductions))}
-                </td>
+                </TableCell>
               )}
               {show("netGearing") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: signedColor(netGearing), fontWeight: 600, borderColor: t.border.subtle }}>
+                <TableCell className="font-semibold" style={{ color: signedColor(netGearing) }}>
                   {signedValue(netGearing)}
-                </td>
+                </TableCell>
               )}
 
               {/* ── Cashflow view (divider) ─── */}
               {show("taxSaved") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t border-l-2" style={{ color: signedColor(y.taxSaved), borderColor: t.border.default }}>
+                <TableCell data-divider="strong" style={{ color: signedColor(y.taxSaved) }}>
                   {signedValue(y.taxSaved)}
-                </td>
+                </TableCell>
               )}
               {show("rent") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.data.positive, borderColor: t.border.subtle }}>
+                <TableCell className="text-data-positive">
                   {formatDollarsSigned(Math.round(y.rentalIncome))}
-                </td>
+                </TableCell>
               )}
               {show("costs") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.data.negative, borderColor: t.border.subtle }}>
+                <TableCell className="text-data-negative">
                   {formatDollarsSigned(-Math.round(y.ongoingCosts))}
-                </td>
+                </TableCell>
               )}
               {show("repayments") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.data.negative, borderColor: t.border.subtle }}>
+                <TableCell className="text-data-negative">
                   {formatDollarsSigned(-Math.round(y.loanRepayment))}
-                </td>
+                </TableCell>
               )}
               {show("netCashflow") && (
-                <td className="px-3 py-2 text-right text-[13px] tabular-nums border-t" style={{ color: signedColor(netCashflow), fontWeight: 600, borderColor: t.border.subtle }}>
+                <TableCell data-tone="net" style={{ color: signedColor(netCashflow) }}>
                   {signedValue(netCashflow)}
-                </td>
+                </TableCell>
               )}
-            </tr>
+            </TableRow>
           );
         })}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 }

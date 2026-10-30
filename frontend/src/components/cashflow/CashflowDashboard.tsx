@@ -10,6 +10,11 @@ import { t, CF_COLORS as C, LVR_COLORS } from "@/lib/theme";
 import { parseCurrencyInput } from "@/lib/formatters";
 import type { ViewMode } from "@/lib/cashflow-types";
 import type { useCashflowState } from "@/hooks/useCashflowState";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import CashflowDataTable from "./CashflowDataTable";
 
 interface Props {
@@ -20,6 +25,8 @@ interface Props {
 }
 
 type TabMode = "overview" | "details";
+
+const VIEW_MODES: ViewMode[] = ["summary", "property", "tax", "equity", "deductions", "costs"];
 
 const fmt = (v: number) => `$${Math.abs(v).toLocaleString()}`;
 const fmtK = (v: number) => {
@@ -184,13 +191,6 @@ export default function CashflowDashboard({
     ? d.holdingCosts
     : d.cashflow;
 
-  const heroLabel = viewMode === "summary" ? "Net Cashflow"
-    : viewMode === "property" ? "Property Cashflow"
-    : viewMode === "tax" ? "Tax Payable"
-    : viewMode === "equity" ? "Net Equity"
-    : viewMode === "costs" ? "Costs"
-    : "Total Deductions";
-
   const sideTitle = viewMode === "summary" ? "Household Cashflow"
     : viewMode === "property" ? "Property Cashflow"
     : viewMode === "tax" ? "Tax Payable"
@@ -218,56 +218,50 @@ export default function CashflowDashboard({
     : C.purple;
 
   return (
-    <div style={{ color: t.fg.primary }}>
+    // The view modes are tabs over one panel (overview or details, both
+    // follow the selected mode).
+    <Tabs
+      variant="underline"
+      value={viewMode}
+      onValueChange={(v) => setViewModeBoth(v as ViewMode)}
+      style={{ color: t.fg.primary }}
+    >
 
       {/* Tabs Row — primary tabs are view modes; secondary toggle is overview/details */}
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-border-subtle">
-        <div className="flex gap-6">
-          {(["summary", "property", "tax", "equity", "deductions", "costs"] as ViewMode[]).map((mode) => {
+        <TabsList aria-label="Cashflow view">
+          {VIEW_MODES.map((mode) => {
             if (mode === "tax" && !s.isInvestment) return null;
             return (
-              <button
-                key={mode}
-                onClick={() => setViewModeBoth(mode)}
-                className="pb-3 -mb-3 text-sm font-medium border-b-2 transition-colors capitalize"
-                style={{
-                  color: viewMode === mode ? t.fg.primary : t.fg.tertiary,
-                  borderColor: viewMode === mode ? t.brand.default : "transparent",
-                }}
-              >
+              <TabsTrigger key={mode} value={mode} className="capitalize">
                 {mode}
-              </button>
+              </TabsTrigger>
             );
           })}
-        </div>
+        </TabsList>
 
-        {/* Overview / Details toggle */}
-        <div className="flex gap-1.5">
+        {/* Overview / Details toggle (always one selected: ignore deselect) */}
+        <ToggleGroup
+          type="single"
+          variant="solid"
+          value={activeTab}
+          onValueChange={(v) => { if (v) setActiveTab(v as TabMode); }}
+          aria-label="Layout"
+          className="flex gap-1.5"
+        >
           {(["overview", "details"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className="px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors"
-              style={{
-                backgroundColor: activeTab === tab ? t.brand.default : "transparent",
-                color: activeTab === tab ? t.brand.contrast : t.fg.secondary,
-              }}
-            >
+            <ToggleGroupItem key={tab} value={tab} className="px-3 py-1.5 text-xs capitalize">
               {tab}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </div>
 
+      <TabsContent value={viewMode}>
       {activeTab === "overview" && (() => {
         const initialLoan = s.loanAmount || 1;
         const paidPct = Math.max(0, Math.min(100, ((initialLoan - d.loanBalance) / initialLoan) * 100));
-        const termYears = parseFloat(s.loanTerm) || 30;
-        const firstZeroIdx = s.yearData.findIndex((y) => y.loanBalance < 1);
-        const effectivePayoffYear = firstZeroIdx >= 0 ? s.yearData[firstZeroIdx].year : termYears;
-        const yearsRemaining = Math.max(0, effectivePayoffYear - displayYear);
         const offsetPct = s.hasOffset ? Math.max(0, Math.min(100 - paidPct, (d.offsetBalance / initialLoan) * 100)) : 0;
-        const offsetK = Math.round(d.offsetBalance / 1000);
         const cumulativePaid = Math.max(0, initialLoan - d.loanBalance);
         const lvrTone = d.lvr >= 90 ? LVR_COLORS.high : d.lvr >= 80 ? LVR_COLORS.moderate : LVR_COLORS.safe;
         const initialOffset = s.hasOffset ? parseCurrencyInput(s.offsetBalance) : 0;
@@ -284,29 +278,35 @@ export default function CashflowDashboard({
         >
 
           {/* KPI Strip */}
-          <div
-            className="grid grid-cols-2 bg-card border border-border-subtle rounded-xl overflow-hidden"
+          <Card
+            variant="panel"
+            className="grid grid-cols-2 overflow-hidden"
             style={{ gridArea: "kpi" }}
           >
-            <div className="flex flex-col border-r border-border-subtle">
+            <Collapsible
+              open={equityExpanded}
+              onOpenChange={setEquityExpanded}
+              className="flex flex-col border-r border-border-subtle"
+            >
               <div className="px-6 pt-4 pb-5 flex flex-col gap-3.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-medium uppercase" style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}>Net Equity</span>
-                  <button
-                    type="button"
-                    onClick={() => setEquityExpanded((v) => !v)}
-                    className="p-0.5 rounded transition-colors hover:bg-surface-hover cursor-pointer"
-                    aria-label={equityExpanded ? "Collapse" : "Expand"}
-                  >
-                    <ChevronRight
-                      size={14}
-                      style={{
-                        color: t.fg.tertiary,
-                        transform: equityExpanded ? "rotate(90deg)" : "rotate(0)",
-                        transition: "transform 180ms ease-out",
-                      }}
-                    />
-                  </button>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost-icon"
+                      className="rounded p-0.5"
+                      aria-label={`${equityExpanded ? "Collapse" : "Expand"} net equity breakdown`}
+                    >
+                      <ChevronRight
+                        size={14}
+                        style={{
+                          color: t.fg.tertiary,
+                          transform: equityExpanded ? "rotate(90deg)" : "rotate(0)",
+                          transition: "transform 180ms ease-out",
+                        }}
+                      />
+                    </Button>
+                  </CollapsibleTrigger>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
                   <span
@@ -340,48 +340,47 @@ export default function CashflowDashboard({
                   </span>
                 </div>
               </div>
-              {equityExpanded && (
-                <div className="px-6 pt-4 pb-5 border-t border-border-subtle flex flex-col gap-2.5">
-                  <div className="flex justify-between text-[12px]">
-                    <span style={{ color: t.fg.tertiary }}>Property Value</span>
-                    <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.propertyValue)}</span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span style={{ color: t.fg.tertiary }}>Less: Loan</span>
-                    <span className="tabular-nums" style={{ color: t.data.negative }}>-{fmt(d.loanBalance)}</span>
-                  </div>
-                  {d.offsetBalance > 0 && (
-                    <div className="flex justify-between text-[12px]">
-                      <span style={{ color: t.fg.tertiary }}>Plus: Offset</span>
-                      <span className="tabular-nums" style={{ color: t.data.positive }}>+{fmt(d.offsetBalance)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-[13px] font-bold pt-0.5">
-                    <span style={{ color: t.fg.primary }}>Net Equity</span>
-                    <span className="tabular-nums" style={{ color: t.data.positive }}>{fmt(d.equity)}</span>
-                  </div>
+              <CollapsibleContent className="px-6 pt-4 pb-5 border-t border-border-subtle flex flex-col gap-2.5">
+                <div className="flex justify-between text-[12px]">
+                  <span style={{ color: t.fg.tertiary }}>Property Value</span>
+                  <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.propertyValue)}</span>
                 </div>
-              )}
-            </div>
-            <div className="flex flex-col">
+                <div className="flex justify-between text-[12px]">
+                  <span style={{ color: t.fg.tertiary }}>Less: Loan</span>
+                  <span className="tabular-nums" style={{ color: t.data.negative }}>-{fmt(d.loanBalance)}</span>
+                </div>
+                {d.offsetBalance > 0 && (
+                  <div className="flex justify-between text-[12px]">
+                    <span style={{ color: t.fg.tertiary }}>Plus: Offset</span>
+                    <span className="tabular-nums" style={{ color: t.data.positive }}>+{fmt(d.offsetBalance)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-[13px] font-bold pt-0.5">
+                  <span style={{ color: t.fg.primary }}>Net Equity</span>
+                  <span className="tabular-nums" style={{ color: t.data.positive }}>{fmt(d.equity)}</span>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+            <Collapsible open={loanExpanded} onOpenChange={setLoanExpanded} className="flex flex-col">
               <div className="px-6 pt-4 pb-5 flex flex-col gap-3.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-medium uppercase" style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}>Loan Balance</span>
-                  <button
-                    type="button"
-                    onClick={() => setLoanExpanded((v) => !v)}
-                    className="p-0.5 rounded transition-colors hover:bg-surface-hover cursor-pointer"
-                    aria-label={loanExpanded ? "Collapse" : "Expand"}
-                  >
-                    <ChevronRight
-                      size={14}
-                      style={{
-                        color: t.fg.tertiary,
-                        transform: loanExpanded ? "rotate(90deg)" : "rotate(0)",
-                        transition: "transform 180ms ease-out",
-                      }}
-                    />
-                  </button>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost-icon"
+                      className="rounded p-0.5"
+                      aria-label={`${loanExpanded ? "Collapse" : "Expand"} loan balance breakdown`}
+                    >
+                      <ChevronRight
+                        size={14}
+                        style={{
+                          color: t.fg.tertiary,
+                          transform: loanExpanded ? "rotate(90deg)" : "rotate(0)",
+                          transition: "transform 180ms ease-out",
+                        }}
+                      />
+                    </Button>
+                  </CollapsibleTrigger>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
                   <span
@@ -418,34 +417,33 @@ export default function CashflowDashboard({
                   </span>
                 </div>
               </div>
-              {loanExpanded && (
-                <div className="px-6 pt-4 pb-5 border-t border-border-subtle flex flex-col gap-2.5">
-                  <div className="flex justify-between text-[12px]">
-                    <span style={{ color: t.fg.tertiary }}>Original Loan</span>
-                    <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(initialLoan)}</span>
-                  </div>
-                  <div className="flex justify-between text-[12px]">
-                    <span style={{ color: t.fg.tertiary }}>Less: Paid Off</span>
-                    <span className="tabular-nums" style={{ color: t.data.positive }}>-{fmt(cumulativePaid)}</span>
-                  </div>
-                  {d.offsetBalance > 0 && (
-                    <div className="flex justify-between text-[12px]">
-                      <span style={{ color: t.fg.tertiary }}>Less: Offset</span>
-                      <span className="tabular-nums" style={{ color: C.teal }}>-{fmt(d.offsetBalance)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-[13px] font-bold pt-0.5">
-                    <span style={{ color: t.fg.primary }}>Loan Balance</span>
-                    <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.loanBalance - (d.offsetBalance > 0 ? d.offsetBalance : 0))}</span>
-                  </div>
+              <CollapsibleContent className="px-6 pt-4 pb-5 border-t border-border-subtle flex flex-col gap-2.5">
+                <div className="flex justify-between text-[12px]">
+                  <span style={{ color: t.fg.tertiary }}>Original Loan</span>
+                  <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(initialLoan)}</span>
                 </div>
-              )}
-            </div>
-          </div>
+                <div className="flex justify-between text-[12px]">
+                  <span style={{ color: t.fg.tertiary }}>Less: Paid Off</span>
+                  <span className="tabular-nums" style={{ color: t.data.positive }}>-{fmt(cumulativePaid)}</span>
+                </div>
+                {d.offsetBalance > 0 && (
+                  <div className="flex justify-between text-[12px]">
+                    <span style={{ color: t.fg.tertiary }}>Less: Offset</span>
+                    <span className="tabular-nums" style={{ color: C.teal }}>-{fmt(d.offsetBalance)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-[13px] font-bold pt-0.5">
+                  <span style={{ color: t.fg.primary }}>Loan Balance</span>
+                  <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.loanBalance - (d.offsetBalance > 0 ? d.offsetBalance : 0))}</span>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
 
           {/* Cashflow Chart */}
-          <div
-            className="bg-card border border-border-subtle rounded-xl p-5 flex flex-col min-w-0"
+          <Card
+            variant="panel"
+            className="p-5 flex flex-col min-w-0"
             style={{ gridArea: "chart" }}
           >
             <div className="flex items-baseline justify-between mb-3 px-1">
@@ -557,35 +555,40 @@ export default function CashflowDashboard({
                 )}
               </ResponsiveContainer>
             </div>
-          </div>
+          </Card>
 
           {/* Year Summary Panel */}
-          <div
-            className="bg-card border border-border-subtle rounded-xl p-5 flex flex-col"
+          <Card
+            variant="panel"
+            className="p-5 flex flex-col"
             style={{ gridArea: "side" }}
           >
 
             {/* Year Navigation Header */}
             <div className="flex items-center justify-between mb-6">
-              <button
+              <Button
+                variant="outline-icon"
+                className="p-1.5"
+                aria-label="Previous year"
                 onClick={() => onSelectYear(Math.max(1, selectedYear - 1))}
                 disabled={selectedYear === 1}
-                className="p-1.5 rounded-lg border border-border-default disabled:opacity-30"
               >
                 <ChevronLeft size={14} style={{ color: t.fg.secondary }} />
-              </button>
+              </Button>
               <div className="flex items-baseline gap-2">
                 <span className="text-lg font-bold" style={{ color: t.brand.default }}>Year {displayYear}</span>
                 <span className="text-sm" style={{ color: t.fg.tertiary }}>|</span>
                 <span className="text-sm" style={{ color: t.fg.tertiary }}>{d.calendarYear}</span>
               </div>
-              <button
+              <Button
+                variant="outline-icon"
+                className="p-1.5"
+                aria-label="Next year"
                 onClick={() => onSelectYear(Math.min(YEARS, selectedYear + 1))}
                 disabled={selectedYear === YEARS}
-                className="p-1.5 rounded-lg border border-border-default disabled:opacity-30"
               >
                 <ChevronRight size={14} style={{ color: t.fg.secondary }} />
-              </button>
+              </Button>
             </div>
 
             {/* Hero */}
@@ -619,7 +622,7 @@ export default function CashflowDashboard({
               {viewMode === "deductions" && <DeductionsSections d={d} />}
               {viewMode === "costs" && <CostsSections d={d} />}
             </div>
-          </div>
+          </Card>
         </div>
         );
       })()}
@@ -632,12 +635,12 @@ export default function CashflowDashboard({
           hoveredYear={hoveredYear}
           isInvestment={s.isInvestment}
           hasOffset={s.hasOffset}
-          propertyValue={s.propertyValue}
           onSelectYear={onSelectYear}
           onHoverYear={onHoverYear}
         />
       )}
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 }
 

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
-import { DEPRECIATION_COLOR } from "@/lib/theme";
 
 import SummaryTable from "./table/SummaryTable";
 import TaxTable from "./table/TaxTable";
@@ -11,7 +10,9 @@ import EquityTable from "./table/EquityTable";
 import DeductionsTable from "./table/DeductionsTable";
 import CostsTable from "./table/CostsTable";
 import { ColumnDrawer, ColumnDrawerTrigger } from "@/components/ui/ColumnDrawer";
+import { Card } from "@/components/ui/card";
 import { COLUMN_CONFIGS, defaultVisibility } from "./table/columns";
+import type { YearRowProps } from "./table/types";
 
 interface Props {
   yearData: YearData[];
@@ -20,8 +21,6 @@ interface Props {
   hoveredYear: number | null;
   isInvestment: boolean;
   hasOffset: boolean;
-  propertyValue: number;
-  depColor?: string;
   onSelectYear: (year: number) => void;
   onHoverYear: (year: number | null) => void;
 }
@@ -31,7 +30,7 @@ const PPOR_HIDDEN_DEDUCTIONS = new Set(["interest", "div43", "div40", "totalDepr
 
 export default function CashflowDataTable({
   yearData, viewMode, selectedYear, hoveredYear, isInvestment,
-  hasOffset, propertyValue, depColor = DEPRECIATION_COLOR,
+  hasOffset,
   onSelectYear, onHoverYear,
 }: Props) {
   const showOffset = hasOffset && yearData.some((y) => y.offsetBalanceAtYear > 0);
@@ -89,7 +88,8 @@ export default function CashflowDataTable({
     }));
   };
 
-  const getRowHandlers = (year: number) => ({
+  const getRowProps = (year: number): YearRowProps => ({
+    "data-state": year === selectedYear ? "selected" : undefined,
     onClick: () => onSelectYear(year),
     onMouseEnter: () => onHoverYear(year),
     onMouseLeave: () => onHoverYear(null),
@@ -108,13 +108,6 @@ export default function CashflowDataTable({
     );
   };
 
-  const getRowClass = (year: number) => {
-    const isSelected = year === selectedYear;
-    const classes = ["h-8 transition-colors cursor-pointer hover:bg-white/[0.02]"];
-    if (isSelected) classes.push("bg-brand/[0.04]");
-    return classes.join(" ");
-  };
-
   // hoveredYear is still consumed by parent components for chart highlighting
   void hoveredYear;
 
@@ -122,11 +115,8 @@ export default function CashflowDataTable({
     yearData,
     isInvestment,
     showOffset,
-    propertyValue,
-    depColor,
     formatYearCell,
-    getRowClass,
-    getRowHandlers,
+    getRowProps,
     visibleCols,
   };
 
@@ -144,7 +134,7 @@ export default function CashflowDataTable({
         </div>
       </div>
 
-      <div className="relative w-full bg-card border border-border-subtle rounded-xl overflow-hidden">
+      <Card variant="panel" className="relative w-full overflow-hidden">
         <div className="overflow-x-auto">
           {viewMode === "summary"    && <SummaryTable    {...shared} />}
           {viewMode === "tax"        && <TaxTable        {...shared} />}
@@ -153,7 +143,7 @@ export default function CashflowDataTable({
           {viewMode === "deductions" && <DeductionsTable {...shared} />}
           {viewMode === "costs"      && <CostsTable      {...shared} />}
         </div>
-      </div>
+      </Card>
 
       <ColumnDrawer
         columns={activeColumns}

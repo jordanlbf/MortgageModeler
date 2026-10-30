@@ -197,154 +197,6 @@ body {
   color: var(--color-fg-primary);
 }
 
-/* ── Cashflow table: column group header utility ── */
-.col-group-h {
-  height: 28px;
-  box-sizing: border-box;
-  text-align: center;
-  vertical-align: bottom;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  position: relative;
-  user-select: none;
-}
-.col-group-h::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 8px;
-  right: 8px;
-  height: 3px;
-  border-radius: 0 0 2px 2px;
-  background: var(--col-bar, currentColor);
-  opacity: var(--col-bar-alpha, 0.75);
-}
-.col-group-h--income   { --col-bar: var(--color-fg-tertiary);       --col-bar-alpha: 0.35; }
-.col-group-h--outgoing { --col-bar: var(--color-data-negative-dim); --col-bar-alpha: 0.55; }
-.col-group-h--cashflow { --col-bar: var(--color-brand);             --col-bar-alpha: 0.75; }
-.col-group-h--clickable {
-  cursor: pointer;
-  transition: background 150ms ease-in-out;
-}
-.col-group-h--clickable:hover { background: var(--color-surface-hover); }
-
-/* ── Sidebar nav ── */
-.sb-nav-item { position: relative; }
-.sb-nav-item--active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 6px;
-  bottom: 6px;
-  width: 2px;
-  border-radius: 0 2px 2px 0;
-  background: var(--color-brand);
-}
-
-/* ── Hover tooltip utility ── */
-.tip {
-  position: relative;
-  cursor: default;
-}
-.tip::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 5px 10px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--color-surface-app) 95%, transparent);
-  border: 1px solid var(--color-border-default);
-  color: var(--color-fg-secondary);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: normal;
-  text-transform: none;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 150ms ease-in-out;
-  z-index: 10;
-}
-.tip:hover::after { opacity: 1; }
-
-/* ── Cashflow table: column group zones ── */
-.inc-zone { background: var(--color-inc-tint); }
-.out-zone { background: var(--color-out-tint); }
-.cf-zone { background: var(--color-cf-wash); }
-
-.zone-start { box-shadow: inset 1px 0 0 var(--color-border-subtle); }
-.row-gsep { padding-left: 24px !important; }
-
-tr:hover .inc-zone { background: var(--color-inc-tint-hover); }
-tr:hover .out-zone { background: var(--color-out-tint-hover); }
-tr:hover .cf-zone { background: var(--color-cf-wash-hover); }
-
-tbody tr:not(.row-summary):hover > td:first-child {
-  background: var(--color-surface-hover);
-}
-
-tr.row-selected .out-zone { background: transparent; }
-tr.row-selected .cf-zone { background: transparent; }
-
-thead .inc-zone,
-.row-summary .inc-zone { background: transparent; }
-thead .out-zone,
-.row-summary .out-zone { background: transparent; }
-thead .cf-zone,
-.row-summary .cf-zone { background: transparent; }
-
-.row-milestone > td {
-  border-top: 1px solid var(--color-border-default);
-}
-.row-milestone > td:first-child {
-  color: var(--color-fg-primary);
-  font-weight: 500;
-}
-
-/* Cashflow table body: per-zone number treatments */
-.tbl .num--income {
-  color: var(--color-fg-secondary);
-  font-weight: 400;
-}
-.tbl .num--cashflow {
-  color: var(--color-data-emphasis);
-  font-weight: 500;
-}
-.tbl .num--cashflow[data-shortfall="true"] {
-  color: var(--color-data-negative);
-}
-.tbl .num--outgoing {
-  color: var(--color-data-negative-dim);
-  font-weight: 400;
-}
-.tbl .num--outgoing[data-shortfall="true"] {
-  color: var(--color-data-negative);
-}
-
-.cashflow-table-shell {
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  overflow: visible;
-}
-
-/* Summary row */
-.row-summary {
-  height: 56px;
-  background: var(--color-surface-active);
-  cursor: default;
-}
-.row-summary:hover { background: var(--color-surface-active) !important; }
-.row-summary > td {
-  height: 56px;
-  border-bottom: none;
-  border-top: 1px solid var(--color-border-strong);
-}
-
 .custom-scrollbar::-webkit-scrollbar {
   width: 3px;
 }
@@ -388,13 +240,7 @@ thead .cf-zone,
   .animate-fade-up, .animate-overlay-in, .animate-card-pop-in { animation: none !important; }
 }
 
-/* ── Home page background effects ── */
-.home-bg-glow {
-  background:
-    radial-gradient(ellipse 60% 45% at 50% 0%, color-mix(in srgb, var(--color-brand) 4%, transparent) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 35% at 50% 5%, color-mix(in srgb, var(--color-brand) 10%, transparent) 0%, transparent 65%),
-    var(--color-surface-page);
-}
+/* ── Auth page noise overlay ── */
 .home-bg-noise {
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: 0.025;
@@ -425,17 +271,6 @@ thead .cf-zone,
 /* ── Auth bottom-left brand anchor (hidden on mobile) ── */
 @media (max-width: 768px) {
   .auth-bottom-anchor { display: none; }
-}
-
-.glass-card-hover {
-  background: rgba(39, 39, 42, 0.60);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25),
-              0 0 0 0.5px rgba(255, 255, 255, 0.04),
-              inset 0 1px 0 rgba(255, 255, 255, 0.03);
-}
-
-.shadow-glow-sm {
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-brand) 30%, transparent);
 }
 
 /* ───────────────────────────────────────────────────────────────────── */

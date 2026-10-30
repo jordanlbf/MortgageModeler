@@ -33,6 +33,9 @@
  *   Off = `--color-chart-legend-inactive` text; hover (off) = accent 50% text
  *   + 5% bg; on = accent 12% bg, 25% border, accent text. Put a
  *   `<ToggleLegendDot />` inside for the series dot.
+ * - `solid`: compact text segment (cashflow dashboard Overview / Details).
+ *   rounded-md, medium weight. Off = transparent, fg-secondary; on = solid
+ *   brand fill, brand-contrast text. Padding and font size from the caller.
  */
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -74,6 +77,9 @@ const toggleVariantStyles = cva("", {
         "flex items-center gap-2 rounded-md border border-transparent bg-transparent px-2.5 py-1 text-[13px] font-semibold tracking-wide text-[color:var(--color-chart-legend-inactive)] transition-all duration-200 " +
         "data-[state=off]:hover:bg-[color:color-mix(in_srgb,var(--legend-accent)_5%,transparent)] data-[state=off]:hover:text-[color:color-mix(in_srgb,var(--legend-accent)_50%,transparent)] " +
         "data-[state=on]:border-[color:color-mix(in_srgb,var(--legend-accent)_25%,transparent)] data-[state=on]:bg-[color:color-mix(in_srgb,var(--legend-accent)_12%,transparent)] data-[state=on]:text-[color:var(--legend-accent)]",
+      solid:
+        "rounded-md bg-transparent font-medium text-fg-secondary transition-colors " +
+        "data-[state=on]:bg-brand data-[state=on]:text-brand-contrast",
     },
     size: {
       /** No size classes (default for custom variants). */

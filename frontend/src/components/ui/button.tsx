@@ -86,6 +86,8 @@ const buttonVariantStyles = cva("", {
       /** Square icon button, muted icon, surface-hover wash (drawer close). */
       "ghost-icon":
         "flex items-center justify-center rounded-lg text-fg-muted transition-colors hover:bg-surface-hover",
+      /** Static outlined icon button: 1px border-default, rounded-lg, no hover; 30% when disabled (cashflow year prev / next). Padding from the caller. */
+      "outline-icon": "rounded-lg border border-border-default disabled:opacity-30",
       /** Filled square icon button that grows slightly on hover (modal close). */
       "icon-filled":
         "flex items-center justify-center rounded-lg bg-white/[0.04] text-fg-tertiary transition-all duration-150 hover:scale-105 hover:bg-white/[0.08] hover:text-fg-primary",

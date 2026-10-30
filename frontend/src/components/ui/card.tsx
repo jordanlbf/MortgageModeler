@@ -15,6 +15,9 @@ import { Slot } from "radix-ui"
  *   fill, white/.08 border with a 3px top border in `--card-accent` at 55%,
  *   soft shadow, 250ms ease-out-expo transitions. Hover lift/shadow and
  *   padding come from the caller.
+ * - `panel` (ours, cashflow dashboard panels and details table): rounded-xl,
+ *   1px border-subtle, --color-card fill. No padding or layout: callers own
+ *   that.
  */
 const CARD_STOCK =
   "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl"
@@ -34,7 +37,15 @@ const CARD_SCHEME =
   "shadow-[0_1px_4px_rgba(0,0,0,0.2),0_0_0_0.5px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.02)] " +
   "transition-all duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
 
-const CARD_VARIANTS = { default: CARD_STOCK, glass: CARD_GLASS, auth: CARD_AUTH, scheme: CARD_SCHEME } as const
+const CARD_PANEL = "rounded-xl border border-border-subtle bg-card"
+
+const CARD_VARIANTS = {
+  default: CARD_STOCK,
+  glass: CARD_GLASS,
+  auth: CARD_AUTH,
+  scheme: CARD_SCHEME,
+  panel: CARD_PANEL,
+} as const
 
 type CardVariant = keyof typeof CARD_VARIANTS
 

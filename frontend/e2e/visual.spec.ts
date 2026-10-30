@@ -212,14 +212,14 @@ test.describe("cashflow", () => {
   test("dashboard tabs", async ({ page }) => {
     await completeWizard(page, false);
     for (const tab of ["property", "tax", "equity", "deductions", "costs"]) {
-      await page.getByRole("button", { name: tab, exact: true }).click();
+      await page.getByRole("tab", { name: tab, exact: true }).click();
       await snap(page, `cashflow-tab-${tab}`, 1200);
     }
   });
 
   test("details table, drawer and rows", async ({ page }) => {
     await completeWizard(page, false);
-    await page.getByRole("button", { name: "details", exact: true }).click();
+    await page.getByRole("radio", { name: "details", exact: true }).click();
     await snap(page, "cashflow-details");
     const rows = page.locator("table tbody tr");
     await rows.nth(3).hover();

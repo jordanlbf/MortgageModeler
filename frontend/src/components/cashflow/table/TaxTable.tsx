@@ -3,14 +3,21 @@
 import { formatDollarsSigned } from "@/lib/formatters";
 import { getMarginalTaxRate } from "@/lib/cashflow-calculations";
 import { t } from "@/lib/theme";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { SubTableProps } from "./types";
 
 export default function TaxTable({
   yearData,
   isInvestment,
   formatYearCell,
-  getRowClass,
-  getRowHandlers,
+  getRowProps,
   visibleCols = {},
 }: SubTableProps) {
   if (!isInvestment) return null;
@@ -18,72 +25,61 @@ export default function TaxTable({
   const show = (key: string) => visibleCols[key] !== false;
 
   return (
-    <table className="w-full text-[12px] table-fixed">
-      <thead>
-        <tr>
-          <th className="px-3 py-2 text-left text-[11px] font-medium uppercase tracking-wider sticky left-0 z-10 w-16" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Year</th>
-          {show("holding") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Holding</th>}
-          {show("interest") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Interest</th>}
-          {show("depr") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Depr.</th>}
-          {show("totalDed") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.secondary, background: t.surface.subtle, fontWeight: 600 }}>Total ded.</th>}
-          {show("taxSaved") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.fg.tertiary, background: t.surface.subtle, borderColor: t.border.subtle }}>Tax effect</th>}
-          {show("bracket") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider" style={{ color: t.fg.tertiary, background: t.surface.subtle }}>Bracket</th>}
-          {show("netTaxCost") && <th className="px-3 py-2 text-right text-[11px] font-medium uppercase tracking-wider border-l" style={{ color: t.brand.default, background: t.surface.subtle, fontWeight: 600, borderColor: t.border.subtle }}>Net tax cost</th>}
-        </tr>
-      </thead>
-      <tbody>
-        {yearData.map((y, i) => {
-          const isSelected = getRowClass(y.year).includes("bg-brand");
-
+    <Table variant="dense">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Year</TableHead>
+          {show("holding") && <TableHead>Holding</TableHead>}
+          {show("interest") && <TableHead>Interest</TableHead>}
+          {show("depr") && <TableHead>Depr.</TableHead>}
+          {show("totalDed") && <TableHead data-tone="total">Total ded.</TableHead>}
+          {show("taxSaved") && <TableHead data-divider="subtle">Tax effect</TableHead>}
+          {show("bracket") && <TableHead>Bracket</TableHead>}
+          {show("netTaxCost") && <TableHead data-tone="net" data-divider="subtle">Net tax cost</TableHead>}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {yearData.map((y) => {
           const depr = y.depDiv43 + y.depDiv40;
           const totalDed = y.ongoingCosts + y.interestPortion + depr;
           const taxableIncome = y.grossIncome - y.totalDeductionsForTax;
           const bracket = getMarginalTaxRate(taxableIncome);
 
           return (
-            <tr key={y.year} className={getRowClass(y.year)} {...getRowHandlers(y.year)}>
-              <td className="px-3 py-2 text-left text-[12px] font-medium sticky left-0 z-10 border-t" style={{ color: isSelected ? t.brand.default : t.fg.primary, background: isSelected ? t.surface.hover : t.card.base, borderColor: t.border.subtle }}>
-                {formatYearCell(y.year, i)}
-              </td>
+            <TableRow key={y.year} {...getRowProps(y.year)}>
+              <TableCell>{formatYearCell(y.year)}</TableCell>
               {show("holding") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(y.ongoingCosts))}
-                </td>
+                <TableCell>{formatDollarsSigned(Math.round(y.ongoingCosts))}</TableCell>
               )}
               {show("interest") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(y.interestPortion))}
-                </td>
+                <TableCell>{formatDollarsSigned(Math.round(y.interestPortion))}</TableCell>
               )}
               {show("depr") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(depr))}
-                </td>
+                <TableCell>{formatDollarsSigned(Math.round(depr))}</TableCell>
               )}
               {show("totalDed") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, fontWeight: 500, borderColor: t.border.subtle }}>
-                  {formatDollarsSigned(Math.round(totalDed))}
-                </td>
+                <TableCell data-tone="total">{formatDollarsSigned(Math.round(totalDed))}</TableCell>
               )}
               {show("taxSaved") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t border-l" style={{ color: y.taxSaved > 0 ? t.data.positive : y.taxSaved < 0 ? t.data.negative : t.fg.primary, borderColor: t.border.subtle }}>
+                <TableCell
+                  data-divider="subtle"
+                  style={{ color: y.taxSaved > 0 ? t.data.positive : y.taxSaved < 0 ? t.data.negative : t.fg.primary }}
+                >
                   {y.taxSaved > 0 ? "+" : ""}{formatDollarsSigned(Math.round(y.taxSaved))}
-                </td>
+                </TableCell>
               )}
               {show("bracket") && (
-                <td className="px-3 py-2 text-right text-[12px] tabular-nums border-t" style={{ color: t.fg.primary, borderColor: t.border.subtle }}>
-                  {(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%
-                </td>
+                <TableCell>{(bracket * 100).toFixed(bracket % 0.01 === 0 ? 0 : 1)}%</TableCell>
               )}
               {show("netTaxCost") && (
-                <td className="px-3 py-2 text-right text-[13px] tabular-nums border-t border-l" style={{ color: t.data.negative, fontWeight: 600, borderColor: t.border.subtle }}>
+                <TableCell data-tone="net" data-divider="subtle" className="text-data-negative">
                   {formatDollarsSigned(-Math.round(y.incomeTaxCalc))}
-                </td>
+                </TableCell>
               )}
-            </tr>
+            </TableRow>
           );
         })}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 }
