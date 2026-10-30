@@ -5,7 +5,7 @@ import { getMarginalTaxRate, getBracketColor } from "@/lib/cashflow-calculations
 import { formatDollarsSigned } from "@/lib/formatters";
 import { safeDiv } from "@/lib/formatters";
 import { LVR_COLORS, DEPRECIATION_COLOR } from "@/lib/theme";
-import KpiTile from "@/components/ui/KpiTile";
+import KpiTile from "@/components/domain/KpiTile";
 import KpiSparkline from "./KpiSparkline";
 
 interface KpiItem {

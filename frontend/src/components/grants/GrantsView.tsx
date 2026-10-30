@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { fetchGrantsEligibility } from "@/lib/api";
 import type { GrantSchemeWithEligibility } from "@/lib/api";
 import { parseCurrencyInput, formatDollars } from "@/lib/formatters";
 import { useApiCall } from "@/hooks/useApiCall";
 import { mix, STATE_COLORS } from "@/lib/theme";
-import PillButton from "@/components/ui/PillButton";
+import { Button } from "@/components/ui/button";
 import DenseSchemeCard from "./DenseSchemeCard";
 
 // ── Types ───────────────────────────────────────
@@ -169,7 +169,7 @@ export default function GrantsView() {
                 {ALL_REGIONS.map((r) => {
                   const color = r === "Federal" ? STATE_COLORS.FEDERAL : STATE_COLORS[r];
                   return (
-                    <PillButton key={r} active={regions.has(r)} color={color} onClick={() => toggleRegion(r)}>{r}</PillButton>
+                    <Button key={r} type="button" variant="pill" aria-pressed={regions.has(r)} style={{ "--pill-accent": color } as CSSProperties} onClick={() => toggleRegion(r)}>{r}</Button>
                   );
                 })}
               </div>
@@ -188,7 +188,7 @@ export default function GrantsView() {
                     { value: "land" as const, label: "Land" },
                     { value: "off-the-plan" as const, label: "OTP" },
                   ]).map((o) => (
-                    <PillButton key={o.value} active={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)}>{o.label}</PillButton>
+                    <Button key={o.value} type="button" variant="pill" aria-pressed={propertyType === o.value} onClick={() => setPropertyType(propertyType === o.value ? null : o.value)}>{o.label}</Button>
                   ))}
                 </div>
               </div>
@@ -199,7 +199,7 @@ export default function GrantsView() {
                 <label className="text-[15px] font-semibold uppercase tracking-widest text-fg-primary/70 leading-none whitespace-nowrap">Buyer</label>
                 <div className="flex gap-1.5">
                   {([{ value: "individual" as const, label: "Individual" }, { value: "couple" as const, label: "Couple" }]).map((o) => (
-                    <PillButton key={o.value} active={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)}>{o.label}</PillButton>
+                    <Button key={o.value} type="button" variant="pill" aria-pressed={buyerType === o.value} onClick={() => setBuyerType(buyerType === o.value ? null : o.value)}>{o.label}</Button>
                   ))}
                 </div>
               </div>

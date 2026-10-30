@@ -434,14 +434,18 @@ thead .cf-zone,
 .animate-overlay-in { animation: overlay-in 0.3s ease-out both; }
 .animate-card-pop-in { animation: card-pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-@keyframes col-fade-in {
-  from { opacity: 0; transform: translateX(-8px); }
-  to { opacity: 1; transform: translateX(0); }
+/* Right-hand drawer (Sheet variant "bare" in ui/ColumnDrawer): slide in/out over 300ms ease-out. */
+@keyframes drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
-.animate-col-fade-in { animation: col-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes drawer-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-up, .animate-overlay-in, .animate-card-pop-in, .animate-col-fade-in { animation: none !important; }
+  .animate-fade-up, .animate-overlay-in, .animate-card-pop-in { animation: none !important; }
 }
 
 /* ── Home page background effects ── */
@@ -454,20 +458,6 @@ thead .cf-zone,
 .home-bg-noise {
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity: 0.025;
-}
-
-.glass-card {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.20),
-              0 0 0 0.5px rgba(255, 255, 255, 0.03),
-              inset 0 1px 0 rgba(255, 255, 255, 0.02);
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.glass-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35),
-              0 0 0 0.5px rgba(113, 113, 122, 0.06),
-              inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 /* ── Auth CTA button with emerald glow ── */

@@ -6,9 +6,9 @@ import { formatCurrency, formatCurrencyShort, parseCurrencyInput } from "@/lib/f
 import { loanAmountFromPayment } from "@/lib/calculations";
 import { t, mix } from "@/lib/theme";
 import { useAnimatedValue } from "@/hooks/useAnimatedValue";
-import GlassCard from "@/components/ui/GlassCard";
-import EditableValue from "@/components/ui/EditableValue";
-import Skeleton from "@/components/ui/Skeleton";
+import { Card } from "@/components/ui/card";
+import EditableValue from "@/components/domain/EditableValue";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface KpiCardsProps {
   data: ScheduleResponse | null;
@@ -47,7 +47,7 @@ export default memo(function KpiCards({
   return (
     <div className="mb-4 grid gap-4 grid-cols-[1fr_1fr_1fr]">
       {/* Repayment — editable */}
-      <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
+      <Card variant="glass" className={CARD_STYLE} style={CARD_BORDER}>
         <div className="text-[18px] font-medium uppercase tracking-widest text-brand/40">
           Repayment
         </div>
@@ -59,15 +59,15 @@ export default memo(function KpiCards({
               onCommit={handleRepaymentCommit}
               className="w-full text-center text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums"
             />
-          ) : <Skeleton width="160px" height="34px" />}
+          ) : <Skeleton variant="inline" width="160px" height="34px" />}
         </div>
         <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-fg-primary/30">
-          {data ? `per ${FREQ_LABELS[frequency]}` : <Skeleton width="80px" height="11px" />}
+          {data ? `per ${FREQ_LABELS[frequency]}` : <Skeleton variant="inline" width="80px" height="11px" />}
         </div>
-      </GlassCard>
+      </Card>
 
       {/* Frequency */}
-      <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
+      <Card variant="glass" className={CARD_STYLE} style={CARD_BORDER}>
         <div className="text-[18px] font-medium uppercase tracking-widest text-brand/40">
           Frequency
         </div>
@@ -91,22 +91,22 @@ export default memo(function KpiCards({
                 {opt.label}
               </button>
             );
-          }) : <Skeleton width="200px" height="32px" />}
+          }) : <Skeleton variant="inline" width="200px" height="32px" />}
         </div>
-      </GlassCard>
+      </Card>
 
       {/* Loan Amount */}
-      <GlassCard className={CARD_STYLE} style={CARD_BORDER}>
+      <Card variant="glass" className={CARD_STYLE} style={CARD_BORDER}>
         <div className="text-[18px] font-medium uppercase tracking-widest text-brand/40">
           Loan Amount
         </div>
         <div className="mt-1.5 flex items-center h-[38px] text-[34px] font-normal leading-none tracking-[-0.02em] tabular-nums text-fg-primary">
-          {data ? formatCurrencyShort(animLoan) : <Skeleton width="160px" height="34px" />}
+          {data ? formatCurrencyShort(animLoan) : <Skeleton variant="inline" width="160px" height="34px" />}
         </div>
         <div className="mt-1.5 text-[11px] font-normal uppercase tabular-nums tracking-widest text-fg-primary/30">
-          {data ? `${lvrPct}% LVR` : <Skeleton width="60px" height="11px" />}
+          {data ? `${lvrPct}% LVR` : <Skeleton variant="inline" width="60px" height="11px" />}
         </div>
-      </GlassCard>
+      </Card>
     </div>
   );
 })

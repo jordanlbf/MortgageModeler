@@ -2,6 +2,7 @@
 
 import { Component } from "react";
 import type { ReactNode, ErrorInfo } from "react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   children: ReactNode;
@@ -38,12 +39,9 @@ export default class ErrorBoundary extends Component<Props, State> {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-8">
         <p className="text-[13px] text-fg-primary/30">Something went wrong.</p>
-        <button
-          onClick={this.reset}
-          className="rounded-lg px-4 py-2 text-[12px] font-medium text-brand/60 transition-colors hover:bg-white/[0.04]"
-        >
+        <Button variant="ghost-brand" onClick={this.reset} className="px-4 py-2 text-[12px]">
           Try again
-        </button>
+        </Button>
       </div>
     );
   }

@@ -3,8 +3,8 @@ import type { Frequency } from "@/lib/types";
 import { FREQ_LABELS } from "@/lib/constants";
 import { formatCurrencyShort, parseCurrencyInput } from "@/lib/formatters";
 import { t, SERIES, mix } from "@/lib/theme";
-import GlassCard from "@/components/ui/GlassCard";
-import Slider from "@/components/ui/Slider";
+import { Card } from "@/components/ui/card";
+import SliderField from "@/components/domain/SliderField";
 
 interface LoanControlsProps {
   purchasePrice: number;
@@ -59,10 +59,10 @@ export default memo(function LoanControls({
       showEquity ? "grid-cols-[4fr_1fr]" :
       "grid-cols-[4fr]"
     }`}>
-      <GlassCard className="border-brand/20" style={CARD_BORDER}>
+      <Card variant="glass" className="border-brand/20" style={CARD_BORDER}>
         <div className="grid grid-cols-4">
           <div className="px-4 py-2.5">
-            <Slider
+            <SliderField
               label="Purchase price"
               value={purchasePrice}
               display={formatCurrencyShort(purchasePrice)}
@@ -75,7 +75,7 @@ export default memo(function LoanControls({
             />
           </div>
           <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
-            <Slider
+            <SliderField
               label="Deposit"
               value={deposit}
               display={formatCurrencyShort(deposit)}
@@ -88,7 +88,7 @@ export default memo(function LoanControls({
             />
           </div>
           <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
-            <Slider
+            <SliderField
               label="Interest rate"
               value={rate}
               display={`${rate.toFixed(1)}%`}
@@ -101,7 +101,7 @@ export default memo(function LoanControls({
             />
           </div>
           <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
-            <Slider
+            <SliderField
               label="Loan term"
               value={years}
               display={`${years} yrs`}
@@ -114,13 +114,13 @@ export default memo(function LoanControls({
             />
           </div>
         </div>
-      </GlassCard>
+      </Card>
 
       {showOffset && (
-        <GlassCard className="border-brand/20" style={OFFSET_BORDER}>
+        <Card variant="glass" className="border-brand/20" style={OFFSET_BORDER}>
           <div className="grid grid-cols-2">
             <div className="px-4 py-2.5">
-              <Slider
+              <SliderField
                 label="Starting balance"
                 value={offsetBalance}
                 display={formatCurrencyShort(offsetBalance)}
@@ -134,7 +134,7 @@ export default memo(function LoanControls({
               />
             </div>
             <div className="px-4 py-2.5" style={{ borderLeft: `1px solid ${t.border.default}` }}>
-              <Slider
+              <SliderField
                 label={`Contribution per ${FREQ_LABELS[frequency]}`}
                 value={offsetContribution}
                 display={formatCurrencyShort(offsetContribution)}
@@ -148,13 +148,13 @@ export default memo(function LoanControls({
               />
             </div>
           </div>
-        </GlassCard>
+        </Card>
       )}
 
       {showEquity && (
-        <GlassCard className="border-brand/20" style={EQUITY_BORDER}>
+        <Card variant="glass" className="border-brand/20" style={EQUITY_BORDER}>
           <div className="px-4 py-2.5">
-            <Slider
+            <SliderField
               label="Appreciation"
               value={appreciation}
               display={`${appreciation.toFixed(1)}%`}
@@ -167,7 +167,7 @@ export default memo(function LoanControls({
               accent={SERIES.eq.color}
             />
           </div>
-        </GlassCard>
+        </Card>
       )}
     </div>
   );

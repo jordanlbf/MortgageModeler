@@ -1,4 +1,6 @@
 import { useEditableInput } from "@/hooks/useEditableInput";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface EditableValueProps {
   display: string;
@@ -7,13 +9,15 @@ interface EditableValueProps {
   className?: string;
 }
 
-export default function EditableValue({ display, onCommit, parse, className = "" }: EditableValueProps) {
+/** Read-only value that turns into a text input on click/focus. */
+export default function EditableValue({ display, onCommit, parse, className }: EditableValueProps) {
   const { editing, draft, inputRef, startEditing, commit, handleKeyDown, handleChange } =
     useEditableInput({ display, onCommit, parse });
 
   return (
-    <input
+    <Input
       ref={inputRef}
+      variant="ghost"
       type="text"
       inputMode={editing ? "decimal" : "none"}
       value={editing ? draft : display}
@@ -23,7 +27,10 @@ export default function EditableValue({ display, onCommit, parse, className = ""
       onChange={handleChange}
       onBlur={commit}
       onKeyDown={handleKeyDown}
-      className={`bg-transparent outline-none selection:bg-brand/20 selection:text-fg-primary cursor-text hover:text-brand/75 transition-colors duration-150 ${className}`}
+      className={cn(
+        "selection:bg-brand/20 selection:text-fg-primary cursor-text hover:text-brand/75 transition-colors duration-150",
+        className,
+      )}
     />
   );
 }

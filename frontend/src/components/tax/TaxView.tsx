@@ -5,7 +5,7 @@ import { formatCurrencyShort } from "@/lib/formatters";
 import { mix } from "@/lib/theme";
 import AdvancedColumn from "@/components/tax/AdvancedColumn";
 import TaxComposition from "@/components/tax/TaxBreakdown";
-import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import ErrorBoundary from "@/components/domain/ErrorBoundary";
 
 // ── Tax Brackets Divider ────────────────────────
 

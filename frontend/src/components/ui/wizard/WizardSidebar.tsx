@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 import { type LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 export interface WizardSidebarStep<TStepId extends string> {
   id: TStepId;
@@ -64,16 +66,13 @@ export default function WizardSidebar<TStepId extends string>({
 
             return (
               <li key={step.id}>
-                <button
+                <Button
                   type="button"
+                  variant="nav-step"
+                  data-current={stepIsCurrent}
+                  aria-current={stepIsCurrent ? "step" : undefined}
                   onClick={() => stepIsClickable && onSelect(step.id)}
                   disabled={!stepIsClickable}
-                  className={[
-                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left group relative transition-all duration-150",
-                    stepIsClickable ? "cursor-pointer" : "cursor-default",
-                    stepIsCurrent && "bg-brand/[0.08]",
-                    !stepIsCurrent && stepIsClickable && "hover:bg-white/[0.03]",
-                  ].filter(Boolean).join(" ")}
                 >
                   {/* Simple dot indicator */}
                   <div
@@ -96,7 +95,7 @@ export default function WizardSidebar<TStepId extends string>({
                       isComplete: stepIsComplete,
                     })}
                   </div>
-                </button>
+                </Button>
               </li>
             );
           })}
@@ -116,12 +115,7 @@ function ProgressHeader({ progress }: { progress: WizardSidebarProgress }) {
         <span className="text-xs font-semibold text-fg-primary tabular-nums">{completedCount} of {totalCount}</span>
       </div>
       {/* Horizontal progress bar */}
-      <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-        <div
-          className="h-full bg-brand rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
+      <Progress variant="bar" value={percent} aria-label={label} />
     </div>
   );
 }

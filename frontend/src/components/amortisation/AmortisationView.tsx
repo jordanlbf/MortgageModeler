@@ -9,8 +9,8 @@ import KpiCards from "@/components/amortisation/KpiCards";
 import LoanControls from "@/components/amortisation/LoanControls";
 import AmortisationChart, { ChartLegend } from "@/components/amortisation/AmortisationChart";
 import AmortisationTable from "@/components/amortisation/AmortisationTable";
-import GlassCard from "@/components/ui/GlassCard";
-import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import { Card } from "@/components/ui/card";
+import ErrorBoundary from "@/components/domain/ErrorBoundary";
 
 
 const TRANSITION_MS = 350;
@@ -103,7 +103,7 @@ export default function AmortisationView() {
           </div>
         </div>
 
-        <GlassCard ref={cardRef} className="overflow-hidden">
+        <Card variant="glass" ref={cardRef} className="overflow-hidden">
           {/* Toolbar */}
           <div
             className="relative flex items-center justify-between px-5 py-3"
@@ -222,7 +222,7 @@ export default function AmortisationView() {
               )}
             </ErrorBoundary>
           </div>
-        </GlassCard>
+        </Card>
 
       </div>
     </>

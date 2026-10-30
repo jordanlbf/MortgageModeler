@@ -1,19 +1,39 @@
 import * as React from "react"
 import { cn } from "cn"
 
+/**
+ * Card variants:
+ * - `default` (stock shadcn): flex column, padding, ring, rounded-xl, bg-card.
+ * - `glass` (ours, was GlassCard): raised surface, rounded-2xl, backdrop blur,
+ *   soft shadow and a 1px hover lift. No padding or layout: callers own that
+ *   (and may pass e.g. a coloured `borderTop` through `style`).
+ */
+const CARD_STOCK =
+  "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl"
+
+const CARD_GLASS =
+  "rounded-2xl bg-surface-raised backdrop-blur-md " +
+  "shadow-[0_1px_4px_rgba(0,0,0,0.20),0_0_0_0.5px_rgba(255,255,255,0.03),inset_0_1px_0_rgba(255,255,255,0.02)] " +
+  "transition-[translate,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] " +
+  "hover:-translate-y-px hover:shadow-[0_4px_16px_-2px_rgba(0,0,0,0.35),0_0_0_0.5px_rgba(113,113,122,0.06),inset_0_1px_0_rgba(255,255,255,0.03)]"
+
+type CardVariant = "default" | "glass"
+
 function Card({
   className,
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm"
+  variant?: CardVariant
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
-      className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        className
-      )}
+      data-variant={variant}
+      className={cn(variant === "glass" ? CARD_GLASS : CARD_STOCK, className)}
       {...props}
     />
   )

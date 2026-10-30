@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface WizardShellProps {
   /** Title of the active step (e.g. "Property Setup"). */
@@ -79,25 +80,27 @@ export default function WizardShell({
         <div className="flex items-center justify-between">
           <div>
             {showBack && onBack && (
-              <button
+              <Button
                 type="button"
+                variant="ghost-muted"
                 onClick={onBack}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-fg-tertiary hover:text-fg-primary transition-colors rounded-lg hover:bg-white/[0.04]"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm"
               >
                 {backIcon ?? <ArrowLeft size={14} />}
                 {backLabel}
-              </button>
+              </Button>
             )}
           </div>
-          <button
+          <Button
             type="button"
+            variant="cta"
             onClick={onContinue}
             disabled={ctaDisabled}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-brand-contrast bg-brand rounded-lg transition-all duration-150 hover:enabled:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm"
           >
             {ctaLabel}
             <ArrowRight size={14} />
-          </button>
+          </Button>
         </div>
       </footer>
     </div>

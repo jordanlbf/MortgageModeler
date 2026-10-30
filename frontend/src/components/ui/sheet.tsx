@@ -29,15 +29,27 @@ function SheetPortal({
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
 }
 
+/**
+ * Sheet variants (SheetOverlay / SheetContent `variant`):
+ * - `default` (stock shadcn): popover panel sliding from `side` with an X.
+ * - `bare` (ours): no stock classes and no built-in close button. The caller
+ *   styles the overlay (`overlayClassName`) and the panel, e.g. the column
+ *   drawer in ui/ColumnDrawer (see the `drawer-in` / `drawer-out` keyframes
+ *   in globals.css).
+ */
 function SheetOverlay({
   className,
+  variant = "default",
   ...props
-}: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
+}: React.ComponentProps<typeof SheetPrimitive.Overlay> & {
+  variant?: "default" | "bare"
+}) {
   return (
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        variant === "default" &&
+          "fixed inset-0 z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -50,14 +62,36 @@ function SheetContent({
   children,
   side = "right",
   showCloseButton = true,
+  variant = "default",
+  overlayClassName,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
+  variant?: "default" | "bare"
+  /** Extra classes for the overlay (the only overlay styling for `bare`). */
+  overlayClassName?: string
 }) {
+  if (variant === "bare") {
+    return (
+      <SheetPortal>
+        <SheetOverlay variant="bare" className={overlayClassName} />
+        <SheetPrimitive.Content
+          data-slot="sheet-content"
+          data-side={side}
+          data-variant="bare"
+          className={className}
+          {...props}
+        >
+          {children}
+        </SheetPrimitive.Content>
+      </SheetPortal>
+    )
+  }
+
   return (
     <SheetPortal>
-      <SheetOverlay />
+      <SheetOverlay className={overlayClassName} />
       <SheetPrimitive.Content
         data-slot="sheet-content"
         data-side={side}

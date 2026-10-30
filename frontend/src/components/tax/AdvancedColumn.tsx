@@ -3,8 +3,9 @@ import { t, mix, TAX_CATEGORY_COLORS } from "@/lib/theme";
 import { formatCurrencyShort, parseCurrencyInput } from "@/lib/formatters";
 import type { AdvancedTaxInputs, AdvancedTaxSetters } from "@/hooks/useAdvancedTaxState";
 import { useEditableInput } from "@/hooks/useEditableInput";
-import GlassCard from "@/components/ui/GlassCard";
-import Toggle from "@/components/ui/Toggle";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.brand.border, background: t.surface.raised };
 
@@ -233,7 +234,7 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
   }, []);
 
   return (
-    <GlassCard className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
+    <Card variant="glass" className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar overflow-y-auto px-8 py-6">
         <span className="mb-8 block text-center text-[20px] font-semibold uppercase tracking-widest" style={{ color: t.brand.default }}>
           Income &amp; Deductions
@@ -339,12 +340,22 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
                   />
                 ) : (
                   <div key={f.field} className="px-3 py-[10px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <Toggle
-                      label={f.label}
-                      checked={inputs[f.field] as boolean}
-                      onChange={setters[f.setter] as (v: boolean) => void}
-                      reverse
-                    />
+                    <Label variant="bare" className="flex w-full cursor-pointer items-center justify-between select-none">
+                      <span
+                        className={`text-[15px] font-medium transition-colors duration-200 ${
+                          inputs[f.field]
+                            ? "text-fg-primary"
+                            : "text-[color:color-mix(in_srgb,var(--color-fg-primary)_50%,transparent)]"
+                        }`}
+                      >
+                        {f.label}
+                      </span>
+                      <Switch
+                        variant="accent"
+                        checked={inputs[f.field] as boolean}
+                        onCheckedChange={setters[f.setter] as (v: boolean) => void}
+                      />
+                    </Label>
                   </div>
                 ),
               )}
@@ -352,6 +363,6 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
           ))}
         </div>
       </div>
-    </GlassCard>
+    </Card>
   );
 }

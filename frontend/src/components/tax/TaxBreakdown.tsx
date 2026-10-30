@@ -1,6 +1,6 @@
 import { formatCurrencyShort } from "@/lib/formatters";
 import { t, mix, TAX_COLORS as TC } from "@/lib/theme";
-import GlassCard from "@/components/ui/GlassCard";
+import { Card } from "@/components/ui/card";
 import { useHighlight } from "@/hooks/useHighlight";
 
 // ── Shared constants ─────────────────────────────
@@ -313,7 +313,7 @@ export default function TaxComposition({
     : null;
 
   return (
-    <GlassCard className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
+    <Card variant="glass" className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar flex flex-col items-center gap-8 overflow-y-auto px-7 py-5">
         <span
           className="text-[20px] font-semibold uppercase tracking-widest"
@@ -379,6 +379,6 @@ export default function TaxComposition({
 
         <WaterfallSection gross={gross} taxSegments={waterfallSegments} netIncome={netIncome} hoveredKey={activeKey} onHover={handleHover} onClick={handleClick} />
       </div>
-    </GlassCard>
+    </Card>
   );
 }

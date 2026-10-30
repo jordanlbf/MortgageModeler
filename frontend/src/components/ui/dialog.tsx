@@ -31,15 +31,26 @@ function DialogClose({
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
+/**
+ * Dialog variants (DialogOverlay / DialogContent `variant`):
+ * - `default` (stock shadcn): centred popover card with padding and an X.
+ * - `bare` (ours): no stock classes, no built-in close button. The caller
+ *   styles the overlay (`overlayClassName`) and content completely, e.g. the
+ *   wizard modal in ui/wizard/ModalWizardShell.
+ */
 function DialogOverlay({
   className,
+  variant = "default",
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+}: React.ComponentProps<typeof DialogPrimitive.Overlay> & {
+  variant?: "default" | "bare"
+}) {
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        variant === "default" &&
+          "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -51,13 +62,34 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  variant = "default",
+  overlayClassName,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  variant?: "default" | "bare"
+  /** Extra classes for the overlay (the only overlay styling for `bare`). */
+  overlayClassName?: string
 }) {
+  if (variant === "bare") {
+    return (
+      <DialogPortal>
+        <DialogOverlay variant="bare" className={overlayClassName} />
+        <DialogPrimitive.Content
+          data-slot="dialog-content"
+          data-variant="bare"
+          className={className}
+          {...props}
+        >
+          {children}
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    )
+  }
+
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay className={overlayClassName} />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(

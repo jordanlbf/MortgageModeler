@@ -1,5 +1,7 @@
-import type { ReactNode } from "react";
-import Input from "@/components/ui/Input";
+import { useId, type ReactNode } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { formatDollarsSigned } from "@/lib/formatters";
 
 export const currencyInput = (setter: (v: string) => void) => ({
@@ -13,19 +15,45 @@ export function InputField({
   label,
   hint,
   suffix,
+  id,
+  className,
+  type = "text",
   ...inputProps
 }: {
   label: string;
   hint?: string;
+  /** Right-aligned unit shown inside the field (e.g. "%"). */
   suffix?: string;
-} & React.ComponentProps<typeof Input>) {
+} & Omit<React.ComponentProps<typeof Input>, "variant">) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+
+  const input = (
+    <Input
+      id={inputId}
+      type={type}
+      variant="filled"
+      className={cn(suffix && "pr-10 w-full", className)}
+      {...inputProps}
+    />
+  );
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <label className="text-xs font-medium text-fg-secondary">{label}</label>
+        <Label variant="field" htmlFor={inputId}>{label}</Label>
         {hint && <span className="text-[10px] text-fg-muted">{hint}</span>}
       </div>
-      <Input suffix={suffix} {...inputProps} />
+      {suffix ? (
+        <div className="relative">
+          {input}
+          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] font-medium text-fg-tertiary pointer-events-none">
+            {suffix}
+          </span>
+        </div>
+      ) : (
+        input
+      )}
     </div>
   );
 }
