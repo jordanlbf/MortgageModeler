@@ -114,6 +114,10 @@ API docs available at `http://localhost:8000/docs` when running locally.
 
 **Prerequisite:** Docker Desktop is required to run the platform service's PostgreSQL database.
 
+### Quick start (Windows)
+
+From the repo root, run `.\dev.ps1` to start everything: Postgres, Prisma migrations, then compute, platform and frontend in their own Windows Terminal tabs. `.\dev.ps1 -Stop` stops Postgres. The compute venv must already exist (see below).
+
 ### Compute
 
 ```bash
