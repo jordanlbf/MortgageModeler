@@ -1,9 +1,13 @@
 import { useCallback, useState } from "react";
-import { t, mix, TAX_CATEGORY_COLORS } from "@/lib/theme";
+import type * as React from "react";
+import { cn } from "cn";
+import { t, TAX_CATEGORY_COLORS } from "@/lib/theme";
 import { formatCurrencyShort, parseCurrencyInput } from "@/lib/formatters";
 import type { AdvancedTaxInputs, AdvancedTaxSetters } from "@/hooks/useAdvancedTaxState";
 import { useEditableInput } from "@/hooks/useEditableInput";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
@@ -192,10 +196,12 @@ function EditableField({
       </span>
 
       {/* Input */}
-      <input
+      <Input
         ref={inputRef}
+        variant="ghost"
         type="text"
         inputMode="decimal"
+        aria-label={label}
         value={editing ? draft : (completed ? formatCurrencyShort(value) : "—")}
         readOnly={!editing}
         onChange={handleChange}
@@ -203,14 +209,12 @@ function EditableField({
         onKeyDown={handleKeyDown}
         onFocus={startEditing}
         onClick={startEditing}
-        className="w-[90px] rounded-md bg-transparent px-2 py-1 text-right text-[15px] font-semibold tabular-nums outline-none transition-all duration-150"
-        style={{
-          color: completed ? "rgba(244,244,245,0.90)" : "rgba(244,244,245,0.25)",
-          background: editing ? "rgba(255,255,255,0.06)" : "transparent",
-          boxShadow: editing ? `0 0 0 1px ${color}` : "none",
-          caretColor: color,
-          cursor: "text",
-        }}
+        data-editing={editing}
+        className={cn(
+          "w-[90px] cursor-text rounded-md px-2 py-1 text-right text-[15px] font-semibold tabular-nums transition-all duration-150 caret-[color:var(--input-accent)]",
+          completed ? "text-[color:rgba(244,244,245,0.90)]" : "text-[color:rgba(244,244,245,0.25)]",
+        )}
+        style={{ "--input-accent": color } as React.CSSProperties}
       />
     </div>
   );
@@ -224,9 +228,8 @@ interface AdvancedColumnProps {
 }
 
 export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps) {
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState<string>(SECTIONS[0].id);
   const [touchedFields, setTouchedFields] = useState<Set<string>>(() => new Set());
-  const section = SECTIONS[activeTab];
   const aggregates = calculateTabAggregates(inputs);
 
   const markTouched = useCallback((field: string) => {
@@ -240,128 +243,110 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
           Income &amp; Deductions
         </span>
 
-        {/* Merged tab + value strip */}
-        <div className="mb-6 flex gap-[3px] rounded-[10px] p-[3px]" style={{ background: "rgba(255,255,255,0.03)" }}>
-          {SECTIONS.map((s, i) => {
-            const isActive = i === activeTab;
-            const agg = aggregates[i];
-            return (
-              <button
+        <Tabs variant="stat" value={activeTab} onValueChange={setActiveTab}>
+          {/* Merged tab + value strip */}
+          <TabsList aria-label="Tax inputs" className="mb-6">
+            {SECTIONS.map((s, i) => (
+              <TabsTrigger
                 key={s.id}
-                onClick={() => setActiveTab(i)}
-                className="flex flex-1 flex-col items-center rounded-[8px] py-[10px] px-3 transition-all duration-200"
-                style={{
-                  background: isActive ? s.color : "transparent",
-                }}
+                value={s.id}
+                data-filled={aggregates[i].hasValues}
+                style={{ "--tab-accent": s.color } as React.CSSProperties}
               >
-                <span
-                  className="text-[12px] font-semibold tracking-[0.04em]"
-                  style={{
-                    color: isActive ? "var(--color-surface-app)" : mix(s.color, 55),
-                  }}
-                >
-                  {s.shortTitle}
+                <span className="text-[12px] font-semibold tracking-[0.04em]">{s.shortTitle}</span>
+                <span className="mt-[2px] text-[17px] font-semibold tabular-nums text-[color:var(--tab-stat-value)]">
+                  {formatCurrencyShort(aggregates[i].total)}
                 </span>
-                <span
-                  className="mt-[2px] text-[17px] font-semibold tabular-nums"
-                  style={{
-                    color: isActive
-                      ? "var(--color-surface-app)"
-                      : agg.hasValues
-                        ? mix(s.color, 50)
-                        : "rgba(244,244,245,0.20)",
-                  }}
-                >
-                  {formatCurrencyShort(agg.total)}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {/* Progress dots below tab strip */}
-        <div className="-mt-4 mb-6 flex gap-[3px] px-[3px]">
-          {SECTIONS.map((s, i) => {
-            const agg = aggregates[i];
-            return (
-              <div key={s.id} className="flex flex-1 items-center justify-center gap-[5px]" style={{ height: 14 }}>
-                {agg.filledCount === agg.itemCount && agg.filledCount > 0 ? (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ opacity: 0.9 }}>
-                    <circle cx="7" cy="7" r="6.5" stroke={s.color} strokeWidth="1" fill="none" opacity={0.35} />
-                    <path d="M4 7.2 L6.2 9.4 L10 4.8" stroke={s.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                  </svg>
-                ) : (
-                  Array.from({ length: agg.itemCount }, (_, j) => (
-                    <div
-                      key={j}
-                      className="h-[6px] w-[6px] rounded-full transition-colors duration-200"
-                      style={{
-                        background: j < agg.filledCount
-                          ? s.color
-                          : "rgba(255,255,255,0.10)",
-                      }}
-                    />
-                  ))
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Grouped fields */}
-        <div className="flex flex-col gap-1">
-          {section.groups.map((group, groupIdx) => (
-            <div
-              key={group.label}
-              className="rounded-[8px] px-1 py-2"
-              style={{
-                borderLeft: `4px solid ${section.color}`,
-                background: groupIdx % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent",
-              }}
-            >
-              <div
-                className="mb-1 px-3 text-[12px] font-semibold uppercase tracking-widest"
-                style={{ color: section.color }}
-              >
-                {group.label}
-              </div>
-              {group.fields.map((f) =>
-                f.type === "currency" ? (
-                  <EditableField
-                    key={f.field}
-                    label={f.label}
-                    value={inputs[f.field] as number}
-                    min={f.min}
-                    max={f.max}
-                    onChange={setters[f.setter] as (v: number) => void}
-                    color={section.color}
-                    touched={touchedFields.has(f.field)}
-                    onTouch={() => markTouched(f.field)}
-                  />
-                ) : (
-                  <div key={f.field} className="px-3 py-[10px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <Label variant="bare" className="flex w-full cursor-pointer items-center justify-between select-none">
-                      <span
-                        className={`text-[15px] font-medium transition-colors duration-200 ${
-                          inputs[f.field]
-                            ? "text-fg-primary"
-                            : "text-[color:color-mix(in_srgb,var(--color-fg-primary)_50%,transparent)]"
-                        }`}
-                      >
-                        {f.label}
-                      </span>
-                      <Switch
-                        variant="accent"
-                        checked={inputs[f.field] as boolean}
-                        onCheckedChange={setters[f.setter] as (v: boolean) => void}
+          {/* Progress dots below tab strip */}
+          <div className="-mt-4 mb-6 flex gap-[3px] px-[3px]">
+            {SECTIONS.map((s, i) => {
+              const agg = aggregates[i];
+              return (
+                <div key={s.id} className="flex flex-1 items-center justify-center gap-[5px]" style={{ height: 14 }}>
+                  {agg.filledCount === agg.itemCount && agg.filledCount > 0 ? (
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ opacity: 0.9 }}>
+                      <circle cx="7" cy="7" r="6.5" stroke={s.color} strokeWidth="1" fill="none" opacity={0.35} />
+                      <path d="M4 7.2 L6.2 9.4 L10 4.8" stroke={s.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    </svg>
+                  ) : (
+                    Array.from({ length: agg.itemCount }, (_, j) => (
+                      <div
+                        key={j}
+                        className="h-[6px] w-[6px] rounded-full transition-colors duration-200"
+                        style={{
+                          background: j < agg.filledCount
+                            ? s.color
+                            : "rgba(255,255,255,0.10)",
+                        }}
                       />
-                    </Label>
+                    ))
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Grouped fields */}
+          {SECTIONS.map((section) => (
+            <TabsContent key={section.id} value={section.id} className="flex flex-col gap-1">
+              {section.groups.map((group, groupIdx) => (
+                <div
+                  key={group.label}
+                  className="rounded-[8px] px-1 py-2"
+                  style={{
+                    borderLeft: `4px solid ${section.color}`,
+                    background: groupIdx % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent",
+                  }}
+                >
+                  <div
+                    className="mb-1 px-3 text-[12px] font-semibold uppercase tracking-widest"
+                    style={{ color: section.color }}
+                  >
+                    {group.label}
                   </div>
-                ),
-              )}
-            </div>
+                  {group.fields.map((f) =>
+                    f.type === "currency" ? (
+                      <EditableField
+                        key={f.field}
+                        label={f.label}
+                        value={inputs[f.field] as number}
+                        min={f.min}
+                        max={f.max}
+                        onChange={setters[f.setter] as (v: number) => void}
+                        color={section.color}
+                        touched={touchedFields.has(f.field)}
+                        onTouch={() => markTouched(f.field)}
+                      />
+                    ) : (
+                      <div key={f.field} className="px-3 py-[10px]" style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        <Label variant="bare" className="flex w-full cursor-pointer items-center justify-between select-none">
+                          <span
+                            className={`text-[15px] font-medium transition-colors duration-200 ${
+                              inputs[f.field]
+                                ? "text-fg-primary"
+                                : "text-[color:color-mix(in_srgb,var(--color-fg-primary)_50%,transparent)]"
+                            }`}
+                          >
+                            {f.label}
+                          </span>
+                          <Switch
+                            variant="accent"
+                            checked={inputs[f.field] as boolean}
+                            onCheckedChange={setters[f.setter] as (v: boolean) => void}
+                          />
+                        </Label>
+                      </div>
+                    ),
+                  )}
+                </div>
+              ))}
+            </TabsContent>
           ))}
-        </div>
+        </Tabs>
       </div>
     </Card>
   );

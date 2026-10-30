@@ -96,6 +96,14 @@ const buttonVariantStyles = cva("", {
        */
       "nav-step":
         "group relative flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all duration-150 disabled:cursor-default data-[current=true]:bg-brand/[0.08] data-[current=false]:enabled:hover:bg-white/[0.03]",
+      /**
+       * Clickable legend row for a data-viz (tax donut legend): dot + label,
+       * rounded-md px-2 py-1. Colour via `--legend-accent`. Set
+       * `data-highlighted` for the accent-8% wash and `data-dimmed` to fade
+       * to 30% while another series is highlighted.
+       */
+      "legend-row":
+        "flex cursor-pointer items-center gap-2 rounded-md bg-transparent px-2 py-1 text-left transition-all duration-200 data-[dimmed=true]:opacity-30 data-[highlighted=true]:bg-[color:color-mix(in_srgb,var(--legend-accent)_8%,transparent)]",
     },
     size: {
       /** No size classes (default for custom variants). */

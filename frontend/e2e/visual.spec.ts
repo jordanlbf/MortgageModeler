@@ -119,9 +119,9 @@ test.describe("tax", () => {
   test("tabs and toggles", async ({ page }) => {
     await go(page, "/tax");
     await snap(page, "tax");
-    await page.getByRole("button", { name: /^Deductions/ }).click();
+    await page.getByRole("tab", { name: /^Deductions/ }).click();
     await snap(page, "tax-deductions");
-    await page.getByRole("button", { name: /^Adjustments/ }).click();
+    await page.getByRole("tab", { name: /^Adjustments/ }).click();
     await snap(page, "tax-adjustments");
     await page.getByRole("switch").first().click();
     await snap(page, "tax-adjustments-toggled");

@@ -32,6 +32,14 @@ const badgeVariantStyles = cva("",
         /** Small brand count pill (e.g. "Edit Columns  12"). */
         count:
           "rounded-full bg-brand px-1.5 py-0.5 text-[11px] font-semibold text-brand-contrast",
+        /**
+         * Two-line stat pill (tax Effective / Marginal rate). Colour via
+         * `--badge-accent`: accent 10% bg, 25% border, accent text. Mark the
+         * caption with `data-slot="badge-label"` for the 58% caption colour.
+         */
+        stat:
+          "flex flex-col items-center rounded-full border border-[color:color-mix(in_srgb,var(--badge-accent)_25%,transparent)] bg-[color:color-mix(in_srgb,var(--badge-accent)_10%,transparent)] px-5 py-2 text-center text-[color:var(--badge-accent)] " +
+          "**:data-[slot=badge-label]:text-[color:color-mix(in_srgb,var(--badge-accent)_58%,transparent)]",
       },
     },
     defaultVariants: {
