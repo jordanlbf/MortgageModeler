@@ -7,7 +7,7 @@ import { Slot } from "radix-ui"
  * Badge variants:
  * - stock shadcn (default, secondary, destructive, outline, ghost, link) get
  *   STOCK_BASE (h-5, rounded-4xl, px-2, text-xs…).
- * - custom variants (count) get no base classes, so they render exactly as the
+ * - custom variants (count, tag, stat) get no base classes, so they render exactly as the
  *   inline spans they replaced.
  */
 const STOCK_BADGE_VARIANTS = ["default", "secondary", "destructive", "outline", "ghost", "link"]
@@ -37,6 +37,9 @@ const badgeVariantStyles = cva("",
          * `--badge-accent`: accent 10% bg, 25% border, accent text. Mark the
          * caption with `data-slot="badge-label"` for the 58% caption colour.
          */
+        /** Tiny uppercase slate tag ("Coming soon" on placeholder tools). */
+        tag:
+          "inline-block rounded-[3px] bg-[rgba(148,163,184,0.08)] px-2 py-[3px] text-[8px] leading-none font-semibold tracking-widest text-[color:rgba(148,163,184,0.35)] uppercase",
         stat:
           "flex flex-col items-center rounded-full border border-[color:color-mix(in_srgb,var(--badge-accent)_25%,transparent)] bg-[color:color-mix(in_srgb,var(--badge-accent)_10%,transparent)] px-5 py-2 text-center text-[color:var(--badge-accent)] " +
           "**:data-[slot=badge-label]:text-[color:color-mix(in_srgb,var(--badge-accent)_58%,transparent)]",

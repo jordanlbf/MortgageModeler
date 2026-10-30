@@ -8,17 +8,11 @@ export default function PageHeader({ title, subtitle, actions }: PageHeaderProps
   return (
     <div className="flex items-start justify-between gap-4 mb-8">
       <div className="min-w-0">
-        <h1
-          className="text-[30px] font-semibold leading-[1.1] tracking-[-0.02em]"
-          style={{ color: "var(--color-fg-primary)" }}
-        >
+        <h1 className="text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] text-fg-primary">
           {title}
         </h1>
         {subtitle && (
-          <p
-            className="text-[14px] mt-2 tabular-nums"
-            style={{ color: "var(--color-fg-secondary)" }}
-          >
+          <p className="text-[14px] mt-2 tabular-nums text-fg-secondary">
             {subtitle}
           </p>
         )}

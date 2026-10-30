@@ -142,6 +142,27 @@ const buttonVariantStyles = cva("", {
       /** Quiet text link, fg-tertiary → fg-secondary (login "Forgot?"). Size comes from the caller. */
       "link-muted":
         "text-fg-tertiary no-underline [transition:color_0.2s_ease] hover:text-fg-secondary",
+      /** Text link, fg-secondary → fg-primary (sidebar "Sign in"). Layout comes from the caller. */
+      "link-subtle":
+        "text-fg-secondary transition-colors hover:text-fg-primary",
+      /** Small brand-filled icon button that grows on hover (sidebar "New analysis" +). */
+      "icon-brand":
+        "rounded-lg bg-brand p-2 text-brand-contrast transition-all hover:scale-105 hover:bg-brand-hover",
+      /** Bare icon button, fg-muted → fg-secondary, 50% when disabled (sidebar sign out). */
+      "icon-quiet":
+        "text-fg-muted transition-colors hover:text-fg-secondary disabled:opacity-50",
+      /**
+       * Sidebar tool link: 13px fg-secondary row with a surface-subtle hover.
+       * The current page (`aria-current="page"`) gets surface-active + fg-primary.
+       */
+      "nav-item":
+        "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-fg-secondary transition-colors not-aria-[current=page]:hover:bg-surface-subtle aria-[current=page]:bg-surface-active aria-[current=page]:text-fg-primary",
+      /** Sidebar property row: surface-hover wash. Keeps `group` for the row's children. */
+      "nav-row":
+        "group flex items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors hover:bg-surface-hover",
+      /** Sidebar footer utility link (Settings / Help): 11px fg-muted, centred, surface-subtle hover. */
+      "nav-utility":
+        "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-[11px] text-fg-muted transition-colors hover:bg-surface-subtle hover:text-fg-secondary",
     },
     size: {
       /** No size classes (default for custom variants). */
