@@ -7,7 +7,7 @@ import { Slot } from "radix-ui"
  * Badge variants:
  * - stock shadcn (default, secondary, destructive, outline, ghost, link) get
  *   STOCK_BASE (h-5, rounded-4xl, px-2, text-xs…).
- * - custom variants (count, tag, stat) get no base classes, so they render exactly as the
+ * - custom variants (count, tag, tinted, stat) get no base classes, so they render exactly as the
  *   inline spans they replaced.
  */
 const STOCK_BADGE_VARIANTS = ["default", "secondary", "destructive", "outline", "ghost", "link"]
@@ -40,6 +40,12 @@ const badgeVariantStyles = cva("",
         /** Tiny uppercase slate tag ("Coming soon" on placeholder tools). */
         tag:
           "inline-block rounded-[3px] bg-[rgba(148,163,184,0.08)] px-2 py-[3px] text-[8px] leading-none font-semibold tracking-widest text-[color:rgba(148,163,184,0.35)] uppercase",
+        /**
+         * 36px rounded-[14px] uppercase tag tinted with `--badge-accent`
+         * (accent text on an accent-10% wash): grant card state badge.
+         */
+        tinted:
+          "inline-flex h-9 items-baseline justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--badge-accent)_10%,transparent)] px-3 text-[13px] font-semibold tracking-widest text-[color:var(--badge-accent)] uppercase",
         stat:
           "flex flex-col items-center rounded-full border border-[color:color-mix(in_srgb,var(--badge-accent)_25%,transparent)] bg-[color:color-mix(in_srgb,var(--badge-accent)_10%,transparent)] px-5 py-2 text-center text-[color:var(--badge-accent)] " +
           "**:data-[slot=badge-label]:text-[color:color-mix(in_srgb,var(--badge-accent)_58%,transparent)]",

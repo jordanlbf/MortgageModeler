@@ -13,12 +13,15 @@ import { Label as LabelPrimitive } from "radix-ui"
  *   `leading-none` would otherwise change the line height of the row.
  * - `form` (ours): 13px fg-secondary regular caption above an auth input.
  *   Display and spacing come from the caller.
+ * - `caps` (ours): 11px semibold uppercase wide-tracked caption,
+ *   fg-primary 50% (Purchase costs fields; Grants overrides size/colour).
  */
 const LABEL_VARIANTS = {
   default:
     "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
   field: "text-xs font-medium text-fg-secondary",
   form: "text-[13px] font-normal text-fg-secondary",
+  caps: "text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest",
   bare: "",
 } as const
 

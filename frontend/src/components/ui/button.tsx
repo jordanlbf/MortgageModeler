@@ -14,10 +14,10 @@
  *   site (padding, font size, flex/gap) stays in the caller's className.
  *
  * `buttonVariants()` applies the same rules, so other components can style a
- * link or trigger as a button: `buttonVariants({ variant: "pill" })`.
+ * link or trigger as a button: `buttonVariants({ variant: "link-muted" })`.
  *
  * Per-instance accent colours are passed as CSS custom properties, e.g.
- * `<Button variant="pill" style={{ "--pill-accent": color }} />`.
+ * `<Button variant="tinted-icon" style={{ "--tint-accent": color }} />`.
  *
  * Note: `cn` merges like tailwind-merge (conflicting utilities keep the last),
  * so a caller's className overrides the variant's classes in the same group.
@@ -49,11 +49,6 @@ const STOCK_VARIANTS = [
   "link",
 ] as const
 
-/** 26px rounded-full chip. Accent colour: `--pill-accent` (default brand). */
-const PILL =
-  "[--pill-accent:var(--color-brand)] h-[26px] min-w-[72px] justify-center rounded-full border border-[color:rgba(255,255,255,0.07)] bg-transparent px-2.5 text-center text-[14px] leading-none font-semibold whitespace-nowrap text-[color:color-mix(in_srgb,var(--color-fg-primary)_50%,transparent)] cursor-pointer transition-all duration-150 " +
-  "aria-pressed:border-[color:color-mix(in_srgb,var(--pill-accent)_25%,transparent)] aria-pressed:bg-[color:color-mix(in_srgb,var(--pill-accent)_14%,transparent)] aria-pressed:text-[color:var(--pill-accent)] aria-pressed:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_10%,transparent)]"
-
 /** Shared shape of the full-width outlined auth buttons. */
 const OUTLINE_BLOCK =
   "flex h-11 w-full items-center justify-center gap-2.5 rounded-lg border border-border-default text-[14px] font-medium text-fg-primary cursor-pointer [transition:background_0.2s_ease,border-color_0.2s_ease] hover:border-border-strong hover:bg-surface-hover"
@@ -80,8 +75,6 @@ const buttonVariantStyles = cva("", {
       link: "text-primary underline-offset-4 hover:underline",
 
       // ── Custom (this app) ──────────────────────────────────────
-      /** Toggle chip (Grants filters). Active state = `aria-pressed`. */
-      pill: PILL,
       /** Brand-filled primary action (wizard Continue / Save / Calculate). */
       cta: "rounded-lg bg-brand font-semibold text-brand-contrast transition-all duration-150 hover:enabled:brightness-110 disabled:opacity-40",
       /** Quiet text button: fg-tertiary → fg-primary with a faint hover wash (wizard Back). */
@@ -139,6 +132,21 @@ const buttonVariantStyles = cva("", {
       /** Text link, fg-secondary → fg-primary; the gap widens 6→8px on hover ("← Back to sign in"). */
       "link-back":
         "inline-flex items-center gap-1.5 text-fg-secondary no-underline [transition:color_0.2s_ease,gap_0.2s_ease] hover:gap-2 hover:text-fg-primary",
+      /**
+       * Centred "← All Tools" footer link (Grants / Purchase costs): 14px
+       * medium fg-primary 30% → brand 70% over 300ms. A child with
+       * `data-back-arrow` nudges 4px left on hover. Margins from the caller.
+       */
+      "link-back-footer":
+        "flex items-center justify-center gap-2 py-4 text-[14px] font-medium tracking-wide text-fg-primary/30 no-underline transition-colors duration-300 hover:text-brand/70 " +
+        "[&>[data-back-arrow]]:inline-block [&>[data-back-arrow]]:transition-transform [&>[data-back-arrow]]:duration-300 hover:[&>[data-back-arrow]]:-translate-x-1",
+      /**
+       * 36×36 tinted icon button with a 1px lift on hover (grant card
+       * expand / close). Colour via `--tint-accent`: 24% border, 12% bg,
+       * accent icon.
+       */
+      "tinted-icon":
+        "inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[14px] border border-[color:color-mix(in_srgb,var(--tint-accent)_24%,transparent)] bg-[color:color-mix(in_srgb,var(--tint-accent)_12%,transparent)] text-[color:var(--tint-accent)] transition-all duration-200 hover:-translate-y-px",
       /** Quiet text link, fg-tertiary → fg-secondary (login "Forgot?"). Size comes from the caller. */
       "link-muted":
         "text-fg-tertiary no-underline [transition:color_0.2s_ease] hover:text-fg-secondary",

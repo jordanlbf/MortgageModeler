@@ -16,6 +16,10 @@ import { cn } from "cn"
  *   surface-hover. Focus: brand 50% border, brand 5% wash and a 3px
  *   focus-ring shadow. Placeholder fg-secondary 40%, weight 400.
  *
+ * - `bar` (ours): compact 30px centred field on a white/.04 wash, 15px
+ *   semibold tabular figures (Grants filter bar). Hover white/10 border +
+ *   6% wash; focus brand 40% border + 2px brand-10% ring.
+ *
  * Custom variants get none of the stock classes, so they render exactly as
  * the hand-rolled inputs they replaced.
  */
@@ -29,6 +33,8 @@ const INPUT_VARIANTS = {
     "hover:border-border-strong hover:bg-surface-hover " +
     "focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] focus:bg-[color:color-mix(in_srgb,var(--color-brand)_5%,transparent)] focus:shadow-[0_0_0_3px_var(--color-focus-ring)] " +
     "placeholder:font-normal placeholder:text-[color:color-mix(in_srgb,var(--color-fg-secondary)_40%,transparent)]",
+  bar:
+    "h-[30px] w-full rounded-lg border border-white/[0.06] bg-white/[0.04] px-2.5 text-center text-[15px] font-semibold text-fg-primary/90 tabular-nums outline-none transition-all duration-150 hover:border-white/10 hover:bg-white/[0.06] focus:border-brand/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-brand)_10%,transparent)] placeholder:font-normal placeholder:text-fg-secondary/35",
   ghost:
     "bg-transparent outline-none data-[editing=true]:bg-[color:rgba(255,255,255,0.06)] data-[editing=true]:shadow-[0_0_0_1px_var(--input-accent)]",
 } as const

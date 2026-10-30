@@ -37,6 +37,10 @@ function DialogClose({
  * - `bare` (ours): no stock classes, no built-in close button. The caller
  *   styles the overlay (`overlayClassName`) and content completely, e.g. the
  *   wizard modal in ui/wizard/ModalWizardShell.
+ *   `portal={false}` renders the content in place instead of in a body
+ *   portal (it then sits in its parent's stacking/containing context), and
+ *   `overlay={false}` omits the Radix overlay (and with it the scroll lock)
+ *   for callers that draw their own backdrop (grants DenseSchemeCard).
  */
 function DialogOverlay({
   className,
@@ -64,17 +68,23 @@ function DialogContent({
   showCloseButton = true,
   variant = "default",
   overlayClassName,
+  portal = true,
+  overlay = true,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
   variant?: "default" | "bare"
   /** Extra classes for the overlay (the only overlay styling for `bare`). */
   overlayClassName?: string
+  /** `bare` only: false renders in place instead of in a body portal. */
+  portal?: boolean
+  /** `bare` only: false omits the Radix overlay (no scroll lock). */
+  overlay?: boolean
 }) {
   if (variant === "bare") {
-    return (
-      <DialogPortal>
-        <DialogOverlay variant="bare" className={overlayClassName} />
+    const body = (
+      <>
+        {overlay && <DialogOverlay variant="bare" className={overlayClassName} />}
         <DialogPrimitive.Content
           data-slot="dialog-content"
           data-variant="bare"
@@ -83,8 +93,9 @@ function DialogContent({
         >
           {children}
         </DialogPrimitive.Content>
-      </DialogPortal>
+      </>
     )
+    return portal ? <DialogPortal>{body}</DialogPortal> : body
   }
 
   return (

@@ -11,6 +11,10 @@ import { Slot } from "radix-ui"
  * - `auth` (ours, was AuthCard's inline style): full-width card capped at
  *   400px, --color-card fill, 1px border-default, 12px radius, 28px padding
  *   and a deep drop shadow. Use `asChild` to render it as a `<form>`.
+ * - `scheme` (ours, grant scheme card): flex column, 18px radius, white/.04
+ *   fill, white/.08 border with a 3px top border in `--card-accent` at 55%,
+ *   soft shadow, 250ms ease-out-expo transitions. Hover lift/shadow and
+ *   padding come from the caller.
  */
 const CARD_STOCK =
   "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl"
@@ -25,7 +29,12 @@ const CARD_AUTH =
   "w-full max-w-[400px] rounded-xl border border-border-default bg-card p-7 " +
   "shadow-[0_8px_24px_rgba(0,0,0,0.44),0_0_0_0.5px_rgba(113,113,122,0.08),inset_0_1px_0_rgba(255,255,255,0.03)]"
 
-const CARD_VARIANTS = { default: CARD_STOCK, glass: CARD_GLASS, auth: CARD_AUTH } as const
+const CARD_SCHEME =
+  "flex flex-col rounded-[18px] border border-white/[0.08] border-t-[3px] border-t-[color:color-mix(in_srgb,var(--card-accent)_55%,transparent)] bg-white/[0.04] " +
+  "shadow-[0_1px_4px_rgba(0,0,0,0.2),0_0_0_0.5px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.02)] " +
+  "transition-all duration-[250ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+
+const CARD_VARIANTS = { default: CARD_STOCK, glass: CARD_GLASS, auth: CARD_AUTH, scheme: CARD_SCHEME } as const
 
 type CardVariant = keyof typeof CARD_VARIANTS
 

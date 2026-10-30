@@ -20,6 +20,11 @@
  * - `segment-pill`: large rounded-full segmented option (repayment
  *   frequency). Transparent + white/.12 border + white/.4 text, 400; on =
  *   brand 15% bg, solid brand border, brand text, 700, 10px brand-20% glow.
+ * - `pill`: 26px rounded-full filter chip (Grants). Off = transparent,
+ *   white/.07 border, fg-primary 50% text; on = accent 14% bg, 25% border,
+ *   accent text, 8px accent-10% glow. Accent: `--pill-accent` (default
+ *   brand). `data-tone="negative"` on an item = data-negative accent at
+ *   12% bg / 8% glow (the red "No" option).
  * - `legend`: chart-legend series chip. Series colour via `--legend-accent`.
  *   Off = `--color-chart-legend-inactive` text; hover (off) = accent 50% text
  *   + 5% bg; on = accent 12% bg, 25% border, accent text. Put a
@@ -53,6 +58,10 @@ const toggleVariantStyles = cva("", {
       "segment-pill":
         "rounded-full border border-[color:rgba(255,255,255,0.12)] bg-transparent text-[11px] font-normal tracking-[0.5px] text-[color:rgba(255,255,255,0.4)] transition-all duration-200 " +
         "data-[state=on]:border-brand data-[state=on]:bg-[color:color-mix(in_srgb,var(--color-brand)_15%,transparent)] data-[state=on]:font-bold data-[state=on]:text-brand data-[state=on]:shadow-[0_0_10px_color-mix(in_srgb,var(--color-brand)_20%,transparent)]",
+      pill:
+        "[--pill-accent:var(--color-brand)] h-[26px] min-w-[72px] justify-center rounded-full border border-[color:rgba(255,255,255,0.07)] bg-transparent px-2.5 text-center text-[14px] leading-none font-semibold whitespace-nowrap text-[color:color-mix(in_srgb,var(--color-fg-primary)_50%,transparent)] transition-all duration-150 " +
+        "data-[state=on]:border-[color:color-mix(in_srgb,var(--pill-accent)_25%,transparent)] data-[state=on]:bg-[color:color-mix(in_srgb,var(--pill-accent)_14%,transparent)] data-[state=on]:text-[color:var(--pill-accent)] data-[state=on]:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_10%,transparent)] " +
+        "data-[tone=negative]:[--pill-accent:var(--color-data-negative)] data-[tone=negative]:data-[state=on]:bg-[color:color-mix(in_srgb,var(--pill-accent)_12%,transparent)] data-[tone=negative]:data-[state=on]:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_8%,transparent)]",
       legend:
         "flex items-center gap-2 rounded-md border border-transparent bg-transparent px-2.5 py-1 text-[13px] font-semibold tracking-wide text-[color:var(--color-chart-legend-inactive)] transition-all duration-200 " +
         "data-[state=off]:hover:bg-[color:color-mix(in_srgb,var(--legend-accent)_5%,transparent)] data-[state=off]:hover:text-[color:color-mix(in_srgb,var(--legend-accent)_50%,transparent)] " +

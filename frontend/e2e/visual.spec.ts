@@ -151,8 +151,8 @@ test.describe("grants", () => {
     await go(page, "/grants");
     await snap(page, "grants");
     await page.getByRole("button", { name: "NSW", exact: true }).click();
-    await page.getByRole("button", { name: "Existing", exact: true }).click();
-    await page.getByRole("button", { name: "Couple", exact: true }).click();
+    await page.getByRole("radio", { name: "Existing", exact: true }).click();
+    await page.getByRole("radio", { name: "Couple", exact: true }).click();
     await snap(page, "grants-filtered");
     await page.getByRole("button", { name: "View grant details" }).first().click();
     await snap(page, "grants-details-open", 800);
