@@ -201,6 +201,16 @@ export const LVR_COLORS = {
   high:     "var(--color-data-negative)",
 } as const;
 
+// ── Purchase costs palette ────────────────────────
+// Where the cash to purchase goes. Deposit is neutral (it's still your money);
+// the three costs are a categorical set validated for CVD on surface-raised.
+export const PURCHASE_COST_COLORS = {
+  deposit:   "var(--color-fg-tertiary)",
+  stampDuty: "#3b82f6",   // blue-500
+  lmi:       "#ec4899",   // pink-500
+  fees:      "#8b5cf6",   // violet-500
+} as const;
+
 // ── Depreciation series colour ────────────────────
 export const DEPRECIATION_COLOR = "#a78bfa";
 

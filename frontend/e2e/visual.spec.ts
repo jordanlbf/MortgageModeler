@@ -172,7 +172,7 @@ test.describe("purchase costs", () => {
     await page.locator("label", { hasText: "First Home" }).click();
     await page.locator("label", { hasText: "Couple" }).click();
     await snap(page, "purchase-costs-toggled");
-    await page.getByText("Fees", { exact: true }).click();
+    await page.getByRole("button", { name: /^Fees/ }).click();
     await snap(page, "purchase-costs-fees-open", 800);
   });
 
