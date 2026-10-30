@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -16,6 +16,8 @@ interface RenderStepBodyArgs<TStepId extends string> {
   index: number;
   isCurrent: boolean;
   isComplete: boolean;
+  /** Put this id on the step's title element: it names the step button. */
+  labelId: string;
 }
 
 export interface WizardSidebarProgress {
@@ -40,6 +42,14 @@ interface WizardSidebarProps<TStepId extends string> {
   className?: string;
 }
 
+/**
+ * Visual step row. Hover comes from the `<li>` (`group`), so it also shows
+ * while the pointer is over a control inside the row, and only for
+ * selectable, non-current steps.
+ */
+const STEP_ROW_CLASS =
+  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all duration-150 data-[current=true]:bg-brand/[0.08] data-[current=false]:data-[selectable=true]:group-hover:bg-white/[0.03]";
+
 const DEFAULT_SIDEBAR_CLASS =
   "w-[260px] min-w-[260px] max-w-[260px] shrink-0 flex flex-col bg-surface-raised/60 backdrop-blur-xl border-r border-white/[0.06] rounded-l-2xl";
 
@@ -53,6 +63,7 @@ export default function WizardSidebar<TStepId extends string>({
   progress,
   className,
 }: WizardSidebarProps<TStepId>) {
+  const baseId = useId();
   return (
     <aside className={className ?? DEFAULT_SIDEBAR_CLASS}>
       {progress && <ProgressHeader progress={progress} />}
@@ -64,15 +75,25 @@ export default function WizardSidebar<TStepId extends string>({
             const stepIsCurrent = currentStepId === step.id;
             const stepIsClickable = selectable(step.id);
 
+            const labelId = `${baseId}-${step.id}`;
+
             return (
-              <li key={step.id}>
+              <li key={step.id} className="group relative">
+                {/* The step button is stretched over the row (variant nav-step)
+                    so the row body can hold its own controls as siblings
+                    rather than nested buttons. */}
                 <Button
                   type="button"
                   variant="nav-step"
-                  data-current={stepIsCurrent}
                   aria-current={stepIsCurrent ? "step" : undefined}
+                  aria-labelledby={labelId}
                   onClick={() => stepIsClickable && onSelect(step.id)}
                   disabled={!stepIsClickable}
+                />
+                <div
+                  data-current={stepIsCurrent}
+                  data-selectable={stepIsClickable}
+                  className={STEP_ROW_CLASS}
                 >
                   {/* Simple dot indicator */}
                   <div
@@ -86,16 +107,18 @@ export default function WizardSidebar<TStepId extends string>({
                       .join(" ")}
                   />
 
-                  {/* Body slot */}
+                  {/* Body slot. Interactive children need `relative` to sit
+                      above the stretched step button. */}
                   <div className="flex-1 min-w-0">
                     {renderStepBody({
                       step,
                       index,
                       isCurrent: stepIsCurrent,
                       isComplete: stepIsComplete,
+                      labelId,
                     })}
                   </div>
-                </Button>
+                </div>
               </li>
             );
           })}
@@ -125,10 +148,12 @@ function defaultRenderStepBody<TStepId extends string>({
   index,
   isCurrent,
   isComplete,
+  labelId,
 }: RenderStepBodyArgs<TStepId>) {
   return (
     <div className="flex items-center justify-between gap-2">
       <span
+        id={labelId}
         className={[
           "text-sm font-medium block transition-colors duration-200",
           isCurrent && "text-fg-primary",

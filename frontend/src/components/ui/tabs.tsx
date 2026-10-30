@@ -22,6 +22,10 @@ import { Tabs as TabsPrimitive } from "radix-ui"
  *   line reads `--tab-stat-value` (put `text-[color:var(--tab-stat-value)]`
  *   on it): fg-primary 20% when empty, accent 50% when the trigger has
  *   `data-filled="true"`, surface-app when active.
+ * - `track` (ours): the cashflow wizard Quick estimate / Custom switch. List
+ *   `flex gap-1 p-1 rounded-lg` on a zinc-900/50 track, `w-fit`. Trigger
+ *   `px-3 py-1.5 rounded-md text-sm font-medium`; inactive fg-muted (hover
+ *   fg-secondary), active zinc-800 fill + fg-primary.
  *
  * Custom variants get none of the stock layout classes (the `Tabs` root gets
  * no `flex flex-col gap-2`, `TabsContent` gets no `flex-1 text-sm`), so they
@@ -30,9 +34,9 @@ import { Tabs as TabsPrimitive } from "radix-ui"
  * Note: Radix gives triggers `role="tab"` (not "button") and arrow-key roving
  * focus.
  */
-type TabsVariant = "default" | "line" | "underline" | "stat"
+type TabsVariant = "default" | "line" | "underline" | "stat" | "track"
 
-const CUSTOM_TABS_VARIANTS: readonly TabsVariant[] = ["underline", "stat"]
+const CUSTOM_TABS_VARIANTS: readonly TabsVariant[] = ["underline", "stat", "track"]
 const isCustom = (v: TabsVariant) => CUSTOM_TABS_VARIANTS.includes(v)
 
 const TabsVariantContext = React.createContext<TabsVariant>("default")
@@ -78,6 +82,7 @@ const tabsListVariants = cva(
 const CUSTOM_LIST: Record<string, string> = {
   underline: "flex gap-6",
   stat: "flex gap-[3px] rounded-[10px] bg-[color:rgba(255,255,255,0.03)] p-[3px]",
+  track: "flex w-fit gap-1 rounded-lg bg-zinc-900/50 p-1",
 }
 
 const STOCK_TRIGGER = [
@@ -95,6 +100,9 @@ const CUSTOM_TRIGGER: Record<string, string> = {
     "text-[color:color-mix(in_srgb,var(--tab-accent)_55%,transparent)] [--tab-stat-value:rgba(244,244,245,0.20)] " +
     "data-[state=inactive]:data-[filled=true]:[--tab-stat-value:color-mix(in_srgb,var(--tab-accent)_50%,transparent)] " +
     "data-[state=active]:bg-[color:var(--tab-accent)] data-[state=active]:text-surface-app data-[state=active]:[--tab-stat-value:var(--color-surface-app)]",
+  track:
+    "rounded-md px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring " +
+    "data-[state=inactive]:text-fg-muted data-[state=inactive]:hover:text-fg-secondary data-[state=active]:bg-zinc-800 data-[state=active]:text-fg-primary",
 }
 
 function TabsList({

@@ -1,6 +1,8 @@
 import { useId, type ReactNode } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { formatDollarsSigned } from "@/lib/formatters";
 
@@ -58,28 +60,37 @@ export function InputField({
   );
 }
 
-export function ModeToggle({ children }: { children: ReactNode }) {
-  return <div className="flex gap-1 p-1 rounded-lg bg-zinc-900/50 w-fit">{children}</div>;
-}
+export type EstimateMode = "quick" | "custom";
 
-export function ModeButton({
-  active,
-  onClick,
-  children,
+/**
+ * Quick estimate / Custom switch with its two panes (Costs, Rental and
+ * Depreciation steps). Also the step's outer column.
+ */
+export function ModeTabs({
+  value,
+  onValueChange,
+  quick,
+  custom,
 }: {
-  active: boolean;
-  onClick: () => void;
-  children: ReactNode;
+  value: EstimateMode;
+  onValueChange: (mode: EstimateMode) => void;
+  quick: ReactNode;
+  custom: ReactNode;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-        active ? "bg-zinc-800 text-fg-primary" : "text-fg-muted hover:text-fg-secondary"
-      }`}
+    <Tabs
+      variant="track"
+      value={value}
+      onValueChange={(v) => onValueChange(v as EstimateMode)}
+      className="flex flex-col gap-6 max-w-lg"
     >
-      {children}
-    </button>
+      <TabsList aria-label="Entry mode">
+        <TabsTrigger value="quick">Quick estimate</TabsTrigger>
+        <TabsTrigger value="custom">Custom</TabsTrigger>
+      </TabsList>
+      <TabsContent value="quick">{quick}</TabsContent>
+      <TabsContent value="custom">{custom}</TabsContent>
+    </Tabs>
   );
 }
 
@@ -96,6 +107,8 @@ export function EditableRow({
   placeholder: string;
   isPercent?: boolean;
 }) {
+  const inputId = useId();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     if (isPercent) {
@@ -112,14 +125,18 @@ export function EditableRow({
 
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm text-fg-muted text-left">{label}</span>
+      <Label variant="bare" htmlFor={inputId} className="text-sm text-fg-muted text-left">
+        {label}
+      </Label>
       <div className="flex items-baseline justify-end w-28">
-        <input
+        <Input
+          id={inputId}
           type="text"
+          variant="underline"
           value={value || ""}
           onChange={handleChange}
           placeholder={placeholder}
-          className="w-full text-right text-sm tabular-nums bg-transparent border-b border-transparent hover:border-zinc-700 focus:border-brand focus:outline-none py-1 text-fg-secondary placeholder:text-fg-muted/50 transition-colors"
+          className="w-full text-right tabular-nums"
         />
         {isPercent && <span className="text-sm text-fg-muted ml-1">%</span>}
       </div>
@@ -127,7 +144,8 @@ export function EditableRow({
   );
 }
 
-export function Checkbox({
+/** Whole-row clickable checkbox with a 13px caption. */
+export function CheckboxField({
   checked,
   onChange,
   children,
@@ -137,15 +155,9 @@ export function Checkbox({
   children: ReactNode;
 }) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer text-[13px] text-fg-secondary w-fit">
-      <input
-        type="checkbox"
-        className="absolute opacity-0 pointer-events-none peer"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <span className="w-[18px] h-[18px] border border-strong rounded bg-transparent transition-all duration-150 shrink-0 relative peer-checked:bg-brand peer-checked:border-brand peer-checked:after:content-[''] peer-checked:after:absolute peer-checked:after:top-[3px] peer-checked:after:left-[6px] peer-checked:after:w-1 peer-checked:after:h-2 peer-checked:after:border-brand-contrast peer-checked:after:border-r-2 peer-checked:after:border-b-2 peer-checked:after:rotate-45" />
+    <Label variant="bare" className="flex items-center gap-3 cursor-pointer text-[13px] text-fg-secondary w-fit">
+      <Checkbox variant="md" checked={checked} onCheckedChange={(v) => onChange(v === true)} />
       {children}
-    </label>
+    </Label>
   );
 }

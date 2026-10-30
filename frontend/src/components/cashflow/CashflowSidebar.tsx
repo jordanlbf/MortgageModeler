@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import {
   WizardSidebar,
   useWizardSteps,
@@ -106,6 +107,7 @@ interface StepBodyProps {
   isCurrent: boolean;
   isExpanded: boolean;
   onToggle: () => void;
+  labelId: string;
 }
 
 function StepBody({
@@ -115,15 +117,18 @@ function StepBody({
   isCurrent,
   isExpanded,
   onToggle,
+  labelId,
 }: StepBodyProps) {
   const primary = lines?.find((l) => l.primary) as { primary: true; text: string } | undefined;
   const secondary = (lines?.filter((l) => !l.primary) as { value: string; descriptor: string }[]) ?? [];
   const hasDetails = secondary.length > 0;
+  const detailsId = useId();
 
   return (
     <div className="flex flex-col min-w-0 flex-1">
       <div className="flex items-center justify-between gap-2">
         <span
+          id={labelId}
           className={[
             "text-[13px] leading-snug transition-colors duration-150",
             isCurrent
@@ -136,29 +141,24 @@ function StepBody({
           {primary ? primary.text : step.title}
         </span>
         {isComplete && hasDetails && (
-          <span
-            className="flex items-center justify-center w-5 h-5 bg-white/[0.04] rounded text-fg-tertiary cursor-pointer transition-all duration-150 shrink-0 hover:bg-white/[0.08] hover:text-fg-primary"
-            role="button"
-            tabIndex={0}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggle();
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggle();
-              }
-            }}
+          // Sibling of the stretched step button (see WizardSidebar), so it
+          // needs `relative` to sit above it.
+          <Button
+            type="button"
+            variant="icon-subtle"
+            className="relative h-5 w-5 shrink-0"
+            onClick={onToggle}
+            aria-expanded={isExpanded}
+            aria-controls={detailsId}
             aria-label={isExpanded ? "Collapse details" : "Expand details"}
           >
             {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-          </span>
+          </Button>
         )}
       </div>
       {hasDetails && (
         <div
+          id={detailsId}
           className={[
             "flex flex-wrap gap-x-3 gap-y-1 mt-1.5 overflow-hidden transition-all duration-200",
             !isExpanded && isComplete ? "max-h-0 opacity-0 !mt-0" : "max-h-[100px] opacity-100",
@@ -220,7 +220,7 @@ export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) 
         completedCount,
         totalCount: cashflowSteps.length,
       }}
-      renderStepBody={({ step, isCurrent, isComplete }) => {
+      renderStepBody={({ step, isCurrent, isComplete, labelId }) => {
         const lines = getStepLines(step.id, s);
         const isExpanded = expandedSteps.has(step.id) || isCurrent;
         return (
@@ -231,6 +231,7 @@ export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) 
             isCurrent={isCurrent}
             isExpanded={isExpanded}
             onToggle={() => toggleStep(step.id)}
+            labelId={labelId}
           />
         );
       }}

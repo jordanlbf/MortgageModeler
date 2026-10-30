@@ -25,6 +25,10 @@
  *   accent text, 8px accent-10% glow. Accent: `--pill-accent` (default
  *   brand). `data-tone="negative"` on an item = data-negative accent at
  *   12% bg / 8% glow (the red "No" option).
+ * - `choice`: large either/or option (cashflow wizard Property type /
+ *   Purchase status). px-5 py-2.5 rounded-lg 14px medium. Off = zinc-800/40
+ *   fill, fg-secondary (hover zinc-800/60 + fg-primary); on = brand 12% fill,
+ *   brand text, 1px brand-30% ring.
  * - `legend`: chart-legend series chip. Series colour via `--legend-accent`.
  *   Off = `--color-chart-legend-inactive` text; hover (off) = accent 50% text
  *   + 5% bg; on = accent 12% bg, 25% border, accent text. Put a
@@ -62,6 +66,10 @@ const toggleVariantStyles = cva("", {
         "[--pill-accent:var(--color-brand)] h-[26px] min-w-[72px] justify-center rounded-full border border-[color:rgba(255,255,255,0.07)] bg-transparent px-2.5 text-center text-[14px] leading-none font-semibold whitespace-nowrap text-[color:color-mix(in_srgb,var(--color-fg-primary)_50%,transparent)] transition-all duration-150 " +
         "data-[state=on]:border-[color:color-mix(in_srgb,var(--pill-accent)_25%,transparent)] data-[state=on]:bg-[color:color-mix(in_srgb,var(--pill-accent)_14%,transparent)] data-[state=on]:text-[color:var(--pill-accent)] data-[state=on]:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_10%,transparent)] " +
         "data-[tone=negative]:[--pill-accent:var(--color-data-negative)] data-[tone=negative]:data-[state=on]:bg-[color:color-mix(in_srgb,var(--pill-accent)_12%,transparent)] data-[tone=negative]:data-[state=on]:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_8%,transparent)]",
+      choice:
+        "rounded-lg px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-150 " +
+        "data-[state=off]:bg-zinc-800/40 data-[state=off]:text-fg-secondary data-[state=off]:hover:bg-zinc-800/60 data-[state=off]:hover:text-fg-primary " +
+        "data-[state=on]:bg-brand/[0.12] data-[state=on]:text-brand data-[state=on]:ring-1 data-[state=on]:ring-brand/30",
       legend:
         "flex items-center gap-2 rounded-md border border-transparent bg-transparent px-2.5 py-1 text-[13px] font-semibold tracking-wide text-[color:var(--color-chart-legend-inactive)] transition-all duration-200 " +
         "data-[state=off]:hover:bg-[color:color-mix(in_srgb,var(--legend-accent)_5%,transparent)] data-[state=off]:hover:text-[color:color-mix(in_srgb,var(--legend-accent)_50%,transparent)] " +

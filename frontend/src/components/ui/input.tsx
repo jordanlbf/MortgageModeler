@@ -20,6 +20,11 @@ import { cn } from "cn"
  *   semibold tabular figures (Grants filter bar). Hover white/10 border +
  *   6% wash; focus brand 40% border + 2px brand-10% ring.
  *
+ * - `underline` (ours): transparent inline field with a 1px bottom border
+ *   that appears on hover (zinc-700) and turns brand on focus. 14px
+ *   fg-secondary, placeholder fg-muted 50% (cashflow wizard EditableRow and
+ *   depreciation rows). Width, alignment and tabular figures from the caller.
+ *
  * Custom variants get none of the stock classes, so they render exactly as
  * the hand-rolled inputs they replaced.
  */
@@ -35,6 +40,8 @@ const INPUT_VARIANTS = {
     "placeholder:font-normal placeholder:text-[color:color-mix(in_srgb,var(--color-fg-secondary)_40%,transparent)]",
   bar:
     "h-[30px] w-full rounded-lg border border-white/[0.06] bg-white/[0.04] px-2.5 text-center text-[15px] font-semibold text-fg-primary/90 tabular-nums outline-none transition-all duration-150 hover:border-white/10 hover:bg-white/[0.06] focus:border-brand/40 focus:bg-white/[0.06] focus:shadow-[0_0_0_2px_color-mix(in_srgb,var(--color-brand)_10%,transparent)] placeholder:font-normal placeholder:text-fg-secondary/35",
+  underline:
+    "border-b border-transparent bg-transparent py-1 text-sm text-fg-secondary transition-colors placeholder:text-fg-muted/50 hover:border-zinc-700 focus:border-brand focus:outline-none",
   ghost:
     "bg-transparent outline-none data-[editing=true]:bg-[color:rgba(255,255,255,0.06)] data-[editing=true]:shadow-[0_0_0_1px_var(--input-accent)]",
 } as const

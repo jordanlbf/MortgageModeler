@@ -95,12 +95,29 @@ const buttonVariantStyles = cva("", {
       "outline-subtle":
         "inline-flex items-center rounded-lg border border-border-subtle bg-transparent font-medium text-fg-primary transition-all hover:bg-surface-hover",
       /**
-       * Wizard sidebar step row. Set `data-current` on the current step;
-       * non-selectable steps are `disabled` (no opacity change).
-       * Keeps `group` so step bodies can use `group-hover:`.
+       * Wizard sidebar step: a transparent button stretched over its row
+       * (`absolute inset-0`, the row's `<li>` is `relative`). The row's look
+       * lives on a sibling element so the row can hold its own buttons
+       * (e.g. an expand chevron) without nesting them in this one.
+       * Non-selectable steps are `disabled` (default cursor, no opacity change).
        */
       "nav-step":
-        "group relative flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all duration-150 disabled:cursor-default data-[current=true]:bg-brand/[0.08] data-[current=false]:enabled:hover:bg-white/[0.03]",
+        "absolute inset-0 cursor-pointer rounded-lg disabled:cursor-default",
+      /** Small square chip icon button, white/.04 → .08 wash, fg-tertiary → fg-primary (sidebar expand chevron). Size from the caller. */
+      "icon-subtle":
+        "flex items-center justify-center rounded bg-white/[0.04] text-fg-tertiary transition-all duration-150 hover:bg-white/[0.08] hover:text-fg-primary",
+      /** Quiet text button, fg-muted → fg-secondary ("+ Add offset account"). Layout and size from the caller. */
+      "link-quiet":
+        "text-fg-muted transition-colors hover:text-fg-secondary",
+      /** Full-width disclosure header, px-4 py-3 14px fg-secondary, zinc-800/20 hover wash (Loan step optional sections). */
+      disclosure:
+        "flex w-full items-center justify-between px-4 py-3 text-sm text-fg-secondary transition-colors hover:bg-zinc-800/20",
+      /** Tiny quick-add chip: 12px, zinc-800/50 fill, fg-muted; hover zinc-800 + fg-secondary (depreciation presets). */
+      chip:
+        "rounded bg-zinc-800/50 px-2 py-0.5 text-xs text-fg-muted transition-colors hover:bg-zinc-800 hover:text-fg-secondary",
+      /** 36px outlined header action: 13px medium fg-primary, 1px border-default → border-strong on hover (cashflow Edit / Model new property). */
+      "outline-action":
+        "inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-border-default bg-transparent px-3.5 text-[13px] font-medium text-fg-primary transition-colors hover:border-border-strong",
       /**
        * Clickable legend row for a data-viz (tax donut legend): dot + label,
        * rounded-md px-2 py-1. Colour via `--legend-accent`. Set

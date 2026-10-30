@@ -193,8 +193,8 @@ test.describe("cashflow", () => {
   async function completeWizard(page: Page, shoot: boolean) {
     await go(page, "/cashflow");
     if (shoot) await snap(page, "cashflow-wizard-1-setup");
-    await page.getByRole("button", { name: "Investment" }).click();
-    await page.getByRole("button", { name: "New purchase" }).click();
+    await page.getByRole("radio", { name: "Investment" }).click();
+    await page.getByRole("radio", { name: "New purchase" }).click();
     if (shoot) await snap(page, "cashflow-wizard-1-setup-filled");
     for (let step = 2; step <= 6; step++) {
       await page.getByRole("button", { name: "Continue" }).click();

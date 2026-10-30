@@ -6,7 +6,7 @@
  *
  * Stock variants get shadcn's root layout (flex w-fit, gap from `spacing`)
  * and item classes (shrink-0, joined corners at spacing 0).
- * Custom variants (`segment`, `segment-pill`, `pill`, `legend`) get NO root or item
+ * Custom variants (`segment`, `segment-pill`, `pill`, `choice`, `legend`) get NO root or item
  * layout classes: the caller's className owns layout, so the group can wrap
  * an existing flex row unchanged.
  *

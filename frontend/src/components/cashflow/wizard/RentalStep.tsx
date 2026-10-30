@@ -2,17 +2,15 @@
 
 import { useState } from "react";
 import type { CashflowState } from "@/hooks/useCashflowState";
-import { Checkbox, currencyInput, EditableRow, InputField, ModeButton, ModeToggle } from "./shared";
+import { CheckboxField, currencyInput, EditableRow, type EstimateMode, InputField, ModeTabs } from "./shared";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 
 interface Props {
   s: CashflowState;
 }
 
-type RentalMode = "quick" | "custom";
-
 export default function RentalStep({ s }: Props) {
-  const [mode, setMode] = useState<RentalMode>("quick");
+  const [mode, setMode] = useState<EstimateMode>("quick");
 
   // Calculate property value for rent estimate
   const propertyValue = s.isNewPurchase
@@ -28,22 +26,12 @@ export default function RentalStep({ s }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-lg">
-      <ModeToggle>
-        <ModeButton active={mode === "quick"} onClick={() => setMode("quick")}>
-          Quick estimate
-        </ModeButton>
-        <ModeButton active={mode === "custom"} onClick={() => setMode("custom")}>
-          Custom
-        </ModeButton>
-      </ModeToggle>
-
-      {mode === "quick" ? (
-        <QuickEstimateView s={s} estimates={estimates} />
-      ) : (
-        <CustomRentalView s={s} />
-      )}
-    </div>
+    <ModeTabs
+      value={mode}
+      onValueChange={setMode}
+      quick={<QuickEstimateView s={s} estimates={estimates} />}
+      custom={<CustomRentalView s={s} />}
+    />
   );
 }
 
@@ -71,9 +59,9 @@ function QuickEstimateView({ s, estimates }: {
         Based on ~4.5% rental yield. Edit values below or switch to Custom for more options.
       </p>
 
-      <Checkbox checked={s.usePropertyManager} onChange={s.setUsePropertyManager}>
+      <CheckboxField checked={s.usePropertyManager} onChange={s.setUsePropertyManager}>
         Use property manager
-      </Checkbox>
+      </CheckboxField>
 
       {/* Editable inputs */}
       <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800/50">
@@ -151,9 +139,9 @@ function CustomRentalView({ s }: { s: CashflowState }) {
       />
 
       <div className="pt-1">
-        <Checkbox checked={s.usePropertyManager} onChange={s.setUsePropertyManager}>
+        <CheckboxField checked={s.usePropertyManager} onChange={s.setUsePropertyManager}>
           Property manager
-        </Checkbox>
+        </CheckboxField>
       </div>
 
       {s.usePropertyManager && (
