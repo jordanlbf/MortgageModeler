@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { t, mix } from "@/lib/theme";
+import { t } from "@/lib/theme";
 import { useAmortisationState } from "@/hooks/useAmortisationState";
 import { useFillHeight } from "@/hooks/useFillHeight";
 import { useFocusMode } from "@/hooks/useFocusMode";
@@ -10,10 +10,14 @@ import LoanControls from "@/components/amortisation/LoanControls";
 import AmortisationChart, { ChartLegend } from "@/components/amortisation/AmortisationChart";
 import AmortisationTable from "@/components/amortisation/AmortisationTable";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import ErrorBoundary from "@/components/domain/ErrorBoundary";
 
 
 const TRANSITION_MS = 350;
+/** Layout for the Chart / Table segment options (look comes from the variant). */
+const SEGMENT_ITEM = "flex items-center gap-1.5 px-3.5 py-1.5";
 const COLLAPSE_STYLE = "grid transition-[grid-template-rows,opacity] ease-in-out";
 
 export default function AmortisationView() {
@@ -120,57 +124,39 @@ export default function AmortisationView() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                <button
-                  onClick={() => setView("chart")}
-                  className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
-                  style={view === "chart" ? {
-                    background: mix(t.brand.default, 12),
-                    color: t.brand.default,
-                    border: `1px solid ${mix(t.brand.default, 40)}`,
-                    boxShadow: `0 0 12px ${mix(t.brand.default, 15)}`,
-                  } : {
-                    background: "rgba(255,255,255,0.04)",
-                    color: "rgba(255,255,255,0.35)",
-                    border: "1px solid rgba(255,255,255,0.07)",
-                  }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <ToggleGroup
+                type="single"
+                variant="segment"
+                aria-label="View"
+                value={view}
+                onValueChange={(v) => { if (v) setView(v as "chart" | "table"); }}
+                className="flex gap-1"
+              >
+                <ToggleGroupItem value="chart" className={SEGMENT_ITEM}>
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
                     <rect x="0" y="7" width="3" height="6" rx="1" fill="currentColor" />
                     <rect x="5" y="4" width="3" height="9" rx="1" fill="currentColor" />
                     <rect x="10" y="1" width="3" height="12" rx="1" fill="currentColor" />
                   </svg>
                   Chart
-                </button>
-                <button
-                  onClick={() => setView("table")}
-                  className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[11px] font-semibold tracking-wide transition-all duration-200 cursor-pointer"
-                  style={view === "table" ? {
-                    background: mix(t.brand.default, 12),
-                    color: t.brand.default,
-                    border: `1px solid ${mix(t.brand.default, 40)}`,
-                    boxShadow: `0 0 12px ${mix(t.brand.default, 15)}`,
-                  } : {
-                    background: "rgba(255,255,255,0.04)",
-                    color: "rgba(255,255,255,0.35)",
-                    border: "1px solid rgba(255,255,255,0.07)",
-                  }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor">
+                </ToggleGroupItem>
+                <ToggleGroupItem value="table" className={SEGMENT_ITEM}>
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor" aria-hidden="true">
                     <rect x="0" y="0" width="13" height="2" rx="1" />
                     <rect x="0" y="4" width="13" height="2" rx="1" />
                     <rect x="0" y="8" width="13" height="2" rx="1" />
                     <rect x="0" y="11" width="8" height="2" rx="1" />
                   </svg>
                   Table
-                </button>
-              </div>
+                </ToggleGroupItem>
+              </ToggleGroup>
 
-              <button
+              <Button
+                variant="ghost-icon"
                 onClick={handleFocusToggle}
-                className="rounded-lg p-2 text-fg-primary/25 transition-all duration-200 hover:text-fg-primary/50 hover:bg-white/[0.04] active:scale-90"
-                style={{ border: "1px solid transparent" }}
+                className="inline-block border border-transparent p-2 text-fg-primary/25 transition-all duration-200 hover:bg-white/[0.04] hover:text-fg-primary/50 active:scale-90"
                 title={focused ? "Exit focus mode (Esc)" : "Focus mode"}
+                aria-pressed={focused}
               >
                 <svg
                   width="14"
@@ -181,6 +167,7 @@ export default function AmortisationView() {
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  aria-hidden="true"
                   className="transition-transform duration-200"
                   style={{ transform: focused ? "rotate(180deg)" : undefined }}
                 >
@@ -200,7 +187,7 @@ export default function AmortisationView() {
                     </>
                   )}
                 </svg>
-              </button>
+              </Button>
             </div>
           </div>
 

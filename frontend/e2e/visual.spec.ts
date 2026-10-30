@@ -87,12 +87,12 @@ test.describe("amortisation", () => {
   test("states", async ({ page }) => {
     await go(page, "/amortisation");
     await snap(page, "amortisation");
-    await page.getByRole("button", { name: "Monthly" }).click();
+    await page.getByRole("radio", { name: "Monthly" }).click();
     await page.getByRole("button", { name: "Equity" }).click();
     await snap(page, "amortisation-monthly-equity");
-    await page.getByRole("button", { name: "Table" }).click();
+    await page.getByRole("radio", { name: "Table" }).click();
     await snap(page, "amortisation-table");
-    await page.locator("main .custom-scrollbar > div").nth(4).hover();
+    await page.locator("main .custom-scrollbar > tr").nth(4).hover();
     await snapHover(page, "amortisation-table-row-hover");
   });
 

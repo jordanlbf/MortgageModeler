@@ -3,7 +3,33 @@
 import * as React from "react"
 import { cn } from "cn"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+/**
+ * Table variants (set on `Table`; the parts inherit via context):
+ * - `default` (stock shadcn): scroll container, borders, row hover, padding.
+ * - `bare` (ours): no container div and NO classes on any part, so callers
+ *   can reproduce an existing layout exactly. Typical use is a grid-rowed
+ *   table: `Table className="block"`, `TableHeader`/`TableBody` `block`,
+ *   `TableRow className="grid grid-cols-[…]"`, which keeps `<table>`
+ *   semantics with CSS-grid column sizing (and lets `TableBody` be its own
+ *   scroll container under a fixed header).
+ */
+type TableVariant = "default" | "bare"
+
+const TableVariantContext = React.createContext<TableVariant>("default")
+const useBare = () => React.useContext(TableVariantContext) === "bare"
+
+function Table({
+  className,
+  variant = "default",
+  ...props
+}: React.ComponentProps<"table"> & { variant?: TableVariant }) {
+  if (variant === "bare") {
+    return (
+      <TableVariantContext.Provider value="bare">
+        <table data-slot="table" data-variant="bare" className={className} {...props} />
+      </TableVariantContext.Provider>
+    )
+  }
   return (
     <div
       data-slot="table-container"
@@ -19,6 +45,8 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
 }
 
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
+  const bare = useBare()
+  if (bare) return <thead data-slot="table-header" className={className} {...props} />
   return (
     <thead
       data-slot="table-header"
@@ -29,6 +57,8 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
 }
 
 function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
+  const bare = useBare()
+  if (bare) return <tbody data-slot="table-body" className={className} {...props} />
   return (
     <tbody
       data-slot="table-body"
@@ -39,6 +69,8 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
 }
 
 function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
+  const bare = useBare()
+  if (bare) return <tfoot data-slot="table-footer" className={className} {...props} />
   return (
     <tfoot
       data-slot="table-footer"
@@ -52,6 +84,8 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 }
 
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+  const bare = useBare()
+  if (bare) return <tr data-slot="table-row" className={className} {...props} />
   return (
     <tr
       data-slot="table-row"
@@ -65,6 +99,8 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
 }
 
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+  const bare = useBare()
+  if (bare) return <th data-slot="table-head" className={className} {...props} />
   return (
     <th
       data-slot="table-head"
@@ -78,6 +114,8 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
 }
 
 function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+  const bare = useBare()
+  if (bare) return <td data-slot="table-cell" className={className} {...props} />
   return (
     <td
       data-slot="table-cell"
@@ -94,6 +132,8 @@ function TableCaption({
   className,
   ...props
 }: React.ComponentProps<"caption">) {
+  const bare = useBare()
+  if (bare) return <caption data-slot="table-caption" className={className} {...props} />
   return (
     <caption
       data-slot="table-caption"
@@ -103,6 +143,7 @@ function TableCaption({
   )
 }
 
+export type { TableVariant }
 export {
   Table,
   TableHeader,
