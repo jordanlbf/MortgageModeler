@@ -9,7 +9,7 @@ import PropertyTable from "./table/PropertyTable";
 import EquityTable from "./table/EquityTable";
 import DeductionsTable from "./table/DeductionsTable";
 import CostsTable from "./table/CostsTable";
-import { ColumnDrawer, ColumnDrawerTrigger } from "@/components/ui/ColumnDrawer";
+import { ColumnDrawer, ColumnDrawerTrigger } from "@/components/domain/ColumnDrawer";
 import { Card } from "@/components/ui/card";
 import { COLUMN_CONFIGS, defaultVisibility } from "./table/columns";
 import type { YearRowProps } from "./table/types";

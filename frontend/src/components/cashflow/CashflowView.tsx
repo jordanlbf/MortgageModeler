@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { useCashflowState } from "@/hooks/useCashflowState";
-import { ModalWizardShell, useWizardSteps } from "@/components/ui/wizard";
+import { ModalWizardShell, useWizardSteps } from "@/components/domain/wizard";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowDashboard from "./CashflowDashboard";
 import CashflowWizardStep from "./CashflowWizardStep";

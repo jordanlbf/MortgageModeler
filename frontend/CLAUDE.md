@@ -15,7 +15,8 @@ frontend/src/
       <Feature>*.tsx          — sub-components specific to this feature
     layout/                   — AppShell, Sidebar, PageHeader
     ui/                       — shadcn/ui primitives, themed via tokens (button, card, tabs, …)
-    domain/                   — app-specific components built from ui/ (SliderField, EditableValue, ErrorBoundary)
+    domain/                   — app-specific components built from ui/ (SliderField, EditableValue,
+                                ErrorBoundary, ColumnDrawer, wizard/)
   hooks/
     use<Feature>State.ts      — form state + API call + derived data
     useApiCall.ts             — shared debounce + abort + { data, error, loading }

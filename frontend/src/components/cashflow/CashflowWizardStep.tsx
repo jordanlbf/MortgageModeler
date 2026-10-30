@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { X } from "lucide-react";
 
-import { WizardShell, useWizardSteps } from "@/components/ui/wizard";
+import { WizardShell, useWizardSteps } from "@/components/domain/wizard";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import type { StepId } from "@/lib/cashflow-types";
 import { getCashflowSteps } from "./cashflow-steps";

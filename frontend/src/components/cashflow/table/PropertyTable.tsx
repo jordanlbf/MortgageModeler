@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { SubTableProps } from "./types";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 function signedColor(v: number): string {
   if (v > 0) return t.data.positive;
@@ -47,19 +48,16 @@ export default function PropertyTable({
           {/* ── Cashflow view (divider) ─── */}
           {show("taxSaved") && (
             <TableHead data-divider="strong">
-              {/* Instant CSS hover hint. Deliberately not a Radix Tooltip: its
-                  portalled, position:fixed popper is composited by Chrome, so
-                  the text loses LCD antialiasing and renders visibly
-                  different from this in-flow hint. */}
-              <span className="relative group inline-block cursor-help">
-                Tax
-                <span
-                  className="invisible group-hover:visible absolute top-full right-0 mt-1.5 px-2.5 py-1.5 rounded-md whitespace-nowrap normal-case tracking-normal text-[11px] font-normal z-50 pointer-events-none"
-                  style={{ background: t.card.elevated, color: t.fg.primary, border: `1px solid ${t.border.default}`, boxShadow: t.elevation.raised }}
-                >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} className="inline-block cursor-help outline-none focus-visible:underline">
+                    Tax
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent variant="surface" side="bottom" align="end" sideOffset={6}>
                   Tax refund (+) or additional tax (−)
-                </span>
-              </span>
+                </TooltipContent>
+              </Tooltip>
             </TableHead>
           )}
           {show("rent")        && <TableHead>Rent</TableHead>}

@@ -29,12 +29,40 @@ function TooltipTrigger({
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
 }
 
+/**
+ * TooltipContent variants:
+ * - `default` (stock shadcn): inverted pill with an arrow and zoom animation.
+ * - `surface` (ours): elevated card surface, hairline border, raised shadow,
+ *   11px text, no arrow, appears instantly. Used for table header hints.
+ */
+const SURFACE_TOOLTIP =
+  "z-50 whitespace-nowrap rounded-md border border-border-default bg-card-elevated px-2.5 py-1.5 text-[11px] font-normal tracking-normal normal-case text-fg-primary shadow-raised"
+
 function TooltipContent({
   className,
   sideOffset = 0,
+  variant = "default",
   children,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Content>) {
+}: React.ComponentProps<typeof TooltipPrimitive.Content> & {
+  variant?: "default" | "surface"
+}) {
+  if (variant === "surface") {
+    return (
+      <TooltipPrimitive.Portal>
+        <TooltipPrimitive.Content
+          data-slot="tooltip-content"
+          data-variant="surface"
+          sideOffset={sideOffset}
+          className={cn(SURFACE_TOOLTIP, className)}
+          {...props}
+        >
+          {children}
+        </TooltipPrimitive.Content>
+      </TooltipPrimitive.Portal>
+    )
+  }
+
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Content

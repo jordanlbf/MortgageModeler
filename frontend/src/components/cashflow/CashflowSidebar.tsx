@@ -8,7 +8,7 @@ import {
   WizardSidebar,
   useWizardSteps,
   type WizardSidebarStep,
-} from "@/components/ui/wizard";
+} from "@/components/domain/wizard";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 import type { StepId } from "@/lib/cashflow-types";

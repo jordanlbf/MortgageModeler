@@ -96,6 +96,7 @@ Mouse clicks don't show the keyboard focus ring (handled in `TabsTrigger`).
 | Input | `ghost` | Click-to-edit value (`data-editing="true"` while editing) |
 | Input | `underline` | Inline value with an underline (wizard editable rows) |
 | NativeSelect | `form` | Native `<select>` matching `form` inputs (keeps the browser's own dropdown) |
+| TooltipContent | `surface` | Hint on raised card surface, hairline border, no arrow, instant (table header hints). `TooltipProvider` is already in the root layout |
 | Label | `field` / `form` / `caps` | Field caption / form label / small-caps group caption |
 | Label | `bare` | Wraps a Switch or Checkbox row without changing line height |
 | Switch | `accent` / `glow` | Switch tinted by `--switch-accent` / brand switch with glow |
@@ -120,7 +121,9 @@ Mouse clicks don't show the keyboard focus ring (handled in `TabsTrigger`).
 ## Domain components (`src/components/domain`)
 
 App-specific building blocks composed from `ui/`: `SliderField` (labelled,
-click-to-edit slider), `EditableValue`, `ErrorBoundary`.
+click-to-edit slider), `EditableValue`, `ErrorBoundary`, `ColumnDrawer`
+(Sheet-based column picker) and `wizard/` (`WizardShell`, `ModalWizardShell`,
+`WizardSidebar`, `useWizardSteps`). `components/ui` holds only shadcn components.
 
 ## Adding a component
 
@@ -130,10 +133,10 @@ click-to-edit slider), `EditableValue`, `ErrorBoundary`.
    tokens only (`text-fg-*`, `bg-surface-*`, `brand`…). Never hard-code colours.
 3. Never install another UI library.
 
-## Known exceptions
+## Notes
 
-- The Cashflow property table's "Tax" header hint is a CSS hover hint, not a
-  Radix Tooltip: the Radix portal renders text with greyscale antialiasing,
-  which can't match. Documented in the component.
-- Hovering a `NativeSelect form` hides its chevron. This is a pre-existing quirk
-  kept for parity; documented in `ui/native-select.tsx`.
+- Radix Tooltip renders in a portal, so its text uses greyscale rather than
+  subpixel antialiasing. The `surface` tooltip is otherwise identical to the
+  CSS hint it replaced.
+- Dialog/Sheet content return focus to whatever opened them, even when opened
+  from a plain button rather than a Radix Trigger (`ui/use-return-focus.ts`).
