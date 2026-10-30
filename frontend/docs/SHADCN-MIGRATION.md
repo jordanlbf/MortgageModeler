@@ -1,5 +1,10 @@
 # shadcn/ui Migration Inventory
 
+> **Status: complete** (branch `refactor/shadcn`). This file is the pre-migration
+> inventory, kept for history. For the current components and variants see
+> [SHADCN.md](SHADCN.md). Deviations from the proposals below are recorded in the
+> commit messages and in SHADCN.md "Known exceptions".
+
 This inventory drives the move from hand-rolled primitives to shadcn/ui (Radix base). The goal is **exact visual parity**: every replacement must render pixel-identically, which the Playwright suite in `e2e/visual.spec.ts` checks.
 
 - Scope: `src/components/**` and `src/app/**` as of branch `feat/purchase-costs-polish` (commit `4330c94`).

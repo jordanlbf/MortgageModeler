@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
+import { useReturnFocus } from "@/components/ui/use-return-focus"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
@@ -64,6 +65,8 @@ function SheetContent({
   showCloseButton = true,
   variant = "default",
   overlayClassName,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
@@ -72,6 +75,7 @@ function SheetContent({
   /** Extra classes for the overlay (the only overlay styling for `bare`). */
   overlayClassName?: string
 }) {
+  const returnFocus = useReturnFocus(onOpenAutoFocus, onCloseAutoFocus)
   if (variant === "bare") {
     return (
       <SheetPortal>
@@ -82,6 +86,8 @@ function SheetContent({
           data-variant="bare"
           className={className}
           {...props}
+          onOpenAutoFocus={returnFocus.onOpenAutoFocus}
+          onCloseAutoFocus={returnFocus.onCloseAutoFocus}
         >
           {children}
         </SheetPrimitive.Content>
@@ -100,6 +106,8 @@ function SheetContent({
           className
         )}
         {...props}
+          onOpenAutoFocus={returnFocus.onOpenAutoFocus}
+          onCloseAutoFocus={returnFocus.onCloseAutoFocus}
       >
         {children}
         {showCloseButton && (

@@ -2,6 +2,7 @@
 
 ### Stack
 - Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS 4
+- shadcn/ui (Radix base) for every UI control, lucide-react icons, recharts charts
 
 ### Directory Structure
 
@@ -12,8 +13,9 @@ frontend/src/
     <feature>/
       <Feature>View.tsx       — page-level layout, owns the state hook
       <Feature>*.tsx          — sub-components specific to this feature
-    layout/                   — Header, ThemeToggle
-    ui/                       — shared primitives (GlassCard, Slider, Skeleton, etc.)
+    layout/                   — AppShell, Sidebar, PageHeader
+    ui/                       — shadcn/ui primitives, themed via tokens (button, card, tabs, …)
+    domain/                   — app-specific components built from ui/ (SliderField, EditableValue, ErrorBoundary)
   hooks/
     use<Feature>State.ts      — form state + API call + derived data
     useApiCall.ts             — shared debounce + abort + { data, error, loading }
@@ -44,12 +46,33 @@ Every feature should follow this structure:
 3. **Loading state** — use `Skeleton` components or equivalent while `loading` is true
 4. **Leaf components** wrapped in `React.memo()` if they receive callbacks
 
+### UI Components (shadcn/ui)
+
+- UI primitives are shadcn/ui components in `components/ui`, themed via our tokens:
+  every shadcn CSS variable is mapped onto an existing token in `globals.css`.
+- Domain components live in `components/domain` and compose `ui/` parts.
+- Never hand-roll a control (raw `<button>`, `<input>`, `<select>`, `<table>`, dialog,
+  tabs, tooltip…) in a feature folder — use the shadcn component and a variant.
+- Our looks are **custom variants** (e.g. `<Button variant="cta">`, `<Card variant="glass">`,
+  `<Tabs variant="underline">`, `<ToggleGroup>` + `<Toggle variant="pill">`). They're listed,
+  with when to use each, in `docs/SHADCN.md`. Reuse one before adding another.
+- Stock variants (`default`, `outline`, `ghost`…) keep shadcn's look and sizes; custom
+  variants carry no size classes. Per-instance colours go in CSS custom properties
+  (`style={{ "--pill-accent": color }}`), not props.
+- Adding a component: `npx shadcn@latest add <name>` (check for a PascalCase file with the
+  same name first — Windows is case-insensitive), then theme it with tokens and add any
+  custom variants to the component file. Never install another UI library.
+- v0 output should use these components and variants; replace any raw colours it emits
+  with tokens.
+- Visual regression: `npm run test:visual` (needs the dev stack running) compares against
+  `docs/design/_baseline`. Re-record only deliberate design changes.
+
 ### Styling Rules
 
 - Use Tailwind utility classes for all styling
 - Theme colours via `t.*` tokens from `lib/theme.ts` or Tailwind theme classes — never hardcoded hex
 - `mix()` helper from `lib/theme.ts` for opacity/blend variants
-- No component-local CSS files (legacy CSS files are being migrated)
+- No component-local CSS files; keep `globals.css` to tokens and genuinely global utilities
 
 ### Formatting & Parsing
 

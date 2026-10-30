@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
+import { useReturnFocus } from "@/components/ui/use-return-focus"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { Button } from "@/components/ui/button"
@@ -70,6 +71,8 @@ function DialogContent({
   overlayClassName,
   portal = true,
   overlay = true,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
@@ -81,6 +84,7 @@ function DialogContent({
   /** `bare` only: false omits the Radix overlay (no scroll lock). */
   overlay?: boolean
 }) {
+  const returnFocus = useReturnFocus(onOpenAutoFocus, onCloseAutoFocus)
   if (variant === "bare") {
     const body = (
       <>
@@ -90,6 +94,8 @@ function DialogContent({
           data-variant="bare"
           className={className}
           {...props}
+          onOpenAutoFocus={returnFocus.onOpenAutoFocus}
+          onCloseAutoFocus={returnFocus.onCloseAutoFocus}
         >
           {children}
         </DialogPrimitive.Content>
@@ -108,6 +114,8 @@ function DialogContent({
           className
         )}
         {...props}
+          onOpenAutoFocus={returnFocus.onOpenAutoFocus}
+          onCloseAutoFocus={returnFocus.onCloseAutoFocus}
       >
         {children}
         {showCloseButton && (
