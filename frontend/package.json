@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "vitest --run",
     "test:watch": "vitest",
-    "generate-api": "openapi-typescript http://localhost:8000/openapi.json -o src/lib/api-types.ts"
+    "generate-api": "openapi-typescript http://localhost:8000/openapi.json -o src/lib/api-types.ts",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots"
   },
   "dependencies": {
     "lucide-react": "^1.7.0",
@@ -32,7 +34,8 @@
     "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "@playwright/test": "^1.56.1"
   },
   "allowScripts": {
     "sharp@0.34.5": true,
