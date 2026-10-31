@@ -7,10 +7,12 @@ interface EditableValueProps {
   onCommit: (raw: number) => void;
   parse: (display: string) => number;
   className?: string;
+  /** Accessible name for the field (it has no visible label of its own). */
+  label?: string;
 }
 
 /** Read-only value that turns into a text input on click/focus. */
-export default function EditableValue({ display, onCommit, parse, className }: EditableValueProps) {
+export default function EditableValue({ display, onCommit, parse, className, label }: EditableValueProps) {
   const { editing, draft, inputRef, startEditing, commit, handleKeyDown, handleChange } =
     useEditableInput({ display, onCommit, parse });
 
@@ -22,6 +24,7 @@ export default function EditableValue({ display, onCommit, parse, className }: E
       inputMode={editing ? "decimal" : "none"}
       value={editing ? draft : display}
       readOnly={!editing}
+      aria-label={label}
       onClick={startEditing}
       onFocus={startEditing}
       onChange={handleChange}

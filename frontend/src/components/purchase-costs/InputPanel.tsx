@@ -199,7 +199,6 @@ function ScaleSlider({ label, scale, disabled, markers = [] }: { label: string; 
     <div className="relative pt-1 pb-5">
       <Slider
         variant="hero"
-        aria-label={label}
         min={min}
         max={max}
         step={scale.step}
@@ -213,7 +212,7 @@ function ScaleSlider({ label, scale, disabled, markers = [] }: { label: string; 
           const near = dragging.current ? shown.find((m) => Math.abs(m.value - v) <= SNAP_RADIUS) : undefined;
           scale.onChange(near ? near.value : v);
         }}
-        thumbProps={{ "aria-valuetext": scale.valueText }}
+        thumbProps={{ "aria-label": label, "aria-valuetext": scale.valueText }}
       />
       {shown.map((m) => (
         <span

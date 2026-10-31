@@ -75,6 +75,7 @@ export default function SliderField({
           inputMode={editing ? "decimal" : "none"}
           value={editing ? draft : display}
           readOnly={!editing}
+          aria-label={label}
           onChange={handleChange}
           onBlur={commit}
           onKeyDown={handleKeyDown}

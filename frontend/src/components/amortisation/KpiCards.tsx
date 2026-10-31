@@ -55,6 +55,7 @@ export default memo(function KpiCards({
         <div className="mt-1.5 flex items-center h-[38px] text-[34px] font-normal leading-none tracking-[-0.02em] text-fg-primary tabular-nums">
           {data ? (
             <EditableValue
+              label="Repayment"
               display={formatCurrency(animPayment)}
               parse={parseCurrencyInput}
               onCommit={handleRepaymentCommit}
