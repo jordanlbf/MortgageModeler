@@ -1,8 +1,8 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Info, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import InlineAlert from "@/components/patterns/InlineAlert";
 import {
   Dialog,
   DialogClose,
@@ -19,10 +19,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import VariantRow from "../components/VariantRow";
 
 const ALERTS = [
-  { tone: "error", Icon: AlertCircle, cls: "border-data-negative/20 bg-status-error-bg text-data-negative", text: "Couldn't reach the calculator. Your inputs are kept; we'll retry." },
-  { tone: "warning", Icon: TriangleAlert, cls: "border-data-warning/20 bg-status-warning-bg text-data-warning", text: "LVR is 87.7%: lenders mortgage insurance applies above 80%." },
-  { tone: "success", Icon: CheckCircle2, cls: "border-data-positive/20 bg-status-success-bg text-data-positive", text: "Scenario saved for 42 Smith Street, Clayfield." },
-  { tone: "info", Icon: Info, cls: "border-status-info/20 bg-status-info/5 text-status-info", text: "QLD first home concessions apply to homes under $800,000." },
+  { tone: "error", text: "Couldn't reach the calculator. Your inputs are kept; we'll retry." },
+  { tone: "warning", text: "LVR is 87.7%: lenders mortgage insurance applies above 80%." },
+  { tone: "success", text: "Scenario saved for 42 Smith Street, Clayfield." },
+  { tone: "info", text: "QLD first home concessions apply to homes under $800,000." },
 ] as const;
 
 function ConfirmBody() {
@@ -43,13 +43,10 @@ function ConfirmBody() {
 export default function FeedbackSection() {
   return (
     <>
-      <VariantRow label="inline alert · error / warning / success / info">
+      <VariantRow label="InlineAlert · error / warning / success / info">
         <div className="flex w-full max-w-[640px] flex-col gap-2">
-          {ALERTS.map(({ tone, Icon, cls, text }) => (
-            <div key={tone} role={tone === "error" ? "alert" : "status"} className={`flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] ${cls}`}>
-              <Icon size={15} className="shrink-0" aria-hidden="true" />
-              {text}
-            </div>
+          {ALERTS.map(({ tone, text }) => (
+            <InlineAlert key={tone} tone={tone}>{text}</InlineAlert>
           ))}
         </div>
       </VariantRow>

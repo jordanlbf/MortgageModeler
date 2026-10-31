@@ -1,6 +1,6 @@
 "use client";
 
-import { Label } from "@/components/ui/label";
+import Stat from "@/components/patterns/Stat";
 import { Money } from "./shared";
 
 /** The hero number: cash needed, then `children` (the donut legend). Before an estimate, a one-line prompt. */
@@ -12,13 +12,9 @@ export default function CashNeededHero({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-2">
-      <Label variant="caps" asChild><h2 id="pc-cash-needed">Cash needed</h2></Label>
-      <div className="text-[44px] leading-none font-semibold tracking-[-0.03em] tabular-nums text-fg-primary">
-        <Money value={total} />
-      </div>
+    <Stat label="Cash needed" labelAs="h2" labelId="pc-cash-needed" size="hero" value={<Money value={total} />}>
       {total === null && <p className="text-[13px] text-fg-tertiary">Enter a purchase price to see your estimate</p>}
       {children && <div className="mt-4">{children}</div>}
-    </div>
+    </Stat>
   );
 }

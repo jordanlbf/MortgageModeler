@@ -7,6 +7,7 @@ import FeedbackSection from "./sections/feedback";
 import InputsSection from "./sections/inputs";
 import KpisSection from "./sections/kpis";
 import LoadingStatesSection from "./sections/loading-states";
+import PatternsSection from "./sections/patterns";
 import SelectsAndTogglesSection from "./sections/selects-and-toggles";
 import TablesSection from "./sections/tables";
 import TypographySection from "./sections/typography";
@@ -22,6 +23,7 @@ export interface Section {
 export const SECTIONS: Section[] = [
   { id: "typography", title: "Typography", Component: TypographySection },
   { id: "colors", title: "Colors", Component: ColorsSection },
+  { id: "patterns", title: "Patterns", Component: PatternsSection },
   { id: "buttons", title: "Buttons", Component: ButtonsSection },
   { id: "inputs", title: "Inputs", Component: InputsSection },
   { id: "selects-and-toggles", title: "Selects and toggles", Component: SelectsAndTogglesSection },

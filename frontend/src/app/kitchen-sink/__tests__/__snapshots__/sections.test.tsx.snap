@@ -2261,13 +2261,14 @@ exports[`kitchen-sink sections > empty-states matches its snapshot 1`] = `
     <div
       class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
     >
-      no data · no results · error · coming soon
+      EmptyState · no data / no results / error / coming soon
     </div>
     <div
       class="flex min-w-0 items-center gap-3 flex-wrap"
     >
       <div
-        class="border border-border-subtle bg-card flex w-full max-w-[300px] flex-col items-center gap-2 rounded-2xl px-6 py-8 text-center"
+        class="border border-border-subtle flex flex-col items-center gap-2 rounded-2xl bg-surface-raised px-6 py-8 text-center w-full max-w-[300px]"
+        data-pattern="empty-state"
         data-size="default"
         data-slot="card"
         data-variant="panel"
@@ -2297,7 +2298,7 @@ exports[`kitchen-sink sections > empty-states matches its snapshot 1`] = `
           </svg>
         </span>
         <span
-          class="text-[15px] font-semibold"
+          class="text-[15px] font-semibold text-fg-primary"
         >
           No properties yet
         </span>
@@ -2320,7 +2321,8 @@ exports[`kitchen-sink sections > empty-states matches its snapshot 1`] = `
         </div>
       </div>
       <div
-        class="border border-border-subtle bg-card flex w-full max-w-[300px] flex-col items-center gap-2 rounded-2xl px-6 py-8 text-center"
+        class="border border-border-subtle flex flex-col items-center gap-2 rounded-2xl bg-surface-raised px-6 py-8 text-center w-full max-w-[300px]"
+        data-pattern="empty-state"
         data-size="default"
         data-slot="card"
         data-variant="panel"
@@ -2358,7 +2360,7 @@ exports[`kitchen-sink sections > empty-states matches its snapshot 1`] = `
           </svg>
         </span>
         <span
-          class="text-[15px] font-semibold"
+          class="text-[15px] font-semibold text-fg-primary"
         >
           No grants match
         </span>
@@ -2381,13 +2383,14 @@ exports[`kitchen-sink sections > empty-states matches its snapshot 1`] = `
         </div>
       </div>
       <div
-        class="border border-border-subtle bg-card flex w-full max-w-[300px] flex-col items-center gap-2 rounded-2xl px-6 py-8 text-center"
+        class="border border-border-subtle flex flex-col items-center gap-2 rounded-2xl bg-surface-raised px-6 py-8 text-center w-full max-w-[300px]"
+        data-pattern="empty-state"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
         <span
-          class="mb-1 flex size-10 items-center justify-center rounded-full bg-status-error-bg text-data-negative"
+          class="mb-1 flex size-10 items-center justify-center rounded-full bg-status-error-bg text-status-error"
         >
           <svg
             aria-hidden="true"
@@ -2422,7 +2425,7 @@ exports[`kitchen-sink sections > empty-states matches its snapshot 1`] = `
           </svg>
         </span>
         <span
-          class="text-[15px] font-semibold"
+          class="text-[15px] font-semibold text-fg-primary"
         >
           Couldn't load the schedule
         </span>
@@ -2445,7 +2448,8 @@ exports[`kitchen-sink sections > empty-states matches its snapshot 1`] = `
         </div>
       </div>
       <div
-        class="border border-border-subtle bg-card flex w-full max-w-[300px] flex-col items-center gap-2 rounded-2xl px-6 py-8 text-center"
+        class="border border-border-subtle flex flex-col items-center gap-2 rounded-2xl bg-surface-raised px-6 py-8 text-center w-full max-w-[300px]"
+        data-pattern="empty-state"
         data-size="default"
         data-slot="card"
         data-variant="panel"
@@ -2462,7 +2466,7 @@ exports[`kitchen-sink sections > empty-states matches its snapshot 1`] = `
           </span>
         </span>
         <span
-          class="text-[15px] font-semibold"
+          class="text-[15px] font-semibold text-fg-primary"
         >
           Scenario comparison
         </span>
@@ -2485,7 +2489,7 @@ exports[`kitchen-sink sections > feedback matches its snapshot 1`] = `
     <div
       class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
     >
-      inline alert · error / warning / success / info
+      InlineAlert · error / warning / success / info
     </div>
     <div
       class="flex min-w-0 items-center gap-3 flex-wrap"
@@ -2494,7 +2498,8 @@ exports[`kitchen-sink sections > feedback matches its snapshot 1`] = `
         class="flex w-full max-w-[640px] flex-col gap-2"
       >
         <div
-          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] border-data-negative/20 bg-status-error-bg text-data-negative"
+          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] leading-snug border-status-error/20 bg-status-error-bg text-status-error"
+          data-pattern="inline-alert"
           role="alert"
         >
           <svg
@@ -2528,10 +2533,15 @@ exports[`kitchen-sink sections > feedback matches its snapshot 1`] = `
               y2="16"
             />
           </svg>
-          Couldn't reach the calculator. Your inputs are kept; we'll retry.
+          <span
+            class="min-w-0"
+          >
+            Couldn't reach the calculator. Your inputs are kept; we'll retry.
+          </span>
         </div>
         <div
-          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] border-data-warning/20 bg-status-warning-bg text-data-warning"
+          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] leading-snug border-status-warning/20 bg-status-warning-bg text-status-warning"
+          data-pattern="inline-alert"
           role="status"
         >
           <svg
@@ -2557,10 +2567,15 @@ exports[`kitchen-sink sections > feedback matches its snapshot 1`] = `
               d="M12 17h.01"
             />
           </svg>
-          LVR is 87.7%: lenders mortgage insurance applies above 80%.
+          <span
+            class="min-w-0"
+          >
+            LVR is 87.7%: lenders mortgage insurance applies above 80%.
+          </span>
         </div>
         <div
-          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] border-data-positive/20 bg-status-success-bg text-data-positive"
+          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] leading-snug border-status-success/20 bg-status-success-bg text-status-success"
+          data-pattern="inline-alert"
           role="status"
         >
           <svg
@@ -2585,10 +2600,15 @@ exports[`kitchen-sink sections > feedback matches its snapshot 1`] = `
               d="m9 12 2 2 4-4"
             />
           </svg>
-          Scenario saved for 42 Smith Street, Clayfield.
+          <span
+            class="min-w-0"
+          >
+            Scenario saved for 42 Smith Street, Clayfield.
+          </span>
         </div>
         <div
-          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] border-status-info/20 bg-status-info/5 text-status-info"
+          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] leading-snug border-status-info/20 bg-status-info/5 text-status-info"
+          data-pattern="inline-alert"
           role="status"
         >
           <svg
@@ -2616,7 +2636,11 @@ exports[`kitchen-sink sections > feedback matches its snapshot 1`] = `
               d="M12 8h.01"
             />
           </svg>
-          QLD first home concessions apply to homes under $800,000.
+          <span
+            class="min-w-0"
+          >
+            QLD first home concessions apply to homes under $800,000.
+          </span>
         </div>
       </div>
     </div>
@@ -3445,55 +3469,100 @@ exports[`kitchen-sink sections > kpis matches its snapshot 1`] = `
       class="flex min-w-0 items-center gap-3 flex-wrap"
     >
       <div
-        class="border border-border-subtle bg-card flex w-[220px] flex-col gap-1.5 rounded-2xl px-5 py-4"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised p-6 w-[220px] gap-0 px-5 py-4"
+        data-pattern="section-card"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
-        <span
-          class="text-[11px] font-semibold tracking-widest text-fg-tertiary uppercase"
+        <div
+          class="flex min-w-0 flex-col gap-1.5"
+          data-pattern="stat"
         >
-          Loan amount
-        </span>
-        <span
-          class="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-fg-primary"
-        >
-          $712,400
-        </span>
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Loan amount
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+            >
+              $712,400
+            </span>
+          </div>
+        </div>
       </div>
       <div
-        class="border border-border-subtle bg-card flex w-[220px] flex-col gap-1.5 rounded-2xl px-5 py-4"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised p-6 w-[220px] gap-0 px-5 py-4"
+        data-pattern="section-card"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
-        <span
-          class="text-[11px] font-semibold tracking-widest text-fg-tertiary uppercase"
+        <div
+          class="flex min-w-0 flex-col gap-1.5"
+          data-pattern="stat"
         >
-          Portfolio value
-        </span>
-        <span
-          class="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-fg-primary"
-        >
-          $1,234,568
-        </span>
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Portfolio value
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+            >
+              $1,234,568
+            </span>
+          </div>
+        </div>
       </div>
       <div
-        class="border border-border-subtle bg-card flex w-[220px] flex-col gap-1.5 rounded-2xl px-5 py-4"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised p-6 w-[220px] gap-0 px-5 py-4"
+        data-pattern="section-card"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
-        <span
-          class="text-[11px] font-semibold tracking-widest text-fg-tertiary uppercase"
+        <div
+          class="flex min-w-0 flex-col gap-1.5"
+          data-pattern="stat"
         >
-          Grants
-        </span>
-        <span
-          class="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-fg-muted"
-        >
-          $0
-        </span>
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Grants
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-muted"
+            >
+              $0
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -3509,90 +3578,118 @@ exports[`kitchen-sink sections > kpis matches its snapshot 1`] = `
       class="flex min-w-0 items-center gap-3 flex-wrap"
     >
       <div
-        class="border border-border-subtle bg-card flex w-[220px] flex-col gap-1.5 rounded-2xl px-5 py-4"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised p-6 w-[220px] gap-0 px-5 py-4"
+        data-pattern="section-card"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
-        <span
-          class="text-[11px] font-semibold tracking-widest text-fg-tertiary uppercase"
+        <div
+          class="flex min-w-0 flex-col gap-1.5"
+          data-pattern="stat"
         >
-          Equity
-        </span>
-        <span
-          class="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-fg-primary"
-        >
-          $372,600
-        </span>
-        <span
-          class="flex items-center gap-1 text-[12px] font-medium tabular-nums text-data-positive"
-        >
-          <svg
-            aria-hidden="true"
-            class="lucide lucide-arrow-up-right size-3.5"
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
           >
-            <path
-              d="M7 7h10v10"
-            />
-            <path
-              d="M7 17 17 7"
-            />
-          </svg>
-          4.2%
-           vs last year
-        </span>
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Equity
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+            >
+              $372,600
+            </span>
+            <span
+              class="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium tabular-nums text-data-positive"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-arrow-up"
+                fill="none"
+                height="12"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+                width="12"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m5 12 7-7 7 7"
+                />
+                <path
+                  d="M12 19V5"
+                />
+              </svg>
+              4.2%
+            </span>
+          </div>
+        </div>
       </div>
       <div
-        class="border border-border-subtle bg-card flex w-[220px] flex-col gap-1.5 rounded-2xl px-5 py-4"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised p-6 w-[220px] gap-0 px-5 py-4"
+        data-pattern="section-card"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
-        <span
-          class="text-[11px] font-semibold tracking-widest text-fg-tertiary uppercase"
+        <div
+          class="flex min-w-0 flex-col gap-1.5"
+          data-pattern="stat"
         >
-          Net cashflow
-        </span>
-        <span
-          class="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-data-negative"
-        >
-          −$47,382
-        </span>
-        <span
-          class="flex items-center gap-1 text-[12px] font-medium tabular-nums text-data-negative"
-        >
-          <svg
-            aria-hidden="true"
-            class="lucide lucide-arrow-down-right size-3.5"
-            fill="none"
-            height="24"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
           >
-            <path
-              d="m7 7 10 10"
-            />
-            <path
-              d="M17 7v10H7"
-            />
-          </svg>
-          12.5%
-           vs last year
-        </span>
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Net cashflow
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-data-negative"
+            >
+              −$47,382
+            </span>
+            <span
+              class="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium tabular-nums text-data-negative"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-arrow-down"
+                fill="none"
+                height="12"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+                width="12"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 5v14"
+                />
+                <path
+                  d="m19 12-7 7-7-7"
+                />
+              </svg>
+              12.5%
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -3608,125 +3705,155 @@ exports[`kitchen-sink sections > kpis matches its snapshot 1`] = `
       class="flex min-w-0 items-center gap-3 flex-wrap"
     >
       <div
-        class="border border-border-subtle bg-card flex w-[220px] flex-col gap-1.5 rounded-2xl px-5 py-4"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised p-6 w-[220px] gap-0 px-5 py-4"
+        data-pattern="section-card"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
-        <span
-          class="text-[11px] font-semibold tracking-widest text-fg-tertiary uppercase"
+        <div
+          class="flex min-w-0 flex-col gap-1.5"
+          data-pattern="stat"
         >
-          Repayment
-        </span>
-        <span
-          class="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-fg-primary"
-        >
-          $4,312
-        </span>
-        <span
-          class="text-[12px] text-fg-tertiary"
-        >
-          per month · 30 years at 6.14%
-        </span>
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Repayment
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+            >
+              $4,312
+            </span>
+          </div>
+          <span
+            class="text-[12px] text-fg-tertiary"
+          >
+            per month · 30 years at 6.14%
+          </span>
+        </div>
       </div>
       <div
-        class="border border-border-subtle bg-card flex w-[220px] flex-col gap-1.5 rounded-2xl px-5 py-4"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised p-6 w-[220px] gap-0 px-5 py-4"
+        data-pattern="section-card"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
-        <span
-          class="text-[11px] font-semibold tracking-widest text-fg-tertiary uppercase"
-        >
-          Property value
-        </span>
-        <span
-          class="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-fg-primary"
-        >
-          $760,000
-        </span>
         <div
-          class="recharts-wrapper"
-          height="36"
-          style="position: relative; cursor: default; width: 180px; height: 36px;"
-          width="180"
+          class="flex min-w-0 flex-col gap-1.5"
+          data-pattern="stat"
         >
-          <svg
-            aria-hidden="true"
-            class="recharts-surface"
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Property value
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+            >
+              $760,000
+            </span>
+          </div>
+          <div
+            class="recharts-wrapper"
             height="36"
-            role="application"
-            style="width: 100%; height: 100%; display: block;"
-            tabindex="0"
-            viewBox="0 0 180 36"
+            style="position: relative; cursor: default; width: 180px; height: 36px;"
             width="180"
           >
-            <title />
-            <desc />
-            <g
-              tabindex="-1"
-            />
-            <g
-              tabindex="-1"
-            />
-            <defs>
-              <clippath
-                id="recharts1-clip"
-              >
-                <rect
-                  height="26"
-                  width="170"
-                  x="5"
-                  y="5"
-                />
-              </clippath>
-            </defs>
-            <g
-              tabindex="-1"
-            />
-            <g
-              tabindex="-1"
-            />
-            <g
-              tabindex="-1"
-            />
-            <g
-              tabindex="-1"
+            <svg
+              aria-hidden="true"
+              class="recharts-surface"
+              height="36"
+              role="application"
+              style="width: 100%; height: 100%; display: block;"
+              tabindex="0"
+              viewBox="0 0 180 36"
+              width="180"
             >
+              <title />
+              <desc />
               <g
-                class="recharts-layer recharts-line"
+                tabindex="-1"
+              />
+              <g
+                tabindex="-1"
+              />
+              <defs>
+                <clippath
+                  id="recharts1-clip"
+                >
+                  <rect
+                    height="26"
+                    width="170"
+                    x="5"
+                    y="5"
+                  />
+                </clippath>
+              </defs>
+              <g
+                tabindex="-1"
+              />
+              <g
+                tabindex="-1"
+              />
+              <g
+                tabindex="-1"
+              />
+              <g
+                tabindex="-1"
               >
-                <path
-                  class="recharts-curve recharts-line-curve"
-                  d="M5,11.11C10.151515151515152,11.077499999999999,15.303030303030301,11.045,20.454545454545453,10.915000000000001C25.606060606060606,10.785000000000002,30.757575757575754,10.400416666666667,35.90909090909091,10.2C41.06060606060606,9.999583333333332,46.21212121212121,9.7125,51.36363636363637,9.7125C56.515151515151516,9.7125,61.666666666666664,9.907499999999999,66.81818181818181,9.907499999999999C71.96969696969697,9.907499999999999,77.12121212121212,9.414583333333333,82.27272727272728,9.192499999999999C87.42424242424244,8.970416666666665,92.57575757575758,8.742916666666666,97.72727272727273,8.575C102.87878787878789,8.407083333333333,108.03030303030303,8.320416666666667,113.18181818181819,8.185C118.33333333333333,8.049583333333334,123.48484848484848,7.919583333333331,128.63636363636363,7.762499999999998C133.78787878787878,7.605416666666665,138.93939393939394,7.4212500000000015,144.0909090909091,7.2425000000000015C149.24242424242425,7.0637500000000015,154.3939393939394,6.847083333333333,159.54545454545456,6.6899999999999995C164.69696969696972,6.532916666666666,169.84848484848484,6.416458333333334,175,6.300000000000002"
-                  fill="none"
-                  height="26"
-                  id="recharts-line-_r_11_"
-                  stroke="var(--color-brand)"
-                  stroke-width="1.5"
-                  width="170"
-                />
+                <g
+                  class="recharts-layer recharts-line"
+                >
+                  <path
+                    class="recharts-curve recharts-line-curve"
+                    d="M5,11.11C10.151515151515152,11.077499999999999,15.303030303030301,11.045,20.454545454545453,10.915000000000001C25.606060606060606,10.785000000000002,30.757575757575754,10.400416666666667,35.90909090909091,10.2C41.06060606060606,9.999583333333332,46.21212121212121,9.7125,51.36363636363637,9.7125C56.515151515151516,9.7125,61.666666666666664,9.907499999999999,66.81818181818181,9.907499999999999C71.96969696969697,9.907499999999999,77.12121212121212,9.414583333333333,82.27272727272728,9.192499999999999C87.42424242424244,8.970416666666665,92.57575757575758,8.742916666666666,97.72727272727273,8.575C102.87878787878789,8.407083333333333,108.03030303030303,8.320416666666667,113.18181818181819,8.185C118.33333333333333,8.049583333333334,123.48484848484848,7.919583333333331,128.63636363636363,7.762499999999998C133.78787878787878,7.605416666666665,138.93939393939394,7.4212500000000015,144.0909090909091,7.2425000000000015C149.24242424242425,7.0637500000000015,154.3939393939394,6.847083333333333,159.54545454545456,6.6899999999999995C164.69696969696972,6.532916666666666,169.84848484848484,6.416458333333334,175,6.300000000000002"
+                    fill="none"
+                    height="26"
+                    id="recharts-line-_r_11_"
+                    stroke="var(--color-brand)"
+                    stroke-width="1.5"
+                    width="170"
+                  />
+                </g>
               </g>
-            </g>
-            <g
-              tabindex="-1"
-            />
-            <g
-              tabindex="-1"
-            />
-            <g
-              tabindex="-1"
-            />
-            <g
-              tabindex="-1"
-            />
-            <g
-              tabindex="-1"
-            />
-            <g
-              tabindex="-1"
-            />
-          </svg>
+              <g
+                tabindex="-1"
+              />
+              <g
+                tabindex="-1"
+              />
+              <g
+                tabindex="-1"
+              />
+              <g
+                tabindex="-1"
+              />
+              <g
+                tabindex="-1"
+              />
+              <g
+                tabindex="-1"
+              />
+            </svg>
+          </div>
         </div>
       </div>
     </div>
@@ -3743,54 +3870,84 @@ exports[`kitchen-sink sections > kpis matches its snapshot 1`] = `
       class="flex min-w-0 items-center gap-3 flex-wrap"
     >
       <div
-        class="border border-border-subtle bg-card flex w-[220px] flex-col gap-1.5 rounded-2xl px-5 py-4"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised p-6 w-[220px] gap-0 px-5 py-4"
+        data-pattern="section-card"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
-        <span
-          class="text-[11px] font-semibold tracking-widest text-fg-tertiary uppercase"
+        <div
+          class="flex min-w-0 flex-col gap-1.5"
+          data-pattern="stat"
         >
-          LVR
-        </span>
-        <span
-          class="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-fg-muted"
-        >
-          —
-        </span>
-        <span
-          class="text-[12px] text-fg-tertiary"
-        >
-          Enter a purchase price
-        </span>
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              LVR
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-muted"
+            >
+              —
+            </span>
+          </div>
+          <span
+            class="text-[12px] text-fg-tertiary"
+          >
+            Enter a purchase price
+          </span>
+        </div>
       </div>
       <div
-        class="border border-border-subtle bg-card flex w-[220px] flex-col gap-1.5 rounded-2xl px-5 py-4"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised p-6 w-[220px] gap-0 px-5 py-4"
+        data-pattern="section-card"
         data-size="default"
         data-slot="card"
         data-variant="panel"
       >
-        <span
-          class="text-[11px] font-semibold tracking-widest text-fg-tertiary uppercase"
+        <div
+          class="flex min-w-0 flex-col gap-1.5"
+          data-pattern="stat"
         >
-          Stamp duty
-        </span>
-        <span
-          class="text-[26px] leading-none font-semibold tracking-[-0.02em] tabular-nums text-fg-primary"
-        >
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Stamp duty
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+            >
+              <span
+                class="inline-block animate-pulse rounded-md bg-border-default"
+                data-slot="skeleton"
+                data-variant="inline"
+                style="width: 140px; height: 28px;"
+              />
+            </span>
+          </div>
           <span
             class="inline-block animate-pulse rounded-md bg-border-default"
             data-slot="skeleton"
             data-variant="inline"
-            style="width: 140px; height: 26px;"
+            style="width: 100px; height: 12px;"
           />
-        </span>
-        <span
-          class="inline-block animate-pulse rounded-md bg-border-default"
-          data-slot="skeleton"
-          data-variant="inline"
-          style="width: 100px; height: 12px;"
-        />
+        </div>
       </div>
     </div>
   </div>
@@ -4226,6 +4383,1354 @@ exports[`kitchen-sink sections > loading-states matches its snapshot 1`] = `
             data-value="88"
             style="width: 88%;"
           />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`kitchen-sink sections > patterns matches its snapshot 1`] = `
+<div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      SectionCard · patterns/SectionCard.tsx
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-full max-w-[320px]"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex items-center justify-between gap-4"
+        >
+          <h3
+            class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+            data-slot="section-title"
+          >
+            Card title
+          </h3>
+        </div>
+        <div
+          aria-hidden="true"
+          class="w-full rounded-lg border border-dashed border-border-subtle"
+          style="height: 120px;"
+        />
+      </div>
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-full max-w-[320px]"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex items-center justify-between gap-4"
+        >
+          <h3
+            class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+            data-slot="section-title"
+          >
+            With an action
+          </h3>
+          <button
+            aria-label="Card options"
+            class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed flex items-center justify-center text-fg-muted transition-colors hover:bg-surface-hover rounded p-1"
+            data-size="none"
+            data-slot="button"
+            data-variant="ghost-icon"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-ellipsis size-4 text-fg-tertiary"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="1"
+              />
+              <circle
+                cx="19"
+                cy="12"
+                r="1"
+              />
+              <circle
+                cx="5"
+                cy="12"
+                r="1"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          aria-hidden="true"
+          class="w-full rounded-lg border border-dashed border-border-subtle"
+          style="height: 120px;"
+        />
+      </div>
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-0 w-full max-w-[320px]"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex items-center justify-between gap-4 px-6 pt-6 pb-5"
+        >
+          <h3
+            class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+            data-slot="section-title"
+          >
+            Flush body
+          </h3>
+        </div>
+        <div
+          class="border-t border-border-subtle px-6 py-5"
+        >
+          <div
+            aria-hidden="true"
+            class="w-full rounded-lg border border-dashed border-border-subtle"
+            style="height: 44px;"
+          />
+        </div>
+        <div
+          class="border-t border-border-subtle px-6 py-5"
+        >
+          <div
+            aria-hidden="true"
+            class="w-full rounded-lg border border-dashed border-border-subtle"
+            style="height: 44px;"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      SectionTitle variant="default" / "brand"
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-full max-w-[320px]"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex items-center justify-between gap-4"
+        >
+          <h3
+            class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+            data-slot="section-title"
+          >
+            Default title
+          </h3>
+        </div>
+      </div>
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-full max-w-[320px]"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <h3
+          class="text-[20px] leading-tight font-semibold uppercase tracking-widest text-brand"
+          data-slot="section-title"
+        >
+          Brand title
+        </h3>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      Stat size="sm" / "md" / "lg" / "hero" · patterns/Stat.tsx
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="flex flex-wrap items-end gap-10"
+      >
+        <div
+          class="flex min-w-0 flex-col gap-2"
+          data-pattern="stat"
+        >
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Small
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[18px] tracking-[-0.01em] text-fg-primary"
+            >
+              $1,250
+            </span>
+          </div>
+        </div>
+        <div
+          class="flex min-w-0 flex-col gap-2"
+          data-pattern="stat"
+        >
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Medium
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[22px] tracking-[-0.01em] text-fg-primary"
+            >
+              $12,500
+            </span>
+          </div>
+        </div>
+        <div
+          class="flex min-w-0 flex-col gap-2"
+          data-pattern="stat"
+        >
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Large
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+            >
+              $125,000
+            </span>
+          </div>
+        </div>
+        <div
+          class="flex min-w-0 flex-col gap-2"
+          data-pattern="stat"
+        >
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Hero
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[44px] tracking-[-0.03em] text-fg-primary"
+            >
+              $1,250,000
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      Stat tone · delta · action · children
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-[240px] px-5 py-4"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex min-w-0 flex-col gap-2"
+          data-pattern="stat"
+        >
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Positive
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-data-positive"
+            >
+              $8,400
+            </span>
+            <span
+              class="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium tabular-nums text-data-positive"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-arrow-up"
+                fill="none"
+                height="12"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+                width="12"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m5 12 7-7 7 7"
+                />
+                <path
+                  d="M12 19V5"
+                />
+              </svg>
+              4.2%
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-[240px] px-5 py-4"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex min-w-0 flex-col gap-2"
+          data-pattern="stat"
+        >
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Negative
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-data-negative"
+            >
+              −$2,150
+            </span>
+            <span
+              class="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium tabular-nums text-data-negative"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-arrow-down"
+                fill="none"
+                height="12"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+                width="12"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 5v14"
+                />
+                <path
+                  d="m19 12-7 7-7-7"
+                />
+              </svg>
+              1.8%
+            </span>
+          </div>
+        </div>
+      </div>
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-[240px] px-5 py-4"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex min-w-0 flex-col gap-2"
+          data-pattern="stat"
+        >
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              With action
+            </span>
+            <button
+              aria-label="Card options"
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed flex items-center justify-center text-fg-muted transition-colors hover:bg-surface-hover rounded p-1"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-icon"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-ellipsis size-4 text-fg-tertiary"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="1"
+                />
+                <circle
+                  cx="19"
+                  cy="12"
+                  r="1"
+                />
+                <circle
+                  cx="5"
+                  cy="12"
+                  r="1"
+                />
+              </svg>
+            </button>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+            >
+              $64,000
+            </span>
+          </div>
+          <span
+            class="text-[12px] text-fg-tertiary"
+          >
+            Supporting line
+          </span>
+        </div>
+      </div>
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-[240px] px-5 py-4"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex min-w-0 flex-col gap-2"
+          data-pattern="stat"
+        >
+          <div
+            class="flex min-h-5 items-center justify-between gap-3"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Muted
+            </span>
+          </div>
+          <div
+            class="flex items-baseline justify-between gap-3"
+          >
+            <span
+              class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-muted"
+            >
+              —
+            </span>
+          </div>
+          <span
+            class="text-[12px] text-fg-tertiary"
+          >
+            No value yet
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      KeyValueList · size="sm" / "md" · divided · total · patterns/KeyValueList.tsx
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-full max-w-[280px]"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <dl
+          class="flex flex-col gap-2.5"
+          data-pattern="key-value-list"
+        >
+          <div
+            class="flex min-w-0 items-center justify-between gap-3"
+          >
+            <dt
+              class="min-w-0 text-[12px] text-fg-tertiary"
+            >
+              Line item one
+            </dt>
+            <dd
+              class="shrink-0 tabular-nums text-[12.5px] font-medium text-fg-primary"
+            >
+              $48,250
+            </dd>
+          </div>
+          <div
+            class="flex min-w-0 items-center justify-between gap-3"
+          >
+            <dt
+              class="min-w-0 text-[12px] text-fg-tertiary"
+            >
+              Line item two
+            </dt>
+            <dd
+              class="shrink-0 tabular-nums text-[12.5px] font-medium text-fg-primary"
+            >
+              $12,400
+            </dd>
+          </div>
+          <div
+            class="flex min-w-0 items-center justify-between gap-3"
+          >
+            <dt
+              class="min-w-0 text-[12px] text-fg-tertiary"
+            >
+              Line item three
+            </dt>
+            <dd
+              class="shrink-0 tabular-nums text-[12.5px] font-medium text-fg-primary"
+            >
+              $3,180
+            </dd>
+          </div>
+          <div
+            class="flex min-w-0 items-center justify-between gap-3 pt-0.5"
+          >
+            <dt
+              class="min-w-0 text-[13px] font-semibold text-fg-primary"
+            >
+              Total
+            </dt>
+            <dd
+              class="shrink-0 tabular-nums text-[13px] font-semibold text-fg-primary"
+            >
+              $63,830
+            </dd>
+          </div>
+        </dl>
+      </div>
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 w-full max-w-[280px]"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <dl
+          class="flex flex-col divide-y divide-border-subtle *:py-2.5 *:first:pt-0 *:last:pb-0"
+          data-pattern="key-value-list"
+        >
+          <div
+            class="flex min-w-0 items-center justify-between gap-3"
+          >
+            <dt
+              class="min-w-0 text-[12.5px] text-fg-tertiary"
+            >
+              Metric
+            </dt>
+            <dd
+              class="shrink-0 tabular-nums text-[14px] font-semibold text-fg-primary"
+            >
+              $480,000
+            </dd>
+          </div>
+          <div
+            class="flex min-w-0 items-center justify-between gap-3"
+          >
+            <dt
+              class="min-w-0 text-[12.5px] text-fg-tertiary"
+            >
+              Ratio
+            </dt>
+            <dd
+              class="shrink-0 tabular-nums text-[14px] font-semibold text-fg-primary"
+            >
+              <span
+                class="inline-flex shrink-0 items-center rounded-md bg-[color:color-mix(in_srgb,var(--badge-accent,var(--color-fg-secondary))_12%,transparent)] tabular-nums text-[color:var(--badge-accent,var(--color-fg-secondary))] px-2 py-1 text-[12.5px] font-semibold"
+                data-slot="badge"
+                data-variant="soft"
+                style="--badge-accent: var(--color-data-warning);"
+              >
+                82.5%
+              </span>
+            </dd>
+          </div>
+          <div
+            class="flex min-w-0 items-center justify-between gap-3"
+          >
+            <dt
+              class="min-w-0 text-[12.5px] text-fg-tertiary"
+            >
+              Good
+            </dt>
+            <dd
+              class="shrink-0 tabular-nums text-[14px] font-semibold text-data-positive"
+            >
+              None
+            </dd>
+          </div>
+          <div
+            class="flex min-w-0 items-center justify-between gap-3"
+          >
+            <dt
+              class="min-w-0 text-[12.5px] text-fg-tertiary"
+            >
+              Bad
+            </dt>
+            <dd
+              class="shrink-0 tabular-nums text-[14px] font-semibold text-data-negative"
+            >
+              −$900
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      InlineAlert tone="error" / "warning" / "success" / "info"
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="flex w-full max-w-[560px] flex-col gap-2"
+      >
+        <div
+          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] leading-snug border-status-error/20 bg-status-error-bg text-status-error"
+          data-pattern="inline-alert"
+          role="alert"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-alert shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <line
+              x1="12"
+              x2="12"
+              y1="8"
+              y2="12"
+            />
+            <line
+              x1="12"
+              x2="12.01"
+              y1="16"
+              y2="16"
+            />
+          </svg>
+          <span
+            class="min-w-0"
+          >
+            Something went wrong. This is an error message.
+          </span>
+        </div>
+        <div
+          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] leading-snug border-status-warning/20 bg-status-warning-bg text-status-warning"
+          data-pattern="inline-alert"
+          role="status"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-triangle-alert shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+            />
+            <path
+              d="M12 9v4"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+          <span
+            class="min-w-0"
+          >
+            Heads up. This is a warning message.
+          </span>
+        </div>
+        <div
+          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] leading-snug border-status-success/20 bg-status-success-bg text-status-success"
+          data-pattern="inline-alert"
+          role="status"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-circle-check shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="m9 12 2 2 4-4"
+            />
+          </svg>
+          <span
+            class="min-w-0"
+          >
+            All done. This is a success message.
+          </span>
+        </div>
+        <div
+          class="flex items-center gap-2.5 rounded-lg border px-4 py-3 text-[13px] leading-snug border-status-info/20 bg-status-info/5 text-status-info"
+          data-pattern="inline-alert"
+          role="status"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-info shrink-0"
+            fill="none"
+            height="15"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="15"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+            <path
+              d="M12 16v-4"
+            />
+            <path
+              d="M12 8h.01"
+            />
+          </svg>
+          <span
+            class="min-w-0"
+          >
+            For your information. This is an info message.
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      EmptyState · patterns/EmptyState.tsx
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="border border-border-subtle flex flex-col items-center gap-2 rounded-2xl bg-surface-raised px-6 py-8 text-center w-full max-w-[300px]"
+        data-pattern="empty-state"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <span
+          class="mb-1 flex size-10 items-center justify-center rounded-full bg-surface-hover text-fg-tertiary"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-inbox size-5"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polyline
+              points="22 12 16 12 14 15 10 15 8 12 2 12"
+            />
+            <path
+              d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+            />
+          </svg>
+        </span>
+        <span
+          class="text-[15px] font-semibold text-fg-primary"
+        >
+          Nothing here yet
+        </span>
+        <span
+          class="text-[13px] text-fg-tertiary"
+        >
+          A short reason, one line if possible.
+        </span>
+        <div
+          class="mt-2"
+        >
+          <button
+            class="group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/80 h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5"
+            data-size="sm"
+            data-slot="button"
+            data-variant="default"
+          >
+            Primary action
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      Composed page (dummy)
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="grid w-full grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]"
+      >
+        <div
+          class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-0"
+          data-pattern="section-card"
+          data-size="default"
+          data-slot="card"
+          data-variant="panel"
+        >
+          <div
+            class="flex items-center justify-between gap-4 px-6 pt-6 pb-5"
+          >
+            <h3
+              class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+              data-slot="section-title"
+            >
+              Inputs
+            </h3>
+          </div>
+          <div
+            class="border-t border-border-subtle px-6 py-5"
+          >
+            <div
+              aria-hidden="true"
+              class="w-full rounded-lg border border-dashed border-border-subtle"
+              style="height: 56px;"
+            />
+          </div>
+          <div
+            class="border-t border-border-subtle px-6 py-5"
+          >
+            <div
+              aria-hidden="true"
+              class="w-full rounded-lg border border-dashed border-border-subtle"
+              style="height: 56px;"
+            />
+          </div>
+          <div
+            class="border-t border-border-subtle px-6 py-5"
+          >
+            <div
+              aria-hidden="true"
+              class="w-full rounded-lg border border-dashed border-border-subtle"
+              style="height: 56px;"
+            />
+          </div>
+        </div>
+        <div
+          class="flex min-w-0 flex-col gap-6"
+        >
+          <div
+            class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6"
+            data-pattern="section-card"
+            data-size="default"
+            data-slot="card"
+            data-variant="panel"
+          >
+            <div
+              class="flex items-center justify-between gap-4"
+            >
+              <h3
+                class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+                data-slot="section-title"
+              >
+                Summary
+              </h3>
+              <span
+                class="inline-block rounded-[3px] bg-[rgba(148,163,184,0.08)] px-2 py-[3px] text-[8px] leading-none font-semibold tracking-widest text-[color:rgba(148,163,184,0.35)] uppercase"
+                data-slot="badge"
+                data-variant="tag"
+              >
+                Status
+              </span>
+            </div>
+            <div
+              class="grid grid-cols-1 gap-8 sm:grid-cols-[minmax(0,1fr)_200px]"
+            >
+              <div
+                class="flex min-w-0 flex-col gap-2"
+                data-pattern="stat"
+              >
+                <div
+                  class="flex min-h-5 items-center justify-between gap-3"
+                >
+                  <span
+                    class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                    data-slot="label"
+                  >
+                    Headline number
+                  </span>
+                </div>
+                <div
+                  class="flex items-baseline justify-between gap-3"
+                >
+                  <span
+                    class="font-semibold tabular-nums text-[44px] tracking-[-0.03em] text-fg-primary"
+                  >
+                    $63,830
+                  </span>
+                </div>
+                <span
+                  class="text-[13px] text-fg-tertiary"
+                >
+                  A supporting line of context
+                </span>
+              </div>
+              <dl
+                class="flex flex-col divide-y divide-border-subtle *:py-2.5 *:first:pt-0 *:last:pb-0"
+                data-pattern="key-value-list"
+              >
+                <div
+                  class="flex min-w-0 items-center justify-between gap-3"
+                >
+                  <dt
+                    class="min-w-0 text-[12.5px] text-fg-tertiary"
+                  >
+                    Metric A
+                  </dt>
+                  <dd
+                    class="shrink-0 tabular-nums text-[14px] font-semibold text-fg-primary"
+                  >
+                    $42,000
+                  </dd>
+                </div>
+                <div
+                  class="flex min-w-0 items-center justify-between gap-3"
+                >
+                  <dt
+                    class="min-w-0 text-[12.5px] text-fg-tertiary"
+                  >
+                    Metric B
+                  </dt>
+                  <dd
+                    class="shrink-0 tabular-nums text-[14px] font-semibold text-fg-primary"
+                  >
+                    18.5%
+                  </dd>
+                </div>
+                <div
+                  class="flex min-w-0 items-center justify-between gap-3"
+                >
+                  <dt
+                    class="min-w-0 text-[12.5px] text-fg-tertiary"
+                  >
+                    Metric C
+                  </dt>
+                  <dd
+                    class="shrink-0 tabular-nums text-[14px] font-semibold text-data-positive"
+                  >
+                    None
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+          <div
+            class="grid grid-cols-1 gap-6 sm:grid-cols-3"
+          >
+            <div
+              class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 px-5 py-4"
+              data-pattern="section-card"
+              data-size="default"
+              data-slot="card"
+              data-variant="panel"
+            >
+              <div
+                class="flex min-w-0 flex-col gap-2"
+                data-pattern="stat"
+              >
+                <div
+                  class="flex min-h-5 items-center justify-between gap-3"
+                >
+                  <span
+                    class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                    data-slot="label"
+                  >
+                    Metric one
+                  </span>
+                </div>
+                <div
+                  class="flex items-baseline justify-between gap-3"
+                >
+                  <span
+                    class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+                  >
+                    $12,345
+                  </span>
+                  <span
+                    class="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium tabular-nums text-data-positive"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-arrow-up"
+                      fill="none"
+                      height="12"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      viewBox="0 0 24 24"
+                      width="12"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="m5 12 7-7 7 7"
+                      />
+                      <path
+                        d="M12 19V5"
+                      />
+                    </svg>
+                    2
+                    .1%
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 px-5 py-4"
+              data-pattern="section-card"
+              data-size="default"
+              data-slot="card"
+              data-variant="panel"
+            >
+              <div
+                class="flex min-w-0 flex-col gap-2"
+                data-pattern="stat"
+              >
+                <div
+                  class="flex min-h-5 items-center justify-between gap-3"
+                >
+                  <span
+                    class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                    data-slot="label"
+                  >
+                    Metric two
+                  </span>
+                </div>
+                <div
+                  class="flex items-baseline justify-between gap-3"
+                >
+                  <span
+                    class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+                  >
+                    $24,690
+                  </span>
+                  <span
+                    class="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium tabular-nums text-data-negative"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-arrow-down"
+                      fill="none"
+                      height="12"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      viewBox="0 0 24 24"
+                      width="12"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 5v14"
+                      />
+                      <path
+                        d="m19 12-7 7-7-7"
+                      />
+                    </svg>
+                    3
+                    .1%
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 px-5 py-4"
+              data-pattern="section-card"
+              data-size="default"
+              data-slot="card"
+              data-variant="panel"
+            >
+              <div
+                class="flex min-w-0 flex-col gap-2"
+                data-pattern="stat"
+              >
+                <div
+                  class="flex min-h-5 items-center justify-between gap-3"
+                >
+                  <span
+                    class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                    data-slot="label"
+                  >
+                    Metric three
+                  </span>
+                </div>
+                <div
+                  class="flex items-baseline justify-between gap-3"
+                >
+                  <span
+                    class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-fg-primary"
+                  >
+                    $37,035
+                  </span>
+                  <span
+                    class="inline-flex shrink-0 items-center gap-0.5 text-[12px] font-medium tabular-nums text-data-positive"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-arrow-up"
+                      fill="none"
+                      height="12"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      viewBox="0 0 24 24"
+                      width="12"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="m5 12 7-7 7 7"
+                      />
+                      <path
+                        d="M12 19V5"
+                      />
+                    </svg>
+                    4
+                    .1%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6"
+            data-pattern="section-card"
+            data-size="default"
+            data-slot="card"
+            data-variant="panel"
+          >
+            <div
+              class="flex items-center justify-between gap-4"
+            >
+              <h3
+                class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+                data-slot="section-title"
+              >
+                Breakdown
+              </h3>
+            </div>
+            <dl
+              class="flex flex-col gap-2.5"
+              data-pattern="key-value-list"
+            >
+              <div
+                class="flex min-w-0 items-center justify-between gap-3"
+              >
+                <dt
+                  class="min-w-0 text-[12px] text-fg-tertiary"
+                >
+                  Line item one
+                </dt>
+                <dd
+                  class="shrink-0 tabular-nums text-[12.5px] font-medium text-fg-primary"
+                >
+                  $48,250
+                </dd>
+              </div>
+              <div
+                class="flex min-w-0 items-center justify-between gap-3"
+              >
+                <dt
+                  class="min-w-0 text-[12px] text-fg-tertiary"
+                >
+                  Line item two
+                </dt>
+                <dd
+                  class="shrink-0 tabular-nums text-[12.5px] font-medium text-fg-primary"
+                >
+                  $12,400
+                </dd>
+              </div>
+              <div
+                class="flex min-w-0 items-center justify-between gap-3"
+              >
+                <dt
+                  class="min-w-0 text-[12px] text-fg-tertiary"
+                >
+                  Line item three
+                </dt>
+                <dd
+                  class="shrink-0 tabular-nums text-[12.5px] font-medium text-fg-primary"
+                >
+                  $3,180
+                </dd>
+              </div>
+              <div
+                class="flex min-w-0 items-center justify-between gap-3 pt-0.5"
+              >
+                <dt
+                  class="min-w-0 text-[13px] font-semibold text-fg-primary"
+                >
+                  Total
+                </dt>
+                <dd
+                  class="shrink-0 tabular-nums text-[13px] font-semibold text-fg-primary"
+                >
+                  $63,830
+                </dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </div>
     </div>

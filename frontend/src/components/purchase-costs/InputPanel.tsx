@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { PC_STATES, type PurchaseCostsState } from "@/hooks/usePurchaseCostsState";
 import { formatDollars } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import SectionCard from "@/components/patterns/SectionCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -343,8 +343,7 @@ export default function InputPanel({ pc }: { pc: PurchaseCostsState }) {
   const overPrice = price > 0 && depositAmount > price;
 
   return (
-    <Card variant="panel" role="group" aria-labelledby={`${id}-title`} className="h-full gap-0 rounded-2xl">
-      <h2 id={`${id}-title`} className="px-6 pt-6 pb-5 text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary">Your Purchase</h2>
+    <SectionCard flush title="Your Purchase" titleId={`${id}-title`} role="group" aria-labelledby={`${id}-title`} className="h-full">
 
       <AmountSection
         id={`${id}-price`}
@@ -453,6 +452,6 @@ export default function InputPanel({ pc }: { pc: PurchaseCostsState }) {
             note={`No LMI with a ${noLmiPct}%+ deposit`}
           />
       </div>
-    </Card>
+    </SectionCard>
   );
 }

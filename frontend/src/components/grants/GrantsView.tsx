@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import DenseSchemeCard from "./DenseSchemeCard";
+import InlineAlert from "@/components/patterns/InlineAlert";
 
 // ── Types ───────────────────────────────────────
 
@@ -244,9 +245,7 @@ export default function GrantsView() {
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
-            {error}
-          </div>
+          <InlineAlert className="mb-4">{error}</InlineAlert>
         )}
 
         {/* Card grid */}

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useHighlight } from "@/hooks/useHighlight";
+import { SectionTitle } from "@/components/patterns/SectionCard";
 
 // ── Shared constants ─────────────────────────────
 
@@ -314,12 +315,7 @@ export default function TaxComposition({
   return (
     <Card variant="glass" className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar flex flex-col items-center gap-8 overflow-y-auto px-7 py-5">
-        <span
-          className="text-[20px] font-semibold uppercase tracking-widest"
-          style={{ color: t.brand.default }}
-        >
-          Tax Composition
-        </span>
+        <SectionTitle variant="brand">Tax Composition</SectionTitle>
 
         <div className="flex w-full items-center">
           {/* Rate pills — left */}

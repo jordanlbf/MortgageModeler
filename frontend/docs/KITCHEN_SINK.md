@@ -8,6 +8,8 @@ One internal page that renders every design-system primitive and its variants, w
 - **Build pages faster:** find the variant you need, copy the markup, swap in real content. Each row's label is the prop to use (e.g. `variant="cta"`).
 - **Have one source of truth** for what exists. `docs/SHADCN.md` explains each variant; this page shows it.
 
+- **Tune the look of the whole app:** the **Patterns** section shows the shared building blocks in `src/components/patterns/` with dummy content. Pages use the same components, so editing one (or a `components/ui` variant, or a token in `globals.css`) changes it here and on every page at once. See [Tuning the look](#tuning-the-look).
+
 It's dense and label-first on purpose. No hero, no intro copy, no prose in the route; documentation lives here.
 
 ## Access
@@ -39,9 +41,30 @@ src/app/kitchen-sink/
   __tests__/          render, env gating, per-section snapshots, axe
 ```
 
+## Tuning the look
+
+Where to edit, depending on what you want to change:
+
+| To change… | Edit | Reaches |
+|---|---|---|
+| A colour, surface, radius or shadow | Token in `src/app/globals.css` | Everything using the token |
+| A control (button, input, badge, switch…) | Its variant in `src/components/ui/*` | Every use of that variant |
+| Titled cards (padding, radius, surface, title type) | `patterns/SectionCard.tsx` (`SectionCard`, `SectionTitle`) | Purchase Costs cards, Tax card titles |
+| Headline numbers and KPI tiles | `patterns/Stat.tsx` (`Stat`, `StatDelta`) | Cash needed, Cashflow equity / loan tiles |
+| Label / value breakdowns | `patterns/KeyValueList.tsx` | Purchase Costs loan facts, Cashflow breakdowns and year summary |
+| Error / warning / info banners | `patterns/InlineAlert.tsx` | Every view's API error, sign in / sign up errors |
+| Empty states | `patterns/EmptyState.tsx` | Kitchen sink (no page has one yet) |
+| Small caps captions | `Label variant="caps"` in `ui/label.tsx` | `Stat` captions and form field captions |
+
+Edit the shared file, not the dummy in `sections/patterns.tsx`: the dummies only show what the shared files produce.
+
+Not on the patterns yet (each has a deliberately distinct look): the Amortisation KPI and loan-control cards, the Tax rate pills and waterfall, the Cashflow chart and year-panel headers, and grant scheme cards. Move them over when their design is meant to match the rest.
+
 ## Maintenance rule
 
-**Every new design-system primitive or variant goes into the kitchen sink in the same PR.** That covers a new `components/ui` component, a new variant on an existing one, or a new reusable domain component.
+**Every new design-system primitive or variant goes into the kitchen sink in the same PR.** That covers a new `components/ui` component, a new variant on an existing one, a new pattern in `components/patterns`, or a new reusable domain component.
+
+When a page needs a titled card, a headline number, a breakdown list, a banner or an empty state, use the pattern rather than restyling one by hand; otherwise tuning the pattern won't reach it.
 
 Add this to the PR description:
 
@@ -54,14 +77,15 @@ Add this to the PR description:
 |---|---|---|
 | Typography | `typography.tsx` | Type scale, `Label` variants |
 | Colors | `colors.tsx` | Foreground, brand, data, status, surface and border tokens |
+| Patterns | `patterns.tsx` | `SectionCard`, `SectionTitle`, `Stat`, `KeyValueList`, `InlineAlert`, `EmptyState`, and a dummy page composed from them |
 | Buttons | `buttons.tsx` | Stock variants × sizes, disabled, loading, icon sizes, every custom variant |
 | Inputs | `inputs.tsx` | `Input` variants × states, currency/percent, password, helper text, `EditableValue`, `SliderField` |
 | Selects and toggles | `selects-and-toggles.tsx` | `NativeSelect`, `Checkbox`, `Switch`, `ToggleGroup`/`Toggle`, `Tabs`, `Slider` |
-| KPI cards | `kpis.tsx` | Value, delta, subtitle, sparkline, null, loading |
+| KPI cards | `kpis.tsx` | `SectionCard` + `Stat`: value, delta, subtitle, sparkline, null, loading |
 | Tables | `tables.tsx` | Empty, 1 row, 5 rows, truncation, sort indicators, `dense` with pinned column, skeleton |
 | Badges and tags | `badges.tsx` | Stock and custom `Badge` variants, property tags |
-| Feedback | `feedback.tsx` | Inline alerts, banner, confirm `Dialog`, `Tooltip`, `Popover`, `Sheet` |
-| Empty states | `empty-states.tsx` | No data, no results, error, coming soon |
+| Feedback | `feedback.tsx` | `InlineAlert` tones, banner, confirm `Dialog`, `Tooltip`, `Popover`, `Sheet` |
+| Empty states | `empty-states.tsx` | `EmptyState`: no data, no results, error, coming soon |
 | Loading states | `loading-states.tsx` | `Skeleton`, KPI/table/chart skeletons, spinner, `Progress` |
 
 When you add a section, add it to `sections.ts`; the nav, tests and snapshots pick it up.

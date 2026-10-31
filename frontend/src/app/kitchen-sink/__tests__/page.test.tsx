@@ -11,9 +11,9 @@ describe("/kitchen-sink", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders all 11 sections in order", () => {
+  it("renders all 12 sections in order", () => {
     renderWithProviders(<KitchenSinkPage />);
-    expect(SECTIONS).toHaveLength(11);
+    expect(SECTIONS).toHaveLength(12);
     const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
     expect(headings).toEqual(SECTIONS.map((s) => s.title));
   });

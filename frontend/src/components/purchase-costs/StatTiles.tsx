@@ -2,18 +2,12 @@
 
 import { formatDollars } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
+import KeyValueList, { KeyValueRow } from "@/components/patterns/KeyValueList";
 import { LMI_THRESHOLD, Money, lvrColor } from "./shared";
 
-/** One key–value row. */
+/** One row; three side by side drop their vertical padding. */
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-col py-2.5 first:pt-0 last:pb-0 @min-[30rem]:py-0 @min-[44rem]:py-2.5">
-      <div className="flex items-center gap-3">
-        <dt className="flex-1 text-[12.5px] text-fg-tertiary">{label}</dt>
-        <dd className="shrink-0 text-[14px] font-semibold tabular-nums text-fg-primary">{value}</dd>
-      </div>
-    </div>
-  );
+  return <KeyValueRow size="md" label={label} value={value} className="py-2.5 first:pt-0 last:pb-0 @min-[30rem]:py-0 @min-[44rem]:py-2.5" />;
 }
 
 /**
@@ -32,9 +26,9 @@ export default function StatTiles({
   lmi: number | null;
 }) {
   return (
-    <dl
+    <KeyValueList
       className={
-        "grid grid-cols-1 divide-y divide-border-subtle " +
+        "grid grid-cols-1 gap-0 divide-y divide-border-subtle " +
         "@min-[30rem]:grid-cols-3 @min-[30rem]:gap-8 @min-[30rem]:divide-y-0 " +
         "@min-[44rem]:grid-cols-1 @min-[44rem]:gap-0 @min-[44rem]:divide-y"
       }
@@ -61,6 +55,6 @@ export default function StatTiles({
         label="LMI"
         value={lmi === null ? <span className="text-fg-muted">—</span> : lmi > 0 ? formatDollars(lmi) : <span className="text-data-positive">None</span>}
       />
-    </dl>
+    </KeyValueList>
   );
 }

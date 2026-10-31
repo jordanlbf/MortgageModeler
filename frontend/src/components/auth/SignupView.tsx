@@ -12,6 +12,7 @@ import GoogleButton from "./GoogleButton";
 import OrEmailDivider from "./OrEmailDivider";
 import PrimaryButton from "./PrimaryButton";
 import PasswordStrength from "./PasswordStrength";
+import InlineAlert from "@/components/patterns/InlineAlert";
 
 export default function SignupView() {
   const router = useRouter();
@@ -76,13 +77,9 @@ export default function SignupView() {
         </div>
 
         {error && (
-          <div
-            id="signup-error"
-            role="alert"
-            className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[13px] text-red-400/80"
-          >
+          <InlineAlert id="signup-error" className="mb-4">
             {error}
-          </div>
+          </InlineAlert>
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 10 }}>

@@ -17,6 +17,8 @@ frontend/src/
     ui/                       — shadcn/ui primitives, themed via tokens (button, card, tabs, …)
     domain/                   — app-specific components built from ui/ (SliderField, EditableValue,
                                 ErrorBoundary, ColumnDrawer, wizard/)
+    patterns/                 — shared page building blocks (SectionCard, Stat, KeyValueList,
+                                InlineAlert, EmptyState); edit these to restyle every page
   hooks/
     use<Feature>State.ts      — form state + API call + derived data
     useApiCall.ts             — shared debounce + abort + { data, error, loading }
@@ -36,13 +38,9 @@ frontend/src/
 Every feature should follow this structure:
 
 1. **State hook** (`use<Feature>State`) returns `{ data, error, loading, inputs, setters }` using `useApiCall` for the fetch layer
-2. **Error display** — every view renders `error` in a styled banner:
+2. **Error display** — every view renders `error` with the shared banner:
    ```tsx
-   {error && (
-     <div className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
-       {error}
-     </div>
-   )}
+   {error && <InlineAlert className="mb-4">{error}</InlineAlert>}
    ```
 3. **Loading state** — use `Skeleton` components or equivalent while `loading` is true
 4. **Leaf components** wrapped in `React.memo()` if they receive callbacks
@@ -52,6 +50,9 @@ Every feature should follow this structure:
 - UI primitives are shadcn/ui components in `components/ui`, themed via our tokens:
   every shadcn CSS variable is mapped onto an existing token in `globals.css`.
 - Domain components live in `components/domain` and compose `ui/` parts.
+- Titled cards, headline numbers, label/value breakdowns, banners and empty states use the
+  shared patterns in `components/patterns` (shown in `/kitchen-sink#patterns`), not one-off
+  markup, so styling them in one place reaches every page.
 - Never hand-roll a control (raw `<button>`, `<input>`, `<select>`, `<table>`, dialog,
   tabs, tooltip…) in a feature folder — use the shadcn component and a variant.
 - Our looks are **custom variants** (e.g. `<Button variant="cta">`, `<Card variant="glass">`,

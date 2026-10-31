@@ -1,16 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AlertCircle } from "lucide-react";
 import { usePurchaseCostsState, type CostItem, type PurchaseCostsState } from "@/hooks/usePurchaseCostsState";
 import { PURCHASE_COST_COLORS } from "@/lib/theme";
-import { Card } from "@/components/ui/card";
+import SectionCard from "@/components/patterns/SectionCard";
 import CashNeededHero from "./CashNeededHero";
 import CostsDonut, { DonutLegend } from "./CostsDonut";
 import CostTable, { type CostRow } from "./CostTable";
 import InputPanel from "./InputPanel";
 import MobileSummaryBar from "./MobileSummaryBar";
 import StatTiles from "./StatTiles";
+import InlineAlert from "@/components/patterns/InlineAlert";
 
 /** Rows shown before there's an estimate, so the layout never jumps. */
 const PLACEHOLDER_ITEMS: CostItem[] = [
@@ -78,17 +78,10 @@ export default function PurchaseCostsView() {
         <MobileSummaryBar target={cardRef} total={total} />
 
         {error && (
-          <div role="alert" className="flex items-center gap-2.5 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[13px] text-red-400/80">
-            <AlertCircle size={15} className="shrink-0" aria-hidden="true" />
-            {error}
-          </div>
+          <InlineAlert>{error}</InlineAlert>
         )}
 
-        <Card ref={cardRef} variant="panel" className={`@container flex flex-col gap-5 rounded-2xl bg-surface-raised p-6 ${fade}`}>
-          <div className="flex items-center justify-between gap-4">
-            <h1 id="pc-title" className="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary">Purchase Costs</h1>
-            <Status pc={pc} />
-          </div>
+        <SectionCard ref={cardRef} title="Purchase Costs" titleAs="h1" titleId="pc-title" action={<Status pc={pc} />} className={`@container ${fade}`}>
 
           <div className="grid grid-cols-1 items-center gap-x-8 gap-y-6 @min-[30rem]:grid-cols-[136px_minmax(0,1fr)] @min-[44rem]:grid-cols-[136px_minmax(0,1fr)_192px]">
             <div>
@@ -105,12 +98,11 @@ export default function PurchaseCostsView() {
               />
             </div>
           </div>
-        </Card>
+        </SectionCard>
 
-        <Card variant="panel" className={`flex flex-1 flex-col gap-3 rounded-2xl bg-surface-raised px-6 pt-6 pb-3 ${fade}`}>
-          <h2 className="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary">Where your cash goes</h2>
+        <SectionCard title="Where your cash goes" className={`flex-1 gap-3 pb-3 ${fade}`}>
           <CostTable rows={rows} total={total} empty={empty} active={active} onActive={setActive} />
-        </Card>
+        </SectionCard>
       </section>
     </div>
   );

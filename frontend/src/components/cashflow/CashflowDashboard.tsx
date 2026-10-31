@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip, ReferenceLine, ReferenceDot,
   ComposedChart, Area,
 } from "recharts";
-import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { t, CF_COLORS as C, LVR_COLORS } from "@/lib/theme";
 import { parseCurrencyInput } from "@/lib/formatters";
 import type { ViewMode } from "@/lib/cashflow-types";
@@ -15,6 +15,8 @@ import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import KeyValueList, { KeyValueRow } from "@/components/patterns/KeyValueList";
+import Stat, { StatDelta } from "@/components/patterns/Stat";
 import CashflowDataTable from "./CashflowDataTable";
 
 interface Props {
@@ -288,9 +290,11 @@ export default function CashflowDashboard({
               onOpenChange={setEquityExpanded}
               className="flex flex-col border-r border-border-subtle"
             >
-              <div className="px-6 pt-4 pb-5 flex flex-col gap-3.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium uppercase" style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}>Net Equity</span>
+              <Stat
+                className="gap-3.5 px-6 pt-4 pb-5"
+                label="Net Equity"
+                value={fmt(d.equity)}
+                action={
                   <CollapsibleTrigger asChild>
                     <Button
                       variant="ghost-icon"
@@ -307,24 +311,11 @@ export default function CashflowDashboard({
                       />
                     </Button>
                   </CollapsibleTrigger>
-                </div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <span
-                    className="text-[28px] font-bold tabular-nums leading-none"
-                    style={{ color: t.fg.primary, letterSpacing: "-0.02em" }}
-                  >
-                    {fmt(d.equity)}
-                  </span>
-                  {equityGain !== 0 && (
-                    <span
-                      className="text-[12px] font-medium tabular-nums shrink-0 inline-flex items-center gap-0.5"
-                      style={{ color: equityGain > 0 ? t.data.positive : t.data.negative }}
-                    >
-                      {equityGain > 0 ? <ArrowUp size={12} strokeWidth={2.5} /> : <ArrowDown size={12} strokeWidth={2.5} />}
-                      {fmtK(Math.abs(equityGain))}
-                    </span>
-                  )}
-                </div>
+                }
+                delta={equityGain !== 0 && (
+                  <StatDelta direction={equityGain > 0 ? "up" : "down"}>{fmtK(Math.abs(equityGain))}</StatDelta>
+                )}
+              >
                 <div className="flex items-center gap-3">
                   <div className="relative h-1.5 rounded-full flex-1" style={{ background: "rgba(240, 253, 250, 0.05)" }}>
                     <div
@@ -339,32 +330,25 @@ export default function CashflowDashboard({
                     {d.lvr}% LVR
                   </span>
                 </div>
-              </div>
-              <CollapsibleContent className="px-6 pt-4 pb-5 border-t border-border-subtle flex flex-col gap-2.5">
-                <div className="flex justify-between text-[12px]">
-                  <span style={{ color: t.fg.tertiary }}>Property Value</span>
-                  <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.propertyValue)}</span>
-                </div>
-                <div className="flex justify-between text-[12px]">
-                  <span style={{ color: t.fg.tertiary }}>Less: Loan</span>
-                  <span className="tabular-nums" style={{ color: t.data.negative }}>-{fmt(d.loanBalance)}</span>
-                </div>
-                {d.offsetBalance > 0 && (
-                  <div className="flex justify-between text-[12px]">
-                    <span style={{ color: t.fg.tertiary }}>Plus: Offset</span>
-                    <span className="tabular-nums" style={{ color: t.data.positive }}>+{fmt(d.offsetBalance)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-[13px] font-bold pt-0.5">
-                  <span style={{ color: t.fg.primary }}>Net Equity</span>
-                  <span className="tabular-nums" style={{ color: t.data.positive }}>{fmt(d.equity)}</span>
-                </div>
+              </Stat>
+              <CollapsibleContent className="px-6 pt-4 pb-5 border-t border-border-subtle">
+                <KeyValueList>
+                  <KeyValueRow label="Property Value" value={fmt(d.propertyValue)} />
+                  <KeyValueRow label="Less: Loan" value={`-${fmt(d.loanBalance)}`} tone="negative" />
+                  {d.offsetBalance > 0 && <KeyValueRow label="Plus: Offset" value={`+${fmt(d.offsetBalance)}`} tone="positive" />}
+                  <KeyValueRow label="Net Equity" value={fmt(d.equity)} tone="positive" total />
+                </KeyValueList>
               </CollapsibleContent>
             </Collapsible>
             <Collapsible open={loanExpanded} onOpenChange={setLoanExpanded} className="flex flex-col">
-              <div className="px-6 pt-4 pb-5 flex flex-col gap-3.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium uppercase" style={{ color: t.fg.tertiary, letterSpacing: "0.08em" }}>Loan Balance</span>
+              <Stat
+                className="gap-3.5 px-6 pt-4 pb-5"
+                label="Loan Balance"
+                value={fmt(d.loanBalance)}
+                delta={cumulativePaid > 0 && (
+                  <StatDelta direction="down" tone="positive">{fmtK(cumulativePaid)}</StatDelta>
+                )}
+                action={
                   <CollapsibleTrigger asChild>
                     <Button
                       variant="ghost-icon"
@@ -381,24 +365,8 @@ export default function CashflowDashboard({
                       />
                     </Button>
                   </CollapsibleTrigger>
-                </div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <span
-                    className="text-[28px] font-bold tabular-nums leading-none"
-                    style={{ color: t.fg.primary, letterSpacing: "-0.02em" }}
-                  >
-                    {fmt(d.loanBalance)}
-                  </span>
-                  {cumulativePaid > 0 && (
-                    <span
-                      className="text-[12px] font-medium tabular-nums shrink-0 inline-flex items-center gap-0.5"
-                      style={{ color: t.data.positive }}
-                    >
-                      <ArrowDown size={12} strokeWidth={2.5} />
-                      {fmtK(cumulativePaid)}
-                    </span>
-                  )}
-                </div>
+                }
+              >
                 <div className="flex items-center gap-3">
                   <div className="relative h-1.5 rounded-full flex-1" style={{ background: "rgba(240, 253, 250, 0.05)" }}>
                     <div
@@ -416,26 +384,14 @@ export default function CashflowDashboard({
                     {paidPct.toFixed(1)}% paid
                   </span>
                 </div>
-              </div>
-              <CollapsibleContent className="px-6 pt-4 pb-5 border-t border-border-subtle flex flex-col gap-2.5">
-                <div className="flex justify-between text-[12px]">
-                  <span style={{ color: t.fg.tertiary }}>Original Loan</span>
-                  <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(initialLoan)}</span>
-                </div>
-                <div className="flex justify-between text-[12px]">
-                  <span style={{ color: t.fg.tertiary }}>Less: Paid Off</span>
-                  <span className="tabular-nums" style={{ color: t.data.positive }}>-{fmt(cumulativePaid)}</span>
-                </div>
-                {d.offsetBalance > 0 && (
-                  <div className="flex justify-between text-[12px]">
-                    <span style={{ color: t.fg.tertiary }}>Less: Offset</span>
-                    <span className="tabular-nums" style={{ color: C.teal }}>-{fmt(d.offsetBalance)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-[13px] font-bold pt-0.5">
-                  <span style={{ color: t.fg.primary }}>Loan Balance</span>
-                  <span className="tabular-nums" style={{ color: t.fg.primary }}>{fmt(d.loanBalance - (d.offsetBalance > 0 ? d.offsetBalance : 0))}</span>
-                </div>
+              </Stat>
+              <CollapsibleContent className="px-6 pt-4 pb-5 border-t border-border-subtle">
+                <KeyValueList>
+                  <KeyValueRow label="Original Loan" value={fmt(initialLoan)} />
+                  <KeyValueRow label="Less: Paid Off" value={`-${fmt(cumulativePaid)}`} tone="positive" />
+                  {d.offsetBalance > 0 && <KeyValueRow label="Less: Offset" value={`-${fmt(d.offsetBalance)}`} accent={C.teal} />}
+                  <KeyValueRow label="Loan Balance" value={fmt(d.loanBalance - (d.offsetBalance > 0 ? d.offsetBalance : 0))} total />
+                </KeyValueList>
               </CollapsibleContent>
             </Collapsible>
           </Card>
@@ -654,23 +610,25 @@ function Row({ label, value, color, bold, negative, note }: {
   note?: string;
 }) {
   return (
-    <div className="flex justify-between items-center">
-      <span className={`${bold ? 'text-sm font-bold' : 'text-xs'}`} style={{ color: bold ? t.fg.primary : t.fg.secondary, opacity: bold ? 1 : 0.8 }}>
-        {label}
-      </span>
-      <span className={`tabular-nums ${bold ? 'text-sm font-bold' : 'text-xs font-medium'}`} style={{ color, opacity: bold ? 1 : 0.8 }}>
-        {negative && value > 0 ? '-' : ''}{fmt(value)}
-        {note && <span className="text-[10px] ml-1" style={{ color: t.fg.tertiary }}>{note}</span>}
-      </span>
-    </div>
+    <KeyValueRow
+      label={label}
+      total={bold}
+      accent={color}
+      value={
+        <>
+          {negative && value > 0 ? '-' : ''}{fmt(value)}
+          {note && <span className="ml-1 text-[10px] font-normal text-fg-tertiary">{note}</span>}
+        </>
+      }
+    />
   );
 }
 
 function Section({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-4 pb-4 border-b border-border-subtle flex flex-col gap-2.5 last:mb-0 last:pb-0 last:border-b-0">
+    <KeyValueList className="mb-4 pb-4 border-b border-border-subtle last:mb-0 last:pb-0 last:border-b-0">
       {children}
-    </div>
+    </KeyValueList>
   );
 }
 
