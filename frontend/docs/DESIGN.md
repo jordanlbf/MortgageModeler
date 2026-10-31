@@ -1,5 +1,7 @@
 # MortgageModeler Design System
 
+> **Component reference:** [`/kitchen-sink`](http://localhost:3000/kitchen-sink) renders every primitive and variant with real data. It's the canonical place to see what exists; see [KITCHEN_SINK.md](./KITCHEN_SINK.md) for access and the maintenance rule.
+
 ## Personality
 
 A sharp, dark instrument for modelling property decisions with precision.
