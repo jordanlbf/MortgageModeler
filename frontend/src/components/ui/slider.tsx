@@ -11,6 +11,9 @@ import { Slider as SliderPrimitive } from "radix-ui"
  *   border-default, range = accent at 50%, 10px surface-raised thumb dot.
  *   Accent colour: `--slider-accent` (inherited CSS custom property,
  *   defaults to brand).
+ * - `hero` (ours, purchase costs amount cards): 3px track, solid accent
+ *   range, 14px light thumb ringed in the accent. Same `--slider-accent` and
+ *   0×0 thumb trick as `accent`.
  *
  * Parity note: the old slider *meant* to draw a 2px accent-80% ring on the
  * thumb, but its class was built as `border-[2px]${…}` in a template literal,
@@ -48,6 +51,17 @@ const ACCENT = {
     "focus-visible:before:shadow-[0_0_0_3px_var(--color-focus-ring)]",
 }
 
+const HERO = {
+  root: "relative flex h-5 w-full cursor-pointer touch-none items-center select-none data-disabled:cursor-default data-disabled:opacity-50",
+  track: "relative h-[3px] w-full grow rounded-full bg-border-default",
+  range:
+    "absolute h-full rounded-full bg-[color:var(--slider-accent,var(--color-brand))] transition-[background-color] duration-200",
+  thumb:
+    "relative block size-0 outline-none " +
+    "before:pointer-events-none before:absolute before:top-0 before:left-0 before:size-[14px] before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border-2 before:border-[color:var(--slider-accent,var(--color-brand))] before:bg-fg-primary before:shadow-[0_1px_4px_rgba(0,0,0,0.4)] before:transition-[border-color] before:duration-200 before:content-[''] " +
+    "focus-visible:before:shadow-[0_0_0_4px_var(--color-focus-ring)]",
+}
+
 function Slider({
   className,
   defaultValue,
@@ -58,7 +72,7 @@ function Slider({
   thumbProps,
   ...props
 }: React.ComponentProps<typeof SliderPrimitive.Root> & {
-  variant?: "default" | "accent"
+  variant?: "default" | "accent" | "hero"
   /** Extra props for every thumb (the focusable `role="slider"` element), e.g. aria-valuetext. */
   thumbProps?: React.ComponentProps<typeof SliderPrimitive.Thumb>
 }) {
@@ -71,7 +85,7 @@ function Slider({
           : [min, max],
     [value, defaultValue, min, max]
   )
-  const s = variant === "accent" ? ACCENT : STOCK
+  const s = variant === "accent" ? ACCENT : variant === "hero" ? HERO : STOCK
 
   return (
     <SliderPrimitive.Root

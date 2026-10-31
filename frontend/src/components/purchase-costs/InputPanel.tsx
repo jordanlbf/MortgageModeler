@@ -1,20 +1,16 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ChevronRight } from "lucide-react";
 import { PC_STATES, type PurchaseCostsState } from "@/hooks/usePurchaseCostsState";
 import { formatDollars } from "@/lib/formatters";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
-const CAPTION = "text-[11px] font-medium uppercase tracking-[0.08em] text-fg-tertiary";
+import { LMI_THRESHOLD, lvrColor } from "./shared";
 
 /**
  * Reads typed money: "650000", "650,000", "$650k", "1.2m", and for the deposit
@@ -32,15 +28,10 @@ export function parseAmount(text: string, percentOf?: number): number | null {
   return Math.round(n);
 }
 
-const MONEY_SIZE = {
-  lg: { dollar: "text-[22px]", input: "h-10 text-[30px] tracking-[-0.02em]" },
-  md: { dollar: "text-[17px]", input: "h-8 text-[20px]" },
-} as const;
-
 /**
- * Money input with a "$" prefix. Keeps what you type while focused (so "1.2m"
- * or "20%" can be typed), updates the estimate on every keystroke, and tidies
- * to "600,000" on blur. Arrow keys step by `step`.
+ * Big money input with a "$" prefix. Keeps what you type while focused (so
+ * "1.2m" or "20%" can be typed), updates the estimate on every keystroke, and
+ * tidies to "600,000" on blur. Arrow keys step by `step`.
  */
 function MoneyField({
   id,
@@ -51,7 +42,6 @@ function MoneyField({
   percentOf,
   autoFocus,
   aside,
-  size = "md",
 }: {
   id: string;
   value: number;
@@ -61,12 +51,10 @@ function MoneyField({
   percentOf?: number;
   autoFocus?: boolean;
   aside?: React.ReactNode;
-  size?: keyof typeof MONEY_SIZE;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   const ref = useRef<HTMLInputElement>(null);
   const shown = draft ?? (value > 0 ? formatDollars(value).replace(/^\$/, "") : "");
-  const sz = MONEY_SIZE[size];
 
   useEffect(() => {
     if (autoFocus) ref.current?.focus();
@@ -75,8 +63,19 @@ function MoneyField({
   }, []);
 
   return (
-    <span className="flex min-w-0 items-center gap-1">
-      <span className={`${sz.dollar} font-semibold ${value > 0 || draft ? "text-fg-secondary" : "text-fg-muted"}`} aria-hidden="true">$</span>
+    // Hover tint and a brand underline while editing, so the big number reads as editable.
+    <span
+      className={
+        "relative -mx-2 flex min-w-0 cursor-text items-center gap-1.5 rounded-lg px-2 transition-colors duration-150 " +
+        "hover:bg-surface-hover/50 has-[>input:focus]:bg-surface-hover/50 " +
+        "after:pointer-events-none after:absolute after:inset-x-2 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-transparent after:transition-colors after:duration-150 after:content-[''] has-[>input:focus]:after:bg-brand"
+      }
+      onClick={(e) => {
+        // The % chip beside the number is its own field.
+        if (!(e.target as HTMLElement).closest("[data-slot=badge]")) ref.current?.focus();
+      }}
+    >
+      <span className={`text-[22px] font-semibold transition-colors ${value > 0 || draft ? "text-fg-secondary" : "text-fg-muted"}`} aria-hidden="true">$</span>
       <Input
         ref={ref}
         variant="form"
@@ -105,225 +104,356 @@ function MoneyField({
             onCommit(next);
           }
         }}
-        className={`${sz.input} min-w-0 flex-1 border-0 bg-transparent px-0 font-semibold tabular-nums shadow-none placeholder:font-normal placeholder:text-fg-muted hover:bg-transparent focus:bg-transparent focus:shadow-none`}
+        className="h-9 min-w-0 flex-1 border-0 bg-transparent px-0 text-[28px] font-semibold tracking-[-0.02em] tabular-nums shadow-none placeholder:font-semibold placeholder:text-fg-muted hover:bg-transparent focus:bg-transparent focus:shadow-none"
       />
       {aside}
     </span>
   );
 }
 
-/** Caption + money input (clicking either focuses the input), with a slider underneath. */
-function MoneyBlock({ label, htmlFor, children, slider }: { label: string; htmlFor: string; children: React.ReactNode; slider: React.ReactNode }) {
+/** The slider's own scale: dollars for the price, % of price for the deposit. */
+interface Scale {
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (n: number) => void;
+  /** Labels for the range ends. */
+  tick: (n: number) => string;
+  valueText: string;
+}
+
+/**
+ * One amount section: caption, big dollar input, and optionally a slider on
+ * `scale` with its range underneath. `markers` label points on the scale
+ * (deposits worth aiming for); a drag settles onto them. `accent` tints the slider (the deposit follows the LVR colour).
+ */
+function AmountSection({
+  id,
+  label,
+  value,
+  onChange,
+  scale,
+  inputStep,
+  percentOf,
+  autoFocus,
+  disabled,
+  accent = "var(--color-brand)",
+  markers,
+  aside,
+}: {
+  id: string;
+  label: string;
+  value: number;
+  onChange: (n: number) => void;
+  scale?: Scale;
+  inputStep: number;
+  percentOf?: number;
+  autoFocus?: boolean;
+  disabled?: boolean;
+  accent?: string;
+  markers?: Marker[];
+  aside?: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-col gap-2.5 px-6 py-4">
-      <label htmlFor={htmlFor} className="flex cursor-text flex-col gap-1">
-        <span className={CAPTION}>{label}</span>
-        {children}
-      </label>
-      {slider}
+    <div className="flex flex-col gap-4 border-t border-border-subtle px-6 py-5" style={{ "--slider-accent": accent } as React.CSSProperties}>
+      <div className="flex flex-col gap-2">
+        <Label variant="caps" htmlFor={id}>{label}</Label>
+        <MoneyField
+          id={id}
+          value={value}
+          onCommit={onChange}
+          placeholder="0"
+          step={inputStep}
+          percentOf={percentOf}
+          autoFocus={autoFocus}
+          aside={aside}
+        />
+      </div>
+      {scale && <ScaleSlider label={label} scale={scale} disabled={disabled} markers={markers} />}
+    </div>
+  );
+}
+
+/** A labelled point on a slider's scale. While dragging, the slider settles onto it. */
+interface Marker {
+  value: number;
+  label: string;
+  /** Longer explanation, read by screen readers and shown on hover. */
+  title?: string;
+}
+
+/** Within this distance (in scale units) of a marker, a drag settles onto it. Keyboard steps never snap. */
+const SNAP_RADIUS = 1;
+
+function ScaleSlider({ label, scale, disabled, markers = [] }: { label: string; scale: Scale; disabled?: boolean; markers?: Marker[] }) {
+  const { min, max } = scale;
+  const span = Math.max(max - min, 1);
+  const at = (v: number) => `${((Math.min(Math.max(v, min), max) - min) / span) * 100}%`;
+  const shown = markers.filter((m) => m.value > min && m.value < max);
+  // Drop an end label when a marker label would sit on top of it.
+  const crowded = (end: number) => shown.some((m) => Math.abs(m.value - end) < span * 0.1);
+  const dragging = useRef(false);
+
+  return (
+    <div className="relative pt-1 pb-5">
+      <Slider
+        variant="hero"
+        aria-label={label}
+        min={min}
+        max={max}
+        step={scale.step}
+        disabled={disabled}
+        value={[Math.min(Math.max(scale.value, min), max)]}
+        onPointerDown={() => {
+          dragging.current = true;
+          window.addEventListener("pointerup", () => { dragging.current = false; }, { once: true });
+        }}
+        onValueChange={([v]) => {
+          const near = dragging.current ? shown.find((m) => Math.abs(m.value - v) <= SNAP_RADIUS) : undefined;
+          scale.onChange(near ? near.value : v);
+        }}
+        thumbProps={{ "aria-valuetext": scale.valueText }}
+      />
+      {shown.map((m) => (
+        <span
+          key={m.value}
+          className="pointer-events-none absolute top-0 bottom-0 flex -translate-x-1/2 flex-col items-center"
+          style={{ left: at(m.value) }}
+          aria-hidden="true"
+        >
+          <span className="mt-[9px] h-2.5 w-px bg-fg-secondary" />
+          <span className="pointer-events-auto mt-auto text-[10.5px] whitespace-nowrap tabular-nums text-fg-secondary" title={m.title}>{m.label}</span>
+        </span>
+      ))}
+      <span className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-between text-[10.5px] tabular-nums text-fg-tertiary" aria-hidden="true">
+        <span className={crowded(min) ? "invisible" : undefined}>{scale.tick(min)}</span>
+        <span className={crowded(max) ? "invisible" : undefined}>{scale.tick(max)}</span>
+      </span>
+      {shown.some((m) => m.title) && (
+        <span className="sr-only">{shown.filter((m) => m.title).map((m) => m.title).join(". ")}</span>
+      )}
     </div>
   );
 }
 
 /**
- * A collapsible group, like an account group in a finance sidebar: chevron and
- * title on the left; when collapsed, the current values sit right-aligned.
+ * The deposit as a % of the price, editable in place: a tinted chip holding a
+ * small input. Shows a whole number until focused, then one decimal. Typing
+ * updates the deposit live; focusing alone never changes it. Arrows step 1%.
  */
-function Group({ title, summary, defaultOpen, children }: { title: string; summary: string; defaultOpen?: boolean; children: React.ReactNode }) {
-  const [open, setOpen] = useState(!!defaultOpen);
+function PercentChip({ id, percent, accent, onCommit }: { id: string; percent: number; accent: string; onCommit: (pct: number) => void }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const shown = draft ?? String(Math.round(percent));
+  const commit = (pct: number) => onCommit(Math.min(Math.max(pct, 0), 100));
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="border-t border-border-subtle">
-      <CollapsibleTrigger asChild>
-        <Button variant="disclosure" className="h-auto gap-3 px-6 py-3.5 hover:bg-surface-hover/30">
-          <span className="flex items-center gap-2 text-[14px] font-medium text-fg-primary">
-            <ChevronRight
-              size={15}
-              className={`shrink-0 text-fg-tertiary transition-transform duration-200 ${open ? "rotate-90" : ""}`}
-              aria-hidden="true"
-            />
-            {title}
-          </span>
-          {!open && <span className="truncate text-[13px] text-fg-tertiary">{summary}</span>}
-        </Button>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="flex flex-col gap-3.5 px-6 pt-0.5 pb-5">{children}</CollapsibleContent>
-    </Collapsible>
-  );
-}
-
-/** A setting row: label (and optional hint) on the left, a switch on the right. */
-function SwitchRow({ id, label, hint, checked, onChange }: { id: string; label: string; hint: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <Label variant="bare" htmlFor={id} className="flex cursor-pointer items-center justify-between gap-4">
-      <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="text-[13.5px] text-fg-primary">{label}</span>
-        <span className="text-[12px] text-fg-tertiary">{hint}</span>
-      </span>
-      <Switch variant="accent" id={id} checked={checked} onCheckedChange={onChange} />
-    </Label>
+    <Badge
+      variant="soft"
+      className="h-7 cursor-text gap-0 px-2 text-[13px] transition-shadow hover:ring-1 hover:ring-[color:color-mix(in_srgb,var(--badge-accent)_40%,transparent)] focus-within:ring-1 focus-within:ring-[color:var(--badge-accent)]"
+      style={{ "--badge-accent": accent } as React.CSSProperties}
+      onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus()}
+    >
+      <Input
+        variant="ghost"
+        id={id}
+        type="text"
+        inputMode="decimal"
+        autoComplete="off"
+        aria-label="Deposit as a percentage of the price"
+        value={shown}
+        style={{ width: `${Math.max(shown.length, 1) + 0.2}ch` }}
+        className="h-auto p-0 text-right font-[inherit] text-[color:inherit] tabular-nums"
+        onFocus={() => setDraft(String(+percent.toFixed(1)))}
+        onBlur={() => setDraft(null)}
+        onChange={(e) => {
+          const text = e.target.value.replace(/[^\d.]/g, "");
+          const n = parseFloat(text);
+          setDraft(n > 100 ? "100" : text);
+          if (!Number.isNaN(n)) commit(n);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+            e.preventDefault();
+            const next = e.key === "ArrowUp" ? Math.floor(percent) + 1 : Math.ceil(percent) - 1;
+            setDraft(String(Math.min(Math.max(next, 0), 100)));
+            commit(next);
+          }
+        }}
+      />
+      <span aria-hidden="true">%</span>
+    </Badge>
   );
 }
 
 const PROPERTY_TYPES = [
-  { value: "existing", label: "Existing" },
-  { value: "new", label: "New" },
-  { value: "land", label: "Land" },
+  { value: "existing", label: "Existing home" },
+  { value: "new", label: "New build" },
+  { value: "land", label: "Vacant land" },
 ] as const;
 
-const ITEM = "h-8 min-w-0 px-3 text-[12.5px]";
+/** A setting row. When `disabled`, the row dims; `note` says why, to screen readers only. */
+function SwitchRow({
+  id,
+  label,
+  checked,
+  onChange,
+  disabled,
+  note,
+}: {
+  id: string;
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+  note?: string;
+}) {
+  return (
+    <Label
+      variant="bare"
+      htmlFor={id}
+      className={`flex items-center justify-between gap-4 transition-opacity duration-200 ${disabled ? "cursor-default opacity-45" : "cursor-pointer"}`}
+    >
+      <span className="text-[13.5px] text-fg-secondary">
+        {label}
+        {/* Inside the label, so it's read with the switch's name. */}
+        {disabled && note && <span className="sr-only">, {note}</span>}
+      </span>
+      <Switch
+        variant="accent"
+        id={id}
+        checked={checked}
+        onCheckedChange={onChange}
+        disabled={disabled}
+      />
+    </Label>
+  );
+}
 
-/** The input column: price and deposit always visible, everything else in collapsible groups. */
+/** The input card: title, then price, deposit, property and buyer sections. */
 export default function InputPanel({ pc }: { pc: PurchaseCostsState }) {
   const id = useId();
   const { inputs, setters } = pc;
   const { price, depositAmount } = inputs;
 
+  // The deposit slider runs 0–100% of the price; the 80% LVR point (20% deposit) is marked.
+  const depositPct = price > 0 ? (depositAmount / price) * 100 : 0;
+  const noLmiPct = Math.round((1 - LMI_THRESHOLD) * 100);
+  const pctTick = (n: number) => `${n}%`;
+  const lvr = price > 0 ? Math.max(0, (price - depositAmount) / price) : null;
   const overPrice = price > 0 && depositAmount > price;
-  const pct = price > 0 && depositAmount > 0 ? `${+((depositAmount / price) * 100).toFixed(1)}%` : null;
-
-  const priceMin = 100_000;
-  const priceMax = Math.max(3_000_000, price);
-  const depositMax = Math.max(price, depositAmount, 50_000);
-
-  const typeLabel = PROPERTY_TYPES.find((t) => t.value === inputs.propertyType)?.label ?? "";
-  const buyerSummary = [inputs.ownerOcc ? "Live in it" : "Investment", inputs.firstHome && "First home"].filter(Boolean).join(" · ");
-  const advancedSummary = [inputs.couple && "Couple", inputs.lmiExempt && "LMI exempt"].filter(Boolean).join(" · ") || "None";
 
   return (
-    <Card variant="panel" role="group" aria-label="Purchase details" className="rounded-2xl">
-      <h2 className="px-6 pt-6 pb-1 text-[17px] font-semibold tracking-[-0.01em] text-fg-primary">Your purchase</h2>
+    <Card variant="panel" role="group" aria-labelledby={`${id}-title`} className="h-full gap-0 rounded-2xl">
+      <h2 id={`${id}-title`} className="px-6 pt-6 pb-5 text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary">Your Purchase</h2>
 
-      <MoneyBlock
+      <AmountSection
+        id={`${id}-price`}
         label="Purchase price"
-        htmlFor={`${id}-price`}
-        slider={
-          <Slider
-            variant="accent"
-            aria-label="Purchase price"
-            min={priceMin}
-            max={priceMax}
-            step={10_000}
-            value={[Math.max(priceMin, price)]}
-            onValueChange={([v]) => setters.setPriceInput(String(v))}
-            thumbProps={{ "aria-valuetext": formatDollars(price) }}
-          />
-        }
-      >
-        <MoneyField
-          id={`${id}-price`}
-          size="lg"
-          value={price}
-          onCommit={(n) => setters.setPriceInput(String(n))}
-          placeholder="e.g. 650k"
-          step={10000}
-          autoFocus={price === 0}
-        />
-      </MoneyBlock>
+        value={price}
+        onChange={(n) => setters.setPriceInput(String(n))}
+        inputStep={10_000}
+        autoFocus={price === 0}
+      />
 
-      <MoneyBlock
+      <AmountSection
+        id={`${id}-deposit`}
         label="Deposit"
-        htmlFor={`${id}-deposit`}
-        slider={
-          <Slider
-            variant="accent"
-            aria-label="Deposit"
-            min={0}
-            max={depositMax}
-            step={5_000}
-            disabled={price <= 0}
-            value={[Math.min(depositAmount, depositMax)]}
-            onValueChange={([v]) => setters.setDepositAmountInput(String(v))}
-            thumbProps={{ "aria-valuetext": formatDollars(depositAmount) }}
-          />
+        value={depositAmount}
+        onChange={(n) => setters.setDepositAmountInput(String(n))}
+        scale={{
+          value: depositPct,
+          min: 0,
+          max: 100,
+          step: 1,
+          onChange: (pct) => setters.setDepositAmountInput(String(Math.round((price * pct) / 100))),
+          tick: pctTick,
+          valueText: `${formatDollars(depositAmount) || "$0"}, ${Math.round(depositPct)}% of the price`,
+        }}
+        inputStep={5_000}
+        percentOf={price}
+        disabled={price <= 0}
+        accent={lvr === null ? undefined : lvrColor(lvr)}
+        markers={
+          price > 0
+            ? [
+                ...(inputs.firstHome
+                  ? [{ value: 5, label: "5%", title: "5%: the minimum deposit under the First Home Guarantee, with no LMI" }]
+                  : []),
+                { value: noLmiPct, label: `${noLmiPct}%`, title: `${noLmiPct}%: deposit needed to avoid LMI` },
+              ]
+            : undefined
         }
-      >
-        <MoneyField
-          id={`${id}-deposit`}
-          value={depositAmount}
-          onCommit={(n) => setters.setDepositAmountInput(String(n))}
-          placeholder={price > 0 ? "e.g. 20% or 130k" : "e.g. 130k"}
-          step={5000}
-          percentOf={price}
-          aside={
-            pct && (
-              <span
-                className={`shrink-0 rounded-md px-1.5 py-0.5 text-[12px] font-medium tabular-nums ${
-                  overPrice ? "bg-data-negative/10 text-data-negative" : "bg-surface-hover text-fg-secondary"
-                }`}
-                aria-live="polite"
-              >
-                {overPrice ? "Over price" : pct}
-              </span>
-            )
-          }
-        />
-      </MoneyBlock>
+        aside={
+          price > 0 && (
+            <PercentChip
+              id={`${id}-deposit-pct`}
+              percent={depositPct}
+              accent={overPrice ? "var(--color-data-negative)" : lvrColor(lvr)}
+              onCommit={(pct) => setters.setDepositAmountInput(String(Math.round((price * pct) / 100)))}
+            />
+          )
+        }
+      />
 
-      <div className="h-2" />
-
-      <Group title="Property" summary={`${inputs.state} · ${typeLabel}`} defaultOpen>
-        <div className="flex items-center justify-between gap-4">
-          <Label variant="bare" htmlFor={`${id}-state`} className="text-[13.5px] text-fg-secondary">State</Label>
-          <NativeSelect
-            variant="form"
-            id={`${id}-state`}
-            aria-label="State"
-            value={inputs.state}
-            onChange={(e) => setters.setState(e.target.value)}
-            className="h-8 w-[84px] rounded-lg pl-3 pr-7 text-[13px] font-medium"
-          >
-            {PC_STATES.map((s) => (
-              <NativeSelectOption variant="form" key={s} value={s}>{s}</NativeSelectOption>
+      <div className="flex flex-col gap-4 border-t border-border-subtle px-6 py-5">
+          <div className="flex items-center justify-between gap-4">
+            <Label variant="bare" htmlFor={`${id}-state`} className="text-[13.5px] text-fg-secondary">State</Label>
+            <NativeSelect
+              variant="form"
+              id={`${id}-state`}
+              value={inputs.state}
+              onChange={(e) => setters.setState(e.target.value)}
+              className="h-8 w-[88px] shrink-0 rounded-lg pr-7 pl-3 text-[13px] font-medium"
+            >
+              {PC_STATES.map((s) => (
+                <NativeSelectOption variant="form" key={s} value={s}>{s}</NativeSelectOption>
+              ))}
+            </NativeSelect>
+          </div>
+          {/* One type is always on: switching one on turns the others off, and the active one can't be switched off. */}
+          <div role="group" aria-label="Property type" className="flex flex-col gap-4">
+            {PROPERTY_TYPES.map((t) => (
+              <SwitchRow
+                key={t.value}
+                id={`${id}-type-${t.value}`}
+                label={t.label}
+                checked={inputs.propertyType === t.value}
+                onChange={(on) => { if (on) setters.setPropertyType(t.value); }}
+              />
             ))}
-          </NativeSelect>
-        </div>
-        <ToggleGroup
-          type="single"
-          variant="segment-pill"
-          aria-label="Property type"
-          className="grid grid-cols-3 gap-1.5"
-          value={inputs.propertyType}
-          onValueChange={(v) => { if (v) setters.setPropertyType(v); }}
-        >
-          {PROPERTY_TYPES.map((t) => (
-            <ToggleGroupItem key={t.value} value={t.value} className={ITEM}>{t.label}</ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </Group>
+          </div>
+      </div>
 
-      <Group title="Buyer" summary={buyerSummary} defaultOpen>
-        <ToggleGroup
-          type="single"
-          variant="segment-pill"
-          aria-label="Occupancy"
-          className="grid grid-cols-2 gap-1.5"
-          value={inputs.ownerOcc ? "owner" : "investor"}
-          onValueChange={(v) => { if (v) setters.setOwnerOcc(v === "owner"); }}
-        >
-          <ToggleGroupItem value="owner" className={ITEM}>Live in it</ToggleGroupItem>
-          <ToggleGroupItem value="investor" className={ITEM}>Investment</ToggleGroupItem>
-        </ToggleGroup>
-        <SwitchRow
-          id={`${id}-first`}
-          label="First home"
-          hint="Unlocks state concessions and grants"
-          checked={inputs.firstHome}
-          onChange={setters.setFirstHome}
-        />
-      </Group>
-
-      <Group title="Advanced" summary={advancedSummary}>
-        <SwitchRow id={`${id}-couple`} label="Couple" hint="Two buyers on the title" checked={inputs.couple} onChange={setters.setCouple} />
-        <SwitchRow
-          id={`${id}-lmi`}
-          label="LMI exempt"
-          hint="Some medical, legal and finance professions"
-          checked={inputs.lmiExempt}
-          onChange={setters.setLmiExempt}
-        />
-      </Group>
-
-      <div className="h-2" />
+      <div className="flex flex-col gap-4 border-t border-border-subtle px-6 pt-5 pb-6">
+          <SwitchRow
+            id={`${id}-occ`}
+            label="Living in it"
+            checked={inputs.ownerOcc}
+            onChange={(v) => {
+              setters.setOwnerOcc(v);
+              // First home benefits need you to live in it.
+              if (!v) setters.setFirstHome(false);
+            }}
+          />
+          <SwitchRow
+            id={`${id}-first`}
+            label="First home buyer"
+            checked={inputs.firstHome}
+            onChange={setters.setFirstHome}
+            disabled={!inputs.ownerOcc}
+            note="Only for a home you'll live in"
+          />
+          <SwitchRow id={`${id}-couple`} label="Buying as a couple" checked={inputs.couple} onChange={setters.setCouple} />
+          <SwitchRow
+            id={`${id}-lmi`}
+            label="LMI exempt"
+            checked={inputs.lmiExempt}
+            onChange={setters.setLmiExempt}
+            disabled={lvr !== null && lvr <= LMI_THRESHOLD}
+            note={`No LMI with a ${noLmiPct}%+ deposit`}
+          />
+      </div>
     </Card>
   );
 }

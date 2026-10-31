@@ -101,6 +101,7 @@ Mouse clicks don't show the keyboard focus ring (handled in `TabsTrigger`).
 | Label | `bare` | Wraps a Switch or Checkbox row without changing line height |
 | Switch | `accent` / `glow` | Switch tinted by `--switch-accent` / brand switch with glow |
 | Slider | `accent` | Hairline slider tinted by `--slider-accent` (see `domain/SliderField`) |
+| Slider | `hero` | Solid accent range with a large ringed thumb, `--slider-accent` (Purchase costs amount cards) |
 | Checkbox | `md` / `lg` | Wizard checkbox / column-drawer row checkbox |
 
 ### Surfaces and feedback
@@ -112,6 +113,7 @@ Mouse clicks don't show the keyboard focus ring (handled in `TabsTrigger`).
 | Card | `auth` | Auth form card (`asChild` to render as `<form>`) |
 | Card | `scheme` | Grant scheme card |
 | Badge | `count` / `stat` / `tag` / `tinted` | Count bubble / rate pill (`--badge-accent`) / "Coming soon" tag / state tag |
+| Badge | `soft` | Small tinted figure chip, `--badge-accent`, neutral by default (Purchase costs deposit % and share column) |
 | Progress | `bar` / `meter` | Wizard progress / password strength (`--progress-accent`) |
 | Skeleton | `inline` | Inline loading block with explicit `width` / `height` |
 | Dialog / Sheet | `bare` | Content with no stock padding or close button; bring your own layout (`DialogContent` also takes `portal={false}` / `overlay={false}`) |

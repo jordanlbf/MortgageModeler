@@ -172,8 +172,7 @@ test.describe("purchase costs", () => {
     await page.getByRole("textbox", { name: "Purchase price" }).fill("600000");
     await page.getByRole("textbox", { name: "Deposit" }).fill("60000");
     await page.getByRole("switch", { name: /First home/ }).click();
-    await page.getByRole("button", { name: /^Advanced/ }).click();
-    await page.getByRole("switch", { name: /Couple/ }).click();
+    await page.getByRole("switch", { name: /couple/i }).click();
     await snap(page, "purchase-costs-toggled");
     await page.getByRole("button", { name: /^Fees/ }).click();
     await snap(page, "purchase-costs-fees-open", 800);
