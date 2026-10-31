@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import InlineAlert from "@/components/patterns/InlineAlert";
 import {
   Dialog,
   DialogClose,
@@ -16,14 +15,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import VariantRow from "../components/VariantRow";
-
-const ALERTS = [
-  { tone: "error", text: "Couldn't reach the calculator. Your inputs are kept; we'll retry." },
-  { tone: "warning", text: "LVR is 87.7%: lenders mortgage insurance applies above 80%." },
-  { tone: "success", text: "Scenario saved for 42 Smith Street, Clayfield." },
-  { tone: "info", text: "QLD first home concessions apply to homes under $800,000." },
-] as const;
+import VariantRow from "../_components/VariantRow";
 
 function ConfirmBody() {
   return (
@@ -40,22 +32,9 @@ function ConfirmBody() {
   );
 }
 
-export default function FeedbackSection() {
+export default function OverlaysSection() {
   return (
     <>
-      <VariantRow label="InlineAlert · error / warning / success / info">
-        <div className="flex w-full max-w-[640px] flex-col gap-2">
-          {ALERTS.map(({ tone, text }) => (
-            <InlineAlert key={tone} tone={tone}>{text}</InlineAlert>
-          ))}
-        </div>
-      </VariantRow>
-      <VariantRow label="banner (full width)">
-        <div className="flex w-full items-center justify-between gap-4 rounded-lg bg-brand-subtle px-4 py-2.5 text-[13px] text-fg-secondary">
-          <span>Rates updated on 1 November. Your scenarios now use the new RBA cash rate.</span>
-          <Button variant="link-muted" className="shrink-0 text-[13px]">Review changes</Button>
-        </div>
-      </VariantRow>
       <VariantRow label="confirm dialog (static preview · live trigger)">
         <Card variant="panel" className="flex w-full max-w-[420px] flex-col gap-4 p-6">
           <div className="flex flex-col gap-2">

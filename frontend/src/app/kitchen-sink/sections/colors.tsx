@@ -1,4 +1,4 @@
-import VariantRow from "../components/VariantRow";
+import VariantRow from "../_components/VariantRow";
 
 /** Token groups from globals.css. Swatches read the CSS variable, so they always match the theme. */
 const GROUPS: { label: string; tokens: string[] }[] = [

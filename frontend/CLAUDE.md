@@ -51,7 +51,7 @@ Every feature should follow this structure:
   every shadcn CSS variable is mapped onto an existing token in `globals.css`.
 - Domain components live in `components/domain` and compose `ui/` parts.
 - Titled cards, headline numbers, label/value breakdowns, banners and empty states use the
-  shared patterns in `components/patterns` (shown in `/kitchen-sink#patterns`), not one-off
+  shared patterns in `components/patterns` (shown in `/kitchen-sink/components`), not one-off
   markup, so styling them in one place reaches every page.
 - Never hand-roll a control (raw `<button>`, `<input>`, `<select>`, `<table>`, dialog,
   tabs, tooltip…) in a feature folder — use the shadcn component and a variant.

@@ -1,5 +1,5 @@
 import { Label } from "@/components/ui/label";
-import VariantRow from "../components/VariantRow";
+import VariantRow from "../_components/VariantRow";
 
 /** The type scale in use across the app. Sora everywhere; numbers use tabular-nums. */
 const SCALE = [

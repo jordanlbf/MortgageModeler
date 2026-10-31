@@ -5,7 +5,8 @@ import SectionCard from "@/components/patterns/SectionCard";
 import Stat, { StatDelta, type StatTone } from "@/components/patterns/Stat";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDollars, formatDollarsSigned } from "@/lib/formatters";
-import VariantRow from "../components/VariantRow";
+import VariantRow from "../_components/VariantRow";
+import { MenuButton } from "./dummy";
 import { MONEY, NULL_VALUE } from "./seed";
 
 const SPARK = [612, 618, 640, 655, 649, 671, 690, 702, 715, 731, 748, 760].map((v, i) => ({ i, v }));
@@ -13,7 +14,7 @@ const SPARK = [612, 618, 640, 655, 649, 671, 690, 702, 715, 731, 748, 760].map((
 /** KPI card: the shared SectionCard + Stat patterns, so tuning those restyles these too. */
 function Kpi({ label, value, tone, delta, children }: { label: string; value: React.ReactNode; tone?: StatTone; delta?: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <SectionCard className="w-[220px] gap-0 px-5 py-4">
+    <SectionCard size="sm" className="w-[220px]">
       <Stat label={label} value={value} tone={tone} delta={delta} className="gap-1.5">
         {children}
       </Stat>
@@ -21,10 +22,28 @@ function Kpi({ label, value, tone, delta, children }: { label: string; value: Re
   );
 }
 
-export default function KpisSection() {
+export default function StatsSection() {
   return (
     <>
-      <VariantRow label="single value · large · zero">
+      <VariantRow label='Stat size="sm" / "md" / "lg" / "hero"'>
+        <div className="flex flex-wrap items-end gap-10">
+          <Stat label="Small" size="sm" value={formatDollars(1_250)} />
+          <Stat label="Medium" size="md" value={formatDollars(12_500)} />
+          <Stat label="Large" size="lg" value={formatDollars(125_000)} />
+          <Stat label="Hero" size="hero" value={formatDollars(1_250_000)} />
+        </div>
+      </VariantRow>
+      <VariantRow label="Stat tone · positive / negative / muted · with action">
+        <Kpi label="Positive" tone="positive" value={formatDollars(8_400)} delta={<StatDelta direction="up">4.2%</StatDelta>} />
+        <Kpi label="Negative" tone="negative" value={`−${formatDollars(2_150)}`} delta={<StatDelta direction="down">1.8%</StatDelta>} />
+        <Kpi label="Muted" tone="muted" value={NULL_VALUE}>
+          <span className="text-[12px] text-fg-tertiary">No value yet</span>
+        </Kpi>
+        <SectionCard size="sm" className="w-[220px]">
+          <Stat label="With action" value={formatDollars(64_000)} action={<MenuButton />} className="gap-1.5" />
+        </SectionCard>
+      </VariantRow>
+      <VariantRow label="KPI card · single value / large / zero">
         <Kpi label="Loan amount" value={formatDollars(712_400)} />
         <Kpi label="Portfolio value" value={formatDollars(Math.round(MONEY.large))} />
         <Kpi label="Grants" value="$0" tone="muted" />

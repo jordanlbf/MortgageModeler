@@ -1,6 +1,6 @@
 import { ArrowLeft, ChevronRight, Loader2, Plus, Settings, SlidersHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import VariantRow from "../components/VariantRow";
+import VariantRow from "../_components/VariantRow";
 
 const STOCK = ["default", "secondary", "outline", "ghost", "destructive", "link"] as const;
 const SIZES = ["xs", "sm", "default", "lg"] as const;

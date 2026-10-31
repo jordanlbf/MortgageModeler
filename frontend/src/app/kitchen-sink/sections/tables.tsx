@@ -2,7 +2,7 @@ import { ArrowDown, ArrowUpDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDollars, formatDollarsSigned } from "@/lib/formatters";
-import VariantRow from "../components/VariantRow";
+import VariantRow from "../_components/VariantRow";
 import { PROPERTIES } from "./seed";
 
 type Property = (typeof PROPERTIES)[number];

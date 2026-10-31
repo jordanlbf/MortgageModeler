@@ -2,7 +2,7 @@ import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import VariantRow from "../components/VariantRow";
+import VariantRow from "../_components/VariantRow";
 
 const BARS = [38, 52, 44, 66, 58, 73, 61, 80, 69, 88];
 

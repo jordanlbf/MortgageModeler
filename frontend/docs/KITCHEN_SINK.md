@@ -2,13 +2,18 @@
 
 ## Purpose
 
-One internal page that renders every design-system primitive and its variants, with realistic MortgageModeler data. Use it to:
+Two internal pages that render the design system:
+
+- **Primitives** (`/kitchen-sink`): every `components/ui` control and variant, plus the tokens, with realistic MortgageModeler data.
+- **Components** (`/kitchen-sink/components`): the shared patterns in `components/patterns` (cards first) with dummy content, plus a whole dummy page built from them.
+
+A switcher at the top moves between them. Use them to:
 
 - **Catch design drift:** a variant that no longer matches its siblings shows up next to them.
 - **Build pages faster:** find the variant you need, copy the markup, swap in real content. Each row's label is the prop to use (e.g. `variant="cta"`).
 - **Have one source of truth** for what exists. `docs/SHADCN.md` explains each variant; this page shows it.
 
-- **Tune the look of the whole app:** the **Patterns** section shows the shared building blocks in `src/components/patterns/` with dummy content. Pages use the same components, so editing one (or a `components/ui` variant, or a token in `globals.css`) changes it here and on every page at once. See [Tuning the look](#tuning-the-look).
+- **Tune the look of the whole app:** the **Components** page shows the shared building blocks in `src/components/patterns/` with dummy content. Pages use the same components, so editing one (or a `components/ui` variant, or a token in `globals.css`) changes it here and on every page at once. See [Tuning the look](#tuning-the-look).
 
 It's dense and label-first on purpose. No hero, no intro copy, no prose in the route; documentation lives here.
 
@@ -16,7 +21,7 @@ It's dense and label-first on purpose. No hero, no intro copy, no prose in the r
 
 | Environment | `/kitchen-sink` |
 |---|---|
-| `next dev` | Always on |
+| `next dev` | Always on (both pages) |
 | Production build (`NODE_ENV=production`, including Vercel previews) | 404 unless `NEXT_PUBLIC_SHOW_KITCHEN_SINK=true` |
 
 Set the flag in the Vercel **Preview** environment only. The gate is `src/proxy.ts` (Next 16's replacement for `middleware.ts`), matched only on `/kitchen-sink`, using `isKitchenSinkEnabled()` from `src/lib/kitchen-sink-gate.ts`.
@@ -33,11 +38,13 @@ NEXT_PUBLIC_SHOW_KITCHEN_SINK=true npx next start                # /kitchen-sink
 ```
 src/app/kitchen-sink/
   layout.tsx          bare layout: no app shell, noindex
-  page.tsx            nav + sections
-  sections.ts         typed registry (id, title, component), in page order
+  page.tsx            Primitives page
+  components/page.tsx Components page
+  sections.ts         typed registry: PRIMITIVES, COMPONENTS, PAGES (in page order)
   sections/*.tsx      one file per section, independently importable
-  sections/seed.ts    shared sample data (worst-case values, QLD properties)
-  components/         SinkSection (anchor + header), VariantRow (label | variants), SinkNav (sticky, scroll-spy)
+  sections/seed.ts    realistic sample data for primitives (worst-case values, QLD properties)
+  sections/dummy.tsx  generic dummy content for components (line items, placeholder boxes)
+  _components/        SinkPage (switcher + nav + sections), SinkSection, VariantRow, SinkNav (sticky, scroll-spy)
   __tests__/          render, env gating, per-section snapshots, axe
 ```
 
@@ -56,7 +63,9 @@ Where to edit, depending on what you want to change:
 | Empty states | `patterns/EmptyState.tsx` | Kitchen sink (no page has one yet) |
 | Small caps captions | `Label variant="caps"` in `ui/label.tsx` | `Stat` captions and form field captions |
 
-Edit the shared file, not the dummy in `sections/patterns.tsx`: the dummies only show what the shared files produce.
+Edit the shared file, not the dummy section: the dummies only show what the shared files produce.
+
+**Cards** are the most common composite, so the Cards section covers every shape the app needs from one `SectionCard`: header (title, description, action), `size="default"`/`"sm"`, `flush` bodies (divided sections, tables), common contents (stat, list, chart, form) and cards in a grid. If a page needs a card shape that isn't there, add it to `SectionCard` and to this section rather than styling a one-off.
 
 Not on the patterns yet (each has a deliberately distinct look): the Amortisation KPI and loan-control cards, the Tax rate pills and waterfall, the Cashflow chart and year-panel headers, and grant scheme cards. Move them over when their design is meant to match the rest.
 
@@ -73,22 +82,33 @@ Add this to the PR description:
 
 ## Section ownership
 
+**Primitives** (`/kitchen-sink`)
+
 | Section | File | Covers |
 |---|---|---|
 | Typography | `typography.tsx` | Type scale, `Label` variants |
 | Colors | `colors.tsx` | Foreground, brand, data, status, surface and border tokens |
-| Patterns | `patterns.tsx` | `SectionCard`, `SectionTitle`, `Stat`, `KeyValueList`, `InlineAlert`, `EmptyState`, and a dummy page composed from them |
 | Buttons | `buttons.tsx` | Stock variants × sizes, disabled, loading, icon sizes, every custom variant |
 | Inputs | `inputs.tsx` | `Input` variants × states, currency/percent, password, helper text, `EditableValue`, `SliderField` |
 | Selects and toggles | `selects-and-toggles.tsx` | `NativeSelect`, `Checkbox`, `Switch`, `ToggleGroup`/`Toggle`, `Tabs`, `Slider` |
-| KPI cards | `kpis.tsx` | `SectionCard` + `Stat`: value, delta, subtitle, sparkline, null, loading |
-| Tables | `tables.tsx` | Empty, 1 row, 5 rows, truncation, sort indicators, `dense` with pinned column, skeleton |
 | Badges and tags | `badges.tsx` | Stock and custom `Badge` variants, property tags |
-| Feedback | `feedback.tsx` | `InlineAlert` tones, banner, confirm `Dialog`, `Tooltip`, `Popover`, `Sheet` |
-| Empty states | `empty-states.tsx` | `EmptyState`: no data, no results, error, coming soon |
+| Card variants | `card-variants.tsx` | Raw `Card` surfaces: `panel`, `glass`, `scheme`, `auth`, `default` |
+| Tables | `tables.tsx` | Empty, 1 row, 5 rows, truncation, sort indicators, `dense` with pinned column, skeleton |
+| Overlays | `overlays.tsx` | Confirm `Dialog`, `Tooltip`, `Popover`, `Sheet` |
 | Loading states | `loading-states.tsx` | `Skeleton`, KPI/table/chart skeletons, spinner, `Progress` |
 
-When you add a section, add it to `sections.ts`; the nav, tests and snapshots pick it up.
+**Components** (`/kitchen-sink/components`)
+
+| Section | File | Covers |
+|---|---|---|
+| Cards | `cards.tsx` | `SectionCard`: header options, sizes, flush, common contents, grid |
+| Numbers and KPIs | `stats.tsx` | `Stat` sizes and tones, `StatDelta`, KPI cards (value, delta, subtitle, sparkline, null, loading) |
+| Lists | `lists.tsx` | `KeyValueList` / `KeyValueRow`: sizes, divided, totals, tones, grouped |
+| Alerts and banners | `alerts.tsx` | `InlineAlert` tones and wrapping, full-width banner |
+| Empty states | `empty-states.tsx` | `EmptyState`: no data, no results, error, coming soon |
+| Example page | `example-page.tsx` | A whole dummy page built only from the patterns |
+
+When you add a section, add it to `PRIMITIVES` or `COMPONENTS` in `sections.ts`; the nav, tests and snapshots pick it up.
 
 ## Gaps (not in the design system yet)
 

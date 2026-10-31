@@ -1,5 +1,6 @@
 import axe from "axe-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import KitchenSinkComponentsPage from "../components/page";
 import KitchenSinkPage from "../page";
 import { renderWithProviders, stubIntersectionObserver } from "./setup";
 
@@ -7,8 +8,11 @@ describe("/kitchen-sink accessibility", () => {
   beforeEach(() => stubIntersectionObserver());
   afterEach(() => vi.unstubAllGlobals());
 
-  it("has no axe violations", async () => {
-    const { container } = renderWithProviders(<KitchenSinkPage />);
+  it.each([
+    ["primitives", KitchenSinkPage],
+    ["components", KitchenSinkComponentsPage],
+  ] as const)("%s page has no axe violations", async (_name, Page) => {
+    const { container } = renderWithProviders(<Page />);
     const results = await axe.run(container, {
       // jsdom can't compute colours or layout, so contrast is checked in the browser instead.
       rules: { "color-contrast": { enabled: false } },

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import EditableValue from "@/components/domain/EditableValue";
 import SliderField from "@/components/domain/SliderField";
 import { formatCurrency, formatDollars, parseCurrencyInput } from "@/lib/formatters";
-import VariantRow from "../components/VariantRow";
+import VariantRow from "../_components/VariantRow";
 
 const VARIANTS = ["default", "form", "filled", "bar", "underline"] as const;
 

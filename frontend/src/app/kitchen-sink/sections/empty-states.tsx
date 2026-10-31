@@ -2,7 +2,7 @@ import { AlertCircle, Home, SearchX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/patterns/EmptyState";
-import VariantRow from "../components/VariantRow";
+import VariantRow from "../_components/VariantRow";
 
 export default function EmptyStatesSection() {
   return (
