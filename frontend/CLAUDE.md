@@ -17,8 +17,10 @@ frontend/src/
     ui/                       — shadcn/ui primitives, themed via tokens (button, card, tabs, …)
     domain/                   — app-specific components built from ui/ (SliderField, EditableValue,
                                 ErrorBoundary, ColumnDrawer, wizard/)
-    patterns/                 — shared page building blocks (SectionCard, Stat, KeyValueList,
-                                InlineAlert, EmptyState); edit these to restyle every page
+    patterns/                 — shared building blocks, in layers; each imports only from earlier ones
+      blocks/                 — inside a card: SectionTitle, Stat, KeyValueList, InlineAlert
+      cards/                  — blocks in a box: SectionCard, StatCard, EmptyState
+      layouts/                — whole pages: CalculatorLayout, DashboardLayout
   hooks/
     use<Feature>State.ts      — form state + API call + derived data
     useApiCall.ts             — shared debounce + abort + { data, error, loading }
@@ -50,9 +52,9 @@ Every feature should follow this structure:
 - UI primitives are shadcn/ui components in `components/ui`, themed via our tokens:
   every shadcn CSS variable is mapped onto an existing token in `globals.css`.
 - Domain components live in `components/domain` and compose `ui/` parts.
-- Titled cards, headline numbers, label/value breakdowns, banners and empty states use the
-  shared patterns in `components/patterns` (shown in `/kitchen-sink/components`), not one-off
-  markup, so styling them in one place reaches every page.
+- Cards, headline numbers, label/value breakdowns, banners, empty states and page layouts use
+  the shared patterns in `components/patterns` (shown in `/kitchen-sink`, one page per layer),
+  not one-off markup, so styling them in one place reaches every page.
 - Never hand-roll a control (raw `<button>`, `<input>`, `<select>`, `<table>`, dialog,
   tabs, tooltip…) in a feature folder — use the shadcn component and a variant.
 - Our looks are **custom variants** (e.g. `<Button variant="cta">`, `<Card variant="glass">`,

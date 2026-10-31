@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { SectionTitle } from "@/components/patterns/SectionCard";
+import SectionTitle from "@/components/patterns/blocks/SectionTitle";
 
 const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.brand.border, background: t.surface.raised };
 

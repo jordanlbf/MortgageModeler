@@ -12,7 +12,7 @@ import GoogleButton from "./GoogleButton";
 import OrEmailDivider from "./OrEmailDivider";
 import PrimaryButton from "./PrimaryButton";
 import PasswordStrength from "./PasswordStrength";
-import InlineAlert from "@/components/patterns/InlineAlert";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 
 export default function SignupView() {
   const router = useRouter();

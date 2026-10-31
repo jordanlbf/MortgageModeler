@@ -1,6 +1,6 @@
 "use client";
 
-import Stat from "@/components/patterns/Stat";
+import Stat from "@/components/patterns/blocks/Stat";
 import { Money } from "./shared";
 
 /** The hero number: cash needed, then `children` (the donut legend). Before an estimate, a one-line prompt. */

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useHighlight } from "@/hooks/useHighlight";
-import { SectionTitle } from "@/components/patterns/SectionCard";
+import SectionTitle from "@/components/patterns/blocks/SectionTitle";
 
 // ── Shared constants ─────────────────────────────
 

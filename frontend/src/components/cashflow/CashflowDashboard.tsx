@@ -15,8 +15,8 @@ import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import KeyValueList, { KeyValueRow } from "@/components/patterns/KeyValueList";
-import Stat, { StatDelta } from "@/components/patterns/Stat";
+import KeyValueList, { KeyValueRow } from "@/components/patterns/blocks/KeyValueList";
+import Stat, { StatDelta } from "@/components/patterns/blocks/Stat";
 import CashflowDataTable from "./CashflowDataTable";
 
 interface Props {

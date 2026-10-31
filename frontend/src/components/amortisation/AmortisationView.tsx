@@ -13,7 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import ErrorBoundary from "@/components/domain/ErrorBoundary";
-import InlineAlert from "@/components/patterns/InlineAlert";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 
 
 const TRANSITION_MS = 350;

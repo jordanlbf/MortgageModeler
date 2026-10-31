@@ -13,7 +13,7 @@ import AuthCard from "./AuthCard";
 import GoogleButton from "./GoogleButton";
 import OrEmailDivider from "./OrEmailDivider";
 import PrimaryButton from "./PrimaryButton";
-import InlineAlert from "@/components/patterns/InlineAlert";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 
 export default function LoginView() {
   const router = useRouter();

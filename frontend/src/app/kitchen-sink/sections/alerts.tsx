@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import InlineAlert from "@/components/patterns/InlineAlert";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 import VariantRow from "../_components/VariantRow";
 
 export default function AlertsSection() {

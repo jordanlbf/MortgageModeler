@@ -3,16 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import KeyValueList, { KeyValueRow } from "@/components/patterns/KeyValueList";
-import SectionCard from "@/components/patterns/SectionCard";
-import Stat, { StatDelta } from "@/components/patterns/Stat";
+import KeyValueList, { KeyValueRow } from "@/components/patterns/blocks/KeyValueList";
+import SectionCard from "@/components/patterns/cards/SectionCard";
+import { StatDelta } from "@/components/patterns/blocks/Stat";
+import StatCard from "@/components/patterns/cards/StatCard";
 import { formatDollars } from "@/lib/formatters";
 import VariantRow from "../_components/VariantRow";
 import { LINES, LINES_TOTAL, MenuButton, Placeholder } from "./dummy";
 
 /*
- * Every card in the app is a SectionCard (components/patterns/SectionCard.tsx).
- * Edit that file, not this one, to change cards everywhere.
+ * Every card in the app is a SectionCard (components/patterns/cards/SectionCard.tsx);
+ * KPI cards are StatCards. Edit those files, not this one, to change cards everywhere.
  */
 
 const W = "w-full max-w-[320px]";
@@ -78,11 +79,9 @@ export default function CardsSection() {
       </VariantRow>
 
       <VariantRow label="common contents · stat / list / chart / form">
-        <SectionCard size="sm" className="w-[220px]">
-          <Stat label="Stat card" value={formatDollars(42_000)} delta={<StatDelta direction="up">3.2%</StatDelta>}>
-            <span className="text-[12px] text-fg-tertiary">Supporting line</span>
-          </Stat>
-        </SectionCard>
+        <StatCard className="w-[220px]" label="Stat card" value={formatDollars(42_000)} delta={<StatDelta direction="up">3.2%</StatDelta>}>
+          <span className="text-[12px] text-fg-tertiary">Supporting line</span>
+        </StatCard>
         <SectionCard titleAs="h3" title="List card" className="w-full max-w-[280px]">
           <KeyValueList>
             {LINES.map((l) => <KeyValueRow key={l.label} label={l.label} value={formatDollars(l.value)} />)}

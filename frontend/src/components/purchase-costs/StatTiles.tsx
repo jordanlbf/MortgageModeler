@@ -2,7 +2,7 @@
 
 import { formatDollars } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
-import KeyValueList, { KeyValueRow } from "@/components/patterns/KeyValueList";
+import KeyValueList, { KeyValueRow } from "@/components/patterns/blocks/KeyValueList";
 import { LMI_THRESHOLD, Money, lvrColor } from "./shared";
 
 /** One row; three side by side drop their vertical padding. */

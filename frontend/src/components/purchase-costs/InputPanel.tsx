@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { PC_STATES, type PurchaseCostsState } from "@/hooks/usePurchaseCostsState";
 import { formatDollars } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
-import SectionCard from "@/components/patterns/SectionCard";
+import SectionCard from "@/components/patterns/cards/SectionCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";

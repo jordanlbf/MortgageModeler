@@ -8,7 +8,7 @@ import CashflowDashboard from "./CashflowDashboard";
 import CashflowWizardStep from "./CashflowWizardStep";
 import type { StepId } from "@/lib/cashflow-types";
 import { getCashflowSteps } from "./cashflow-steps";
-import InlineAlert from "@/components/patterns/InlineAlert";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 
 interface CashflowViewProps {
   s: ReturnType<typeof useCashflowState>;

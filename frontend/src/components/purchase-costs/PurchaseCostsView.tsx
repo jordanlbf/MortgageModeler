@@ -3,14 +3,15 @@
 import { useRef, useState } from "react";
 import { usePurchaseCostsState, type CostItem, type PurchaseCostsState } from "@/hooks/usePurchaseCostsState";
 import { PURCHASE_COST_COLORS } from "@/lib/theme";
-import SectionCard from "@/components/patterns/SectionCard";
+import SectionCard from "@/components/patterns/cards/SectionCard";
+import CalculatorLayout from "@/components/patterns/layouts/CalculatorLayout";
 import CashNeededHero from "./CashNeededHero";
 import CostsDonut, { DonutLegend } from "./CostsDonut";
 import CostTable, { type CostRow } from "./CostTable";
 import InputPanel from "./InputPanel";
 import MobileSummaryBar from "./MobileSummaryBar";
 import StatTiles from "./StatTiles";
-import InlineAlert from "@/components/patterns/InlineAlert";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 
 /** Rows shown before there's an estimate, so the layout never jumps. */
 const PLACEHOLDER_ITEMS: CostItem[] = [
@@ -69,12 +70,7 @@ export default function PurchaseCostsView() {
   const fade = `transition-opacity duration-200 ${loading ? "opacity-60" : ""}`;
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:min-h-[640px] lg:grid-cols-[320px_minmax(0,1fr)]">
-      <aside>
-        <InputPanel pc={pc} />
-      </aside>
-
-      <section className="flex min-w-0 flex-col gap-6" aria-labelledby="pc-title" aria-busy={loading}>
+    <CalculatorLayout inputs={<InputPanel pc={pc} />} aria-labelledby="pc-title" aria-busy={loading}>
         <MobileSummaryBar target={cardRef} total={total} />
 
         {error && (
@@ -103,7 +99,6 @@ export default function PurchaseCostsView() {
         <SectionCard title="Where your cash goes" className={`flex-1 gap-3 pb-3 ${fade}`}>
           <CostTable rows={rows} total={total} empty={empty} active={active} onActive={setActive} />
         </SectionCard>
-      </section>
-    </div>
+    </CalculatorLayout>
   );
 }

@@ -1,7 +1,10 @@
 import axe from "axe-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import KitchenSinkComponentsPage from "../components/page";
-import KitchenSinkPage from "../page";
+import BlocksPage from "../blocks/page";
+import CardsPage from "../cards/page";
+import LayoutsPage from "../layouts/page";
+import FoundationsPage from "../page";
+import PrimitivesPage from "../primitives/page";
 import { renderWithProviders, stubIntersectionObserver } from "./setup";
 
 describe("/kitchen-sink accessibility", () => {
@@ -9,8 +12,11 @@ describe("/kitchen-sink accessibility", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it.each([
-    ["primitives", KitchenSinkPage],
-    ["components", KitchenSinkComponentsPage],
+    ["foundations", FoundationsPage],
+    ["primitives", PrimitivesPage],
+    ["blocks", BlocksPage],
+    ["cards", CardsPage],
+    ["layouts", LayoutsPage],
   ] as const)("%s page has no axe violations", async (_name, Page) => {
     const { container } = renderWithProviders(<Page />);
     const results = await axe.run(container, {

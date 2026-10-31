@@ -1,14 +1,15 @@
 import { screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import KitchenSinkComponentsPage from "../components/page";
-import KitchenSinkPage from "../page";
-import { COMPONENTS, PAGES, PRIMITIVES, SECTIONS } from "../sections";
+import BlocksPage from "../blocks/page";
+import CardsPage from "../cards/page";
+import LayoutsPage from "../layouts/page";
+import FoundationsPage from "../page";
+import PrimitivesPage from "../primitives/page";
+import { PAGES, SECTIONS } from "../sections";
 import { renderWithProviders, stubIntersectionObserver } from "./setup";
 
-const ROUTES = [
-  { name: "primitives", Page: KitchenSinkPage, sections: PRIMITIVES, href: "/kitchen-sink" },
-  { name: "components", Page: KitchenSinkComponentsPage, sections: COMPONENTS, href: "/kitchen-sink/components" },
-] as const;
+const COMPONENTS = { foundations: FoundationsPage, primitives: PrimitivesPage, blocks: BlocksPage, cards: CardsPage, layouts: LayoutsPage };
+const ROUTES = PAGES.map((p) => ({ name: p.key, Page: COMPONENTS[p.key], sections: p.sections, href: p.href }));
 
 describe("/kitchen-sink", () => {
   beforeEach(() => stubIntersectionObserver());
@@ -17,11 +18,10 @@ describe("/kitchen-sink", () => {
     vi.unstubAllGlobals();
   });
 
-  it("splits sections into primitives (10) and components (6) with unique ids", () => {
-    expect(PRIMITIVES).toHaveLength(10);
-    expect(COMPONENTS).toHaveLength(6);
+  it("has five layers in order, each with sections, and unique section ids", () => {
+    expect(PAGES.map((p) => p.key)).toEqual(["foundations", "primitives", "blocks", "cards", "layouts"]);
+    for (const p of PAGES) expect(p.sections.length).toBeGreaterThan(0);
     expect(new Set(SECTIONS.map((s) => s.id)).size).toBe(SECTIONS.length);
-    expect(PAGES.map((p) => p.href)).toEqual(ROUTES.map((r) => r.href));
   });
 
   describe.each(ROUTES)("$name page", ({ Page, sections, href }) => {
@@ -39,7 +39,7 @@ describe("/kitchen-sink", () => {
       for (const s of sections) expect(document.getElementById(s.id)).not.toBeNull();
     });
 
-    it("links to both pages and marks itself current", () => {
+    it("links to every layer and marks itself current", () => {
       renderWithProviders(<Page />);
       const nav = screen.getByRole("navigation", { name: "Kitchen sink pages" });
       const links = within(nav).getAllByRole("link");

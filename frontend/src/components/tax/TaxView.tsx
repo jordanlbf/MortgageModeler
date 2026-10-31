@@ -6,7 +6,7 @@ import { mix } from "@/lib/theme";
 import AdvancedColumn from "@/components/tax/AdvancedColumn";
 import TaxComposition from "@/components/tax/TaxBreakdown";
 import ErrorBoundary from "@/components/domain/ErrorBoundary";
-import InlineAlert from "@/components/patterns/InlineAlert";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 
 // ── Tax Brackets Divider ────────────────────────
 
