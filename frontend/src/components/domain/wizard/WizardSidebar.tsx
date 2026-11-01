@@ -65,7 +65,9 @@ export default function WizardSidebar<TStepId extends string>({
 }: WizardSidebarProps<TStepId>) {
   const baseId = useId();
   return (
-    <aside className={className ?? DEFAULT_SIDEBAR_CLASS}>
+    // A div, not <aside>: the wizard sits inside the page's <main>, and a
+    // complementary landmark there is flagged by axe. The <nav> inside names it.
+    <div className={className ?? DEFAULT_SIDEBAR_CLASS}>
       {progress && <ProgressHeader progress={progress} />}
 
       <nav className="flex-1 px-5 py-6 overflow-y-auto">
@@ -124,7 +126,7 @@ export default function WizardSidebar<TStepId extends string>({
           })}
         </ul>
       </nav>
-    </aside>
+    </div>
   );
 }
 

@@ -27,14 +27,25 @@ export interface CostItem {
 }
 
 /**
+ * Optional data source. The app passes nothing (empty inputs + the API). The
+ * kitchen sink passes starting amounts and a sample response, which replaces
+ * the API so the real screen renders offline (the figures then stay fixed).
+ */
+export interface PurchaseCostsSource {
+  price?: number;
+  depositAmount?: number;
+  data?: PurchaseCostsResponse;
+}
+
+/**
  * Purchase Costs state: inputs, the API call and everything derived from it.
  * Shared by every Purchase Costs layout/prototype so they stay in sync.
  */
-export function usePurchaseCostsState() {
+export function usePurchaseCostsState(source?: PurchaseCostsSource) {
   const [state, setState] = useState<string>("QLD");
   // Starts empty so the results visibly build up as the user types.
-  const [priceStr, setPriceStr] = useState("");
-  const [depositAmountStr, setDepositAmountStr] = useState("");
+  const [priceStr, setPriceStr] = useState(source?.price ? formatDollars(source.price) : "");
+  const [depositAmountStr, setDepositAmountStr] = useState(source?.depositAmount ? formatDollars(source.depositAmount) : "");
   const [propertyType, setPropertyType] = useState<string>("existing");
   const [firstHome, setFirstHome] = useState(true);
   const [ownerOcc, setOwnerOcc] = useState(true);
@@ -45,7 +56,7 @@ export function usePurchaseCostsState() {
   const depositAmount = parseCurrencyInput(depositAmountStr);
   const depositPct = price > 0 ? depositAmount / price : 0;
 
-  const { data, error, loading } = useApiCall<PurchaseCostsResponse>(
+  const api = useApiCall<PurchaseCostsResponse>(
     (signal) => fetchPurchaseCosts({
       state,
       price,
@@ -59,8 +70,10 @@ export function usePurchaseCostsState() {
       partner_income: 0,
     }, signal),
     [state, price, depositPct, propertyType, firstHome, ownerOcc, couple],
-    { debounce: 300, enabled: price > 0 },
+    { debounce: 300, enabled: price > 0 && !source?.data },
   );
+  const data = source?.data ?? api.data;
+  const { error, loading } = api;
 
   /** Accepts any typed text; keeps digits only and re-formats as dollars. */
   const setPriceInput = (text: string) => {

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import type { ViewMode, YearData } from "@/lib/cashflow-types";
 import { getMarginalTaxRate } from "@/lib/cashflow-calculations";
 import { parseCurrencyInput } from "@/lib/formatters";
-import { useCashflowFormState } from "./useCashflowFormState";
+import { useCashflowFormState, type CashflowFormValues } from "./useCashflowFormState";
 import { useCashflowAPI } from "./useCashflowAPI";
 
 // ── Public interface (unchanged) ────────────────────────────────────────────
@@ -135,8 +135,18 @@ export interface CashflowState {
 
 // ── Hook (composition) ──────────────────────────────────────────────────────
 
-export function useCashflowState(): CashflowState {
-  const { form, setters, expandedSections, setExpandedSections, toggleSection, resetSection } = useCashflowFormState();
+/**
+ * Optional data source. The app passes nothing (defaults + the API). The
+ * kitchen sink passes `initial` form values and, for the output, sample
+ * `yearData`, which replaces the API so the real screens render offline.
+ */
+export interface CashflowSource {
+  initial?: Partial<CashflowFormValues>;
+  yearData?: YearData[];
+}
+
+export function useCashflowState(source?: CashflowSource): CashflowState {
+  const { form, setters, expandedSections, setExpandedSections, toggleSection, resetSection } = useCashflowFormState(source?.initial);
 
   // Derived values
   const isInvestment = form.propertyUse === "investment";
@@ -157,7 +167,13 @@ export function useCashflowState(): CashflowState {
   const marginalRate = getMarginalTaxRate(parseCurrencyInput(form.taxableIncome));
 
   // API layer
-  const { yearData, error, loading } = useCashflowAPI(form, allComplete);
+  const api = useCashflowAPI(form, allComplete && !source?.yearData);
+  const sampleYears = source?.yearData;
+  const yearData = useMemo(
+    () => (sampleYears ? (allComplete ? sampleYears : []) : api.yearData),
+    [sampleYears, allComplete, api.yearData],
+  );
+  const { error, loading } = api;
 
   // Chart data
   const chartData = useMemo(() => {

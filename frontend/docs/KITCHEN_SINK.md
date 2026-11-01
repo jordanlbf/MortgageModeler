@@ -2,7 +2,7 @@
 
 ## Purpose
 
-An internal gallery of the design system, in five layers. Each layer has its own page and is built only from the layers before it:
+An internal gallery of the design system, in six layers. Each layer has its own page and is built only from the layers before it:
 
 | # | Layer | Page | What it holds | Edit |
 |---|---|---|---|---|
@@ -11,10 +11,11 @@ An internal gallery of the design system, in five layers. Each layer has its own
 | 3 | Blocks | `/kitchen-sink/blocks` | Pieces that sit inside a card: titles and captions, numbers (`Stat`), lists (`KeyValueList`), alerts | `src/components/patterns/blocks/*` |
 | 4 | Cards | `/kitchen-sink/cards` | Blocks in a box: `SectionCard` in every shape, KPI cards (`StatCard`), empty states | `src/components/patterns/cards/*` |
 | 5 | Layouts | `/kitchen-sink/layouts` | Whole-page arrangements of cards: calculator, dashboard | `src/components/patterns/layouts/*` |
+| 6 | Screens | `/kitchen-sink/screens` | The polished screens (Cashflow wizard and output, Purchase Costs), rendered by the app's own components on generic sample data | `src/components/{cashflow,purchase-costs}/*`, or the layer below that owns the piece |
 
 Pages use the same files, so a change at any layer shows up in the gallery, on every page that uses it, and in every layer above it. For example, a change to `Stat` (a block) updates KPI cards (cards) and the dashboard layout, plus "Cash needed" and the Cashflow tiles in the app.
 
-Primitives use realistic MortgageModeler data (worst-case values, QLD properties) to catch drift. Blocks, cards and layouts use generic dummy content, because they exist to tune the look.
+Primitives use realistic MortgageModeler data (worst-case values, QLD properties) to catch drift. Blocks, cards and layouts use generic dummy content, because they exist to tune the look. Screens use generic sample data too (round numbers on simple growth curves, `sections/screens-sample.ts`), passed in place of the API.
 
 It's dense and label-first on purpose. No hero, no intro copy; documentation lives here.
 
@@ -22,7 +23,7 @@ It's dense and label-first on purpose. No hero, no intro copy; documentation liv
 
 | Environment | `/kitchen-sink` |
 |---|---|
-| `next dev` | Always on (all five pages) |
+| `next dev` | Always on (all six pages) |
 | Production build (`NODE_ENV=production`, including Vercel previews) | 404 unless `NEXT_PUBLIC_SHOW_KITCHEN_SINK=true` |
 
 Set the flag in the Vercel **Preview** environment only. The gate is `src/proxy.ts` (Next 16's replacement for `middleware.ts`), matched only on `/kitchen-sink`, using `isKitchenSinkEnabled()` from `src/lib/kitchen-sink-gate.ts`.
@@ -44,10 +45,13 @@ src/app/kitchen-sink/
   blocks/page.tsx       3 Blocks
   cards/page.tsx        4 Cards
   layouts/page.tsx      5 Layouts
+  screens/page.tsx      6 Screens
   sections.ts           typed registry: one section list per layer, and PAGES (in order)
   sections/*.tsx        one file per section, independently importable
   sections/seed.ts      realistic sample data for primitives
   sections/dummy.tsx    generic dummy content for blocks, cards and layouts
+  sections/screens.tsx  the real screens on sample data (no styling of their own)
+  sections/screens-sample.ts  generic sample data for the screens
   _components/          SinkPage (layer switcher + nav + sections), SinkSection, VariantRow, SinkNav, Specimen
   __tests__/            render, env gating, per-section snapshots, axe on every page
 
@@ -78,12 +82,37 @@ The Blocks page shows blocks on a plain `Specimen` surface, not in a card, so it
 | Big $ amount fields, deposit slider and % chip | `domain/AmountSection.tsx` | Purchase Costs inputs, Cashflow wizard step 1 |
 | Calculator page: input column width, gaps, breakpoint | `layouts/CalculatorLayout.tsx` | Purchase Costs |
 | Dashboard page: KPI strip, side panel, gaps | `layouts/DashboardLayout.tsx` | Kitchen sink (no page uses it yet) |
+| A whole screen's arrangement (Cashflow wizard / output, Purchase Costs) | `components/cashflow/*`, `components/purchase-costs/*` | That screen, in the app and on the Screens page |
 
 Edit the shared file, not the dummy section: the dummies only show what the shared files produce.
 
 **Cards** are the most common composite, so the Section cards section covers every shape the app needs from one `SectionCard`: header (title, description, action), `size="default"`/`"sm"`, `flush` bodies (divided sections, tables), common contents (stat, list, chart, form) and cards in a grid. If a page needs a card shape that isn't there, add it to `SectionCard` and to this section rather than styling a one-off.
 
 Not on the patterns yet (each has a deliberately distinct look): the Amortisation KPI and loan-control cards, the Tax rate pills and waterfall, and grant scheme cards. Move them over (Amortisation KPIs to `StatCard`) when their design is meant to match the rest. Cashflow is on the patterns: `PageBar` on top, then the wizard or one flush `SectionCard` dashboard (tabs, divided KPI row of `Stat`s, chart beside a `KeyValueList` breakdown).
+
+## Screens: iterating on whole pages (v0 etc.)
+
+The Screens page shows each polished screen exactly as the app renders it, because it **is** the app's code: `CashflowScreen` and `PurchaseCostsView` take an optional `source` (sample form values and data) that replaces the API, and the app passes nothing. So a tool like v0 can iterate on `/kitchen-sink/screens`, and any change it makes lands in the app, as long as the change goes into the shared files, not the kitchen sink:
+
+- Change the screen's components (`src/components/cashflow/*`, `src/components/purchase-costs/*`) or the layer that owns the piece (a card → `patterns/cards`, a control → `components/ui`, a colour → `globals.css`).
+- Never restyle inside `sections/screens.tsx`; it only renders the screens. Never copy a screen into the kitchen sink.
+- `screens-sample.ts` is placeholder data. Change it only to show a state (e.g. a negative cashflow), not to change the look.
+
+Only polished screens belong here (Cashflow and Purchase Costs today). When another feature is redesigned, give its view a `source` the same way and add it as a section.
+
+## Iterating with v0
+
+v0 gets the kitchen sink on its own, not the whole repo, and only its visual changes come back.
+
+1. `npm run v0:export` writes `v0-export.zip` (and the same files in `v0-export/`, both git-ignored): every file the kitchen sink imports, at the same paths as the app, plus config, these docs and `V0.md` (the brief v0 reads). The root layout is a bare one (no login) and `/` opens `/kitchen-sink/screens`. The file list is worked out from the imports each time, so it never goes stale.
+2. Upload the zip to v0 and ask for visual improvements. It runs with `npm install && npm run dev`; no backend needed.
+3. Download v0's project and run `npm run v0:import <zip or folder>` (add `-- --dry-run` to preview). It compares against the export's fingerprints (`.v0-manifest.json`) and:
+   - **applies** changes and new files under the visual paths: `src/app/globals.css`, `src/components/{ui,patterns,domain,cashflow,purchase-costs}/`;
+   - **saves to `v0-incoming/` for review, never applies**: anything else (hooks, lib, the kitchen sink and its sample data, config), and **conflicts** (files you also changed since the export);
+   - **lists only**: files v0 deleted, and new or changed packages (add those by hand).
+4. **Every import gets a review (Claude does this each time):** read the whole diff of the applied files for anything that isn't visual (logic, data flow, props, removed accessibility) and back those parts out; check `v0-incoming/` and say whether anything there is worth porting by hand; then run `npx tsc --noEmit`, `npm run lint`, `npm test` and the visual tests, re-record baselines only for the intended changes, and commit. The visual paths limit where v0 can write, not what it writes, so this review is the real guard.
+
+Export again after merging so v0's next round starts from the current app. The visual paths live in `scripts/v0-lib.mjs` (`VISUAL_PATHS`), and the brief in `scripts/v0-export.mjs`.
 
 ## Maintenance rule
 
@@ -119,6 +148,7 @@ Add this to the PR description:
 | | Empty states | `empty-states.tsx` | `EmptyState`: no data, no results, error, coming soon |
 | Layouts | Calculator | `calculator.tsx` | `CalculatorLayout` with dummy cards |
 | | Dashboard | `dashboard.tsx` | `DashboardLayout` with KPI strip, main cards and side panel |
+| Screens | Cashflow · wizard / output, Purchase Costs · calculator | `screens.tsx` | `CashflowScreen` (empty wizard; finished output), `PurchaseCostsView`, on `screens-sample.ts` |
 
 When you add a section, add it to its layer's list in `sections.ts`; the nav, tests and snapshots pick it up.
 

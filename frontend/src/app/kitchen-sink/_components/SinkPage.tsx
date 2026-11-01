@@ -4,7 +4,7 @@ import SinkNav from "./SinkNav";
 import SinkSection from "./SinkSection";
 
 /**
- * One kitchen-sink page: layer switcher (Foundations → Layouts), sticky section nav
+ * One kitchen-sink page: layer switcher (Foundations → Screens), sticky section nav
  * and the page's sections.
  */
 export default function SinkPage({ page }: { page: SinkPageDef }) {

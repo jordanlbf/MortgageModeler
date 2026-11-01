@@ -144,8 +144,9 @@ function reducer(state: CashflowFormValues, action: Action): CashflowFormValues 
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 
-export function useCashflowFormState() {
-  const [form, dispatch] = useReducer(reducer, INITIAL);
+/** `initial` overrides the defaults (e.g. sample values in the kitchen sink). */
+export function useCashflowFormState(initial?: Partial<CashflowFormValues>) {
+  const [form, dispatch] = useReducer(reducer, initial, (i) => ({ ...INITIAL, ...i }));
 
   // Collapsible sections (separate state — Set is not serialisable in the reducer)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["propertyUse"]));

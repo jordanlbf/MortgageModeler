@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import BlocksPage from "../blocks/page";
 import CardsPage from "../cards/page";
 import LayoutsPage from "../layouts/page";
+import ScreensPage from "../screens/page";
 import FoundationsPage from "../page";
 import PrimitivesPage from "../primitives/page";
 import { renderWithProviders, stubIntersectionObserver } from "./setup";
@@ -17,6 +18,7 @@ describe("/kitchen-sink accessibility", () => {
     ["blocks", BlocksPage],
     ["cards", CardsPage],
     ["layouts", LayoutsPage],
+    ["screens", ScreensPage],
   ] as const)("%s page has no axe violations", async (_name, Page) => {
     const { container } = renderWithProviders(<Page />);
     const results = await axe.run(container, {

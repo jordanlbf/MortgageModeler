@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { usePurchaseCostsState, type CostItem, type PurchaseCostsState } from "@/hooks/usePurchaseCostsState";
+import { usePurchaseCostsState, type CostItem, type PurchaseCostsSource, type PurchaseCostsState } from "@/hooks/usePurchaseCostsState";
 import { PURCHASE_COST_COLORS } from "@/lib/theme";
 import SectionCard from "@/components/patterns/cards/SectionCard";
 import CalculatorLayout from "@/components/patterns/layouts/CalculatorLayout";
@@ -46,9 +46,11 @@ function Status({ pc }: { pc: PurchaseCostsState }) {
  * card) above a breakdown card holding the itemised table. On desktop the
  * right column's two cards end level with the input card. Stacks below lg,
  * with a summary bar once the summary card scrolls away.
+ *
+ * `source` is for the kitchen sink (sample data instead of the API).
  */
-export default function PurchaseCostsView() {
-  const pc = usePurchaseCostsState();
+export default function PurchaseCostsView({ source }: { source?: PurchaseCostsSource } = {}) {
+  const pc = usePurchaseCostsState(source);
   const [active, setActive] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const { data, error, loading, derived } = pc;

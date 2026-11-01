@@ -285,7 +285,7 @@ export default function CashflowDashboard({
               <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px]">
                 {/* Chart */}
                 <div className="flex min-w-0 flex-col gap-4 p-6">
-                  <Label variant="caps" asChild><h3>{chartTitle}</h3></Label>
+                  <Label variant="caps" asChild><h2>{chartTitle}</h2></Label>
                   <div
                     ref={chartRef}
                     className="h-[380px] min-w-0 [&_*:focus]:outline-none [&_*:focus-visible]:outline-none"
@@ -382,7 +382,7 @@ export default function CashflowDashboard({
                 <div className="flex flex-col gap-5 border-t border-border-subtle p-6 xl:border-t-0 xl:border-l">
                   <Stat
                     label={sideTitle}
-                    labelAs="h3"
+                    labelAs="h2"
                     size="lg"
                     value={
                       <span style={{ color: heroColor }}>

@@ -3,12 +3,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import BlocksPage from "../blocks/page";
 import CardsPage from "../cards/page";
 import LayoutsPage from "../layouts/page";
+import ScreensPage from "../screens/page";
 import FoundationsPage from "../page";
 import PrimitivesPage from "../primitives/page";
 import { PAGES, SECTIONS } from "../sections";
 import { renderWithProviders, stubIntersectionObserver } from "./setup";
 
-const COMPONENTS = { foundations: FoundationsPage, primitives: PrimitivesPage, blocks: BlocksPage, cards: CardsPage, layouts: LayoutsPage };
+// jsdom has no layout, so recharts' ResponsiveContainer measures 0×0 and warns.
+// Give charts a fixed size here; the Screens page renders real charts.
+vi.mock("recharts", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("recharts")>();
+  const { cloneElement, isValidElement } = await import("react");
+  return {
+    ...mod,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) =>
+      isValidElement(children) ? cloneElement(children as React.ReactElement<{ width: number; height: number }>, { width: 800, height: 300 }) : null,
+  };
+});
+
+const COMPONENTS = { foundations: FoundationsPage, primitives: PrimitivesPage, blocks: BlocksPage, cards: CardsPage, layouts: LayoutsPage, screens: ScreensPage };
 const ROUTES = PAGES.map((p) => ({ name: p.key, Page: COMPONENTS[p.key], sections: p.sections, href: p.href }));
 
 describe("/kitchen-sink", () => {
@@ -19,7 +32,7 @@ describe("/kitchen-sink", () => {
   });
 
   it("has five layers in order, each with sections, and unique section ids", () => {
-    expect(PAGES.map((p) => p.key)).toEqual(["foundations", "primitives", "blocks", "cards", "layouts"]);
+    expect(PAGES.map((p) => p.key)).toEqual(["foundations", "primitives", "blocks", "cards", "layouts", "screens"]);
     for (const p of PAGES) expect(p.sections.length).toBeGreaterThan(0);
     expect(new Set(SECTIONS.map((s) => s.id)).size).toBe(SECTIONS.length);
   });
@@ -27,7 +40,8 @@ describe("/kitchen-sink", () => {
   describe.each(ROUTES)("$name page", ({ Page, sections, href }) => {
     it("renders its sections in order", () => {
       renderWithProviders(<Page />);
-      const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+      // Section headings only: the Screens page's screens bring their own h2s.
+      const headings = [...document.querySelectorAll("section[aria-labelledby] > h2")].map((h) => h.textContent);
       expect(headings).toEqual(sections.map((s) => s.title));
     });
 
