@@ -109,7 +109,7 @@ export default function InputsSection() {
           />
         </div>
       </VariantRow>
-      <VariantRow label="AmountSection (domain) · plain / with % slider, marker and PercentChip · Purchase Costs, Cashflow setup">
+      <VariantRow label="AmountSection (domain) · plain / with % slider, marker and PercentChip · Purchase Costs">
         <div className="w-[360px] rounded-2xl bg-surface-raised pb-1">
           <AmountSection id="ks-amt-price" label="Purchase price" value={amtPrice} onChange={setAmtPrice} inputStep={10_000} />
           <AmountSection

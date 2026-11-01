@@ -22,6 +22,10 @@ interface WizardShellProps {
   bodyAlign?: "start" | "center";
   /** No body padding: the step lays out its own edge-to-edge sections. */
   flush?: boolean;
+  /** Optional column right of the header and body (e.g. a running summary); the footer spans both. */
+  aside?: ReactNode;
+  /** Segmented progress bar across the top, one segment per step. */
+  showProgress?: boolean;
 
   /** Continue/Save/Calculate button label. */
   ctaLabel: string;
@@ -43,6 +47,8 @@ export default function WizardShell({
   children,
   bodyAlign = "start",
   flush = false,
+  aside,
+  showProgress = false,
   ctaLabel,
   ctaDisabled = false,
   onContinue,
@@ -53,26 +59,45 @@ export default function WizardShell({
 }: WizardShellProps) {
   return (
     <div className="flex-1 flex flex-col min-w-0">
-      {/* Header */}
-      <header className="flex flex-col gap-2 px-6 pt-7 pb-5">
-        <Label variant="caps" asChild>
-          <span className="tabular-nums">Step {stepIndex} of {totalSteps}</span>
-        </Label>
-        <SectionTitle>{stepTitle}</SectionTitle>
-        {stepSubtitle && (
-          <p className="text-sm text-fg-secondary leading-relaxed">{stepSubtitle}</p>
-        )}
-      </header>
+      <div className="flex min-h-0 flex-1">
+        <div className="flex min-w-0 flex-1 flex-col">
+          {showProgress && (
+            // Done = brand 60%, current = brand, upcoming = surface-hover.
+            <div aria-hidden="true" className="flex gap-1 px-6 pt-6">
+              {Array.from({ length: totalSteps }, (_, i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    "h-1 flex-1 rounded-full transition-colors duration-300",
+                    i < stepIndex - 1 ? "bg-brand/60" : i === stepIndex - 1 ? "bg-brand" : "bg-surface-hover",
+                  )}
+                />
+              ))}
+            </div>
+          )}
+          {/* Header */}
+          <header className={cn("flex flex-col gap-2 px-6 pb-5", showProgress ? "pt-6" : "pt-7")}>
+            <Label variant="caps" asChild>
+              <span className="tabular-nums">Step {stepIndex} of {totalSteps}</span>
+            </Label>
+            <SectionTitle>{stepTitle}</SectionTitle>
+            {stepSubtitle && (
+              <p className="text-sm text-fg-secondary leading-relaxed">{stepSubtitle}</p>
+            )}
+          </header>
 
-      {/* Content */}
-      <div
-        className={cn(
-          "flex-1 overflow-y-auto",
-          !flush && "px-6 pb-6",
-          bodyAlign === "center" && "flex flex-col items-center justify-center",
-        )}
-      >
-        {children}
+          {/* Content */}
+          <div
+            className={cn(
+              "flex-1 overflow-y-auto",
+              !flush && "px-6 pb-6",
+              bodyAlign === "center" && "flex flex-col items-center justify-center",
+            )}
+          >
+            {children}
+          </div>
+        </div>
+        {aside}
       </div>
 
       {/* Footer Actions */}

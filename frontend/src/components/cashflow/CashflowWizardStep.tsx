@@ -7,6 +7,7 @@ import { WizardShell, useWizardSteps } from "@/components/domain/wizard";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import type { StepId } from "@/lib/cashflow-types";
 import { getCashflowSteps } from "./cashflow-steps";
+import CashflowSummary from "./CashflowSummary";
 import SetupStep from "./wizard/SetupStep";
 import LoanStep from "./wizard/LoanStep";
 import CostsStep from "./wizard/CostsStep";
@@ -68,6 +69,8 @@ export default function CashflowWizardStep({
       onBack={onStepBack}
       bodyAlign="start"
       flush={FLUSH_STEPS.has(step)}
+      aside={isModal ? undefined : <CashflowSummary s={s} currentStep={step} />}
+      showProgress={!isModal}
     >
       <StepComponent s={s} />
     </WizardShell>

@@ -79,7 +79,7 @@ The Blocks page shows blocks on a plain `Specimen` surface, not in a card, so it
 | Page top bar (tool name, page title, page actions) | `cards/PageBar.tsx` | Cashflow |
 | How a number sits in a KPI card | `cards/StatCard.tsx` | Every KPI card |
 | Empty states | `cards/EmptyState.tsx` | Kitchen sink (no page has one yet) |
-| Big $ amount fields, deposit slider and % chip | `domain/AmountSection.tsx` | Purchase Costs inputs, Cashflow wizard step 1 |
+| Big $ amount fields, deposit slider and % chip | `domain/AmountSection.tsx` | Purchase Costs inputs |
 | Calculator page: input column width, gaps, breakpoint | `layouts/CalculatorLayout.tsx` | Purchase Costs |
 | Dashboard page: KPI strip, side panel, gaps | `layouts/DashboardLayout.tsx` | Kitchen sink (no page uses it yet) |
 | A whole screen's arrangement (Cashflow wizard / output, Purchase Costs) | `components/cashflow/*`, `components/purchase-costs/*` | That screen, in the app and on the Screens page |
