@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { Pencil, Plus } from "lucide-react";
-import PageHeader from "@/components/layout/PageHeader";
+import PageBar from "@/components/patterns/cards/PageBar";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import CashflowCalculator from "@/components/cashflow/CashflowView";
 import { useCashflowState } from "@/hooks/useCashflowState";
-import type { StepId } from "@/lib/cashflow-types";
+import type { DashboardView, StepId } from "@/lib/cashflow-types";
 
 export default function CashflowPage() {
   const [resetKey, setResetKey] = useState(0);
@@ -21,14 +22,33 @@ export default function CashflowPage() {
 function CashflowPageContent({ onReset }: { onReset: () => void }) {
   const s = useCashflowState();
   const [editingStep, setEditingStep] = useState<StepId | null>(null);
+  const [dashboardView, setDashboardView] = useState<DashboardView>("overview");
 
   return (
-    <>
-      <PageHeader
-        title="Cashflow"
-        subtitle="12 Example Street, Clayfield, QLD 4011"
+    // Fills the content area, so the wizard card can take the height left under the bar.
+    <div className="flex min-h-[calc(100dvh-2*var(--layout-page-padding-y))] flex-col gap-6">
+      <PageBar
+        eyebrow="Cashflow"
+        title={s.allComplete ? "12 Example Street, Clayfield, QLD 4011" : "New property"}
         actions={
           <>
+            {s.allComplete && (
+              // Always one selected: ignore deselect.
+              <ToggleGroup
+                type="single"
+                variant="solid"
+                value={dashboardView}
+                onValueChange={(v) => { if (v) setDashboardView(v as DashboardView); }}
+                aria-label="Layout"
+                className="flex gap-1.5"
+              >
+                {(["overview", "details"] as const).map((v) => (
+                  <ToggleGroupItem key={v} value={v} className="px-3 py-1.5 text-xs capitalize">
+                    {v}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            )}
             {s.allComplete && (
               <Button
                 type="button"
@@ -54,7 +74,8 @@ function CashflowPageContent({ onReset }: { onReset: () => void }) {
         s={s}
         editingStep={editingStep}
         onEditingStepChange={setEditingStep}
+        dashboardView={dashboardView}
       />
-    </>
+    </div>
   );
 }

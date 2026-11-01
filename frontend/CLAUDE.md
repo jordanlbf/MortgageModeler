@@ -19,7 +19,7 @@ frontend/src/
                                 ErrorBoundary, ColumnDrawer, wizard/)
     patterns/                 — shared building blocks, in layers; each imports only from earlier ones
       blocks/                 — inside a card: SectionTitle, Stat, KeyValueList, InlineAlert
-      cards/                  — blocks in a box: SectionCard, StatCard, EmptyState
+      cards/                  — blocks in a box: SectionCard, StatCard, PageBar, EmptyState
       layouts/                — whole pages: CalculatorLayout, DashboardLayout
   hooks/
     use<Feature>State.ts      — form state + API call + derived data

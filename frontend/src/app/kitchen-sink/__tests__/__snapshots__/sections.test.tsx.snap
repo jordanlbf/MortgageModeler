@@ -2350,6 +2350,111 @@ exports[`kitchen-sink sections > cards matches its snapshot 1`] = `
     <div
       class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
     >
+      PageBar · top of a page: title / + eyebrow / + actions
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="flex w-full flex-col gap-3"
+      >
+        <div
+          class="border border-border-subtle flex rounded-2xl bg-surface-raised gap-3 px-5 py-4 flex-row flex-wrap items-center justify-between gap-x-6"
+          data-card="page-bar"
+          data-pattern="section-card"
+          data-size="sm"
+          data-slot="card"
+          data-variant="panel"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-1"
+          >
+            <h3
+              class="truncate text-[16px] font-semibold text-fg-primary"
+            >
+              Page title
+            </h3>
+          </div>
+        </div>
+        <div
+          class="border border-border-subtle flex rounded-2xl bg-surface-raised gap-3 px-5 py-4 flex-row flex-wrap items-center justify-between gap-x-6"
+          data-card="page-bar"
+          data-pattern="section-card"
+          data-size="sm"
+          data-slot="card"
+          data-variant="panel"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-1"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Tool name
+            </span>
+            <h3
+              class="truncate text-[16px] font-semibold text-fg-primary"
+            >
+              Page title
+            </h3>
+          </div>
+        </div>
+        <div
+          class="border border-border-subtle flex rounded-2xl bg-surface-raised gap-3 px-5 py-4 flex-row flex-wrap items-center justify-between gap-x-6"
+          data-card="page-bar"
+          data-pattern="section-card"
+          data-size="sm"
+          data-slot="card"
+          data-variant="panel"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-1"
+          >
+            <span
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+            >
+              Tool name
+            </span>
+            <h3
+              class="truncate text-[16px] font-semibold text-fg-primary"
+            >
+              Page title
+            </h3>
+          </div>
+          <div
+            class="flex shrink-0 items-center gap-2"
+          >
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-border-default bg-transparent px-3.5 text-[13px] font-medium text-fg-primary transition-colors hover:border-border-strong"
+              data-size="none"
+              data-slot="button"
+              data-variant="outline-action"
+              type="button"
+            >
+              Secondary
+            </button>
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-border-default bg-transparent px-3.5 text-[13px] font-medium text-fg-primary transition-colors hover:border-border-strong"
+              data-size="none"
+              data-slot="button"
+              data-variant="outline-action"
+              type="button"
+            >
+              Primary action
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
       header · title / + description / + action / all three
     </div>
     <div
@@ -5061,6 +5166,199 @@ exports[`kitchen-sink sections > inputs matches its snapshot 1`] = `
               />
             </span>
           </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      AmountSection (domain) · plain / with % slider, marker and PercentChip · Purchase Costs, Cashflow setup
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="w-[360px] rounded-2xl bg-surface-raised pb-1"
+      >
+        <div
+          class="flex flex-col gap-4 border-t border-border-subtle px-6 py-5"
+          style="--slider-accent: var(--color-brand);"
+        >
+          <div
+            class="flex flex-col gap-2"
+          >
+            <label
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+              for="ks-amt-price"
+            >
+              Purchase price
+            </label>
+            <span
+              class="relative -mx-2 flex min-w-0 cursor-text items-center gap-1.5 rounded-lg px-2 transition-colors duration-150 hover:bg-surface-hover/50 has-[>input:focus]:bg-surface-hover/50 after:pointer-events-none after:absolute after:inset-x-2 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-transparent after:transition-colors after:duration-150 after:content-[''] has-[>input:focus]:after:bg-brand"
+            >
+              <span
+                aria-hidden="true"
+                class="text-[22px] font-semibold transition-colors text-fg-secondary"
+              >
+                $
+              </span>
+              <input
+                autocomplete="off"
+                class="w-full rounded-lg border-border-default text-fg-primary outline-none [transition:border-color_0.2s_ease,background_0.2s_ease,box-shadow_0.2s_ease] hover:border-border-strong focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] h-9 min-w-0 flex-1 border-0 bg-transparent px-0 text-[28px] font-semibold tracking-[-0.02em] tabular-nums shadow-none placeholder:font-semibold placeholder:text-fg-muted hover:bg-transparent focus:bg-transparent focus:shadow-none"
+                data-slot="input"
+                data-variant="form"
+                id="ks-amt-price"
+                inputmode="decimal"
+                placeholder="0"
+                spellcheck="false"
+                type="text"
+                value="750,000"
+              />
+            </span>
+          </div>
+        </div>
+        <div
+          class="flex flex-col gap-4 border-t border-border-subtle px-6 py-5"
+          style="--slider-accent: var(--color-data-positive);"
+        >
+          <div
+            class="flex flex-col gap-2"
+          >
+            <label
+              class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+              data-slot="label"
+              for="ks-amt-deposit"
+            >
+              Deposit
+            </label>
+            <span
+              class="relative -mx-2 flex min-w-0 cursor-text items-center gap-1.5 rounded-lg px-2 transition-colors duration-150 hover:bg-surface-hover/50 has-[>input:focus]:bg-surface-hover/50 after:pointer-events-none after:absolute after:inset-x-2 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-transparent after:transition-colors after:duration-150 after:content-[''] has-[>input:focus]:after:bg-brand"
+            >
+              <span
+                aria-hidden="true"
+                class="text-[22px] font-semibold transition-colors text-fg-secondary"
+              >
+                $
+              </span>
+              <input
+                autocomplete="off"
+                class="w-full rounded-lg border-border-default text-fg-primary outline-none [transition:border-color_0.2s_ease,background_0.2s_ease,box-shadow_0.2s_ease] hover:border-border-strong focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] h-9 min-w-0 flex-1 border-0 bg-transparent px-0 text-[28px] font-semibold tracking-[-0.02em] tabular-nums shadow-none placeholder:font-semibold placeholder:text-fg-muted hover:bg-transparent focus:bg-transparent focus:shadow-none"
+                data-slot="input"
+                data-variant="form"
+                id="ks-amt-deposit"
+                inputmode="decimal"
+                placeholder="0"
+                spellcheck="false"
+                type="text"
+                value="150,000"
+              />
+              <span
+                class="inline-flex shrink-0 items-center rounded-md bg-[color:color-mix(in_srgb,var(--badge-accent,var(--color-fg-secondary))_12%,transparent)] py-0.5 font-medium tabular-nums text-[color:var(--badge-accent,var(--color-fg-secondary))] h-7 cursor-text gap-0 px-2 text-[13px] transition-shadow hover:ring-1 hover:ring-[color:color-mix(in_srgb,var(--badge-accent)_40%,transparent)] focus-within:ring-1 focus-within:ring-[color:var(--badge-accent)]"
+                data-slot="badge"
+                data-variant="soft"
+                style="--badge-accent: var(--color-data-positive);"
+              >
+                <input
+                  aria-label="Deposit as a percentage of the price"
+                  autocomplete="off"
+                  class="bg-transparent outline-none data-[editing=true]:bg-[color:rgba(255,255,255,0.06)] data-[editing=true]:shadow-[0_0_0_1px_var(--input-accent)] h-auto p-0 text-right font-[inherit] text-[color:inherit] tabular-nums"
+                  data-slot="input"
+                  data-variant="ghost"
+                  id="ks-amt-pct"
+                  inputmode="decimal"
+                  style="width: 2.2ch;"
+                  type="text"
+                  value="20"
+                />
+                <span
+                  aria-hidden="true"
+                >
+                  %
+                </span>
+              </span>
+            </span>
+          </div>
+          <div
+            class="relative pt-1 pb-5"
+          >
+            <span
+              aria-disabled="false"
+              class="relative flex h-5 w-full cursor-pointer touch-none items-center select-none data-disabled:cursor-default data-disabled:opacity-50"
+              data-orientation="horizontal"
+              data-slot="slider"
+              data-variant="hero"
+              dir="ltr"
+              style="--radix-slider-thumb-transform: translateX(-50%);"
+            >
+              <span
+                class="relative h-[3px] w-full grow rounded-full bg-border-default"
+                data-orientation="horizontal"
+                data-slot="slider-track"
+              >
+                <span
+                  class="absolute h-full rounded-full bg-[color:var(--slider-accent,var(--color-brand))] transition-[background-color] duration-200"
+                  data-orientation="horizontal"
+                  data-slot="slider-range"
+                  style="left: 0%; right: 80%;"
+                />
+              </span>
+              <span
+                style="transform: var(--radix-slider-thumb-transform); position: absolute; left: calc(20% + 0px);"
+              >
+                <span
+                  aria-label="Deposit"
+                  aria-orientation="horizontal"
+                  aria-valuemax="100"
+                  aria-valuemin="0"
+                  aria-valuenow="20"
+                  aria-valuetext="$150,000, 20% of the price"
+                  class="relative block size-0 outline-none before:pointer-events-none before:absolute before:top-0 before:left-0 before:size-[14px] before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border-2 before:border-[color:var(--slider-accent,var(--color-brand))] before:bg-fg-primary before:shadow-[0_1px_4px_rgba(0,0,0,0.4)] before:transition-[border-color] before:duration-200 before:content-[''] focus-visible:before:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+                  data-orientation="horizontal"
+                  data-radix-collection-item=""
+                  data-slot="slider-thumb"
+                  role="slider"
+                  style=""
+                  tabindex="0"
+                />
+              </span>
+            </span>
+            <span
+              aria-hidden="true"
+              class="pointer-events-none absolute top-0 bottom-0 flex -translate-x-1/2 flex-col items-center"
+              style="left: 20%;"
+            >
+              <span
+                class="mt-[9px] h-2.5 w-px bg-fg-secondary"
+              />
+              <span
+                class="pointer-events-auto mt-auto text-[10.5px] whitespace-nowrap tabular-nums text-fg-secondary"
+                title="20%: deposit needed to avoid LMI"
+              >
+                20%
+              </span>
+            </span>
+            <span
+              aria-hidden="true"
+              class="pointer-events-none absolute inset-x-0 bottom-0 flex justify-between text-[10.5px] tabular-nums text-fg-tertiary"
+            >
+              <span>
+                0%
+              </span>
+              <span>
+                100%
+              </span>
+            </span>
+            <span
+              class="sr-only"
+            >
+              20%: deposit needed to avoid LMI
+            </span>
+          </div>
         </div>
       </div>
     </div>

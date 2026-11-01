@@ -32,6 +32,9 @@ const STEP_COMPONENTS: Record<StepId, React.ComponentType<{ s: CashflowState }>>
   depreciation: DepreciationStep,
 };
 
+/** Steps on the shared patterns lay out their own edge-to-edge sections. */
+const FLUSH_STEPS: ReadonlySet<StepId> = new Set(["setup"]);
+
 export default function CashflowWizardStep({
   s,
   currentStep,
@@ -64,6 +67,7 @@ export default function CashflowWizardStep({
       backIcon={isModal ? <X size={16} /> : undefined}
       onBack={onStepBack}
       bodyAlign="start"
+      flush={FLUSH_STEPS.has(step)}
     >
       <StepComponent s={s} />
     </WizardShell>

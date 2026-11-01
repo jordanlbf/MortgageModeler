@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AmountSection, PercentChip } from "@/components/domain/AmountSection";
 import EditableValue from "@/components/domain/EditableValue";
 import SliderField from "@/components/domain/SliderField";
 import { formatCurrency, formatDollars, parseCurrencyInput } from "@/lib/formatters";
+import { lvrColor } from "@/lib/lvr";
 import VariantRow from "../_components/VariantRow";
 
 const VARIANTS = ["default", "form", "filled", "bar", "underline"] as const;
@@ -33,6 +35,11 @@ function Percent({ id, value }: { id: string; value: string }) {
 export default function InputsSection() {
   const [rate, setRate] = useState(6.14);
   const [price, setPrice] = useState(650_000);
+  const [amtPrice, setAmtPrice] = useState(750_000);
+  const [deposit, setDeposit] = useState(150_000);
+  const depositPct = amtPrice > 0 ? (deposit / amtPrice) * 100 : 0;
+  const lvr = amtPrice > 0 ? Math.max(0, (amtPrice - deposit) / amtPrice) : null;
+  const setDepositPct = (pct: number) => setDeposit(Math.round((amtPrice * pct) / 100));
 
   return (
     <>
@@ -99,6 +106,31 @@ export default function InputsSection() {
             editable
             parseDisplay={parseCurrencyInput}
             accent="var(--color-data-warning)"
+          />
+        </div>
+      </VariantRow>
+      <VariantRow label="AmountSection (domain) · plain / with % slider, marker and PercentChip · Purchase Costs, Cashflow setup">
+        <div className="w-[360px] rounded-2xl bg-surface-raised pb-1">
+          <AmountSection id="ks-amt-price" label="Purchase price" value={amtPrice} onChange={setAmtPrice} inputStep={10_000} />
+          <AmountSection
+            id="ks-amt-deposit"
+            label="Deposit"
+            value={deposit}
+            onChange={setDeposit}
+            inputStep={5_000}
+            percentOf={amtPrice}
+            accent={lvrColor(lvr)}
+            scale={{
+              value: depositPct,
+              min: 0,
+              max: 100,
+              step: 1,
+              onChange: setDepositPct,
+              tick: (n) => `${n}%`,
+              valueText: `${formatDollars(deposit) || "$0"}, ${Math.round(depositPct)}% of the price`,
+            }}
+            markers={[{ value: 20, label: "20%", title: "20%: deposit needed to avoid LMI" }]}
+            aside={<PercentChip id="ks-amt-pct" percent={depositPct} accent={lvrColor(lvr)} onCommit={setDepositPct} />}
           />
         </div>
       </VariantRow>

@@ -55,7 +55,7 @@ export default function ModalWizardShell({
 
         {/* Modal Card */}
         <div
-          className="pointer-events-auto relative w-full rounded-2xl overflow-hidden shadow-[0_24px_80px_-12px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset] animate-card-pop-in flex bg-surface-raised/80 backdrop-blur-xl border border-white/[0.06] transition-[min-height] duration-300 ease-out"
+          className="pointer-events-auto relative w-full rounded-2xl overflow-hidden shadow-[0_24px_80px_-12px_rgba(0,0,0,0.5)] animate-card-pop-in flex bg-surface-raised border border-border-subtle transition-[min-height] duration-300 ease-out"
           style={{
             maxWidth: `${maxWidth}px`,
             minHeight: `${minHeight}px`,

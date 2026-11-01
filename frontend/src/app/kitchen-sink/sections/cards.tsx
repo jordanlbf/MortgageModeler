@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import KeyValueList, { KeyValueRow } from "@/components/patterns/blocks/KeyValueList";
+import PageBar from "@/components/patterns/cards/PageBar";
 import SectionCard from "@/components/patterns/cards/SectionCard";
 import { StatDelta } from "@/components/patterns/blocks/Stat";
 import StatCard from "@/components/patterns/cards/StatCard";
@@ -21,6 +22,23 @@ const W = "w-full max-w-[320px]";
 export default function CardsSection() {
   return (
     <>
+      <VariantRow label="PageBar · top of a page: title / + eyebrow / + actions">
+        <div className="flex w-full flex-col gap-3">
+          <PageBar titleAs="h3" title="Page title" />
+          <PageBar titleAs="h3" eyebrow="Tool name" title="Page title" />
+          <PageBar
+            titleAs="h3"
+            eyebrow="Tool name"
+            title="Page title"
+            actions={
+              <>
+                <Button type="button" variant="outline-action">Secondary</Button>
+                <Button type="button" variant="outline-action">Primary action</Button>
+              </>
+            }
+          />
+        </div>
+      </VariantRow>
       <VariantRow label="header · title / + description / + action / all three">
         <SectionCard titleAs="h3" title="Card title" className={W}>
           <Placeholder h={80} />

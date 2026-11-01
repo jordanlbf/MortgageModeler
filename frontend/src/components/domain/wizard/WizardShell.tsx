@@ -3,6 +3,9 @@
 import type { ReactNode } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import SectionTitle from "@/components/patterns/blocks/SectionTitle";
+import { cn } from "@/lib/utils";
 
 interface WizardShellProps {
   /** Title of the active step (e.g. "Property Setup"). */
@@ -17,6 +20,8 @@ interface WizardShellProps {
   children: ReactNode;
   /** Centre the body horizontally — used by intro-style steps. */
   bodyAlign?: "start" | "center";
+  /** No body padding: the step lays out its own edge-to-edge sections. */
+  flush?: boolean;
 
   /** Continue/Save/Calculate button label. */
   ctaLabel: string;
@@ -37,6 +42,7 @@ export default function WizardShell({
   totalSteps,
   children,
   bodyAlign = "start",
+  flush = false,
   ctaLabel,
   ctaDisabled = false,
   onContinue,
@@ -48,35 +54,29 @@ export default function WizardShell({
   return (
     <div className="flex-1 flex flex-col min-w-0">
       {/* Header */}
-      <header className="px-10 pt-6 pb-3">
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <span className="text-[10px] font-semibold text-brand uppercase tracking-wider tabular-nums">
-            Step {stepIndex}
-          </span>
-          <span className="text-[10px] text-fg-muted/50">of {totalSteps}</span>
-        </div>
-        <h2 className="text-lg font-semibold text-fg-primary leading-snug">
-          {stepTitle}
-        </h2>
+      <header className="flex flex-col gap-2 px-6 pt-7 pb-5">
+        <Label variant="caps" asChild>
+          <span className="tabular-nums">Step {stepIndex} of {totalSteps}</span>
+        </Label>
+        <SectionTitle>{stepTitle}</SectionTitle>
         {stepSubtitle && (
-          <p className="text-sm text-fg-secondary mt-1.5 leading-relaxed">{stepSubtitle}</p>
+          <p className="text-sm text-fg-secondary leading-relaxed">{stepSubtitle}</p>
         )}
       </header>
 
       {/* Content */}
       <div
-        className={[
-          "flex-1 px-10 py-5 overflow-y-auto",
+        className={cn(
+          "flex-1 overflow-y-auto",
+          !flush && "px-6 pb-6",
           bodyAlign === "center" && "flex flex-col items-center justify-center",
-        ]
-          .filter(Boolean)
-          .join(" ")}
+        )}
       >
         {children}
       </div>
 
       {/* Footer Actions */}
-      <footer className="px-10 py-5 border-t border-white/[0.04]">
+      <footer className="px-6 py-5 border-t border-border-subtle">
         <div className="flex items-center justify-between">
           <div>
             {showBack && onBack && (

@@ -3,6 +3,8 @@ export type PurchaseMode = "new" | "existing";
 export type LoanType = "principal-interest" | "interest-only";
 export type ViewMode = "summary" | "property" | "tax" | "equity" | "deductions" | "costs";
 export type StepId = "setup" | "loan" | "costs" | "rental" | "income" | "depreciation";
+/** Cashflow output: the chart overview, or the year-by-year table. */
+export type DashboardView = "overview" | "details";
 
 export interface YearData {
   year: number;

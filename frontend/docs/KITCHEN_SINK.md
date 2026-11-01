@@ -53,7 +53,7 @@ src/app/kitchen-sink/
 
 src/components/patterns/
   blocks/               SectionTitle, Stat (+ StatDelta), KeyValueList (+ KeyValueRow), InlineAlert
-  cards/                SectionCard, StatCard, EmptyState
+  cards/                SectionCard, StatCard, PageBar, EmptyState
   layouts/              CalculatorLayout, DashboardLayout
   __tests__/layers.test.ts   each layer imports only from earlier layers
 ```
@@ -72,8 +72,10 @@ The Blocks page shows blocks on a plain `Specimen` surface, not in a card, so it
 | Label / value breakdowns | `blocks/KeyValueList.tsx` | Purchase Costs loan facts, Cashflow breakdowns and year summary |
 | Error / warning / info banners | `blocks/InlineAlert.tsx` | Every view's API error, sign in / sign up errors |
 | Card box: padding, radius, surface, header | `cards/SectionCard.tsx` | Every card, including KPI cards |
+| Page top bar (tool name, page title, page actions) | `cards/PageBar.tsx` | Cashflow |
 | How a number sits in a KPI card | `cards/StatCard.tsx` | Every KPI card |
 | Empty states | `cards/EmptyState.tsx` | Kitchen sink (no page has one yet) |
+| Big $ amount fields, deposit slider and % chip | `domain/AmountSection.tsx` | Purchase Costs inputs, Cashflow wizard step 1 |
 | Calculator page: input column width, gaps, breakpoint | `layouts/CalculatorLayout.tsx` | Purchase Costs |
 | Dashboard page: KPI strip, side panel, gaps | `layouts/DashboardLayout.tsx` | Kitchen sink (no page uses it yet) |
 
@@ -81,7 +83,7 @@ Edit the shared file, not the dummy section: the dummies only show what the shar
 
 **Cards** are the most common composite, so the Section cards section covers every shape the app needs from one `SectionCard`: header (title, description, action), `size="default"`/`"sm"`, `flush` bodies (divided sections, tables), common contents (stat, list, chart, form) and cards in a grid. If a page needs a card shape that isn't there, add it to `SectionCard` and to this section rather than styling a one-off.
 
-Not on the patterns yet (each has a deliberately distinct look): the Amortisation KPI and loan-control cards, the Tax rate pills and waterfall, the Cashflow dashboard grid, chart and year-panel headers, and grant scheme cards. Move them over (Amortisation KPIs to `StatCard`, Cashflow to `DashboardLayout`) when their design is meant to match the rest.
+Not on the patterns yet (each has a deliberately distinct look): the Amortisation KPI and loan-control cards, the Tax rate pills and waterfall, and grant scheme cards. Move them over (Amortisation KPIs to `StatCard`) when their design is meant to match the rest. Cashflow is on the patterns: `PageBar` on top, then the wizard or one flush `SectionCard` dashboard (tabs, divided KPI row of `Stat`s, chart beside a `KeyValueList` breakdown).
 
 ## Maintenance rule
 
@@ -101,7 +103,7 @@ Add this to the PR description:
 | Foundations | Typography | `typography.tsx` | Type scale, `Label` variants |
 | | Colors | `colors.tsx` | Foreground, brand, data, status, surface and border tokens |
 | Primitives | Buttons | `buttons.tsx` | Stock variants x sizes, disabled, loading, icon sizes, every custom variant |
-| | Inputs | `inputs.tsx` | `Input` variants x states, currency/percent, password, helper text, `EditableValue`, `SliderField` |
+| | Inputs | `inputs.tsx` | `Input` variants x states, currency/percent, password, helper text, `EditableValue`, `SliderField`, `AmountSection` / `PercentChip` |
 | | Selects and toggles | `selects-and-toggles.tsx` | `NativeSelect`, `Checkbox`, `Switch`, `ToggleGroup`/`Toggle`, `Tabs`, `Slider` |
 | | Badges and tags | `badges.tsx` | Stock and custom `Badge` variants, property tags |
 | | Card surfaces | `card-variants.tsx` | Raw `Card`: `panel`, `glass`, `scheme`, `auth`, `default` |
@@ -112,7 +114,7 @@ Add this to the PR description:
 | | Numbers | `numbers.tsx` | `Stat` sizes and tones, `StatDelta`, delta / action / children |
 | | Lists | `lists.tsx` | `KeyValueList` / `KeyValueRow`: sizes, divided, totals, tones, grouped |
 | | Alerts and banners | `alerts.tsx` | `InlineAlert` tones and wrapping, full-width banner |
-| Cards | Section cards | `cards.tsx` | `SectionCard`: header options, sizes, flush, common contents, grid |
+| Cards | Section cards | `cards.tsx` | `PageBar`; `SectionCard`: header options, sizes, flush, common contents, grid |
 | | KPI cards | `kpi-cards.tsx` | `StatCard`: tones, action, delta, subtitle, sparkline, null, loading |
 | | Empty states | `empty-states.tsx` | `EmptyState`: no data, no results, error, coming soon |
 | Layouts | Calculator | `calculator.tsx` | `CalculatorLayout` with dummy cards |

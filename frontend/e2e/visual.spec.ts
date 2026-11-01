@@ -237,10 +237,4 @@ test.describe("cashflow", () => {
     await page.getByRole("button", { name: "Edit", exact: true }).click();
     await snap(page, "cashflow-edit-modal", 800);
   });
-
-  test("expand sections", async ({ page }) => {
-    await completeWizard(page, false);
-    await page.getByRole("button", { name: "Expand" }).first().click();
-    await snap(page, "cashflow-section-expanded", 800);
-  });
 });

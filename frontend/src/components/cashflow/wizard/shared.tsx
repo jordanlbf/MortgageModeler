@@ -20,10 +20,13 @@ export function InputField({
   id,
   className,
   type = "text",
+  caps = false,
   ...inputProps
 }: {
   label: string;
   hint?: string;
+  /** Small caps caption, as on the Purchase Costs card (steps moved onto the shared patterns). */
+  caps?: boolean;
   /** Right-aligned unit shown inside the field (e.g. "%"). */
   suffix?: string;
 } & Omit<React.ComponentProps<typeof Input>, "variant">) {
@@ -43,7 +46,7 @@ export function InputField({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <Label variant="field" htmlFor={inputId}>{label}</Label>
+        <Label variant={caps ? "caps" : "field"} htmlFor={inputId}>{label}</Label>
         {hint && <span className="text-[10px] text-fg-muted">{hint}</span>}
       </div>
       {suffix ? (
