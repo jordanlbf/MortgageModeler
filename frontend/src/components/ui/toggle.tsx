@@ -25,9 +25,9 @@
  *   accent text, 8px accent-10% glow. Accent: `--pill-accent` (default
  *   brand). `data-tone="negative"` on an item = data-negative accent at
  *   12% bg / 8% glow (the red "No" option).
- * - `tile`: card-sized option with an icon, title and line of text (cashflow
- *   wizard "What are you modelling?"). rounded-xl border, p-4, column layout,
- *   left-aligned. Off = border-subtle, hover surface-subtle; on = brand border,
+ * - `tile`: one-row option card: icon, title, status pill, selection dot
+ *   (cashflow wizard "What are you modelling?"). rounded-xl border, px-3.5
+ *   py-3, items in a row. Off = border-subtle, hover surface-subtle; on = brand border,
  *   brand 10% fill. Children can react with `group-data-[state=on]/toggle:`.
  * - `choice`: large either/or option (no page uses it since the wizard moved
  *   to `tile`; kept for short two-way choices). px-5 py-2.5 rounded-lg 14px medium. Off = zinc-800/40
@@ -74,7 +74,7 @@ const toggleVariantStyles = cva("", {
         "data-[state=on]:border-[color:color-mix(in_srgb,var(--pill-accent)_25%,transparent)] data-[state=on]:bg-[color:color-mix(in_srgb,var(--pill-accent)_14%,transparent)] data-[state=on]:text-[color:var(--pill-accent)] data-[state=on]:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_10%,transparent)] " +
         "data-[tone=negative]:[--pill-accent:var(--color-data-negative)] data-[tone=negative]:data-[state=on]:bg-[color:color-mix(in_srgb,var(--pill-accent)_12%,transparent)] data-[tone=negative]:data-[state=on]:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_8%,transparent)]",
       tile:
-        "flex flex-col items-stretch gap-4 rounded-xl border p-4 text-left whitespace-normal transition-colors duration-150 " +
+        "flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors duration-150 " +
         "data-[state=off]:border-border-subtle data-[state=off]:bg-transparent data-[state=off]:hover:bg-surface-subtle " +
         "data-[state=on]:border-brand data-[state=on]:bg-brand/10",
       choice:

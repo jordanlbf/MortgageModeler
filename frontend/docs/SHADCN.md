@@ -70,7 +70,7 @@ empty `onValueChange` unless clearing is intended. Multiple groups stay
 | Variant | Look | Use for |
 |---|---|---|
 | `pill` | Rounded chip, accent when on; `data-tone="negative"` for red | Filter chips, Yes/No (Grants) |
-| `tile` | Card-sized option: icon, title, one line of text | Cashflow wizard "What are you modelling?" |
+| `tile` | One-row option card: icon, title, status pill, dot | Cashflow wizard "What are you modelling?" |
 | `choice` | Large choice button | Short two-way choices (no page uses it yet) |
 | `segment` | Icon segmented control | Chart / Table switch |
 | `segment-pill` | Pill segmented control | Repayment frequency |

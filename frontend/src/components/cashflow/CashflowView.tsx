@@ -73,6 +73,7 @@ export default function CashflowCalculator({
         <SectionCard flush className="w-full flex-1 flex-row overflow-hidden">
           <CashflowSidebar
             s={s}
+            showProgress={false}
             currentStep={currentWizardStep}
             onStepClick={(step) => setInlineStep(step)}
           />

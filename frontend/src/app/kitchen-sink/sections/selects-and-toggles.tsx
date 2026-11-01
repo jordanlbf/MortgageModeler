@@ -1,6 +1,7 @@
 "use client";
 
 import { BarChart3, Building2, Home, Table2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -90,20 +91,18 @@ export default function SelectsAndTogglesSection() {
           <ToggleGroupItem value="no" data-tone="negative">No</ToggleGroupItem>
         </ToggleGroup>
       </VariantRow>
-      <VariantRow label='ToggleGroup variant="tile" (icon, title, line of text; children react via group-data-[state=on]/toggle)'>
+      <VariantRow label='ToggleGroup variant="tile" (one row: icon, title, status pill; children react via group-data-[state=on]/toggle)'>
         <ToggleGroup type="single" variant="tile" aria-label="Property kind" defaultValue="investment" className="grid w-full max-w-[560px] grid-cols-2 gap-3">
           {[
-            { value: "investment", title: "New investment", body: "A rental you're about to buy", Icon: Building2 },
-            { value: "home", title: "New home", body: "A home you're buying to live in", Icon: Home },
+            { value: "investment", title: "Investment", pill: "New", Icon: Building2 },
+            { value: "home", title: "Home", pill: "Existing", Icon: Home },
           ].map((t) => (
-            <ToggleGroupItem key={t.value} value={t.value}>
-              <span className="flex size-9 items-center justify-center rounded-lg bg-surface-hover text-fg-tertiary group-data-[state=on]/toggle:bg-brand/15 group-data-[state=on]/toggle:text-brand">
-                <t.Icon size={17} strokeWidth={1.8} aria-hidden="true" />
+            <ToggleGroupItem key={t.value} value={t.value} aria-label={`${t.title}, ${t.pill.toLowerCase()}`}>
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-fg-tertiary group-data-[state=on]/toggle:bg-brand/15 group-data-[state=on]/toggle:text-brand">
+                <t.Icon size={16} strokeWidth={1.8} aria-hidden="true" />
               </span>
-              <span className="flex flex-col gap-0.5">
-                <span className="text-[14px] font-semibold text-fg-primary">{t.title}</span>
-                <span className="text-[12px] text-fg-tertiary">{t.body}</span>
-              </span>
+              <span className="min-w-0 flex-1 truncate text-[14px] font-semibold text-fg-primary">{t.title}</span>
+              <Badge variant="soft" className="rounded-full px-2 py-1 group-data-[state=on]/toggle:[--badge-accent:var(--color-brand)]">{t.pill}</Badge>
             </ToggleGroupItem>
           ))}
         </ToggleGroup>

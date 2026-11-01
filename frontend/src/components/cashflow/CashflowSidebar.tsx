@@ -98,6 +98,8 @@ interface Props {
   s: CashflowState;
   currentStep?: string;
   onStepClick?: (step: StepId) => void;
+  /** "Progress n of N" header; off inline, where the step's own progress bar shows instead. */
+  showProgress?: boolean;
 }
 
 interface StepBodyProps {
@@ -176,7 +178,7 @@ function StepBody({
   );
 }
 
-export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) {
+export default function CashflowSidebar({ s, currentStep, onStepClick, showProgress = true }: Props) {
   const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment), [s.isInvestment]);
   const wizard = useWizardSteps(cashflowSteps, s);
 
@@ -215,11 +217,11 @@ export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) 
       isComplete={(id) => wizard.isComplete(id)}
       selectable={(id) => wizard.allComplete || wizard.isComplete(id)}
       onSelect={(id) => onStepClick?.(id)}
-      progress={{
+      progress={showProgress ? {
         percent: progressPercent,
         completedCount,
         totalCount: cashflowSteps.length,
-      }}
+      } : undefined}
       renderStepBody={({ step, isCurrent, isComplete, labelId }) => {
         const lines = getStepLines(step.id, s);
         const isExpanded = expandedSteps.has(step.id) || isCurrent;
