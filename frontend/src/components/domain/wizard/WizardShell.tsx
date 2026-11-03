@@ -12,6 +12,8 @@ interface WizardShellProps {
   stepTitle: string;
   /** Optional supporting copy under the title. */
   stepSubtitle?: string;
+  /** Shown at the right of the title row, vertically centred (e.g. a key figure). */
+  titleAside?: ReactNode;
   /** 1-based index, e.g. 3 for the third step. */
   stepIndex: number;
   totalSteps: number;
@@ -42,6 +44,7 @@ interface WizardShellProps {
 export default function WizardShell({
   stepTitle,
   stepSubtitle,
+  titleAside,
   stepIndex,
   totalSteps,
   children,
@@ -59,7 +62,8 @@ export default function WizardShell({
 }: WizardShellProps) {
   return (
     <div className="flex-1 flex flex-col min-w-0">
-      <div className="flex min-h-0 flex-1">
+      {/* data-aside lets a step hide what the aside already shows. */}
+      <div className="group/wizard flex min-h-0 flex-1" data-aside={aside ? "" : undefined}>
         <div className="flex min-w-0 flex-1 flex-col">
           {showProgress && (
             // Done = brand 60%, current = brand, upcoming = surface-hover.
@@ -80,7 +84,10 @@ export default function WizardShell({
             <Label variant="caps" asChild>
               <span className="tabular-nums">Step {stepIndex} of {totalSteps}</span>
             </Label>
-            <SectionTitle>{stepTitle}</SectionTitle>
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+              <SectionTitle>{stepTitle}</SectionTitle>
+              {titleAside}
+            </div>
             {stepSubtitle && (
               <p className="text-sm text-fg-secondary leading-relaxed">{stepSubtitle}</p>
             )}

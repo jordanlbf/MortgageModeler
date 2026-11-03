@@ -76,6 +76,11 @@ export const t = {
     debtDim:          "var(--color-series-debt-dim)",
   },
 
+  purchase: {
+    new:      "var(--color-purchase-new)",
+    existing: "var(--color-purchase-existing)",
+  },
+
   status: {
     success:   "var(--color-status-success)",
     error:     "var(--color-status-error)",

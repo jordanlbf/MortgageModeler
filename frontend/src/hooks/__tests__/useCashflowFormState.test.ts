@@ -10,8 +10,8 @@ describe("useCashflowFormState", () => {
     expect(form.taxableIncome).toBe("$120,000");
     expect(form.purchasePrice).toBe("");
     expect(form.depositAmount).toBe("");
-    expect(form.interestRate).toBe("6.5");
-    expect(form.loanTerm).toBe("30");
+    expect(form.interestRate).toBe("");
+    expect(form.loanTerm).toBe("");
     expect(form.hasOffset).toBe(false);
     expect(form.weeklyRent).toBe("$650");
     expect(form.propertyUse).toBeNull();

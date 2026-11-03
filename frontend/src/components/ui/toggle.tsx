@@ -40,6 +40,11 @@
  * - `solid`: compact text segment (cashflow dashboard Overview / Details).
  *   rounded-md, medium weight. Off = transparent, fg-secondary; on = solid
  *   brand fill, brand-contrast text. Padding and font size from the caller.
+ * - `segment-fill`: rounded-full segment whose "on" fill is its own colour
+ *   (cashflow wizard New / Existing). 13px semibold, icon + label in a row.
+ *   Off = fg-secondary (hover fg-primary); on = solid `--segment-accent`
+ *   fill (default brand), surface-page text. The caller draws the track,
+ *   e.g. `inline-flex rounded-full bg-surface-hover/70 p-1`.
  */
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -88,6 +93,10 @@ const toggleVariantStyles = cva("", {
       solid:
         "rounded-md bg-transparent font-medium text-fg-secondary transition-colors " +
         "data-[state=on]:bg-brand data-[state=on]:text-brand-contrast",
+      "segment-fill":
+        "[--segment-accent:var(--color-brand)] flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap text-fg-secondary transition-colors duration-150 " +
+        "data-[state=off]:hover:text-fg-primary " +
+        "data-[state=on]:bg-[color:var(--segment-accent)] data-[state=on]:text-surface-page",
     },
     size: {
       /** No size classes (default for custom variants). */

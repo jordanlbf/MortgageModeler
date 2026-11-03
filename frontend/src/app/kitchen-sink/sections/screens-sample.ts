@@ -99,7 +99,9 @@ export const CASHFLOW_WIZARD: CashflowSource = {};
 export const CASHFLOW_OUTPUT: CashflowSource = {
   initial: {
     propertyUse: "investment",
+    propertyType: "house",
     purchaseMode: "new",
+    newBuild: false,
     purchasePrice: "$500,000",
     depositAmount: "$100,000",
     setupComplete: true,

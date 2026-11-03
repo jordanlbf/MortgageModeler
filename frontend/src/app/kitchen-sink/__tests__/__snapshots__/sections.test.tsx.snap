@@ -3632,6 +3632,47 @@ exports[`kitchen-sink sections > colors matches its snapshot 1`] = `
     <div
       class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
     >
+      Purchase status
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="flex w-[132px] flex-col gap-1.5"
+      >
+        <div
+          class="h-10 rounded-lg ring-1 ring-border-subtle"
+          style="background: var(--color-purchase-new);"
+        />
+        <code
+          class="font-sans text-[11px] break-all text-fg-tertiary"
+        >
+          --color-
+          purchase-new
+        </code>
+      </div>
+      <div
+        class="flex w-[132px] flex-col gap-1.5"
+      >
+        <div
+          class="h-10 rounded-lg ring-1 ring-border-subtle"
+          style="background: var(--color-purchase-existing);"
+        />
+        <code
+          class="font-sans text-[11px] break-all text-fg-tertiary"
+        >
+          --color-
+          purchase-existing
+        </code>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
       Status
     </div>
     <div
@@ -5944,7 +5985,7 @@ exports[`kitchen-sink sections > kpi-cards matches its snapshot 1`] = `
                     d="M5,11.11C10.151515151515152,11.077499999999999,15.303030303030301,11.045,20.454545454545453,10.915000000000001C25.606060606060606,10.785000000000002,30.757575757575754,10.400416666666667,35.90909090909091,10.2C41.06060606060606,9.999583333333332,46.21212121212121,9.7125,51.36363636363637,9.7125C56.515151515151516,9.7125,61.666666666666664,9.907499999999999,66.81818181818181,9.907499999999999C71.96969696969697,9.907499999999999,77.12121212121212,9.414583333333333,82.27272727272728,9.192499999999999C87.42424242424244,8.970416666666665,92.57575757575758,8.742916666666666,97.72727272727273,8.575C102.87878787878789,8.407083333333333,108.03030303030303,8.320416666666667,113.18181818181819,8.185C118.33333333333333,8.049583333333334,123.48484848484848,7.919583333333331,128.63636363636363,7.762499999999998C133.78787878787878,7.605416666666665,138.93939393939394,7.4212500000000015,144.0909090909091,7.2425000000000015C149.24242424242425,7.0637500000000015,154.3939393939394,6.847083333333333,159.54545454545456,6.6899999999999995C164.69696969696972,6.532916666666666,169.84848484848484,6.416458333333334,175,6.300000000000002"
                     fill="none"
                     height="26"
-                    id="recharts-line-_r_1d_"
+                    id="recharts-line-_r_1f_"
                     stroke="var(--color-brand)"
                     stroke-width="1.5"
                     width="170"
@@ -7498,14 +7539,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
             tabindex="0"
           >
             <button
-              aria-controls="radix-_r_1r_-content-summary"
+              aria-controls="radix-_r_1t_-content-summary"
               aria-selected="true"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="active"
-              id="radix-_r_1r_-trigger-summary"
+              id="radix-_r_1t_-trigger-summary"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7513,14 +7554,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               summary
             </button>
             <button
-              aria-controls="radix-_r_1r_-content-property"
+              aria-controls="radix-_r_1t_-content-property"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1r_-trigger-property"
+              id="radix-_r_1t_-trigger-property"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7528,14 +7569,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               property
             </button>
             <button
-              aria-controls="radix-_r_1r_-content-tax"
+              aria-controls="radix-_r_1t_-content-tax"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1r_-trigger-tax"
+              id="radix-_r_1t_-trigger-tax"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7543,14 +7584,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               tax
             </button>
             <button
-              aria-controls="radix-_r_1r_-content-equity"
+              aria-controls="radix-_r_1t_-content-equity"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1r_-trigger-equity"
+              id="radix-_r_1t_-trigger-equity"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7558,14 +7599,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               equity
             </button>
             <button
-              aria-controls="radix-_r_1r_-content-deductions"
+              aria-controls="radix-_r_1t_-content-deductions"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1r_-trigger-deductions"
+              id="radix-_r_1t_-trigger-deductions"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7573,14 +7614,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               deductions
             </button>
             <button
-              aria-controls="radix-_r_1r_-content-costs"
+              aria-controls="radix-_r_1t_-content-costs"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1r_-trigger-costs"
+              id="radix-_r_1t_-trigger-costs"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7661,12 +7702,12 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
           </div>
         </div>
         <div
-          aria-labelledby="radix-_r_1r_-trigger-summary"
+          aria-labelledby="radix-_r_1t_-trigger-summary"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="active"
-          id="radix-_r_1r_-content-summary"
+          id="radix-_r_1t_-content-summary"
           role="tabpanel"
           style="animation-duration: 0s;"
           tabindex="0"
@@ -8083,7 +8124,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
             >
               <button
                 aria-current="step"
-                aria-labelledby="_r_1e_-setup"
+                aria-labelledby="_r_1g_-setup"
                 class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring absolute inset-0 cursor-pointer rounded-lg disabled:cursor-default"
                 data-size="none"
                 data-slot="button"
@@ -8110,7 +8151,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                     >
                       <span
                         class="text-[13px] leading-snug transition-colors duration-150 font-semibold text-fg-primary"
-                        id="_r_1e_-setup"
+                        id="_r_1g_-setup"
                       >
                         Property Setup
                       </span>
@@ -8123,7 +8164,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
               class="group relative"
             >
               <button
-                aria-labelledby="_r_1e_-loan"
+                aria-labelledby="_r_1g_-loan"
                 class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring absolute inset-0 cursor-pointer rounded-lg disabled:cursor-default"
                 data-size="none"
                 data-slot="button"
@@ -8150,7 +8191,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                     >
                       <span
                         class="text-[13px] leading-snug transition-colors duration-150 font-medium text-fg-tertiary group-hover:text-fg-secondary"
-                        id="_r_1e_-loan"
+                        id="_r_1g_-loan"
                       >
                         Loan Terms
                       </span>
@@ -8163,7 +8204,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
               class="group relative"
             >
               <button
-                aria-labelledby="_r_1e_-costs"
+                aria-labelledby="_r_1g_-costs"
                 class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring absolute inset-0 cursor-pointer rounded-lg disabled:cursor-default"
                 data-size="none"
                 data-slot="button"
@@ -8190,7 +8231,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                     >
                       <span
                         class="text-[13px] leading-snug transition-colors duration-150 font-medium text-fg-tertiary group-hover:text-fg-secondary"
-                        id="_r_1e_-costs"
+                        id="_r_1g_-costs"
                       >
                         Running Costs
                       </span>
@@ -8203,7 +8244,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
               class="group relative"
             >
               <button
-                aria-labelledby="_r_1e_-income"
+                aria-labelledby="_r_1g_-income"
                 class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring absolute inset-0 cursor-pointer rounded-lg disabled:cursor-default"
                 data-size="none"
                 data-slot="button"
@@ -8230,7 +8271,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                     >
                       <span
                         class="text-[13px] leading-snug transition-colors duration-150 font-medium text-fg-tertiary group-hover:text-fg-secondary"
-                        id="_r_1e_-income"
+                        id="_r_1g_-income"
                       >
                         Income Details
                       </span>
@@ -8246,7 +8287,8 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
         class="flex-1 flex flex-col min-w-0"
       >
         <div
-          class="flex min-h-0 flex-1"
+          class="group/wizard flex min-h-0 flex-1"
+          data-aside=""
         >
           <div
             class="flex min-w-0 flex-1 flex-col"
@@ -8280,12 +8322,16 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                  of 
                 4
               </span>
-              <h2
-                class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
-                data-slot="section-title"
+              <div
+                class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1"
               >
-                Property Setup
-              </h2>
+                <h2
+                  class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+                  data-slot="section-title"
+                >
+                  Property Setup
+                </h2>
+              </div>
             </header>
             <div
               class="flex-1 overflow-y-auto"
@@ -8294,131 +8340,126 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                 class="@container flex flex-col"
               >
                 <div
-                  class="flex flex-col gap-6 px-6 pb-6"
+                  class="flex flex-col px-6 pb-5"
                 >
                   <div
-                    class="flex flex-col gap-3"
+                    class="py-3 first:pt-0"
                   >
-                    <label
-                      class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
-                      data-slot="label"
-                      id="_r_1j_-use"
-                    >
-                      What are you modelling?
-                    </label>
                     <div
-                      aria-labelledby="_r_1j_-use"
-                      class="grid grid-cols-1 gap-2.5 @min-[26rem]:grid-cols-2"
-                      data-orientation="horizontal"
-                      data-slot="toggle-group"
-                      data-spacing="2"
-                      data-variant="tile"
-                      dir="ltr"
-                      role="radiogroup"
-                      style="outline: none;"
-                      tabindex="0"
+                      class="flex flex-col gap-3"
                     >
-                      <button
-                        aria-checked="false"
-                        class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors duration-150 data-[state=off]:border-border-subtle data-[state=off]:bg-transparent data-[state=off]:hover:bg-surface-subtle data-[state=on]:border-brand data-[state=on]:bg-brand/10"
-                        data-radix-collection-item=""
-                        data-slot="toggle-group-item"
-                        data-spacing="2"
-                        data-state="off"
-                        data-variant="tile"
-                        role="radio"
-                        tabindex="-1"
-                        type="button"
+                      <label
+                        class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                        data-slot="label"
+                        id="_r_1l_-use"
                       >
-                        <span
-                          class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-fg-tertiary transition-colors group-data-[state=on]/toggle:bg-brand/15 group-data-[state=on]/toggle:text-brand"
-                        >
-                          <svg
-                            aria-hidden="true"
-                            class="lucide lucide-building2 lucide-building-2"
-                            fill="none"
-                            height="16"
-                            stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="1.8"
-                            viewBox="0 0 24 24"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M10 12h4"
-                            />
-                            <path
-                              d="M10 8h4"
-                            />
-                            <path
-                              d="M14 21v-3a2 2 0 0 0-4 0v3"
-                            />
-                            <path
-                              d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"
-                            />
-                            <path
-                              d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"
-                            />
-                          </svg>
-                        </span>
-                        <span
-                          class="min-w-0 flex-1 truncate text-[14px] font-semibold text-fg-primary"
-                        >
-                          Investment
-                        </span>
-                        <span
-                          aria-hidden="true"
-                          class="size-4 shrink-0 rounded-full border-2 border-border-default transition-colors group-data-[state=on]/toggle:border-brand group-data-[state=on]/toggle:bg-brand group-data-[state=on]/toggle:shadow-[inset_0_0_0_2px_var(--color-surface-raised)]"
-                        />
-                      </button>
-                      <button
-                        aria-checked="false"
-                        class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors duration-150 data-[state=off]:border-border-subtle data-[state=off]:bg-transparent data-[state=off]:hover:bg-surface-subtle data-[state=on]:border-brand data-[state=on]:bg-brand/10"
-                        data-radix-collection-item=""
-                        data-slot="toggle-group-item"
+                        What are you modelling?
+                      </label>
+                      <div
+                        aria-labelledby="_r_1l_-use"
+                        class="grid grid-cols-1 gap-2.5 @min-[26rem]:grid-cols-2"
+                        data-orientation="horizontal"
+                        data-slot="toggle-group"
                         data-spacing="2"
-                        data-state="off"
                         data-variant="tile"
-                        role="radio"
-                        tabindex="-1"
-                        type="button"
+                        dir="ltr"
+                        role="radiogroup"
+                        style="outline: none;"
+                        tabindex="0"
                       >
-                        <span
-                          class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-fg-tertiary transition-colors group-data-[state=on]/toggle:bg-brand/15 group-data-[state=on]/toggle:text-brand"
+                        <button
+                          aria-checked="false"
+                          class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors duration-150 data-[state=off]:border-border-subtle data-[state=off]:bg-transparent data-[state=off]:hover:bg-surface-subtle data-[state=on]:border-brand data-[state=on]:bg-brand/10"
+                          data-radix-collection-item=""
+                          data-slot="toggle-group-item"
+                          data-spacing="2"
+                          data-state="off"
+                          data-variant="tile"
+                          role="radio"
+                          tabindex="-1"
+                          type="button"
                         >
-                          <svg
-                            aria-hidden="true"
-                            class="lucide lucide-house"
-                            fill="none"
-                            height="16"
-                            stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="1.8"
-                            viewBox="0 0 24 24"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-fg-tertiary transition-colors group-data-[state=on]/toggle:bg-brand/15 group-data-[state=on]/toggle:text-brand"
                           >
-                            <path
-                              d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"
-                            />
-                            <path
-                              d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-                            />
-                          </svg>
-                        </span>
-                        <span
-                          class="min-w-0 flex-1 truncate text-[14px] font-semibold text-fg-primary"
+                            <svg
+                              aria-hidden="true"
+                              class="lucide lucide-trending-up"
+                              fill="none"
+                              height="16"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="1.8"
+                              viewBox="0 0 24 24"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16 7h6v6"
+                              />
+                              <path
+                                d="m22 7-8.5 8.5-5-5L2 17"
+                              />
+                            </svg>
+                          </span>
+                          <span
+                            class="min-w-0 flex-1 truncate text-[14px] font-semibold text-fg-primary"
+                          >
+                            Investment
+                          </span>
+                          <span
+                            aria-hidden="true"
+                            class="size-4 shrink-0 rounded-full border-2 border-border-default transition-colors group-data-[state=on]/toggle:border-brand group-data-[state=on]/toggle:bg-brand group-data-[state=on]/toggle:shadow-[inset_0_0_0_2px_var(--color-surface-raised)]"
+                          />
+                        </button>
+                        <button
+                          aria-checked="false"
+                          class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors duration-150 data-[state=off]:border-border-subtle data-[state=off]:bg-transparent data-[state=off]:hover:bg-surface-subtle data-[state=on]:border-brand data-[state=on]:bg-brand/10"
+                          data-radix-collection-item=""
+                          data-slot="toggle-group-item"
+                          data-spacing="2"
+                          data-state="off"
+                          data-variant="tile"
+                          role="radio"
+                          tabindex="-1"
+                          type="button"
                         >
-                          Home
-                        </span>
-                        <span
-                          aria-hidden="true"
-                          class="size-4 shrink-0 rounded-full border-2 border-border-default transition-colors group-data-[state=on]/toggle:border-brand group-data-[state=on]/toggle:bg-brand group-data-[state=on]/toggle:shadow-[inset_0_0_0_2px_var(--color-surface-raised)]"
-                        />
-                      </button>
+                          <span
+                            class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-fg-tertiary transition-colors group-data-[state=on]/toggle:bg-brand/15 group-data-[state=on]/toggle:text-brand"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              class="lucide lucide-house"
+                              fill="none"
+                              height="16"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="1.8"
+                              viewBox="0 0 24 24"
+                              width="16"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"
+                              />
+                              <path
+                                d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                              />
+                            </svg>
+                          </span>
+                          <span
+                            class="min-w-0 flex-1 truncate text-[14px] font-semibold text-fg-primary"
+                          >
+                            Home
+                          </span>
+                          <span
+                            aria-hidden="true"
+                            class="size-4 shrink-0 rounded-full border-2 border-border-default transition-colors group-data-[state=on]/toggle:border-brand group-data-[state=on]/toggle:bg-brand group-data-[state=on]/toggle:shadow-[inset_0_0_0_2px_var(--color-surface-raised)]"
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -8497,7 +8538,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
       class="min-w-0"
     >
       <div
-        aria-labelledby="_r_25_-title"
+        aria-labelledby="_r_27_-title"
         class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-0 h-full"
         data-pattern="section-card"
         data-size="default"
@@ -8514,7 +8555,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <h2
               class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
               data-slot="section-title"
-              id="_r_25_-title"
+              id="_r_27_-title"
             >
               Your Purchase
             </h2>
@@ -8530,7 +8571,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
               data-slot="label"
-              for="_r_25_-price"
+              for="_r_27_-price"
             >
               Purchase price
             </label>
@@ -8548,7 +8589,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 class="w-full rounded-lg border-border-default text-fg-primary outline-none [transition:border-color_0.2s_ease,background_0.2s_ease,box-shadow_0.2s_ease] hover:border-border-strong focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] h-9 min-w-0 flex-1 border-0 bg-transparent px-0 text-[28px] font-semibold tracking-[-0.02em] tabular-nums shadow-none placeholder:font-semibold placeholder:text-fg-muted hover:bg-transparent focus:bg-transparent focus:shadow-none"
                 data-slot="input"
                 data-variant="form"
-                id="_r_25_-price"
+                id="_r_27_-price"
                 inputmode="decimal"
                 placeholder="0"
                 spellcheck="false"
@@ -8568,7 +8609,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
               data-slot="label"
-              for="_r_25_-deposit"
+              for="_r_27_-deposit"
             >
               Deposit
             </label>
@@ -8586,7 +8627,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 class="w-full rounded-lg border-border-default text-fg-primary outline-none [transition:border-color_0.2s_ease,background_0.2s_ease,box-shadow_0.2s_ease] hover:border-border-strong focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] h-9 min-w-0 flex-1 border-0 bg-transparent px-0 text-[28px] font-semibold tracking-[-0.02em] tabular-nums shadow-none placeholder:font-semibold placeholder:text-fg-muted hover:bg-transparent focus:bg-transparent focus:shadow-none"
                 data-slot="input"
                 data-variant="form"
-                id="_r_25_-deposit"
+                id="_r_27_-deposit"
                 inputmode="decimal"
                 placeholder="0"
                 spellcheck="false"
@@ -8605,7 +8646,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                   class="bg-transparent outline-none data-[editing=true]:bg-[color:rgba(255,255,255,0.06)] data-[editing=true]:shadow-[0_0_0_1px_var(--input-accent)] h-auto p-0 text-right font-[inherit] text-[color:inherit] tabular-nums"
                   data-slot="input"
                   data-variant="ghost"
-                  id="_r_25_-deposit-pct"
+                  id="_r_27_-deposit-pct"
                   inputmode="decimal"
                   style="width: 2.2ch;"
                   type="text"
@@ -8722,7 +8763,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="text-[13.5px] text-fg-secondary"
               data-slot="label"
-              for="_r_25_-state"
+              for="_r_27_-state"
             >
               State
             </label>
@@ -8730,7 +8771,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               class="cursor-pointer appearance-none border border-border-default bg-surface-raised py-0 text-fg-primary outline-none bg-[url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2712%27%20height=%2712%27%20viewBox=%270%200%2012%2012%27%3E%3Cpath%20d=%27M3%205l3%203%203-3%27%20stroke=%27rgba%28113,113,122,0.55%29%27%20stroke-width=%271.5%27%20fill=%27none%27%20stroke-linecap=%27round%27/%3E%3C/svg%3E)] bg-no-repeat bg-[position:right_12px_center] [transition:border-color_0.2s_ease,background-color_0.2s_ease] hover:border-border-strong hover:bg-surface-hover focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] focus:shadow-[0_0_0_3px_var(--color-focus-ring)] h-8 w-[88px] shrink-0 rounded-lg pr-7 pl-3 text-[13px] font-medium"
               data-slot="native-select"
               data-variant="form"
-              id="_r_25_-state"
+              id="_r_27_-state"
             >
               <option
                 class="bg-surface-app text-fg-primary"
@@ -8798,7 +8839,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
               data-slot="label"
-              for="_r_25_-type-existing"
+              for="_r_27_-type-existing"
             >
               <span
                 class="text-[13.5px] text-fg-secondary"
@@ -8812,7 +8853,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 data-slot="switch"
                 data-state="checked"
                 data-variant="accent"
-                id="_r_25_-type-existing"
+                id="_r_27_-type-existing"
                 role="switch"
                 type="button"
                 value="on"
@@ -8827,7 +8868,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
               data-slot="label"
-              for="_r_25_-type-new"
+              for="_r_27_-type-new"
             >
               <span
                 class="text-[13.5px] text-fg-secondary"
@@ -8841,7 +8882,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 data-slot="switch"
                 data-state="unchecked"
                 data-variant="accent"
-                id="_r_25_-type-new"
+                id="_r_27_-type-new"
                 role="switch"
                 type="button"
                 value="on"
@@ -8856,7 +8897,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
               data-slot="label"
-              for="_r_25_-type-land"
+              for="_r_27_-type-land"
             >
               <span
                 class="text-[13.5px] text-fg-secondary"
@@ -8870,7 +8911,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 data-slot="switch"
                 data-state="unchecked"
                 data-variant="accent"
-                id="_r_25_-type-land"
+                id="_r_27_-type-land"
                 role="switch"
                 type="button"
                 value="on"
@@ -8890,7 +8931,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           <label
             class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
             data-slot="label"
-            for="_r_25_-occ"
+            for="_r_27_-occ"
           >
             <span
               class="text-[13.5px] text-fg-secondary"
@@ -8904,7 +8945,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               data-slot="switch"
               data-state="checked"
               data-variant="accent"
-              id="_r_25_-occ"
+              id="_r_27_-occ"
               role="switch"
               type="button"
               value="on"
@@ -8919,7 +8960,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           <label
             class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
             data-slot="label"
-            for="_r_25_-first"
+            for="_r_27_-first"
           >
             <span
               class="text-[13.5px] text-fg-secondary"
@@ -8933,7 +8974,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               data-slot="switch"
               data-state="checked"
               data-variant="accent"
-              id="_r_25_-first"
+              id="_r_27_-first"
               role="switch"
               type="button"
               value="on"
@@ -8948,7 +8989,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           <label
             class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
             data-slot="label"
-            for="_r_25_-couple"
+            for="_r_27_-couple"
           >
             <span
               class="text-[13.5px] text-fg-secondary"
@@ -8962,7 +9003,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               data-slot="switch"
               data-state="unchecked"
               data-variant="accent"
-              id="_r_25_-couple"
+              id="_r_27_-couple"
               role="switch"
               type="button"
               value="on"
@@ -8977,7 +9018,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           <label
             class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-default opacity-45"
             data-slot="label"
-            for="_r_25_-lmi"
+            for="_r_27_-lmi"
           >
             <span
               class="text-[13.5px] text-fg-secondary"
@@ -8999,7 +9040,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               data-state="unchecked"
               data-variant="accent"
               disabled=""
-              id="_r_25_-lmi"
+              id="_r_27_-lmi"
               role="switch"
               type="button"
               value="on"
@@ -10727,6 +10768,62 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
     <div
       class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
     >
+      ToggleGroup variant="segment-fill"
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        aria-label="New or existing"
+        class="inline-flex rounded-full bg-surface-hover/70 p-1"
+        data-orientation="horizontal"
+        data-slot="toggle-group"
+        data-spacing="2"
+        data-variant="segment-fill"
+        dir="ltr"
+        role="radiogroup"
+        style="outline: none;"
+        tabindex="0"
+      >
+        <button
+          aria-checked="true"
+          class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed [--segment-accent:var(--color-brand)] flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap text-fg-secondary transition-colors duration-150 data-[state=off]:hover:text-fg-primary data-[state=on]:bg-[color:var(--segment-accent)] data-[state=on]:text-surface-page"
+          data-radix-collection-item=""
+          data-slot="toggle-group-item"
+          data-spacing="2"
+          data-state="on"
+          data-variant="segment-fill"
+          role="radio"
+          style="--segment-accent: var(--color-purchase-new);"
+          tabindex="-1"
+          type="button"
+        >
+          New home
+        </button>
+        <button
+          aria-checked="false"
+          class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed [--segment-accent:var(--color-brand)] flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap text-fg-secondary transition-colors duration-150 data-[state=off]:hover:text-fg-primary data-[state=on]:bg-[color:var(--segment-accent)] data-[state=on]:text-surface-page"
+          data-radix-collection-item=""
+          data-slot="toggle-group-item"
+          data-spacing="2"
+          data-state="off"
+          data-variant="segment-fill"
+          role="radio"
+          style="--segment-accent: var(--color-purchase-existing);"
+          tabindex="-1"
+          type="button"
+        >
+          Existing home
+        </button>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
       ToggleGroup variant="legend" (multiple)
     </div>
     <div
@@ -10865,14 +10962,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           tabindex="0"
         >
           <button
-            aria-controls="radix-_r_g_-content-summary"
+            aria-controls="radix-_r_i_-content-summary"
             aria-selected="true"
             class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="active"
-            id="radix-_r_g_-trigger-summary"
+            id="radix-_r_i_-trigger-summary"
             role="tab"
             tabindex="-1"
             type="button"
@@ -10880,14 +10977,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             Summary
           </button>
           <button
-            aria-controls="radix-_r_g_-content-schedule"
+            aria-controls="radix-_r_i_-content-schedule"
             aria-selected="false"
             class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="inactive"
-            id="radix-_r_g_-trigger-schedule"
+            id="radix-_r_i_-trigger-schedule"
             role="tab"
             tabindex="-1"
             type="button"
@@ -10895,14 +10992,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             Schedule
           </button>
           <button
-            aria-controls="radix-_r_g_-content-assumptions"
+            aria-controls="radix-_r_i_-content-assumptions"
             aria-selected="false"
             class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="inactive"
-            id="radix-_r_g_-trigger-assumptions"
+            id="radix-_r_i_-trigger-assumptions"
             role="tab"
             tabindex="-1"
             type="button"
@@ -10911,12 +11008,12 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           </button>
         </div>
         <div
-          aria-labelledby="radix-_r_g_-trigger-summary"
+          aria-labelledby="radix-_r_i_-trigger-summary"
           class="flex-1 text-sm outline-none sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="active"
-          id="radix-_r_g_-content-summary"
+          id="radix-_r_i_-content-summary"
           role="tabpanel"
           style="animation-duration: 0s;"
           tabindex="0"
@@ -10925,24 +11022,24 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
            panel
         </div>
         <div
-          aria-labelledby="radix-_r_g_-trigger-schedule"
+          aria-labelledby="radix-_r_i_-trigger-schedule"
           class="flex-1 text-sm outline-none sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="inactive"
           hidden=""
-          id="radix-_r_g_-content-schedule"
+          id="radix-_r_i_-content-schedule"
           role="tabpanel"
           tabindex="0"
         />
         <div
-          aria-labelledby="radix-_r_g_-trigger-assumptions"
+          aria-labelledby="radix-_r_i_-trigger-assumptions"
           class="flex-1 text-sm outline-none sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="inactive"
           hidden=""
-          id="radix-_r_g_-content-assumptions"
+          id="radix-_r_i_-content-assumptions"
           role="tabpanel"
           tabindex="0"
         />
@@ -10978,14 +11075,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           tabindex="0"
         >
           <button
-            aria-controls="radix-_r_k_-content-summary"
+            aria-controls="radix-_r_m_-content-summary"
             aria-selected="true"
             class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="active"
-            id="radix-_r_k_-trigger-summary"
+            id="radix-_r_m_-trigger-summary"
             role="tab"
             tabindex="-1"
             type="button"
@@ -10993,14 +11090,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             Summary
           </button>
           <button
-            aria-controls="radix-_r_k_-content-schedule"
+            aria-controls="radix-_r_m_-content-schedule"
             aria-selected="false"
             class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="inactive"
-            id="radix-_r_k_-trigger-schedule"
+            id="radix-_r_m_-trigger-schedule"
             role="tab"
             tabindex="-1"
             type="button"
@@ -11008,14 +11105,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             Schedule
           </button>
           <button
-            aria-controls="radix-_r_k_-content-assumptions"
+            aria-controls="radix-_r_m_-content-assumptions"
             aria-selected="false"
             class="relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="inactive"
-            id="radix-_r_k_-trigger-assumptions"
+            id="radix-_r_m_-trigger-assumptions"
             role="tab"
             tabindex="-1"
             type="button"
@@ -11024,12 +11121,12 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           </button>
         </div>
         <div
-          aria-labelledby="radix-_r_k_-trigger-summary"
+          aria-labelledby="radix-_r_m_-trigger-summary"
           class="flex-1 text-sm outline-none sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="active"
-          id="radix-_r_k_-content-summary"
+          id="radix-_r_m_-content-summary"
           role="tabpanel"
           style="animation-duration: 0s;"
           tabindex="0"
@@ -11038,24 +11135,24 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
            panel
         </div>
         <div
-          aria-labelledby="radix-_r_k_-trigger-schedule"
+          aria-labelledby="radix-_r_m_-trigger-schedule"
           class="flex-1 text-sm outline-none sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="inactive"
           hidden=""
-          id="radix-_r_k_-content-schedule"
+          id="radix-_r_m_-content-schedule"
           role="tabpanel"
           tabindex="0"
         />
         <div
-          aria-labelledby="radix-_r_k_-trigger-assumptions"
+          aria-labelledby="radix-_r_m_-trigger-assumptions"
           class="flex-1 text-sm outline-none sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="inactive"
           hidden=""
-          id="radix-_r_k_-content-assumptions"
+          id="radix-_r_m_-content-assumptions"
           role="tabpanel"
           tabindex="0"
         />
@@ -11091,14 +11188,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           tabindex="0"
         >
           <button
-            aria-controls="radix-_r_o_-content-annual"
+            aria-controls="radix-_r_q_-content-annual"
             aria-selected="true"
             class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="active"
-            id="radix-_r_o_-trigger-annual"
+            id="radix-_r_q_-trigger-annual"
             role="tab"
             tabindex="-1"
             type="button"
@@ -11106,14 +11203,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             Annual
           </button>
           <button
-            aria-controls="radix-_r_o_-content-monthly"
+            aria-controls="radix-_r_q_-content-monthly"
             aria-selected="false"
             class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="inactive"
-            id="radix-_r_o_-trigger-monthly"
+            id="radix-_r_q_-trigger-monthly"
             role="tab"
             tabindex="-1"
             type="button"
@@ -11121,14 +11218,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             Monthly
           </button>
           <button
-            aria-controls="radix-_r_o_-content-cumulative"
+            aria-controls="radix-_r_q_-content-cumulative"
             aria-selected="false"
             class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="inactive"
-            id="radix-_r_o_-trigger-cumulative"
+            id="radix-_r_q_-trigger-cumulative"
             role="tab"
             tabindex="-1"
             type="button"
@@ -11137,12 +11234,12 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           </button>
         </div>
         <div
-          aria-labelledby="radix-_r_o_-trigger-annual"
+          aria-labelledby="radix-_r_q_-trigger-annual"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="active"
-          id="radix-_r_o_-content-annual"
+          id="radix-_r_q_-content-annual"
           role="tabpanel"
           style="animation-duration: 0s;"
           tabindex="0"
@@ -11151,24 +11248,24 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
            panel
         </div>
         <div
-          aria-labelledby="radix-_r_o_-trigger-monthly"
+          aria-labelledby="radix-_r_q_-trigger-monthly"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="inactive"
           hidden=""
-          id="radix-_r_o_-content-monthly"
+          id="radix-_r_q_-content-monthly"
           role="tabpanel"
           tabindex="0"
         />
         <div
-          aria-labelledby="radix-_r_o_-trigger-cumulative"
+          aria-labelledby="radix-_r_q_-trigger-cumulative"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="inactive"
           hidden=""
-          id="radix-_r_o_-content-cumulative"
+          id="radix-_r_q_-content-cumulative"
           role="tabpanel"
           tabindex="0"
         />
@@ -11204,14 +11301,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           tabindex="0"
         >
           <button
-            aria-controls="radix-_r_s_-content-quick"
+            aria-controls="radix-_r_u_-content-quick"
             aria-selected="true"
             class="transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=inactive]:text-fg-muted data-[state=inactive]:hover:text-fg-secondary data-[state=active]:bg-zinc-800 data-[state=active]:text-fg-primary rounded-md px-3 py-1.5 text-sm font-medium"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="active"
-            id="radix-_r_s_-trigger-quick"
+            id="radix-_r_u_-trigger-quick"
             role="tab"
             tabindex="-1"
             type="button"
@@ -11219,14 +11316,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             Quick estimate
           </button>
           <button
-            aria-controls="radix-_r_s_-content-custom"
+            aria-controls="radix-_r_u_-content-custom"
             aria-selected="false"
             class="transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=inactive]:text-fg-muted data-[state=inactive]:hover:text-fg-secondary data-[state=active]:bg-zinc-800 data-[state=active]:text-fg-primary rounded-md px-3 py-1.5 text-sm font-medium"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="inactive"
-            id="radix-_r_s_-trigger-custom"
+            id="radix-_r_u_-trigger-custom"
             role="tab"
             tabindex="-1"
             type="button"
@@ -11235,12 +11332,12 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           </button>
         </div>
         <div
-          aria-labelledby="radix-_r_s_-trigger-quick"
+          aria-labelledby="radix-_r_u_-trigger-quick"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="active"
-          id="radix-_r_s_-content-quick"
+          id="radix-_r_u_-content-quick"
           role="tabpanel"
           style="animation-duration: 0s;"
           tabindex="0"
@@ -11249,13 +11346,13 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
            panel
         </div>
         <div
-          aria-labelledby="radix-_r_s_-trigger-custom"
+          aria-labelledby="radix-_r_u_-trigger-custom"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="inactive"
           hidden=""
-          id="radix-_r_s_-content-custom"
+          id="radix-_r_u_-content-custom"
           role="tabpanel"
           tabindex="0"
         />
@@ -11291,7 +11388,7 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           tabindex="0"
         >
           <button
-            aria-controls="radix-_r_v_-content-income"
+            aria-controls="radix-_r_11_-content-income"
             aria-selected="true"
             class="transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring text-[color:color-mix(in_srgb,var(--tab-accent)_55%,transparent)] [--tab-stat-value:rgba(244,244,245,0.20)] data-[state=inactive]:data-[filled=true]:[--tab-stat-value:color-mix(in_srgb,var(--tab-accent)_50%,transparent)] data-[state=active]:bg-[color:var(--tab-accent)] data-[state=active]:text-surface-app data-[state=active]:[--tab-stat-value:var(--color-surface-app)] flex flex-1 flex-col items-center rounded-[8px] px-3 py-[10px]"
             data-filled="true"
@@ -11299,7 +11396,7 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="active"
-            id="radix-_r_v_-trigger-income"
+            id="radix-_r_11_-trigger-income"
             role="tab"
             style="--tab-accent: var(--color-data-positive);"
             tabindex="-1"
@@ -11317,7 +11414,7 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             </span>
           </button>
           <button
-            aria-controls="radix-_r_v_-content-deductions"
+            aria-controls="radix-_r_11_-content-deductions"
             aria-selected="false"
             class="transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring text-[color:color-mix(in_srgb,var(--tab-accent)_55%,transparent)] [--tab-stat-value:rgba(244,244,245,0.20)] data-[state=inactive]:data-[filled=true]:[--tab-stat-value:color-mix(in_srgb,var(--tab-accent)_50%,transparent)] data-[state=active]:bg-[color:var(--tab-accent)] data-[state=active]:text-surface-app data-[state=active]:[--tab-stat-value:var(--color-surface-app)] flex flex-1 flex-col items-center rounded-[8px] px-3 py-[10px]"
             data-filled="true"
@@ -11325,7 +11422,7 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="inactive"
-            id="radix-_r_v_-trigger-deductions"
+            id="radix-_r_11_-trigger-deductions"
             role="tab"
             style="--tab-accent: var(--color-data-warning);"
             tabindex="-1"
@@ -11343,14 +11440,14 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
             </span>
           </button>
           <button
-            aria-controls="radix-_r_v_-content-tax"
+            aria-controls="radix-_r_11_-content-tax"
             aria-selected="false"
             class="transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring text-[color:color-mix(in_srgb,var(--tab-accent)_55%,transparent)] [--tab-stat-value:rgba(244,244,245,0.20)] data-[state=inactive]:data-[filled=true]:[--tab-stat-value:color-mix(in_srgb,var(--tab-accent)_50%,transparent)] data-[state=active]:bg-[color:var(--tab-accent)] data-[state=active]:text-surface-app data-[state=active]:[--tab-stat-value:var(--color-surface-app)] flex flex-1 flex-col items-center rounded-[8px] px-3 py-[10px]"
             data-orientation="horizontal"
             data-radix-collection-item=""
             data-slot="tabs-trigger"
             data-state="inactive"
-            id="radix-_r_v_-trigger-tax"
+            id="radix-_r_11_-trigger-tax"
             role="tab"
             style="--tab-accent: var(--color-data-negative);"
             tabindex="-1"
@@ -11369,12 +11466,12 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
           </button>
         </div>
         <div
-          aria-labelledby="radix-_r_v_-trigger-income"
+          aria-labelledby="radix-_r_11_-trigger-income"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="active"
-          id="radix-_r_v_-content-income"
+          id="radix-_r_11_-content-income"
           role="tabpanel"
           style="animation-duration: 0s;"
           tabindex="0"
@@ -11383,24 +11480,24 @@ exports[`kitchen-sink sections > selects-and-toggles matches its snapshot 1`] = 
            panel
         </div>
         <div
-          aria-labelledby="radix-_r_v_-trigger-deductions"
+          aria-labelledby="radix-_r_11_-trigger-deductions"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="inactive"
           hidden=""
-          id="radix-_r_v_-content-deductions"
+          id="radix-_r_11_-content-deductions"
           role="tabpanel"
           tabindex="0"
         />
         <div
-          aria-labelledby="radix-_r_v_-trigger-tax"
+          aria-labelledby="radix-_r_11_-trigger-tax"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sr-only"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="inactive"
           hidden=""
-          id="radix-_r_v_-content-tax"
+          id="radix-_r_11_-content-tax"
           role="tabpanel"
           tabindex="0"
         />

@@ -5,6 +5,7 @@ const GROUPS: { label: string; tokens: string[] }[] = [
   { label: "Foreground", tokens: ["fg-primary", "fg-secondary", "fg-tertiary", "fg-muted", "fg-disabled"] },
   { label: "Brand", tokens: ["brand", "brand-hover", "brand-subtle", "brand-border", "brand-contrast"] },
   { label: "Data", tokens: ["data-positive", "data-negative", "data-warning", "data-neutral", "data-primary", "data-muted"] },
+  { label: "Purchase status", tokens: ["purchase-new", "purchase-existing"] },
   { label: "Status", tokens: ["status-success", "status-error", "status-warning", "status-info"] },
   { label: "Surfaces", tokens: ["surface-app", "surface-page", "card", "surface-raised", "surface-subtle", "surface-hover", "surface-active", "surface-kpi"] },
   { label: "Borders", tokens: ["border-subtle", "border-default", "border-strong", "border-brand"] },

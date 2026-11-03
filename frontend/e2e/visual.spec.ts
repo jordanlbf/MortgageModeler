@@ -196,10 +196,19 @@ test.describe("cashflow", () => {
     await go(page, "/cashflow");
     if (shoot) await snap(page, "cashflow-wizard-1-setup");
     await page.getByRole("radio", { name: "Investment" }).click();
-    await page.getByRole("radio", { name: "New purchase" }).click();
+    await page.getByRole("radio", { name: "House", exact: true }).click();
+    await page.getByRole("radio", { name: "Buying" }).click();
+    await page.getByRole("radio", { name: "Yes", exact: true }).click();
+    await page.getByLabel("Purchase price").fill("750000");
+    await page.getByLabel("Deposit").fill("150000");
     if (shoot) await snap(page, "cashflow-wizard-1-setup-filled");
     for (let step = 2; step <= 6; step++) {
       await page.getByRole("button", { name: "Continue" }).click();
+      if (step === 2) {
+        if (shoot) await snap(page, "cashflow-wizard-2-empty", 800);
+        await page.getByRole("textbox", { name: "Interest rate" }).fill("6.5");
+        await page.getByRole("textbox", { name: "Loan term" }).fill("30");
+      }
       if (shoot) await snap(page, `cashflow-wizard-${step}`, 800);
     }
     await page.getByRole("button", { name: "Calculate" }).click();

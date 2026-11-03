@@ -88,6 +88,12 @@
   --color-series-debt-dim:          rgba(244, 114, 182, 0.20);
 
   /* ───────────────────────────────────────────────────────────────── */
+  /* Purchase status — new purchase vs a property already owned        */
+  /* ───────────────────────────────────────────────────────────────── */
+  --color-purchase-new:      #a78bfa;    /* violet-400 */
+  --color-purchase-existing: #22d3ee;    /* cyan-400 */
+
+  /* ───────────────────────────────────────────────────────────────── */
   /* Status semantic — UI feedback (toasts, validation, banners)       */
   /* ───────────────────────────────────────────────────────────────── */
   --color-status-success: #34d399;

@@ -119,6 +119,12 @@ export default function SelectsAndTogglesSection() {
           <ToggleGroupItem value="details" className="px-3 py-1 text-[13px]">Details</ToggleGroupItem>
         </ToggleGroup>
       </VariantRow>
+      <VariantRow label='ToggleGroup variant="segment-fill"'>
+        <ToggleGroup type="single" variant="segment-fill" aria-label="New or existing" defaultValue="new" className="inline-flex rounded-full bg-surface-hover/70 p-1">
+          <ToggleGroupItem value="new" style={{ "--segment-accent": "var(--color-purchase-new)" } as React.CSSProperties}>New home</ToggleGroupItem>
+          <ToggleGroupItem value="existing" style={{ "--segment-accent": "var(--color-purchase-existing)" } as React.CSSProperties}>Existing home</ToggleGroupItem>
+        </ToggleGroup>
+      </VariantRow>
       <VariantRow label='ToggleGroup variant="legend" (multiple)'>
         <ToggleGroup type="multiple" variant="legend" aria-label="Show series" defaultValue={["equity", "debt"]} className="flex gap-1.5">
           {[

@@ -1,14 +1,17 @@
 "use client";
 
 import { useReducer, useCallback, useMemo, useState } from "react";
-import type { PropertyUse, PurchaseMode, ViewMode } from "@/lib/cashflow-types";
+import type { PropertyType, PropertyUse, PurchaseMode, ViewMode } from "@/lib/cashflow-types";
 
 // ── State shape ─────────────────────────────────────────────────────────────
 
 export interface CashflowFormValues {
   // Mode
   propertyUse: PropertyUse | null;
+  propertyType: PropertyType | null;
   purchaseMode: PurchaseMode | null;
+  /** New purchases of a building only: new build (true) or established (false). */
+  newBuild: boolean | null;
 
   // Completion flags
   setupComplete: boolean;
@@ -41,7 +44,6 @@ export interface CashflowFormValues {
   landlordInsurance: string;
   maintenance: string;
   annualCostGrowthRate: string;
-  hasStrata: boolean;
   strataFees: string;
 
   // Rental
@@ -52,6 +54,7 @@ export interface CashflowFormValues {
 
   // Tax
   taxableIncome: string;
+  wageGrowth: string;
   depreciationMode: "estimate" | "detailed";
   depBuildings: Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>;
   depAssets: Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: "diminishing_value" | "prime_cost"; written_down_value: number }>;
@@ -69,9 +72,12 @@ type Action =
   | { type: "SET"; field: keyof CashflowFormValues; value: CashflowFormValues[keyof CashflowFormValues] }
   | { type: "RESET_SECTION"; section: string };
 
-const INITIAL: CashflowFormValues = {
+/** A fresh form. Several later-step fields start pre-filled (rate, term, costs, rent, income). */
+export const CASHFLOW_FORM_DEFAULTS: CashflowFormValues = {
   propertyUse: null,
+  propertyType: null,
   purchaseMode: null,
+  newBuild: null,
   setupComplete: false,
   loanComplete: false,
   costsComplete: false,
@@ -85,25 +91,28 @@ const INITIAL: CashflowFormValues = {
   originalPurchasePrice: "",
   purchaseYear: "",
   currentLoanBalance: "",
-  interestRate: "6.5",
-  loanTerm: "30",
+  // Blank: the user enters their own rate and term (placeholders show 6.5 / 30).
+  interestRate: "",
+  loanTerm: "",
   hasOffset: false,
   offsetBalance: "",
   offsetMonthlyContribution: "",
   extraRepayments: "",
-  councilRates: "$1,800",
-  waterRates: "$1,200",
-  insurance: "$2,000",
+  // Running costs start blank; the Costs step shows typical figures as placeholders.
+  councilRates: "",
+  waterRates: "",
+  insurance: "",
   landlordInsurance: "",
-  maintenance: "0.5",
+  maintenance: "",
   annualCostGrowthRate: "2.5",
-  hasStrata: false,
-  strataFees: "$800",
+  // Blank: most houses have no strata; it only counts once entered.
+  strataFees: "",
   weeklyRent: "$650",
   vacancyRate: "3.8",
   usePropertyManager: true,
   managementFee: "7.5",
   taxableIncome: "$120,000",
+  wageGrowth: "3",
   depreciationMode: "estimate",
   depBuildings: [],
   depAssets: [],
@@ -114,8 +123,8 @@ const INITIAL: CashflowFormValues = {
 };
 
 const RESET_MAP: Record<string, (keyof CashflowFormValues)[]> = {
-  propertyUse: ["propertyUse", "purchaseMode", "setupComplete", "loanComplete", "costsComplete", "rentalComplete", "incomeComplete", "depreciationComplete"],
-  purchaseMode: ["purchaseMode", "setupComplete", "loanComplete", "costsComplete", "rentalComplete", "incomeComplete", "depreciationComplete"],
+  propertyUse: ["propertyUse", "propertyType", "purchaseMode", "newBuild", "setupComplete", "loanComplete", "costsComplete", "rentalComplete", "incomeComplete", "depreciationComplete"],
+  purchaseMode: ["purchaseMode", "newBuild", "setupComplete", "loanComplete", "costsComplete", "rentalComplete", "incomeComplete", "depreciationComplete"],
   setup: ["setupComplete", "loanComplete", "costsComplete", "rentalComplete", "incomeComplete", "depreciationComplete"],
   loan: ["loanComplete", "costsComplete", "rentalComplete", "incomeComplete", "depreciationComplete"],
   costs: ["costsComplete", "rentalComplete", "incomeComplete", "depreciationComplete"],
@@ -134,7 +143,7 @@ function reducer(state: CashflowFormValues, action: Action): CashflowFormValues 
       if (!fields) return state;
       const next = { ...state };
       for (const f of fields) {
-        (next as Record<string, unknown>)[f] = INITIAL[f];
+        (next as Record<string, unknown>)[f] = CASHFLOW_FORM_DEFAULTS[f];
       }
       return next;
     }
@@ -147,7 +156,7 @@ function reducer(state: CashflowFormValues, action: Action): CashflowFormValues 
 
 /** `initial` overrides the defaults (e.g. sample values in the kitchen sink). */
 export function useCashflowFormState(initial?: Partial<CashflowFormValues>) {
-  const [form, dispatch] = useReducer(reducer, initial, (i) => ({ ...INITIAL, ...i }));
+  const [form, dispatch] = useReducer(reducer, initial, (i) => ({ ...CASHFLOW_FORM_DEFAULTS, ...i }));
 
   // Collapsible sections (separate state — Set is not serialisable in the reducer)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["propertyUse"]));
@@ -174,7 +183,9 @@ export function useCashflowFormState(initial?: Partial<CashflowFormValues>) {
 
   const setters = useMemo(() => ({
     setPropertyUse: set("propertyUse"),
+    setPropertyType: set("propertyType"),
     setPurchaseMode: set("purchaseMode"),
+    setNewBuild: set("newBuild"),
     setSetupComplete: set("setupComplete"),
     setLoanComplete: set("loanComplete"),
     setCostsComplete: set("costsComplete"),
@@ -199,13 +210,13 @@ export function useCashflowFormState(initial?: Partial<CashflowFormValues>) {
     setLandlordInsurance: set("landlordInsurance"),
     setMaintenance: set("maintenance"),
     setAnnualCostGrowthRate: set("annualCostGrowthRate"),
-    setHasStrata: set("hasStrata"),
     setStrataFees: set("strataFees"),
     setWeeklyRent: set("weeklyRent"),
     setVacancyRate: set("vacancyRate"),
     setUsePropertyManager: set("usePropertyManager"),
     setManagementFee: set("managementFee"),
     setTaxableIncome: set("taxableIncome"),
+    setWageGrowth: set("wageGrowth"),
     setDepreciationMode: set("depreciationMode"),
     setDepBuildings: set("depBuildings"),
     setDepAssets: set("depAssets"),

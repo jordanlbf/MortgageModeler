@@ -75,6 +75,7 @@ empty `onValueChange` unless clearing is intended. Multiple groups stay
 | `segment` | Icon segmented control | Chart / Table switch |
 | `segment-pill` | Pill segmented control | Repayment frequency |
 | `solid` | Solid fill when on | Overview / Details |
+| `segment-fill` | Pill segment filled with its own colour when on, `--segment-accent`; caller draws the track | Cashflow wizard New / Existing |
 | `legend` | Legend chip with dot (`ToggleLegendDot`), `--legend-accent` | Chart series toggles |
 
 ### Tabs (`ui/tabs.tsx`)

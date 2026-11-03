@@ -1,145 +1,155 @@
 "use client";
 
-import { useId } from "react";
-import { Building2, Home, KeyRound, Plus, type LucideIcon } from "lucide-react";
+import { useId, useState, type ReactNode } from "react";
+import { Home, TrendingUp, type LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import Stat from "@/components/patterns/blocks/Stat";
 import type { CashflowState } from "@/hooks/useCashflowState";
-import type { PropertyUse, PurchaseMode } from "@/lib/cashflow-types";
+import type { PropertyUse } from "@/lib/cashflow-types";
 import { formatDollars, formatDollarsSigned, parseCurrencyInput } from "@/lib/formatters";
 import { lvrColor } from "@/lib/lvr";
-import { cn } from "@/lib/utils";
-import { currencyInput, InputField } from "./shared";
+import {
+  applyPurchaseMode,
+  applyType,
+  applyUse,
+  asksNewBuild,
+  NEW_BUILD,
+  PROPERTY_TYPES,
+  PURCHASE_MODES,
+  setupAnswered,
+} from "../property-options";
+import { currencyInput, Figures, InputField, TileChoice } from "./shared";
 
 interface Props {
   s: CashflowState;
 }
 
 const USES: { value: PropertyUse; title: string; Icon: LucideIcon }[] = [
-  { value: "investment", title: "Investment", Icon: Building2 },
+  { value: "investment", title: "Investment", Icon: TrendingUp },
   { value: "ppor", title: "Home", Icon: Home },
 ];
 
-const MODES: { value: PurchaseMode; title: string; Icon: LucideIcon }[] = [
-  { value: "new", title: "New purchase", Icon: Plus },
-  { value: "existing", title: "Already own", Icon: KeyRound },
-];
+type QuestionKey = "use" | "type" | "mode" | "build";
 
-/** One row of tiles: icon, title, selection dot. */
-function TileChoice<T extends string>({
-  labelId,
-  label,
-  value,
-  options,
-  onPick,
-}: {
-  labelId: string;
+interface Question {
+  key: QuestionKey;
   label: string;
-  value: T | null;
-  options: { value: T; title: string; Icon: LucideIcon }[];
-  onPick: (v: T) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-3">
-      <Label variant="caps" id={labelId}>{label}</Label>
-      {/* Click handlers live on the items (not onValueChange) so re-clicking
-          the active tile re-applies the choice and never deselects it. */}
-      <ToggleGroup
-        type="single"
-        variant="tile"
-        value={value ?? ""}
-        aria-labelledby={labelId}
-        className="grid grid-cols-1 gap-2.5 @min-[26rem]:grid-cols-2"
-      >
-        {options.map((o) => (
-          <ToggleGroupItem key={o.value} value={o.value} onClick={() => onPick(o.value)}>
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-fg-tertiary transition-colors group-data-[state=on]/toggle:bg-brand/15 group-data-[state=on]/toggle:text-brand">
-              <o.Icon size={16} strokeWidth={1.8} aria-hidden="true" />
-            </span>
-            <span className="min-w-0 flex-1 truncate text-[14px] font-semibold text-fg-primary">{o.title}</span>
-            <span
-              aria-hidden="true"
-              className="size-4 shrink-0 rounded-full border-2 border-border-default transition-colors group-data-[state=on]/toggle:border-brand group-data-[state=on]/toggle:bg-brand group-data-[state=on]/toggle:shadow-[inset_0_0_0_2px_var(--color-surface-raised)]"
-            />
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-    </div>
-  );
+  /** The chosen option's title, or null while unanswered. */
+  answer: string | null;
+  /** The question's tiles; `done` is called after a pick so the question can close. */
+  tiles: (labelId: string, done: () => void) => ReactNode;
+}
+
+const titleOf = <T extends string>(options: { value: T; title: string }[], value: T | null) =>
+  options.find((o) => o.value === value)?.title ?? null;
+
+/**
+ * The questions that apply so far, in order. Each appears once the one above
+ * is answered. "New build?" is asked only when buying an investment building:
+ * it only changes depreciation, but people expect to be asked it up front.
+ */
+function questions(s: CashflowState): Question[] {
+  const list: Question[] = [
+    {
+      key: "use",
+      label: "What are you modelling?",
+      answer: titleOf(USES, s.propertyUse),
+      tiles: (id, done) => (
+        <TileChoice labelId={id} label="What are you modelling?" value={s.propertyUse} options={USES} onPick={(v) => { applyUse(s, v); done(); }} />
+      ),
+    },
+  ];
+  if (!s.propertyUse) return list;
+  list.push({
+    key: "type",
+    label: "What type of property?",
+    answer: titleOf(PROPERTY_TYPES, s.propertyType),
+    tiles: (id, done) => (
+      <TileChoice labelId={id} label="What type of property?" value={s.propertyType} options={PROPERTY_TYPES} onPick={(v) => { applyType(s, v); done(); }} />
+    ),
+  });
+  if (!s.propertyType) return list;
+  list.push({
+    key: "mode",
+    label: "Buying or already own?",
+    answer: titleOf(PURCHASE_MODES, s.purchaseMode),
+    tiles: (id, done) => (
+      <TileChoice labelId={id} label="Buying or already own?" value={s.purchaseMode} options={PURCHASE_MODES} onPick={(v) => { applyPurchaseMode(s, v); done(); }} />
+    ),
+  });
+  if (asksNewBuild(s)) {
+    const value = s.newBuild === null ? null : s.newBuild ? "yes" : "no";
+    list.push({
+      key: "build",
+      label: "New build?",
+      answer: titleOf(NEW_BUILD, value),
+      tiles: (id, done) => (
+        <TileChoice labelId={id} label="New build?" value={value} options={NEW_BUILD} onPick={(v) => { s.setNewBuild(v === "yes"); done(); }} />
+      ),
+    });
+  }
+  return list;
 }
 
 /**
- * Step 1, one decision at a time: property use (Investment / Home), then,
- * once that's picked, purchase status (New purchase / Already own). Then the
- * amounts in boxed fields and a row of key figures. Rendered in a `flush`
- * WizardShell, so each section sets its own padding.
+ * Step 1, one question at a time: only the current question shows its tiles;
+ * answered ones fold into one-line rows with "Change", so the amounts stay
+ * near the top. Then the amounts in boxed fields and a row of key figures.
+ * Rendered in a `flush` WizardShell, so each section sets its own padding.
  */
 export default function SetupStep({ s }: Props) {
   const id = useId();
-  const selected = !!s.propertyUse && !!s.purchaseMode;
+  const [editing, setEditing] = useState<QuestionKey | null>(null);
+  const list = questions(s);
+  // The question being changed, else the first unanswered one (none once all are answered).
+  const current = list.some((q) => q.key === editing) ? editing : (list.find((q) => q.answer === null)?.key ?? null);
+  const selected = setupAnswered(s);
 
   return (
     // Container queries: the grids follow the step's own width, which depends on
     // the step list and summary columns beside it, not on the screen size.
     <div className="@container flex flex-col">
-      <div className="flex flex-col gap-6 px-6 pb-6">
-        <TileChoice
-          labelId={`${id}-use`}
-          label="What are you modelling?"
-          value={s.propertyUse}
-          options={USES}
-          onPick={s.setPropertyUse}
-        />
-        {s.propertyUse && (
-          <TileChoice
-            labelId={`${id}-mode`}
-            label="Buying or already own?"
-            value={s.purchaseMode}
-            options={MODES}
-            onPick={s.setPurchaseMode}
-          />
+      <div className="flex flex-col px-6 pb-5">
+        {list.map((q) =>
+          q.key === current ? (
+            <div key={q.key} className="py-3 first:pt-0">
+              {q.tiles(`${id}-${q.key}`, () => setEditing(null))}
+            </div>
+          ) : (
+            <div key={q.key} className="flex min-h-11 items-center justify-between gap-3 border-b border-border-subtle py-2 last:border-b-0">
+              <Label variant="caps" asChild><span>{q.label}</span></Label>
+              <div className="flex items-center gap-3">
+                <span className="text-[14px] font-semibold text-fg-primary">{q.answer}</span>
+                <Button
+                  type="button"
+                  variant="link-quiet"
+                  className="text-[12px] hover:text-brand"
+                  aria-label={`Change: ${q.label}`}
+                  onClick={() => setEditing(q.key)}
+                >
+                  Change
+                </Button>
+              </div>
+            </div>
+          ),
         )}
       </div>
 
-      {selected && (s.purchaseMode === "new" ? <NewPurchase s={s} /> : <ExistingProperty s={s} />)}
+      {selected && (s.purchaseMode === "existing" ? <ExistingProperty s={s} /> : <NewPurchase s={s} />)}
     </div>
   );
 }
 
-const money = (n: number) => (n > 0 ? formatDollars(n) : "—");
 const percent = (lvr: number | null) => (lvr === null ? "—" : `${(lvr * 100).toFixed(1)}%`);
-
-type Figure = { label: string; value: string; accent?: string };
-
-/** The step's key figures, in one row under the amounts. */
-function Figures({ items }: { items: Figure[] }) {
-  return (
-    <div
-      className={cn(
-        "grid grid-cols-2 gap-x-6 gap-y-5 border-t border-border-subtle px-6 py-5",
-        items.length === 3 ? "@min-[30rem]:grid-cols-3" : "@min-[30rem]:grid-cols-4",
-      )}
-    >
-      {items.map((f) => (
-        <Stat
-          key={f.label}
-          size="sm"
-          label={f.label}
-          value={<span style={f.accent ? { color: f.accent } : undefined}>{f.value}</span>}
-        />
-      ))}
-    </div>
-  );
-}
 
 /** Purchase price and deposit, in the same boxed fields as an existing property. */
 function NewPurchase({ s }: Props) {
   const price = parseCurrencyInput(s.purchasePrice);
   const deposit = parseCurrencyInput(s.depositAmount);
+  // Loan, LVR and deposit % all need both amounts (a price alone would read as a 100% LVR).
+  const both = price > 0 && deposit > 0;
   const loan = Math.max(0, price - deposit);
-  const lvr = price > 0 ? loan / price : null;
-  const depositPct = price > 0 ? (deposit / price) * 100 : 0;
+  const lvr = both ? loan / price : null;
 
   return (
     <>
@@ -149,9 +159,9 @@ function NewPurchase({ s }: Props) {
       </div>
       <Figures
         items={[
-          { label: "Loan", value: money(loan) },
+          { label: "Loan", value: both ? formatDollars(loan) || "$0" : "—" },
           { label: "LVR", value: percent(lvr), accent: lvr === null ? undefined : lvrColor(lvr) },
-          { label: "Deposit", value: price > 0 ? `${Math.round(depositPct)}%` : "—" },
+          { label: "Deposit", value: both ? `${Math.round((deposit / price) * 100)}%` : "—" },
         ]}
       />
     </>
@@ -162,7 +172,9 @@ function ExistingProperty({ s }: Props) {
   const value = parseCurrencyInput(s.currentValue);
   const balance = parseCurrencyInput(s.currentLoanBalance);
   const original = parseCurrencyInput(s.originalPurchasePrice);
-  const lvr = value > 0 ? balance / value : null;
+  // Equity and LVR need both the value and the balance, as in the summary.
+  const both = value > 0 && balance > 0;
+  const lvr = both ? balance / value : null;
   const growth = original > 0 && value > 0 ? value - original : null;
   const year = Number(s.purchaseYear);
   const thisYear = new Date().getFullYear();
@@ -185,7 +197,7 @@ function ExistingProperty({ s }: Props) {
       </div>
       <Figures
         items={[
-          { label: "Equity", value: value > 0 ? formatDollarsSigned(value - balance) : "—" },
+          { label: "Equity", value: both ? formatDollarsSigned(value - balance) : "—" },
           { label: "LVR", value: percent(lvr), accent: lvr === null ? undefined : lvrColor(lvr) },
           { label: "Growth", value: growth === null ? "—" : formatDollarsSigned(growth) },
           { label: "Years held", value: yearsHeld === null ? "—" : String(yearsHeld) },

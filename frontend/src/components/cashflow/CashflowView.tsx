@@ -33,7 +33,7 @@ export default function CashflowCalculator({
     s.setSelectedYear(year);
   }, [s]);
 
-  const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment), [s.isInvestment]);
+  const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment, s.isLand), [s.isInvestment, s.isLand]);
   const wizard = useWizardSteps(cashflowSteps, s);
 
   const currentWizardStep = inlineStep ?? wizard.naturalStep;

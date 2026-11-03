@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import type { WizardStep } from "@/components/domain/wizard";
+import { setupAnswered } from "./property-options";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import type { StepId } from "@/lib/cashflow-types";
 
@@ -33,7 +34,7 @@ const ALL_STEPS: CashflowStep[] = [
     icon: Home,
     sidebarIcon: Home,
     isComplete: (s) => s.setupComplete,
-    isValid: (s) => !!s.propertyUse && !!s.purchaseMode,
+    isValid: setupAnswered,
   },
   {
     id: "loan",
@@ -42,6 +43,8 @@ const ALL_STEPS: CashflowStep[] = [
     icon: Landmark,
     sidebarIcon: Percent,
     isComplete: (s) => s.loanComplete,
+    // Rate and term start blank, so both must be entered to continue.
+    isValid: (s) => parseFloat(s.interestRate) > 0 && parseFloat(s.loanTerm) > 0,
   },
   {
     id: "costs",
@@ -77,8 +80,9 @@ const ALL_STEPS: CashflowStep[] = [
   },
 ];
 
-export function getCashflowSteps(isInvestment: boolean): CashflowStep[] {
-  if (isInvestment) return ALL_STEPS;
+/** `isLand`: vacant land has no building to depreciate, so no Depreciation step. */
+export function getCashflowSteps(isInvestment: boolean, isLand = false): CashflowStep[] {
+  if (isInvestment) return isLand ? ALL_STEPS.filter((s) => s.id !== "depreciation") : ALL_STEPS;
   // PPOR: no rental, no depreciation
   return ALL_STEPS.filter((s) => s.id !== "rental" && s.id !== "depreciation");
 }

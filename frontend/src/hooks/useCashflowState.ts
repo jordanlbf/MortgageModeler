@@ -12,8 +12,12 @@ import { useCashflowAPI } from "./useCashflowAPI";
 export interface CashflowState {
   // Mode
   propertyUse: import("@/lib/cashflow-types").PropertyUse | null;
+  propertyType: import("@/lib/cashflow-types").PropertyType | null;
   purchaseMode: import("@/lib/cashflow-types").PurchaseMode | null;
+  newBuild: boolean | null;
   isInvestment: boolean;
+  /** Vacant land: no building, so no depreciation, insurance or strata. */
+  isLand: boolean;
   isNewPurchase: boolean;
 
   // Completion
@@ -54,7 +58,6 @@ export interface CashflowState {
   landlordInsurance: string;
   maintenance: string;
   annualCostGrowthRate: string;
-  hasStrata: boolean;
   strataFees: string;
 
   // Form values – Rental
@@ -65,6 +68,7 @@ export interface CashflowState {
 
   // Form values – Tax
   taxableIncome: string;
+  wageGrowth: string;
   depreciationMode: "estimate" | "detailed";
   depBuildings: Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>;
   depAssets: Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: "diminishing_value" | "prime_cost"; written_down_value: number }>;
@@ -87,7 +91,9 @@ export interface CashflowState {
 
   // Setters
   setPropertyUse: (v: import("@/lib/cashflow-types").PropertyUse | null) => void;
+  setPropertyType: (v: import("@/lib/cashflow-types").PropertyType | null) => void;
   setPurchaseMode: (v: import("@/lib/cashflow-types").PurchaseMode | null) => void;
+  setNewBuild: (v: boolean | null) => void;
   setSetupComplete: (v: boolean) => void;
   setLoanComplete: (v: boolean) => void;
   setCostsComplete: (v: boolean) => void;
@@ -112,13 +118,13 @@ export interface CashflowState {
   setLandlordInsurance: (v: string) => void;
   setMaintenance: (v: string) => void;
   setAnnualCostGrowthRate: (v: string) => void;
-  setHasStrata: (v: boolean) => void;
   setStrataFees: (v: string) => void;
   setWeeklyRent: (v: string) => void;
   setVacancyRate: (v: string) => void;
   setUsePropertyManager: (v: boolean) => void;
   setManagementFee: (v: string) => void;
   setTaxableIncome: (v: string) => void;
+  setWageGrowth: (v: string) => void;
   setDepreciationMode: (v: "estimate" | "detailed") => void;
   setDepBuildings: (v: Array<{ name: string; construction_cost: number; purchase_date: string; construction_start_date: string }>) => void;
   setDepAssets: (v: Array<{ name: string; cost: number; effective_life_years: number; purchase_date: string; method: "diminishing_value" | "prime_cost"; written_down_value: number }>) => void;
@@ -151,9 +157,11 @@ export function useCashflowState(source?: CashflowSource): CashflowState {
   // Derived values
   const isInvestment = form.propertyUse === "investment";
   const isNewPurchase = form.purchaseMode === "new";
+  const isLand = form.propertyType === "land";
 
+  // Land has no depreciation step (see getCashflowSteps).
   const allComplete = isInvestment
-    ? form.setupComplete && form.loanComplete && form.costsComplete && form.rentalComplete && form.incomeComplete && form.depreciationComplete
+    ? form.setupComplete && form.loanComplete && form.costsComplete && form.rentalComplete && form.incomeComplete && (isLand || form.depreciationComplete)
     : form.setupComplete && form.loanComplete && form.costsComplete && form.incomeComplete;
 
   const loanAmount = isNewPurchase
@@ -198,6 +206,7 @@ export function useCashflowState(source?: CashflowSource): CashflowState {
     // Derived
     isInvestment,
     isNewPurchase,
+    isLand,
     allComplete,
     loanAmount,
     propertyValue,
