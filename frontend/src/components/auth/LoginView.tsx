@@ -13,6 +13,7 @@ import AuthCard from "./AuthCard";
 import GoogleButton from "./GoogleButton";
 import OrEmailDivider from "./OrEmailDivider";
 import PrimaryButton from "./PrimaryButton";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 
 export default function LoginView() {
   const router = useRouter();
@@ -77,13 +78,9 @@ export default function LoginView() {
         </div>
 
         {error && (
-          <div
-            id="login-error"
-            role="alert"
-            className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[13px] text-red-400/80"
-          >
+          <InlineAlert id="login-error" className="mb-4">
             {error}
-          </div>
+          </InlineAlert>
         )}
 
         <div style={{ marginBottom: 14 }}>

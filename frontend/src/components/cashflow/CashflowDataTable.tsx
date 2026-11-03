@@ -10,7 +10,6 @@ import EquityTable from "./table/EquityTable";
 import DeductionsTable from "./table/DeductionsTable";
 import CostsTable from "./table/CostsTable";
 import { ColumnDrawer, ColumnDrawerTrigger } from "@/components/domain/ColumnDrawer";
-import { Card } from "@/components/ui/card";
 import { COLUMN_CONFIGS, defaultVisibility } from "./table/columns";
 import type { YearRowProps } from "./table/types";
 
@@ -122,8 +121,8 @@ export default function CashflowDataTable({
 
   return (
     <>
-      {/* Toolbar floats above the table on the page background */}
-      <div className="flex items-center justify-between mb-3">
+      {/* Toolbar row; the table runs edge to edge in the dashboard card below it */}
+      <div className="flex items-center justify-between border-b border-border-subtle px-6 py-3">
         <ColumnDrawerTrigger
           visibleCount={visibleCount}
           totalCount={activeColumns.length}
@@ -134,7 +133,7 @@ export default function CashflowDataTable({
         </div>
       </div>
 
-      <Card variant="panel" className="relative w-full overflow-hidden">
+      <div className="relative w-full overflow-hidden">
         <div className="overflow-x-auto">
           {viewMode === "summary"    && <SummaryTable    {...shared} />}
           {viewMode === "tax"        && <TaxTable        {...shared} />}
@@ -143,7 +142,7 @@ export default function CashflowDataTable({
           {viewMode === "deductions" && <DeductionsTable {...shared} />}
           {viewMode === "costs"      && <CostsTable      {...shared} />}
         </div>
-      </Card>
+      </div>
 
       <ColumnDrawer
         columns={activeColumns}

@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import ErrorBoundary from "@/components/domain/ErrorBoundary";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 
 
 const TRANSITION_MS = 350;
@@ -100,9 +101,7 @@ export default function AmortisationView() {
             />
 
             {error && (
-              <div className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
-                {error}
-              </div>
+              <InlineAlert className="mb-4">{error}</InlineAlert>
             )}
           </div>
         </div>

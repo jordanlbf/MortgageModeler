@@ -5,7 +5,7 @@ import type { YearData } from "@/lib/cashflow-types";
 import type { CashflowFormValues } from "./useCashflowFormState";
 import { parseCurrencyInput } from "@/lib/formatters";
 import { fetchCashflowSingle, type CashflowSingleRequest, type CashflowYearRow } from "@/lib/api";
-import { generateDepreciationEstimate } from "@/lib/depreciation-estimate";
+import { depreciationKind, generateDepreciationEstimate } from "@/lib/depreciation-estimate";
 import { useApiCall } from "./useApiCall";
 
 // ── Hook ────────────────────────────────────────────────────────────────────
@@ -13,6 +13,7 @@ import { useApiCall } from "./useApiCall";
 export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): { yearData: YearData[]; error: string | null; loading: boolean } {
   const isInvestment = form.propertyUse === "investment";
   const isNewPurchase = form.purchaseMode === "new";
+  const isLand = form.propertyType === "land";
 
   const buildRequest = useCallback((): CashflowSingleRequest | null => {
     if (!allComplete) return null;
@@ -20,11 +21,15 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
     const growth = parseFloat(form.capitalGrowth) / 100 || 0.035;
     const vacWeeks = Math.round((parseFloat(form.vacancyRate) || 3.8) / 100 * 52);
     const mgmtRate = form.usePropertyManager ? (parseFloat(form.managementFee) / 100 || 0.075) : 0;
-    const maintenanceRate = parseFloat(form.maintenance) / 100 || 0.005;
+    // Blank means none, like the other running costs.
+    const maintenanceRate = parseFloat(form.maintenance) / 100 || 0;
     const annualCostGrowth = parseFloat(form.annualCostGrowthRate) / 100 || 0.03;
     const offsetContribution = parseCurrencyInput(form.offsetMonthlyContribution);
     const landlordInsurance = isInvestment ? parseCurrencyInput(form.landlordInsurance) : 0;
     const income = parseCurrencyInput(form.taxableIncome);
+    // Wages grow at their own rate, not the property's. 0 is a valid answer.
+    const wage = parseFloat(form.wageGrowth);
+    const wageGrowth = Number.isFinite(wage) ? wage / 100 : 0.03;
     const estYear = isNewPurchase ? new Date().getFullYear() : parseInt(form.purchaseYear) || new Date().getFullYear();
     const purchaseDate = isNewPurchase ? new Date().toISOString().slice(0, 10) : `${estYear}-07-01`;
     const propPrice = isNewPurchase ? parseCurrencyInput(form.purchasePrice) : parseCurrencyInput(form.currentValue);
@@ -38,8 +43,12 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
     // Depreciation schedules
     let depBuilds = form.depBuildings;
     let depAsts = form.depAssets;
-    if (form.depreciationMode === "estimate" && isInvestment) {
-      const est = generateDepreciationEstimate(depAnchorPrice, isNewPurchase, estYear);
+    if (form.propertyType === "land") {
+      // No building, and no Depreciation step to clear an old schedule.
+      depBuilds = [];
+      depAsts = [];
+    } else if (form.depreciationMode === "estimate" && isInvestment) {
+      const est = generateDepreciationEstimate(depAnchorPrice, depreciationKind(form), estYear);
       depBuilds = est.buildings;
       depAsts = est.assets;
     }
@@ -54,15 +63,16 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
         mls_income: income,
         hecs_balance: 0,
         has_private_health: false,
-        income_growth_rate: growth,
+        income_growth_rate: wageGrowth,
       },
       ongoing_costs: {
         council_rates: parseCurrencyInput(form.councilRates),
         water_rates: parseCurrencyInput(form.waterRates),
-        building_insurance: parseCurrencyInput(form.insurance),
-        strata_fees: form.hasStrata ? parseCurrencyInput(form.strataFees) * 4 : 0,
-        maintenance_rate: maintenanceRate,
-        landlord_insurance: landlordInsurance,
+        // Land: no building, so these lines are hidden and count as nothing.
+        building_insurance: isLand ? 0 : parseCurrencyInput(form.insurance),
+        strata_fees: isLand ? 0 : parseCurrencyInput(form.strataFees) * 4,
+        maintenance_rate: isLand ? 0 : maintenanceRate,
+        landlord_insurance: isLand ? 0 : landlordInsurance,
         management_rate: mgmtRate,
         annual_cost_growth_rate: annualCostGrowth,
       },
@@ -128,7 +138,7 @@ export function useCashflowAPI(form: CashflowFormValues, allComplete: boolean): 
     }
 
     return base;
-  }, [allComplete, form, isNewPurchase, isInvestment]);
+  }, [allComplete, form, isNewPurchase, isInvestment, isLand]);
 
   const mapResponseToYearData = useCallback((years: CashflowYearRow[]): YearData[] => {
     const vacRate = parseFloat(form.vacancyRate) / 100 || 0.038;

@@ -1,136 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { CashflowState } from "@/hooks/useCashflowState";
-import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
-import { paymentFromLoanAmount } from "@/lib/calculations";
-import { currencyInput, InputField } from "./shared";
+import { formatDollars } from "@/lib/formatters";
+import { FeatureToggle, Figures, SliderInputField } from "./shared";
+import { loanModel, payoffYear } from "./loan/model";
+import { ExtraFields, featureToggles, OffsetFields, PayoffNote, rateChange, Section, SectionLabel, termChange } from "./loan/parts";
 
-interface Props {
-  s: CashflowState;
-}
-
-export default function LoanStep({ s }: Props) {
-  const [showOffset, setShowOffset] = useState(s.hasOffset || !!s.offsetBalance);
-  const [showExtra, setShowExtra] = useState(!!s.extraRepayments);
-
-  const principal = s.isNewPurchase
-    ? parseCurrencyInput(s.purchasePrice) - parseCurrencyInput(s.depositAmount)
-    : parseCurrencyInput(s.currentLoanBalance);
-  const annualRate = parseFloat(s.interestRate) / 100 || 0;
-  const years = parseFloat(s.loanTerm) || 30;
-  const offset = parseCurrencyInput(s.offsetBalance);
-  const extra = parseCurrencyInput(s.extraRepayments);
-  const effectivePrincipal = Math.max(0, principal - (showOffset ? offset : 0));
-
-  const baseMonthlyRepayment = annualRate > 0 && years > 0
-    ? paymentFromLoanAmount(effectivePrincipal, annualRate, years, 12)
-    : 0;
-  const monthlyRepayment = baseMonthlyRepayment + (showExtra ? extra : 0);
-
-  const toggleOffset = () => {
-    const willClose = showOffset;
-    setShowOffset(!showOffset);
-    if (willClose) {
-      s.setHasOffset(false);
-      s.setOffsetBalance("");
-      s.setOffsetMonthlyContribution("");
-    } else {
-      s.setHasOffset(true);
-    }
-  };
-
-  const toggleExtra = () => {
-    setShowExtra(!showExtra);
-    if (showExtra) s.setExtraRepayments("");
-  };
+/**
+ * Loan Terms. Rate and term are sliders with an exact-value field beside
+ * each; offset and extra repayments are chips that open their fields. The
+ * figures sit last so they reflect every input above them, extras included.
+ */
+export default function LoanStep({ s }: { s: CashflowState }) {
+  const [extraOn, setExtraOn] = useState(!!s.extraRepayments);
+  const f = featureToggles(s, extraOn, setExtraOn);
+  const m = loanModel(s);
 
   return (
-    <div className="flex flex-col gap-6 max-w-lg">
-      {/* Core fields in one row */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium text-fg-secondary">Loan amount</span>
-          <div className="py-3 text-fg-primary text-base font-medium tabular-nums">
-            {formatDollarsSigned(principal)}
-          </div>
+    <div className="@container flex flex-col">
+      <Section first>
+        <div className="flex flex-col gap-6">
+          <SliderInputField
+            label="Interest rate"
+            value={s.interestRate}
+            onType={rateChange(s)}
+            onSlide={(v) => s.setInterestRate(String(Math.round(v * 100) / 100))}
+            min={2}
+            max={10}
+            step={0.05}
+            suffix="%"
+            ticks={["2%", "4%", "6%", "8%", "10%"]}
+            fallback={6.5}
+          />
+          <SliderInputField
+            label="Loan term"
+            value={s.loanTerm}
+            onType={termChange(s)}
+            onSlide={(v) => s.setLoanTerm(String(v))}
+            min={5}
+            max={30}
+            step={1}
+            suffix="yrs"
+            ticks={["5", "10", "15", "20", "25", "30"]}
+            fallback={30}
+          />
         </div>
-        <InputField
-          label="Interest rate"
-          value={s.interestRate}
-          onChange={(e) => s.setInterestRate(e.target.value.replace(/[^\d.]/g, ""))}
-          suffix="%"
-          placeholder="6.5"
-        />
-        <InputField
-          label="Loan term"
-          value={s.loanTerm}
-          onChange={(e) => s.setLoanTerm(e.target.value.replace(/[^\d]/g, ""))}
-          suffix="yrs"
-          placeholder="30"
-        />
-      </div>
+      </Section>
 
-      {/* Monthly repayment */}
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-sm font-semibold text-brand tabular-nums">{formatDollarsSigned(monthlyRepayment)}</span>
-        <span className="text-xs text-fg-muted">Monthly Repayments</span>
-      </div>
-
-      {/* Optional fields */}
-      <div className="pt-6 border-t border-white/[0.06] flex flex-col gap-3">
-        {/* Offset account */}
-        {!showOffset ? (
-          <Button
-            type="button"
-            variant="link-quiet"
-            onClick={toggleOffset}
-            className="flex items-center gap-1.5 text-sm"
-          >
-            <Plus size={14} />
-            <span>Add offset account</span>
-          </Button>
-        ) : (
-          <div className="rounded-lg border border-zinc-800/50 overflow-hidden">
-            <Button type="button" variant="disclosure" onClick={toggleOffset}>
-              <span>Offset account</span>
-              <ChevronDown size={16} className="text-fg-muted rotate-180" />
-            </Button>
-            <div className="px-4 pb-4 pt-2 border-t border-zinc-800/30">
-              <div className="grid grid-cols-2 gap-3">
-                <InputField label="Current balance" value={s.offsetBalance} {...currencyInput(s.setOffsetBalance)} placeholder="$50,000" />
-                <InputField label="Monthly contribution" value={s.offsetMonthlyContribution} {...currencyInput(s.setOffsetMonthlyContribution)} placeholder="$0" />
-              </div>
-            </div>
+      <Section>
+        <SectionLabel>Add to your loan</SectionLabel>
+        <div className="flex flex-wrap gap-2">
+          <FeatureToggle on={f.offsetOn} onChange={f.setOffset}>Offset account</FeatureToggle>
+          <FeatureToggle on={f.extraOn} onChange={f.setExtra}>Extra repayments</FeatureToggle>
+        </div>
+        {(f.offsetOn || f.extraOn) && (
+          <div className="mt-5 flex flex-col gap-4">
+            {f.offsetOn && <OffsetFields s={s} />}
+            {f.extraOn && <ExtraFields s={s} />}
+            <PayoffNote m={m} />
           </div>
         )}
+      </Section>
 
-        {/* Extra repayments */}
-        {!showExtra ? (
-          <Button
-            type="button"
-            variant="link-quiet"
-            onClick={toggleExtra}
-            className="flex items-center gap-1.5 text-sm"
-          >
-            <Plus size={14} />
-            <span>Add extra repayments</span>
-          </Button>
-        ) : (
-          <div className="rounded-lg border border-zinc-800/50 overflow-hidden">
-            <Button type="button" variant="disclosure" onClick={toggleExtra}>
-              <span>Extra repayments</span>
-              <ChevronDown size={16} className="text-fg-muted rotate-180" />
-            </Button>
-            <div className="px-4 pb-4 pt-2 border-t border-zinc-800/30">
-              <InputField label="Monthly amount" value={s.extraRepayments} {...currencyInput(s.setExtraRepayments)} placeholder="$0" />
-            </div>
-          </div>
-        )}
-      </div>
+      <Figures
+        items={[
+          { label: "Repayment / mo", value: m.ready ? formatDollars(m.monthly) : "—" },
+          // Extras are monthly; spread them over the year so both figures include them.
+          { label: "Per week", value: m.ready ? formatDollars(m.repayment("weekly") + (m.monthly - m.repayment("monthly")) * 12 / 52) : "—" },
+          { label: "Total interest", value: m.ready ? formatDollars(m.withExtras.totalInterest) : "—" },
+          { label: "Debt-free", value: m.ready ? payoffYear(m.withExtras.months) : "—" },
+        ]}
+      />
     </div>
   );
 }
-

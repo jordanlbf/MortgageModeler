@@ -3,12 +3,17 @@
 import type { ReactNode } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import SectionTitle from "@/components/patterns/blocks/SectionTitle";
+import { cn } from "@/lib/utils";
 
 interface WizardShellProps {
   /** Title of the active step (e.g. "Property Setup"). */
   stepTitle: string;
   /** Optional supporting copy under the title. */
   stepSubtitle?: string;
+  /** Shown at the right of the title row, vertically centred (e.g. a key figure). */
+  titleAside?: ReactNode;
   /** 1-based index, e.g. 3 for the third step. */
   stepIndex: number;
   totalSteps: number;
@@ -17,6 +22,12 @@ interface WizardShellProps {
   children: ReactNode;
   /** Centre the body horizontally — used by intro-style steps. */
   bodyAlign?: "start" | "center";
+  /** No body padding: the step lays out its own edge-to-edge sections. */
+  flush?: boolean;
+  /** Optional column right of the header and body (e.g. a running summary); the footer spans both. */
+  aside?: ReactNode;
+  /** Segmented progress bar across the top, one segment per step. */
+  showProgress?: boolean;
 
   /** Continue/Save/Calculate button label. */
   ctaLabel: string;
@@ -33,10 +44,14 @@ interface WizardShellProps {
 export default function WizardShell({
   stepTitle,
   stepSubtitle,
+  titleAside,
   stepIndex,
   totalSteps,
   children,
   bodyAlign = "start",
+  flush = false,
+  aside,
+  showProgress = false,
   ctaLabel,
   ctaDisabled = false,
   onContinue,
@@ -47,36 +62,53 @@ export default function WizardShell({
 }: WizardShellProps) {
   return (
     <div className="flex-1 flex flex-col min-w-0">
-      {/* Header */}
-      <header className="px-10 pt-6 pb-3">
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <span className="text-[10px] font-semibold text-brand uppercase tracking-wider tabular-nums">
-            Step {stepIndex}
-          </span>
-          <span className="text-[10px] text-fg-muted/50">of {totalSteps}</span>
-        </div>
-        <h2 className="text-lg font-semibold text-fg-primary leading-snug">
-          {stepTitle}
-        </h2>
-        {stepSubtitle && (
-          <p className="text-sm text-fg-secondary mt-1.5 leading-relaxed">{stepSubtitle}</p>
-        )}
-      </header>
+      {/* data-aside lets a step hide what the aside already shows. */}
+      <div className="group/wizard flex min-h-0 flex-1" data-aside={aside ? "" : undefined}>
+        <div className="flex min-w-0 flex-1 flex-col">
+          {showProgress && (
+            // Done = brand 60%, current = brand, upcoming = surface-hover.
+            <div aria-hidden="true" className="flex gap-1 px-6 pt-6">
+              {Array.from({ length: totalSteps }, (_, i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    "h-1 flex-1 rounded-full transition-colors duration-300",
+                    i < stepIndex - 1 ? "bg-brand/60" : i === stepIndex - 1 ? "bg-brand" : "bg-surface-hover",
+                  )}
+                />
+              ))}
+            </div>
+          )}
+          {/* Header */}
+          <header className={cn("flex flex-col gap-2 px-6 pb-5", showProgress ? "pt-6" : "pt-7")}>
+            <Label variant="caps" asChild>
+              <span className="tabular-nums">Step {stepIndex} of {totalSteps}</span>
+            </Label>
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+              <SectionTitle>{stepTitle}</SectionTitle>
+              {titleAside}
+            </div>
+            {stepSubtitle && (
+              <p className="text-sm text-fg-secondary leading-relaxed">{stepSubtitle}</p>
+            )}
+          </header>
 
-      {/* Content */}
-      <div
-        className={[
-          "flex-1 px-10 py-5 overflow-y-auto",
-          bodyAlign === "center" && "flex flex-col items-center justify-center",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        {children}
+          {/* Content */}
+          <div
+            className={cn(
+              "flex-1 overflow-y-auto",
+              !flush && "px-6 pb-6",
+              bodyAlign === "center" && "flex flex-col items-center justify-center",
+            )}
+          >
+            {children}
+          </div>
+        </div>
+        {aside}
       </div>
 
       {/* Footer Actions */}
-      <footer className="px-10 py-5 border-t border-white/[0.04]">
+      <footer className="px-6 py-5 border-t border-border-subtle">
         <div className="flex items-center justify-between">
           <div>
             {showBack && onBack && (

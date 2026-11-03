@@ -13,6 +13,9 @@ import type { CashflowState } from "@/hooks/useCashflowState";
 import { parseCurrencyInput, formatDollarsSigned } from "@/lib/formatters";
 import type { StepId } from "@/lib/cashflow-types";
 import { getCashflowSteps } from "./cashflow-steps";
+import { propertyDescription } from "./property-options";
+import { costsModel, type CostLine } from "./wizard/costs/model";
+import { incomeModel } from "./wizard/income/model";
 
 type StepLine =
   | { primary: true; text: string }
@@ -21,10 +24,11 @@ type StepLine =
 function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
   switch (stepId) {
     case "setup": {
-      if (!s.propertyUse || !s.purchaseMode) return null;
+      const description = propertyDescription(s);
+      if (!s.propertyUse || !description) return null;
       return [
         { primary: true, text: s.propertyUse === "investment" ? "Investment Property" : "Owner-Occupier" },
-        { value: s.purchaseMode === "new" ? "New" : "Existing", descriptor: "Purchase" },
+        { value: description, descriptor: s.purchaseMode === "new" ? "Purchase" : "Already own" },
       ];
     }
 
@@ -44,17 +48,15 @@ function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
     }
     case "costs": {
       if (!s.costsComplete) return null;
-      const council = parseCurrencyInput(s.councilRates);
-      const water = parseCurrencyInput(s.waterRates);
-      const insurance = parseCurrencyInput(s.insurance);
-      const strata = s.hasStrata ? parseCurrencyInput(s.strataFees) * 4 : 0;
-      const total = council + water + insurance + strata;
+      const m = costsModel(s);
+      const annual = (key: CostLine["key"]) => m.line(key)?.annual ?? 0;
+      const strata = annual("strata");
       const lines: StepLine[] = [
-        { primary: true, text: `${formatDollarsSigned(total)} Annual Costs` },
-        { value: formatDollarsSigned(council), descriptor: "Council" },
-        { value: formatDollarsSigned(insurance), descriptor: "Insurance" },
+        { primary: true, text: `${formatDollarsSigned(m.annual)} Annual Costs` },
+        { value: formatDollarsSigned(annual("council")), descriptor: "Council" },
+        { value: formatDollarsSigned(annual("building")), descriptor: "Insurance" },
       ];
-      if (s.hasStrata) lines.push({ value: formatDollarsSigned(strata), descriptor: "Strata / yr" });
+      if (strata > 0) lines.push({ value: formatDollarsSigned(strata), descriptor: "Strata / yr" });
       return lines;
     }
     case "rental": {
@@ -79,7 +81,7 @@ function getStepLines(stepId: StepId, s: CashflowState): StepLine[] | null {
       return [
         { primary: true, text: `${formatDollarsSigned(income)} Taxable Income` },
         { value: rate, descriptor: "Tax Bracket" },
-        { value: `${s.capitalGrowth}%`, descriptor: "Capital Growth" },
+        { value: `${incomeModel(s).growth}%`, descriptor: "Wage Growth" },
       ];
     }
     case "depreciation": {
@@ -98,6 +100,8 @@ interface Props {
   s: CashflowState;
   currentStep?: string;
   onStepClick?: (step: StepId) => void;
+  /** "Progress n of N" header; off inline, where the step's own progress bar shows instead. */
+  showProgress?: boolean;
 }
 
 interface StepBodyProps {
@@ -176,8 +180,8 @@ function StepBody({
   );
 }
 
-export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) {
-  const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment), [s.isInvestment]);
+export default function CashflowSidebar({ s, currentStep, onStepClick, showProgress = true }: Props) {
+  const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment, s.isLand), [s.isInvestment, s.isLand]);
   const wizard = useWizardSteps(cashflowSteps, s);
 
   const sidebarSteps: WizardSidebarStep<StepId>[] = useMemo(
@@ -215,11 +219,11 @@ export default function CashflowSidebar({ s, currentStep, onStepClick }: Props) 
       isComplete={(id) => wizard.isComplete(id)}
       selectable={(id) => wizard.allComplete || wizard.isComplete(id)}
       onSelect={(id) => onStepClick?.(id)}
-      progress={{
+      progress={showProgress ? {
         percent: progressPercent,
         completedCount,
         totalCount: cashflowSteps.length,
-      }}
+      } : undefined}
       renderStepBody={({ step, isCurrent, isComplete, labelId }) => {
         const lines = getStepLines(step.id, s);
         const isExpanded = expandedSteps.has(step.id) || isCurrent;

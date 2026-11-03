@@ -6,6 +6,7 @@ import { mix } from "@/lib/theme";
 import AdvancedColumn from "@/components/tax/AdvancedColumn";
 import TaxComposition from "@/components/tax/TaxBreakdown";
 import ErrorBoundary from "@/components/domain/ErrorBoundary";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
 
 // ── Tax Brackets Divider ────────────────────────
 
@@ -98,11 +99,7 @@ export default function TaxView() {
   return (
     <>
       {error && (
-        <div className="mb-4">
-          <div className="rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
-            {error}
-          </div>
-        </div>
+        <InlineAlert className="mb-4">{error}</InlineAlert>
       )}
 
       <div className="flex flex-col">

@@ -76,6 +76,11 @@ export const t = {
     debtDim:          "var(--color-series-debt-dim)",
   },
 
+  purchase: {
+    new:      "var(--color-purchase-new)",
+    existing: "var(--color-purchase-existing)",
+  },
+
   status: {
     success:   "var(--color-status-success)",
     error:     "var(--color-status-error)",
@@ -199,6 +204,16 @@ export const LVR_COLORS = {
   safe:     "var(--color-data-positive)",
   moderate: "var(--color-data-warning)",
   high:     "var(--color-data-negative)",
+} as const;
+
+// ── Purchase costs palette ────────────────────────
+// Where the cash to purchase goes. Deposit is neutral (it's still your money);
+// the three costs are a categorical set validated for CVD on surface-raised.
+export const PURCHASE_COST_COLORS = {
+  deposit:   "var(--color-fg-tertiary)",
+  stampDuty: "#3b82f6",   // blue-500
+  lmi:       "#ec4899",   // pink-500
+  fees:      "#8b5cf6",   // violet-500
 } as const;
 
 // ── Depreciation series colour ────────────────────

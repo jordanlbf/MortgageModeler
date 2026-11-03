@@ -51,7 +51,7 @@ const STEP_ROW_CLASS =
   "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-all duration-150 data-[current=true]:bg-brand/[0.08] data-[current=false]:data-[selectable=true]:group-hover:bg-white/[0.03]";
 
 const DEFAULT_SIDEBAR_CLASS =
-  "w-[260px] min-w-[260px] max-w-[260px] shrink-0 flex flex-col bg-surface-raised/60 backdrop-blur-xl border-r border-white/[0.06] rounded-l-2xl";
+  "hidden md:flex w-[260px] min-w-[260px] max-w-[260px] shrink-0 flex-col border-r border-border-subtle";
 
 export default function WizardSidebar<TStepId extends string>({
   steps,
@@ -65,7 +65,9 @@ export default function WizardSidebar<TStepId extends string>({
 }: WizardSidebarProps<TStepId>) {
   const baseId = useId();
   return (
-    <aside className={className ?? DEFAULT_SIDEBAR_CLASS}>
+    // A div, not <aside>: the wizard sits inside the page's <main>, and a
+    // complementary landmark there is flagged by axe. The <nav> inside names it.
+    <div className={className ?? DEFAULT_SIDEBAR_CLASS}>
       {progress && <ProgressHeader progress={progress} />}
 
       <nav className="flex-1 px-5 py-6 overflow-y-auto">
@@ -124,7 +126,7 @@ export default function WizardSidebar<TStepId extends string>({
           })}
         </ul>
       </nav>
-    </aside>
+    </div>
   );
 }
 
@@ -132,7 +134,7 @@ function ProgressHeader({ progress }: { progress: WizardSidebarProgress }) {
   const { percent, completedCount, totalCount, label = "Progress" } = progress;
 
   return (
-    <div className="px-6 pt-8 pb-6 border-b border-white/[0.04]">
+    <div className="px-6 pt-8 pb-6 border-b border-border-subtle">
       <div className="flex items-center justify-between mb-4">
         <span className="text-[10px] font-semibold text-fg-muted uppercase tracking-wider">{label}</span>
         <span className="text-xs font-semibold text-fg-primary tabular-nums">{completedCount} of {totalCount}</span>

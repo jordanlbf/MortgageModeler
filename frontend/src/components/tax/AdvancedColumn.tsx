@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import SectionTitle from "@/components/patterns/blocks/SectionTitle";
 
 const CARD_STYLE = { borderTopWidth: 3, borderTopColor: t.brand.border, background: t.surface.raised };
 
@@ -239,9 +240,7 @@ export default function AdvancedColumn({ inputs, setters }: AdvancedColumnProps)
   return (
     <Card variant="glass" className="flex flex-1 min-h-0 flex-col" style={CARD_STYLE}>
       <div className="custom-scrollbar overflow-y-auto px-8 py-6">
-        <span className="mb-8 block text-center text-[20px] font-semibold uppercase tracking-widest" style={{ color: t.brand.default }}>
-          Income &amp; Deductions
-        </span>
+        <SectionTitle variant="brand" className="mb-8 text-center">Income &amp; Deductions</SectionTitle>
 
         <Tabs variant="stat" value={activeTab} onValueChange={setActiveTab}>
           {/* Merged tab + value strip */}

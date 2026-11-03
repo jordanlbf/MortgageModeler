@@ -6,20 +6,25 @@ import { ModalWizardShell, useWizardSteps } from "@/components/domain/wizard";
 import CashflowSidebar from "./CashflowSidebar";
 import CashflowDashboard from "./CashflowDashboard";
 import CashflowWizardStep from "./CashflowWizardStep";
-import type { StepId } from "@/lib/cashflow-types";
+import type { DashboardView, StepId } from "@/lib/cashflow-types";
 import { getCashflowSteps } from "./cashflow-steps";
+import InlineAlert from "@/components/patterns/blocks/InlineAlert";
+import SectionCard from "@/components/patterns/cards/SectionCard";
 
 interface CashflowViewProps {
   s: ReturnType<typeof useCashflowState>;
   /** Step currently open in the edit modal, or null when closed. Owned by the page so it can render the Edit trigger in the page header. */
   editingStep: StepId | null;
   onEditingStepChange: (step: StepId | null) => void;
+  /** Overview or Details; the toggle lives in the page bar. */
+  dashboardView: DashboardView;
 }
 
 export default function CashflowCalculator({
   s,
   editingStep,
   onEditingStepChange,
+  dashboardView,
 }: CashflowViewProps) {
   const [inlineStep, setInlineStep] = useState<StepId | null>(null);
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
@@ -28,7 +33,7 @@ export default function CashflowCalculator({
     s.setSelectedYear(year);
   }, [s]);
 
-  const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment), [s.isInvestment]);
+  const cashflowSteps = useMemo(() => getCashflowSteps(s.isInvestment, s.isLand), [s.isInvestment, s.isLand]);
   const wizard = useWizardSteps(cashflowSteps, s);
 
   const currentWizardStep = inlineStep ?? wizard.naturalStep;
@@ -65,36 +70,30 @@ export default function CashflowCalculator({
     <>
       {/* Inline wizard — pre-completion */}
       {!s.allComplete && currentWizardStep && (
-        <div className="flex justify-center items-start py-6 px-4 sm:py-8 sm:px-6 bg-surface-app text-fg-primary min-h-0">
-          <div className="w-full max-w-[960px] max-h-[calc(100vh-140px)] flex rounded-2xl overflow-hidden border border-white/[0.06] bg-surface-raised/60 backdrop-blur-xl shadow-float">
-            <CashflowSidebar
-              s={s}
-              currentStep={currentWizardStep}
-              onStepClick={(step) => setInlineStep(step)}
-            />
-            <CashflowWizardStep
-              s={s}
-              currentStep={currentWizardStep}
-              onStepComplete={handleWizardStepComplete}
-              onStepBack={handleWizardStepBack}
-              canGoBack={wizard.indexOf(currentWizardStep) > 0}
-            />
-          </div>
-        </div>
+        <SectionCard flush className="w-full flex-1 flex-row overflow-hidden">
+          <CashflowSidebar
+            s={s}
+            showProgress={false}
+            currentStep={currentWizardStep}
+            onStepClick={(step) => setInlineStep(step)}
+          />
+          <CashflowWizardStep
+            s={s}
+            currentStep={currentWizardStep}
+            onStepComplete={handleWizardStepComplete}
+            onStepBack={handleWizardStepBack}
+            canGoBack={wizard.indexOf(currentWizardStep) > 0}
+          />
+        </SectionCard>
       )}
 
-      {s.error && (
-        <div className="max-w-[1400px] mx-auto px-4 pt-6">
-          <div className="rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
-            {s.error}
-          </div>
-        </div>
-      )}
+      {s.error && <InlineAlert>{s.error}</InlineAlert>}
 
       {/* Dashboard — post-completion */}
       {s.allComplete && s.yearData.length > 0 && (
         <CashflowDashboard
           s={s}
+          view={dashboardView}
           hoveredYear={hoveredYear}
           onHoverYear={setHoveredYear}
           onSelectYear={handleSelectYear}
@@ -105,7 +104,7 @@ export default function CashflowCalculator({
       <ModalWizardShell isOpen={isEditing} onClose={handleCloseEdit}>
         {editingStep && (
           <>
-            <CashflowSidebar
+          <CashflowSidebar
               s={s}
               currentStep={editingStep}
               onStepClick={handleEditNavigate}

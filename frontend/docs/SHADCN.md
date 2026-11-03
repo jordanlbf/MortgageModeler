@@ -70,10 +70,12 @@ empty `onValueChange` unless clearing is intended. Multiple groups stay
 | Variant | Look | Use for |
 |---|---|---|
 | `pill` | Rounded chip, accent when on; `data-tone="negative"` for red | Filter chips, Yes/No (Grants) |
-| `choice` | Large choice button | Wizard property type / purchase status |
+| `tile` | One-row option card: icon, title, status pill, dot | Cashflow wizard "What are you modelling?" |
+| `choice` | Large choice button | Short two-way choices (no page uses it yet) |
 | `segment` | Icon segmented control | Chart / Table switch |
 | `segment-pill` | Pill segmented control | Repayment frequency |
 | `solid` | Solid fill when on | Overview / Details |
+| `segment-fill` | Pill segment filled with its own colour when on, `--segment-accent`; caller draws the track | Cashflow wizard New / Existing |
 | `legend` | Legend chip with dot (`ToggleLegendDot`), `--legend-accent` | Chart series toggles |
 
 ### Tabs (`ui/tabs.tsx`)
@@ -101,6 +103,7 @@ Mouse clicks don't show the keyboard focus ring (handled in `TabsTrigger`).
 | Label | `bare` | Wraps a Switch or Checkbox row without changing line height |
 | Switch | `accent` / `glow` | Switch tinted by `--switch-accent` / brand switch with glow |
 | Slider | `accent` | Hairline slider tinted by `--slider-accent` (see `domain/SliderField`) |
+| Slider | `hero` | Solid accent range with a large ringed thumb, `--slider-accent` (Purchase costs amount cards) |
 | Checkbox | `md` / `lg` | Wizard checkbox / column-drawer row checkbox |
 
 ### Surfaces and feedback
@@ -112,6 +115,7 @@ Mouse clicks don't show the keyboard focus ring (handled in `TabsTrigger`).
 | Card | `auth` | Auth form card (`asChild` to render as `<form>`) |
 | Card | `scheme` | Grant scheme card |
 | Badge | `count` / `stat` / `tag` / `tinted` | Count bubble / rate pill (`--badge-accent`) / "Coming soon" tag / state tag |
+| Badge | `soft` | Small tinted figure chip, `--badge-accent`, neutral by default (Purchase costs deposit % and share column) |
 | Progress | `bar` / `meter` | Wizard progress / password strength (`--progress-accent`) |
 | Skeleton | `inline` | Inline loading block with explicit `width` / `height` |
 | Dialog / Sheet | `bare` | Content with no stock padding or close button; bring your own layout (`DialogContent` also takes `portal={false}` / `overlay={false}`) |

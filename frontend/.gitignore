@@ -44,3 +44,9 @@ next-env.d.ts
 /e2e/.auth/
 /test-results/
 /playwright-report/
+
+# v0 round trip (npm run v0:export / v0:import)
+/v0-export/
+/v0-export.zip
+/v0-incoming/
+/v0 Import/

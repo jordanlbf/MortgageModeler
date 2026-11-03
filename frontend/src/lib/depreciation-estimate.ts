@@ -5,8 +5,32 @@
  * - Division 43 (building): construction cost ~50% of property price, 2.5% rate (post-1987)
  * - Division 40 (plant/equipment): 5-8 synthetic assets with ATO-standard effective lives
  *
- * Accounts for new vs existing properties and years already elapsed.
+ * Accounts for the kind of property (see `DepreciationKind`) and years already elapsed.
  */
+
+import type { PropertyType, PurchaseMode } from "./cashflow-types";
+
+/**
+ * - `new-build`: bought new; full building and fittings.
+ * - `established`: bought second-hand now. Since 9 May 2017 investors can't
+ *   claim fittings already in a second-hand home, so building only.
+ * - `owned`: already owned; build age unknown, so the older general estimate.
+ * - `none`: vacant land, nothing to depreciate.
+ */
+export type DepreciationKind = "new-build" | "established" | "owned" | "none";
+
+/** Rough age of an established building when bought (its 40-year Div 43 life is partly used). */
+const ESTABLISHED_AGE = 20;
+
+export function depreciationKind(f: {
+  propertyType: PropertyType | null;
+  purchaseMode: PurchaseMode | null;
+  newBuild: boolean | null;
+}): DepreciationKind {
+  if (f.propertyType === "land") return "none";
+  if (f.purchaseMode === "existing") return "owned";
+  return f.newBuild === false ? "established" : "new-build";
+}
 
 export interface EstimatedBuilding {
   name: string;
@@ -48,9 +72,11 @@ function roundTo50(value: number): number {
 
 export function generateDepreciationEstimate(
   propertyPrice: number,
-  isNewProperty: boolean,
+  kind: DepreciationKind,
   purchaseYear: number,
 ): { buildings: EstimatedBuilding[]; assets: EstimatedAsset[] } {
+  if (kind === "none") return { buildings: [], assets: [] };
+  const isNewProperty = kind === "new-build";
   const currentYear = new Date().getFullYear();
   const yearsElapsed = Math.max(0, currentYear - purchaseYear);
   const purchaseDate = `${purchaseYear}-07-01`;
@@ -58,8 +84,9 @@ export function generateDepreciationEstimate(
   // Division 43 — building
   const constructionPct = isNewProperty ? 0.55 : 0.45;
   const constructionCost = roundTo50(propertyPrice * constructionPct);
-  // Assume construction started 2 years before purchase
-  const constructionStartYear = purchaseYear - 2;
+  // Assume construction started 2 years before purchase (an established
+  // home bought now: about ESTABLISHED_AGE years before).
+  const constructionStartYear = purchaseYear - (kind === "established" ? ESTABLISHED_AGE : 2);
 
   const buildings: EstimatedBuilding[] = [
     {
@@ -75,7 +102,9 @@ export function generateDepreciationEstimate(
   const assetMultiplier = isNewProperty ? 1.3 : 0.8;
   const seed = propertyPrice;
 
-  const assets: EstimatedAsset[] = ASSET_TEMPLATES.map((template, i) => {
+  // Established, bought now: existing fittings aren't claimable (see DepreciationKind).
+  const templates = kind === "established" ? [] : ASSET_TEMPLATES;
+  const assets: EstimatedAsset[] = templates.map((template, i) => {
     const variation = seededVariation(seed, i);
     const baseCost = roundTo50(propertyPrice * template.basePct * assetMultiplier * (1 + variation));
 
@@ -111,10 +140,10 @@ export function generateDepreciationEstimate(
  */
 export function estimateAnnualDepreciation(
   propertyPrice: number,
-  isNewProperty: boolean,
+  kind: DepreciationKind,
   purchaseYear: number,
 ): number {
-  const { buildings, assets } = generateDepreciationEstimate(propertyPrice, isNewProperty, purchaseYear);
+  const { buildings, assets } = generateDepreciationEstimate(propertyPrice, kind, purchaseYear);
   const currentYear = new Date().getFullYear();
   const yearsElapsed = Math.max(0, currentYear - purchaseYear);
 

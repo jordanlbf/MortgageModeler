@@ -7,12 +7,15 @@ import { WizardShell, useWizardSteps } from "@/components/domain/wizard";
 import type { CashflowState } from "@/hooks/useCashflowState";
 import type { StepId } from "@/lib/cashflow-types";
 import { getCashflowSteps } from "./cashflow-steps";
+import CashflowSummary from "./CashflowSummary";
 import SetupStep from "./wizard/SetupStep";
 import LoanStep from "./wizard/LoanStep";
 import CostsStep from "./wizard/CostsStep";
 import RentalStep from "./wizard/RentalStep";
 import IncomeStep from "./wizard/IncomeStep";
 import DepreciationStep from "./wizard/DepreciationStep";
+import { loanModel } from "./wizard/loan/model";
+import { BorrowingLine } from "./wizard/loan/parts";
 
 interface Props {
   s: CashflowState;
@@ -32,6 +35,9 @@ const STEP_COMPONENTS: Record<StepId, React.ComponentType<{ s: CashflowState }>>
   depreciation: DepreciationStep,
 };
 
+/** Steps on the shared patterns lay out their own edge-to-edge sections. */
+const FLUSH_STEPS: ReadonlySet<StepId> = new Set(["setup", "loan", "costs", "rental", "income", "depreciation"]);
+
 export default function CashflowWizardStep({
   s,
   currentStep,
@@ -41,7 +47,7 @@ export default function CashflowWizardStep({
   isModal,
 }: Props) {
   const step = currentStep as StepId;
-  const steps = useMemo(() => getCashflowSteps(s.isInvestment), [s.isInvestment]);
+  const steps = useMemo(() => getCashflowSteps(s.isInvestment, s.isLand), [s.isInvestment, s.isLand]);
   const wizard = useWizardSteps(steps, s);
   const stepDescriptor = steps[wizard.indexOf(step)];
   const StepComponent = STEP_COMPONENTS[step];
@@ -64,6 +70,10 @@ export default function CashflowWizardStep({
       backIcon={isModal ? <X size={16} /> : undefined}
       onBack={onStepBack}
       bodyAlign="start"
+      flush={FLUSH_STEPS.has(step)}
+      titleAside={step === "loan" ? <BorrowingLine m={loanModel(s)} /> : undefined}
+      aside={isModal ? undefined : <CashflowSummary s={s} currentStep={step} />}
+      showProgress={!isModal}
     >
       <StepComponent s={s} />
     </WizardShell>

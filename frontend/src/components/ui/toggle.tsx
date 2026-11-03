@@ -25,8 +25,12 @@
  *   accent text, 8px accent-10% glow. Accent: `--pill-accent` (default
  *   brand). `data-tone="negative"` on an item = data-negative accent at
  *   12% bg / 8% glow (the red "No" option).
- * - `choice`: large either/or option (cashflow wizard Property type /
- *   Purchase status). px-5 py-2.5 rounded-lg 14px medium. Off = zinc-800/40
+ * - `tile`: one-row option card: icon, title, status pill, selection dot
+ *   (cashflow wizard "What are you modelling?"). rounded-xl border, px-3.5
+ *   py-3, items in a row. Off = border-subtle, hover surface-subtle; on = brand border,
+ *   brand 10% fill. Children can react with `group-data-[state=on]/toggle:`.
+ * - `choice`: large either/or option (no page uses it since the wizard moved
+ *   to `tile`; kept for short two-way choices). px-5 py-2.5 rounded-lg 14px medium. Off = zinc-800/40
  *   fill, fg-secondary (hover zinc-800/60 + fg-primary); on = brand 12% fill,
  *   brand text, 1px brand-30% ring.
  * - `legend`: chart-legend series chip. Series colour via `--legend-accent`.
@@ -36,6 +40,11 @@
  * - `solid`: compact text segment (cashflow dashboard Overview / Details).
  *   rounded-md, medium weight. Off = transparent, fg-secondary; on = solid
  *   brand fill, brand-contrast text. Padding and font size from the caller.
+ * - `segment-fill`: rounded-full segment whose "on" fill is its own colour
+ *   (cashflow wizard New / Existing). 13px semibold, icon + label in a row.
+ *   Off = fg-secondary (hover fg-primary); on = solid `--segment-accent`
+ *   fill (default brand), surface-page text. The caller draws the track,
+ *   e.g. `inline-flex rounded-full bg-surface-hover/70 p-1`.
  */
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -69,6 +78,10 @@ const toggleVariantStyles = cva("", {
         "[--pill-accent:var(--color-brand)] h-[26px] min-w-[72px] justify-center rounded-full border border-[color:rgba(255,255,255,0.07)] bg-transparent px-2.5 text-center text-[14px] leading-none font-semibold whitespace-nowrap text-[color:color-mix(in_srgb,var(--color-fg-primary)_50%,transparent)] transition-all duration-150 " +
         "data-[state=on]:border-[color:color-mix(in_srgb,var(--pill-accent)_25%,transparent)] data-[state=on]:bg-[color:color-mix(in_srgb,var(--pill-accent)_14%,transparent)] data-[state=on]:text-[color:var(--pill-accent)] data-[state=on]:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_10%,transparent)] " +
         "data-[tone=negative]:[--pill-accent:var(--color-data-negative)] data-[tone=negative]:data-[state=on]:bg-[color:color-mix(in_srgb,var(--pill-accent)_12%,transparent)] data-[tone=negative]:data-[state=on]:shadow-[0_0_8px_color-mix(in_srgb,var(--pill-accent)_8%,transparent)]",
+      tile:
+        "flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors duration-150 " +
+        "data-[state=off]:border-border-subtle data-[state=off]:bg-transparent data-[state=off]:hover:bg-surface-subtle " +
+        "data-[state=on]:border-brand data-[state=on]:bg-brand/10",
       choice:
         "rounded-lg px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-150 " +
         "data-[state=off]:bg-zinc-800/40 data-[state=off]:text-fg-secondary data-[state=off]:hover:bg-zinc-800/60 data-[state=off]:hover:text-fg-primary " +
@@ -80,6 +93,10 @@ const toggleVariantStyles = cva("", {
       solid:
         "rounded-md bg-transparent font-medium text-fg-secondary transition-colors " +
         "data-[state=on]:bg-brand data-[state=on]:text-brand-contrast",
+      "segment-fill":
+        "[--segment-accent:var(--color-brand)] flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap text-fg-secondary transition-colors duration-150 " +
+        "data-[state=off]:hover:text-fg-primary " +
+        "data-[state=on]:bg-[color:var(--segment-accent)] data-[state=on]:text-surface-page",
     },
     size: {
       /** No size classes (default for custom variants). */

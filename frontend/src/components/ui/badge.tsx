@@ -7,7 +7,7 @@ import { Slot } from "radix-ui"
  * Badge variants:
  * - stock shadcn (default, secondary, destructive, outline, ghost, link) get
  *   STOCK_BASE (h-5, rounded-4xl, px-2, text-xs…).
- * - custom variants (count, tag, tinted, stat) get no base classes, so they render exactly as the
+ * - custom variants (count, tag, tinted, soft, stat) get no base classes, so they render exactly as the
  *   inline spans they replaced.
  */
 const STOCK_BADGE_VARIANTS = ["default", "secondary", "destructive", "outline", "ghost", "link"]
@@ -46,6 +46,13 @@ const badgeVariantStyles = cva("",
          */
         tinted:
           "inline-flex h-9 items-baseline justify-center rounded-[14px] bg-[color:color-mix(in_srgb,var(--badge-accent)_10%,transparent)] px-3 text-[13px] font-semibold tracking-widest text-[color:var(--badge-accent)] uppercase",
+        /**
+         * Small tinted chip for a figure ("12%", "82%"). Colour via
+         * `--badge-accent` (accent text on an accent-12% wash); defaults to
+         * a neutral fg-secondary chip.
+         */
+        soft:
+          "inline-flex shrink-0 items-center rounded-md bg-[color:color-mix(in_srgb,var(--badge-accent,var(--color-fg-secondary))_12%,transparent)] px-1.5 py-0.5 text-[11.5px] leading-none font-medium tabular-nums text-[color:var(--badge-accent,var(--color-fg-secondary))]",
         stat:
           "flex flex-col items-center rounded-full border border-[color:color-mix(in_srgb,var(--badge-accent)_25%,transparent)] bg-[color:color-mix(in_srgb,var(--badge-accent)_10%,transparent)] px-5 py-2 text-center text-[color:var(--badge-accent)] " +
           "**:data-[slot=badge-label]:text-[color:color-mix(in_srgb,var(--badge-accent)_58%,transparent)]",

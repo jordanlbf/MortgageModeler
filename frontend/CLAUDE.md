@@ -17,6 +17,10 @@ frontend/src/
     ui/                       — shadcn/ui primitives, themed via tokens (button, card, tabs, …)
     domain/                   — app-specific components built from ui/ (SliderField, EditableValue,
                                 ErrorBoundary, ColumnDrawer, wizard/)
+    patterns/                 — shared building blocks, in layers; each imports only from earlier ones
+      blocks/                 — inside a card: SectionTitle, Stat, KeyValueList, InlineAlert
+      cards/                  — blocks in a box: SectionCard, StatCard, PageBar, EmptyState
+      layouts/                — whole pages: CalculatorLayout, DashboardLayout
   hooks/
     use<Feature>State.ts      — form state + API call + derived data
     useApiCall.ts             — shared debounce + abort + { data, error, loading }
@@ -36,13 +40,9 @@ frontend/src/
 Every feature should follow this structure:
 
 1. **State hook** (`use<Feature>State`) returns `{ data, error, loading, inputs, setters }` using `useApiCall` for the fetch layer
-2. **Error display** — every view renders `error` in a styled banner:
+2. **Error display** — every view renders `error` with the shared banner:
    ```tsx
-   {error && (
-     <div className="mb-4 rounded-lg border border-red-400/20 bg-red-400/5 px-4 py-3 text-[14px] text-red-400/80">
-       {error}
-     </div>
-   )}
+   {error && <InlineAlert className="mb-4">{error}</InlineAlert>}
    ```
 3. **Loading state** — use `Skeleton` components or equivalent while `loading` is true
 4. **Leaf components** wrapped in `React.memo()` if they receive callbacks
@@ -52,6 +52,9 @@ Every feature should follow this structure:
 - UI primitives are shadcn/ui components in `components/ui`, themed via our tokens:
   every shadcn CSS variable is mapped onto an existing token in `globals.css`.
 - Domain components live in `components/domain` and compose `ui/` parts.
+- Cards, headline numbers, label/value breakdowns, banners, empty states and page layouts use
+  the shared patterns in `components/patterns` (shown in `/kitchen-sink`, one page per layer),
+  not one-off markup, so styling them in one place reaches every page.
 - Never hand-roll a control (raw `<button>`, `<input>`, `<select>`, `<table>`, dialog,
   tabs, tooltip…) in a feature folder — use the shadcn component and a variant.
 - Our looks are **custom variants** (e.g. `<Button variant="cta">`, `<Card variant="glass">`,
@@ -63,8 +66,12 @@ Every feature should follow this structure:
 - Adding a component: `npx shadcn@latest add <name>` (check for a PascalCase file with the
   same name first — Windows is case-insensitive), then theme it with tokens and add any
   custom variants to the component file. Never install another UI library.
-- v0 output should use these components and variants; replace any raw colours it emits
-  with tokens.
+- v0 works on the kitchen sink only: `npm run v0:export` → v0 → `npm run v0:import <zip>`
+  (see docs/KITCHEN_SINK.md, "Iterating with v0"). Review every import's diff for
+  non-visual changes before committing; replace any raw colours v0 emits with tokens.
+- Polished screens (Cashflow, Purchase Costs) are on `/kitchen-sink/screens`, rendered by their real
+  components on sample data (`source` prop). Iterate there (e.g. with v0) by editing the shared
+  components, never the kitchen-sink section, so changes reach the app.
 - Visual regression: `npm run test:visual` (needs the dev stack running) compares against
   `docs/design/_baseline`. Re-record only deliberate design changes.
 
