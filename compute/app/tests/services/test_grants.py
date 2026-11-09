@@ -11,7 +11,6 @@ from app.config.grants.registry import get_all_schemes, get_scheme
 from app.models.grants import GrantsInputs
 from app.services.grants import _check_eligibility, evaluate_schemes
 
-
 # The scheme data was last verified in March 2026. Pin "today" there so
 # schemes with an end date don't drop out of these tests as time passes.
 DATA_VERIFIED = date(2026, 3, 15)
