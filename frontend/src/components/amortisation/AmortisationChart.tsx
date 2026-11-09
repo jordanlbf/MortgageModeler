@@ -254,6 +254,8 @@ export default function AmortisationChart({
             <YAxis
               yAxisId="right"
               orientation="right"
+              // Only LVR uses the % axis, so it shows only with that line.
+              hide={!visibleSeries.has("lvr")}
               stroke="transparent"
               tick={{ fill: t.chart.axisTickMuted, fontSize: 11, fontWeight: 500 }}
               tickLine={false}

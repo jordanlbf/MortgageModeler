@@ -16,7 +16,7 @@ const MOCK_RESPONSE: ScheduleResponse = {
     purchase_price: 600_000,
     deposit: 100_000,
     loan_amount: 500_000,
-    lvr: 83.33,
+    lvr: 0.8333,
     annual_appreciation: 0,
   },
   payment: 592.5,
@@ -153,5 +153,42 @@ describe("useAmortisationState", () => {
     expect(tableRows[0].period).toBe(1);
     // Last row is the final period
     expect(tableRows[tableRows.length - 1].period).toBe(1560);
+  });
+
+  it("summary gives the headline figures, with the payoff time in years and months", async () => {
+    const { result } = renderHook(() => useAmortisationState());
+
+    await act(async () => {
+      vi.advanceTimersByTime(80);
+    });
+
+    const { summary } = result.current;
+    expect(summary).not.toBeNull();
+    expect(summary!.payment).toBe(592.5);
+    expect(summary!.loanAmount).toBe(500_000);
+    expect(summary!.totalInterest).toBe(1_041_000);
+    expect(summary!.totalRepaid).toBe(1_541_000);
+    // 1560 weekly periods = 30 years exactly
+    expect(summary!.payoffYears).toBe(30);
+    expect(summary!.payoffMonths).toBe(0);
+  });
+
+  it("a source supplies the inputs and schedule without calling the API", async () => {
+    mockFetchSchedule.mockClear();
+    const { result } = renderHook(() =>
+      useAmortisationState({ inputs: { purchasePrice: 500_000, frequency: "monthly" }, data: { ...MOCK_RESPONSE, total_periods: 291 } }),
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+    });
+
+    expect(mockFetchSchedule).not.toHaveBeenCalled();
+    expect(result.current.inputs.purchasePrice).toBe(500_000);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBeNull();
+    // 291 monthly periods = 24 years 3 months
+    expect(result.current.summary!.payoffYears).toBe(24);
+    expect(result.current.summary!.payoffMonths).toBe(3);
   });
 });
