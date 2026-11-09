@@ -84,16 +84,36 @@ test.describe("home", () => {
 });
 
 test.describe("amortisation", () => {
+  /** The page starts empty; enter a $600k price with a $100k deposit. */
+  async function enterLoan(page: Page) {
+    await page.getByRole("textbox", { name: "Purchase price", exact: true }).fill("600000");
+    await page.getByRole("textbox", { name: "Deposit", exact: true }).fill("100000");
+    await page.getByRole("textbox", { name: "Deposit", exact: true }).blur();
+  }
+
   test("states", async ({ page }) => {
     await go(page, "/amortisation");
+    await snap(page, "amortisation-empty");
+    await enterLoan(page);
     await snap(page, "amortisation");
     await page.getByRole("radio", { name: "Monthly" }).click();
     await page.getByRole("button", { name: "Equity" }).click();
     await snap(page, "amortisation-monthly-equity");
+    await page.getByRole("radio", { name: "Yearly" }).click();
+    await snap(page, "amortisation-yearly");
     await page.getByRole("radio", { name: "Table" }).click();
     await snap(page, "amortisation-table");
     await page.locator("main .custom-scrollbar > tr").nth(4).hover();
     await snapHover(page, "amortisation-table-row-hover");
+  });
+
+  test("offset saving", async ({ page }) => {
+    await go(page, "/amortisation");
+    await enterLoan(page);
+    await page.getByRole("switch", { name: "Offset account" }).click();
+    await page.getByLabel("Balance", { exact: true }).fill("50000");
+    await page.getByLabel("Balance", { exact: true }).blur();
+    await snap(page, "amortisation-offset");
   });
 
   test("editing a value", async ({ page }) => {
@@ -104,14 +124,16 @@ test.describe("amortisation", () => {
 
   test("loading", async ({ page }) => {
     await holdCompute(page);
-    await page.goto("/amortisation");
+    await go(page, "/amortisation");
+    await enterLoan(page);
     await snap(page, "amortisation-loading", 1200);
   });
 
   test("error", async ({ page }) => {
     await failCompute(page);
     await go(page, "/amortisation");
-    await snap(page, "amortisation-error");
+    await enterLoan(page);
+    await snap(page, "amortisation-error", 1200);
   });
 });
 
@@ -213,7 +235,10 @@ test.describe("purchase costs", () => {
   test("error", async ({ page }) => {
     await failCompute(page);
     await go(page, "/purchase-costs");
-    await snap(page, "purchase-costs-error");
+    // Nothing is calculated until there's a price, so enter one to hit the failing API.
+    await page.getByRole("textbox", { name: "Purchase price" }).fill("600000");
+    await page.getByRole("textbox", { name: "Purchase price" }).blur();
+    await snap(page, "purchase-costs-error", 1200);
   });
 });
 
@@ -256,7 +281,7 @@ test.describe("cashflow", () => {
 
   test("details table, drawer and rows", async ({ page }) => {
     await completeWizard(page, false);
-    await page.getByRole("radio", { name: "details", exact: true }).click();
+    await page.getByRole("radio", { name: "Details", exact: true }).click();
     await snap(page, "cashflow-details");
     const rows = page.locator("table tbody tr");
     await rows.nth(3).hover();

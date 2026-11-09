@@ -16,6 +16,7 @@ frontend/src/
     layout/                   — AppShell, Sidebar, PageHeader
     ui/                       — shadcn/ui primitives, themed via tokens (button, card, tabs, …)
     domain/                   — app-specific components built from ui/ (SliderField, EditableValue,
+                                SegmentToggle for every "show as" / "per period" switch,
                                 ErrorBoundary, ColumnDrawer, wizard/)
     patterns/                 — shared building blocks, in layers; each imports only from earlier ones
       blocks/                 — inside a card: SectionTitle, InfoTip, Stat, KeyValueList, InlineAlert
@@ -69,7 +70,7 @@ Every feature should follow this structure:
 - v0 works on the kitchen sink only: `npm run v0:export` → v0 → `npm run v0:import <zip>`
   (see docs/KITCHEN_SINK.md, "Iterating with v0"). Review every import's diff for
   non-visual changes before committing; replace any raw colours v0 emits with tokens.
-- Polished screens (Cashflow, Purchase Costs, Tax) are on `/kitchen-sink/screens`, rendered by their real
+- Polished screens (Cashflow, Purchase Costs, Tax, Amortisation) are on `/kitchen-sink/screens`, rendered by their real
   components on sample data (`source` prop). Iterate there (e.g. with v0) by editing the shared
   components, never the kitchen-sink section, so changes reach the app.
 - Visual regression: `npm run test:visual` (needs the dev stack running) compares against

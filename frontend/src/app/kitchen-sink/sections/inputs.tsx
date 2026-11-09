@@ -7,6 +7,7 @@ import { AmountSection, PercentChip } from "@/components/domain/AmountSection";
 import EditableValue from "@/components/domain/EditableValue";
 import MoneyInput from "@/components/domain/MoneyInput";
 import SliderField from "@/components/domain/SliderField";
+import UnitInput from "@/components/domain/UnitInput";
 import { formatCurrency, formatDollars, parseCurrencyInput } from "@/lib/formatters";
 import { lvrColor } from "@/lib/lvr";
 import VariantRow from "../_components/VariantRow";
@@ -113,6 +114,9 @@ export default function InputsSection() {
       <VariantRow label="MoneyInput (domain) · empty / filled · accepts 28.6k · Tax">
         <MoneyDemo />
       </VariantRow>
+      <VariantRow label="UnitInput (domain) · % with decimals / years · arrow keys step · Amortisation">
+        <UnitDemo />
+      </VariantRow>
       <VariantRow label="AmountSection (domain) · plain / with % slider, marker and PercentChip · Purchase Costs">
         <div className="w-[360px] rounded-2xl bg-surface-raised pb-1">
           <AmountSection id="ks-amt-price" label="Purchase price" value={amtPrice} onChange={setAmtPrice} inputStep={10_000} />
@@ -139,6 +143,17 @@ export default function InputsSection() {
         </div>
       </VariantRow>
     </>
+  );
+}
+
+function UnitDemo() {
+  const [rate, setRate] = useState(6.2);
+  const [years, setYears] = useState(30);
+  return (
+    <div className="flex gap-3">
+      <UnitInput aria-label="Interest rate" unit="%" value={rate} onValueChange={setRate} min={0.5} max={15} step={0.05} decimals={2} className="w-[120px]" />
+      <UnitInput aria-label="Loan term" unit="yrs" value={years} onValueChange={setYears} min={1} max={30} className="w-[120px]" />
+    </div>
   );
 }
 

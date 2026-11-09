@@ -3,29 +3,14 @@
 import type { TaxState } from "@/hooks/useTaxState";
 import Stat from "@/components/patterns/blocks/Stat";
 import SectionCard from "@/components/patterns/cards/SectionCard";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import SegmentToggle from "@/components/domain/SegmentToggle";
 import { cn } from "cn";
 import { KPI_COLORS, money, netParts, pct, perLabel, PERIODS, type ItemSum, type Period } from "./items";
 import { LiveStatus, Waiting } from "./parts";
 
 /** Which pay period every figure on the page is shown for. */
 function PeriodToggle({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
-  return (
-    <ToggleGroup
-      type="single"
-      variant="segment"
-      aria-label="Show amounts per"
-      value={value}
-      onValueChange={(v) => v && onChange(v as Period)}
-      className="flex gap-1"
-    >
-      {PERIODS.map((x) => (
-        <ToggleGroupItem key={x.value} value={x.value} className="px-2.5 py-1">
-          {x.label}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
-  );
+  return <SegmentToggle aria-label="Show amounts per" value={value} onChange={onChange} options={PERIODS} />;
 }
 
 function Bracket({ grow, color, label, align }: { grow: number; color: string; label: string; align: "start" | "end" }) {

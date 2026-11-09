@@ -11,7 +11,7 @@ An internal gallery of the design system, in six layers. Each layer has its own 
 | 3 | Blocks | `/kitchen-sink/blocks` | Pieces that sit inside a card: titles and captions, numbers (`Stat`), lists (`KeyValueList`), alerts | `src/components/patterns/blocks/*` |
 | 4 | Cards | `/kitchen-sink/cards` | Blocks in a box: `SectionCard` in every shape, KPI cards (`StatCard`), empty states | `src/components/patterns/cards/*` |
 | 5 | Layouts | `/kitchen-sink/layouts` | Whole-page arrangements of cards: calculator, dashboard | `src/components/patterns/layouts/*` |
-| 6 | Screens | `/kitchen-sink/screens` | The polished screens (Cashflow wizard and output, Purchase Costs, Tax), rendered by the app's own components on generic sample data | `src/components/{cashflow,purchase-costs,tax}/*`, or the layer below that owns the piece |
+| 6 | Screens | `/kitchen-sink/screens` | The polished screens (Cashflow wizard and output, Purchase Costs, Tax, Amortisation), rendered by the app's own components on generic sample data | `src/components/{cashflow,purchase-costs,tax,amortisation}/*`, or the layer below that owns the piece |
 
 Pages use the same files, so a change at any layer shows up in the gallery, on every page that uses it, and in every layer above it. For example, a change to `Stat` (a block) updates KPI cards (cards) and the dashboard layout, plus "Cash needed" and the Cashflow tiles in the app.
 
@@ -108,7 +108,7 @@ v0 gets the kitchen sink on its own, not the whole repo, and only its visual cha
 1. `npm run v0:export` writes `v0-export.zip` (and the same files in `v0-export/`, both git-ignored): every file the kitchen sink imports, at the same paths as the app, plus config, these docs and `V0.md` (the brief v0 reads). The root layout is a bare one (no login) and `/` opens `/kitchen-sink/screens`. The file list is worked out from the imports each time, so it never goes stale.
 2. Upload the zip to v0 and ask for visual improvements. It runs with `npm install && npm run dev`; no backend needed.
 3. Download v0's project and run `npm run v0:import <zip or folder>` (add `-- --dry-run` to preview). It compares against the export's fingerprints (`.v0-manifest.json`) and:
-   - **applies** changes and new files under the visual paths: `src/app/globals.css`, `src/components/{ui,patterns,domain,cashflow,purchase-costs,tax}/`;
+   - **applies** changes and new files under the visual paths: `src/app/globals.css`, `src/components/{ui,patterns,domain,cashflow,purchase-costs,tax,amortisation}/`;
    - **saves to `v0-incoming/` for review, never applies**: anything else (hooks, lib, the kitchen sink and its sample data, config), and **conflicts** (files you also changed since the export);
    - **lists only**: files v0 deleted, and new or changed packages (add those by hand).
 4. **Every import gets a review (Claude does this each time):** read the whole diff of the applied files for anything that isn't visual (logic, data flow, props, removed accessibility) and back those parts out; check `v0-incoming/` and say whether anything there is worth porting by hand; then run `npx tsc --noEmit`, `npm run lint`, `npm test` and the visual tests, re-record baselines only for the intended changes, and commit. The visual paths limit where v0 can write, not what it writes, so this review is the real guard.
@@ -133,7 +133,7 @@ Add this to the PR description:
 | Foundations | Typography | `typography.tsx` | Type scale, `Label` variants |
 | | Colors | `colors.tsx` | Foreground, brand, data, status, surface and border tokens |
 | Primitives | Buttons | `buttons.tsx` | Stock variants x sizes, disabled, loading, icon sizes, every custom variant |
-| | Inputs | `inputs.tsx` | `Input` variants x states, currency/percent, password, helper text, `EditableValue`, `MoneyInput`, `SliderField`, `AmountSection` / `PercentChip` |
+| | Inputs | `inputs.tsx` | `Input` variants x states, currency/percent, password, helper text, `EditableValue`, `MoneyInput`, `UnitInput`, `SliderField`, `AmountSection` / `PercentChip` |
 | | Selects and toggles | `selects-and-toggles.tsx` | `NativeSelect`, `Checkbox`, `Switch`, `ToggleGroup`/`Toggle`, `Tabs`, `Slider` |
 | | Badges and tags | `badges.tsx` | Stock and custom `Badge` variants, property tags |
 | | Card surfaces | `card-variants.tsx` | Raw `Card`: `panel`, `glass`, `scheme`, `auth`, `default` |
@@ -149,7 +149,7 @@ Add this to the PR description:
 | | Empty states | `empty-states.tsx` | `EmptyState`: no data, no results, error, coming soon |
 | Layouts | Calculator | `calculator.tsx` | `CalculatorLayout` with dummy cards |
 | | Dashboard | `dashboard.tsx` | `DashboardLayout` with KPI strip, main cards and side panel |
-| Screens | Cashflow · wizard / output, Purchase Costs · calculator, Tax · calculator | `screens.tsx` | `CashflowScreen` (empty wizard; finished output), `PurchaseCostsView`, `TaxView`, on `screens-sample.ts` |
+| Screens | Cashflow · wizard / output, Purchase Costs · calculator, Tax · calculator, Amortisation · calculator | `screens.tsx` | `CashflowScreen` (empty wizard; finished output), `PurchaseCostsView`, `TaxView`, `AmortisationView`, on `screens-sample.ts` |
 
 When you add a section, add it to its layer's list in `sections.ts`; the nav, tests and snapshots pick it up.
 

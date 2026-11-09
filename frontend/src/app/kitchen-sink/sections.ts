@@ -11,7 +11,7 @@ import EmptyStatesSection from "./sections/empty-states";
 import InputsSection from "./sections/inputs";
 import KpiCardsSection from "./sections/kpi-cards";
 import ListsSection from "./sections/lists";
-import { CashflowOutputScreenSection, CashflowWizardScreenSection, PurchaseCostsScreenSection, TaxScreenSection } from "./sections/screens";
+import { AmortisationScreenSection, CashflowOutputScreenSection, CashflowWizardScreenSection, PurchaseCostsScreenSection, TaxScreenSection } from "./sections/screens";
 import LoadingStatesSection from "./sections/loading-states";
 import NumbersSection from "./sections/numbers";
 import OverlaysSection from "./sections/overlays";
@@ -84,6 +84,7 @@ export const SCREENS: Section[] = [
   { id: "screen-cashflow-output", title: "Cashflow · output", Component: CashflowOutputScreenSection },
   { id: "screen-purchase-costs", title: "Purchase Costs · calculator", Component: PurchaseCostsScreenSection },
   { id: "screen-tax", title: "Tax · calculator", Component: TaxScreenSection },
+  { id: "screen-amortisation", title: "Amortisation · calculator", Component: AmortisationScreenSection },
 ];
 
 export const PAGES: SinkPageDef[] = [
@@ -92,7 +93,7 @@ export const PAGES: SinkPageDef[] = [
   { key: "blocks", href: "/kitchen-sink/blocks", title: "Blocks", summary: "Pieces that sit inside a card. Edit src/components/patterns/blocks/*.", sections: BLOCKS },
   { key: "cards", href: "/kitchen-sink/cards", title: "Cards", summary: "Blocks in a box. Edit src/components/patterns/cards/*.", sections: CARDS },
   { key: "layouts", href: "/kitchen-sink/layouts", title: "Layouts", summary: "Whole-page arrangements of cards. Edit src/components/patterns/layouts/*.", sections: LAYOUTS },
-  { key: "screens", href: "/kitchen-sink/screens", title: "Screens", summary: "The polished screens (Cashflow, Purchase Costs, Tax) rendered by the app's own components on generic sample data. Edit src/components/{cashflow,purchase-costs,tax} or the layers below.", sections: SCREENS },
+  { key: "screens", href: "/kitchen-sink/screens", title: "Screens", summary: "The polished screens (Cashflow, Purchase Costs, Tax, Amortisation) rendered by the app's own components on generic sample data. Edit src/components/{cashflow,purchase-costs,tax,amortisation} or the layers below.", sections: SCREENS },
 ];
 
 /** Every section on every page. */

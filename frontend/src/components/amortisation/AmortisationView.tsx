@@ -1,216 +1,230 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { t } from "@/lib/theme";
-import { useAmortisationState } from "@/hooks/useAmortisationState";
-import { useFillHeight } from "@/hooks/useFillHeight";
-import { useFocusMode } from "@/hooks/useFocusMode";
-import KpiCards from "@/components/amortisation/KpiCards";
-import LoanControls from "@/components/amortisation/LoanControls";
-import AmortisationChart, { ChartLegend } from "@/components/amortisation/AmortisationChart";
-import AmortisationTable from "@/components/amortisation/AmortisationTable";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import ErrorBoundary from "@/components/domain/ErrorBoundary";
+import { useId, useState } from "react";
+import { useAmortisationState, type AmortisationSource } from "@/hooks/useAmortisationState";
+import type { Frequency } from "@/lib/types";
+import { FREQ_OPTIONS } from "@/lib/constants";
+import { lvrColor } from "@/lib/lvr";
+import CalculatorLayout from "@/components/patterns/layouts/CalculatorLayout";
+import SectionCard from "@/components/patterns/cards/SectionCard";
 import InlineAlert from "@/components/patterns/blocks/InlineAlert";
+import Stat from "@/components/patterns/blocks/Stat";
+import ErrorBoundary from "@/components/domain/ErrorBoundary";
+import SegmentToggle from "@/components/domain/SegmentToggle";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ToggleLegendDot } from "@/components/ui/toggle";
+import AmortisationInputPanel from "./AmortisationInputPanel";
+import AmortisationTable from "./AmortisationTable";
+import { BALANCE_SERIES, BalanceRaceChart, C, ClearedKey, DEFAULT_BALANCE_SERIES, LegendDot, YearlyBarsChart, lastYear, type BalanceSeriesKey } from "./charts";
+import { money, spanTiny } from "./format";
 
+/** Headline figures: two columns on phones; one row (each figure as wide as it needs) once the card fits them. */
+const FIGURES = "grid grid-cols-2 gap-x-4 gap-y-5 @[30rem]:flex @[30rem]:justify-between";
 
-const TRANSITION_MS = 350;
-/** Layout for the Chart / Table segment options (look comes from the variant). */
-const SEGMENT_ITEM = "flex items-center gap-1.5 px-3.5 py-1.5";
-const COLLAPSE_STYLE = "grid transition-[grid-template-rows,opacity] ease-in-out";
+/** The headline switch: the three real repayment frequencies, plus Yearly (a view of the same loan). */
+type Per = Frequency | "yearly";
+const PER_OPTIONS: { value: Per; label: string }[] = [...FREQ_OPTIONS, { value: "yearly", label: "Yearly" }];
 
-export default function AmortisationView() {
-  // ── Data + inputs ──────────────────────────────
-  const { inputs, setters, data, error, chartData, tableRows } = useAmortisationState();
-  const { purchasePrice, deposit, rate, years, appreciation, offsetBalance, offsetContribution, frequency } = inputs;
+/** Short period names for the repayment label. */
+const PER_SHORT: Record<Per, string> = { weekly: "wk", fortnightly: "fn", monthly: "mth", yearly: "yr" };
 
-  // ── View state ─────────────────────────────────
+/**
+ * Amortisation: the loan card on the left; on the right the headline figures
+ * then either one card with the balance and principal vs interest each year,
+ * or the year-by-year table, switched at the card's bottom right.
+ *
+ * `source` is for the kitchen sink (sample data instead of the API).
+ */
+export default function AmortisationView({ source }: { source?: AmortisationSource } = {}) {
+  const am = useAmortisationState(source);
+  const titleId = useId();
+  const { inputs, summary: s } = am;
+  const months = s ? s.payoffYears * 12 + s.payoffMonths : 0;
+  const o = s?.offset;
+  const [visible, setVisible] = useState<ReadonlySet<BalanceSeriesKey>>(DEFAULT_BALANCE_SERIES);
   const [view, setView] = useState<"chart" | "table">("chart");
-  const [visibleSeries, setVisibleSeries] = useState<Set<string>>(new Set(["bal", "int"]));
-  const chartRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const controlsRef = useRef<HTMLDivElement>(null);
-  const showOffset = visibleSeries.has("offset");
-  const showEquity = visibleSeries.has("eq");
+  // Yearly isn't a way to repay a loan: the loan keeps its last real frequency and the figure shows a year of it.
+  const [yearly, setYearly] = useState(false);
+  const per: Per = yearly ? "yearly" : inputs.frequency;
+  const last = lastYear(am.chartData, am.baselineChartData);
+  const cleared = am.baselineChartData.length > 0 && visible.has("bal");
 
-  // ── Chart height + focus ───────────────────────
-  const normalHeight = useFillHeight(chartRef, 80, 300, `${showOffset}${showEquity}`);
-  const { focused, chartHeight, handleFocusToggle } = useFocusMode({ cardRef, controlsRef, normalHeight });
+  // Series chips, beside the Balance heading (they wrap under it when narrow).
+  const legend = (
+    <ToggleGroup
+      type="multiple"
+      variant="legend"
+      aria-label="Chart series"
+      value={BALANCE_SERIES.filter(({ key }) => visible.has(key)).map(({ key }) => key)}
+      onValueChange={(next) => {
+        // Keep at least one series on the chart.
+        if (next.length > 0) setVisible(new Set(next as BalanceSeriesKey[]));
+      }}
+      className="flex flex-wrap gap-1"
+    >
+      {BALANCE_SERIES.map(({ key, label, color }) => (
+        <ToggleGroupItem key={key} value={key} className="shrink-0 px-2 text-[12px]" style={{ "--legend-accent": color } as React.CSSProperties}>
+          <ToggleLegendDot />
+          {label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  );
 
-  const toggleSeries = useCallback((key: string) => {
-    const willEnable = !visibleSeries.has(key);
-    setVisibleSeries((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        if (next.size > 1) next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-    if (key === "eq") {
-      setters.setAppreciation(willEnable ? 6.5 : 0);
-    }
-  }, [visibleSeries, setters]);
+  // Top right of the headline: how often you repay, which every figure there follows.
+  const frequency = (
+    <SegmentToggle
+      aria-label="Repayments"
+      value={per}
+      onChange={(v) => {
+        setYearly(v === "yearly");
+        if (v !== "yearly") am.setters.setFrequency(v);
+      }}
+      options={PER_OPTIONS}
+    />
+  );
 
-  // ── Render ─────────────────────────────────────
+  // Top right of the chart card (under its title when narrow): the charts or the year-by-year table.
+  const viewToggle = (
+    <SegmentToggle
+      aria-label="Show as"
+      value={view}
+      onChange={setView}
+      options={[
+        { value: "chart", label: "Chart" },
+        { value: "table", label: "Table" },
+      ]}
+    />
+  );
+
+  // Short, so the headline fits on one row: "Repay/wk", "Repay/fn", "Repay/mth", "Repay/yr".
+  const repaymentLabel = `Repay/${PER_SHORT[per]}`;
+
+  // Not filled in yet, or the calculation failed with nothing to show.
+  const empty = am.waiting || (!!am.error && !am.data);
+
+  // Before there's a loan to work out, say what's needed.
+  const prompt = !am.waiting
+    ? undefined
+    : inputs.purchasePrice > 0
+      ? "Your deposit covers the price, so there's no loan to repay."
+      : "Enter a purchase price to see your repayments.";
+
+  const viewAction = <div className="hidden @[26rem]:block">{viewToggle}</div>;
+  const viewBelow = <div className="-mt-2 px-6 pb-4 @[26rem]:hidden">{viewToggle}</div>;
+
   return (
-    <>
-      <div>
-        {/* Collapsible: KPIs + Controls */}
-        <div
-          className={COLLAPSE_STYLE}
-          style={{
-            gridTemplateRows: focused ? "0fr" : "1fr",
-            opacity: focused ? 0 : 1,
-            transitionDuration: `${TRANSITION_MS}ms`,
-          }}
+    <div>
+      {am.error && (
+        <InlineAlert className="mb-6">
+          {am.error}
+          <Button type="button" variant="link-muted" className="ml-2 font-semibold text-status-error underline underline-offset-2 hover:text-status-error" onClick={am.retry}>
+            Try again
+          </Button>
+        </InlineAlert>
+      )}
+      <CalculatorLayout
+        inputs={<AmortisationInputPanel am={am} />}
+        aria-labelledby={titleId}
+        aria-busy={am.loading}
+        // Recalculating: dim the results only, so the inputs stay crisp while typing.
+        data-refreshing={am.loading && !!am.data}
+        className="[&>section]:transition-opacity [&>section]:duration-200 [&>section[data-refreshing=true]]:opacity-60"
+      >
+        <SectionCard
+          title="Amortisation"
+          titleAs="h1"
+          titleId={titleId}
+          description={prompt}
+          className="@container"
+          action={<div className="hidden @[27rem]:block">{frequency}</div>}
         >
-          <div ref={controlsRef} className="overflow-hidden min-h-0">
-            <KpiCards
-              data={data}
-              frequency={frequency}
-              rate={rate}
-              years={years}
-              deposit={deposit}
-              onPurchasePriceChange={setters.setPurchasePrice}
-              onFrequencyChange={setters.setFrequency}
-            />
+          {/* Too narrow to sit beside the title: under it instead. */}
+          <div className="-mt-2 @[27rem]:hidden">{frequency}</div>
+          {s ? (
+            <div className={FIGURES}>
+              <Stat label={repaymentLabel} value={money(yearly ? s.yearlyRepayment : s.payment)} size="md" />
+              {/* Without an offset the payoff is just the term, so show the loan instead. */}
+              {!o && <Stat label="Loan amount" value={money(s.loanAmount)} size="md" />}
+              {/* Coloured like the deposit slider: green with no LMI, amber, then red. */}
+              <Stat label="LVR" value={<span style={{ color: lvrColor(s.lvr) }}>{Math.round(s.lvr * 100)}%</span>} size="md" />
+              <Stat label="Interest" value={money(s.totalInterest)} size="md" tone="negative" />
+              {o && <Stat label="Paid off" value={spanTiny(months)} size="md" />}
+              {o && <Stat label="Offset saves" value={money(o.interestSaved)} size="md" tone="positive" />}
+            </div>
+          ) : empty ? (
+            // Nothing to show (not filled in yet, or it failed): the same figures, empty, so the layout doesn't jump.
+            <div className={FIGURES}>
+              {[repaymentLabel, "Loan amount", "LVR", "Interest"].map((label) => (
+                <Stat key={label} label={label} value="—" size="md" tone="muted" />
+              ))}
+            </div>
+          ) : (
+            <Skeleton className="h-16" aria-hidden="true" />
+          )}
+        </SectionCard>
 
-            <LoanControls
-              purchasePrice={purchasePrice}
-              deposit={deposit}
-              rate={rate}
-              years={years}
-              appreciation={appreciation}
-              loanAmount={data?.summary.loan_amount ?? 0}
-              frequency={frequency}
-              showOffset={showOffset}
-              showEquity={showEquity}
-              offsetBalance={offsetBalance}
-              offsetContribution={offsetContribution}
-              onPurchasePriceChange={setters.setPurchasePrice}
-              onDepositChange={setters.setDeposit}
-              onRateChange={setters.setRate}
-              onYearsChange={setters.setYears}
-              onAppreciationChange={setters.setAppreciation}
-              onOffsetBalanceChange={setters.setOffsetBalance}
-              onOffsetContributionChange={setters.setOffsetContribution}
-            />
-
-            {error && (
-              <InlineAlert className="mb-4">{error}</InlineAlert>
+        {empty ? (
+          <SectionCard flush title="Over the life of the loan" className="@container" action={viewAction}>
+            {viewBelow}
+            <div className="mx-6 mb-6 flex h-[240px] items-center justify-center rounded-xl border border-dashed border-border-subtle px-6 text-center text-[13px] text-fg-tertiary">
+              {am.waiting ? "Your balance and repayments over the life of the loan appear here." : "Nothing to show until your repayments can be worked out."}
+            </div>
+          </SectionCard>
+        ) : view === "chart" ? (
+          <SectionCard flush title="Over the life of the loan" className="@container" action={viewAction}>
+            {viewBelow}
+            <div className="flex flex-col gap-5 px-6 pb-6">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                  <div className="flex items-center gap-3">
+                    <Label variant="caps" asChild><h3>Balance</h3></Label>
+                    {cleared && <ClearedKey />}
+                  </div>
+                  {legend}
+                </div>
+                {am.data ? (
+                  <ErrorBoundary>
+                    <BalanceRaceChart data={am.chartData} baseline={am.baselineChartData} last={last} height={240} visible={visible} />
+                  </ErrorBoundary>
+                ) : (
+                  <Skeleton className="h-[240px]" aria-hidden="true" />
+                )}
+              </div>
+              <div className="flex flex-col gap-3 border-t border-border-subtle pt-5">
+                <div className="flex items-center justify-between gap-4">
+                  <Label variant="caps" asChild><h3>Each year</h3></Label>
+                  <div className="flex items-center gap-4">
+                    <LegendDot color={C.principal} label="Principal" />
+                    <LegendDot color={C.interest} label="Interest" />
+                  </div>
+                </div>
+                {am.data ? (
+                  <ErrorBoundary>
+                    <YearlyBarsChart data={am.chartData} last={last} height={180} />
+                  </ErrorBoundary>
+                ) : (
+                  <Skeleton className="h-[180px]" aria-hidden="true" />
+                )}
+              </div>
+            </div>
+          </SectionCard>
+        ) : (
+          <SectionCard flush title="Over the life of the loan" className="@container" action={viewAction}>
+            {viewBelow}
+            {am.data ? (
+              <div className="border-t border-border-subtle">
+                <AmortisationTable rows={am.tableRows} frequency={inputs.frequency} height={400} />
+              </div>
+            ) : (
+              <Skeleton className="mx-6 mb-6 h-[400px]" aria-hidden="true" />
             )}
-          </div>
-        </div>
-
-        <Card variant="glass" ref={cardRef} className="overflow-hidden">
-          {/* Toolbar */}
-          <div
-            className="relative flex items-center justify-between px-5 py-3"
-            style={{ borderBottom: `1px solid ${t.border.default}` }}
-          >
-            <div className="flex items-center gap-2">
-              {view === "chart" ? (
-                <ChartLegend visibleSeries={visibleSeries} onToggle={toggleSeries} />
-              ) : data ? (
-                <span className="text-[12px] font-medium tabular-nums text-fg-primary/25">
-                  {data.total_periods} periods
-                </span>
-              ) : null}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <ToggleGroup
-                type="single"
-                variant="segment"
-                aria-label="View"
-                value={view}
-                onValueChange={(v) => { if (v) setView(v as "chart" | "table"); }}
-                className="flex gap-1"
-              >
-                <ToggleGroupItem value="chart" className={SEGMENT_ITEM}>
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-                    <rect x="0" y="7" width="3" height="6" rx="1" fill="currentColor" />
-                    <rect x="5" y="4" width="3" height="9" rx="1" fill="currentColor" />
-                    <rect x="10" y="1" width="3" height="12" rx="1" fill="currentColor" />
-                  </svg>
-                  Chart
-                </ToggleGroupItem>
-                <ToggleGroupItem value="table" className={SEGMENT_ITEM}>
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor" aria-hidden="true">
-                    <rect x="0" y="0" width="13" height="2" rx="1" />
-                    <rect x="0" y="4" width="13" height="2" rx="1" />
-                    <rect x="0" y="8" width="13" height="2" rx="1" />
-                    <rect x="0" y="11" width="8" height="2" rx="1" />
-                  </svg>
-                  Table
-                </ToggleGroupItem>
-              </ToggleGroup>
-
-              <Button
-                variant="ghost-icon"
-                onClick={handleFocusToggle}
-                className="inline-block border border-transparent p-2 text-fg-primary/25 transition-all duration-200 hover:bg-white/[0.04] hover:text-fg-primary/50 active:scale-90"
-                title={focused ? "Exit focus mode (Esc)" : "Focus mode"}
-                aria-pressed={focused}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  className="transition-transform duration-200"
-                  style={{ transform: focused ? "rotate(180deg)" : undefined }}
-                >
-                  {focused ? (
-                    <>
-                      <polyline points="3 9 7 9 7 13" />
-                      <line x1="2" y1="14" x2="7" y2="9" />
-                      <polyline points="13 7 9 7 9 3" />
-                      <line x1="14" y1="2" x2="9" y2="7" />
-                    </>
-                  ) : (
-                    <>
-                      <polyline points="10 2 14 2 14 6" />
-                      <line x1="14" y1="2" x2="9" y2="7" />
-                      <polyline points="6 14 2 14 2 10" />
-                      <line x1="2" y1="14" x2="7" y2="9" />
-                    </>
-                  )}
-                </svg>
-              </Button>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div
-            ref={chartRef}
-            className="overflow-hidden"
-            style={{ height: chartHeight, transition: `height ${TRANSITION_MS}ms ease-in-out` }}
-          >
-            <ErrorBoundary>
-              {view === "chart" ? (
-                <AmortisationChart
-                  data={chartData}
-                  visibleSeries={visibleSeries}
-                  height={chartHeight}
-                />
-              ) : (
-                <AmortisationTable rows={tableRows} height={chartHeight} />
-              )}
-            </ErrorBoundary>
-          </div>
-        </Card>
-
-      </div>
-    </>
+          </SectionCard>
+        )}
+      </CalculatorLayout>
+    </div>
   );
 }
