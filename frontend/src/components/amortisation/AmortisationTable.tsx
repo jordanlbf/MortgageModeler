@@ -20,7 +20,14 @@ interface AmortisationTableProps {
   height: number;
 }
 
-const COLUMNS = ["Year", "Opening", "Repayment", "Interest", "Principal", "Closing"];
+const COLUMNS = [
+  "Year",
+  "Opening",
+  "Repayment",
+  "Interest",
+  "Principal",
+  "Closing",
+];
 
 /**
  * Real <table> rendered with grid rows (Table variant "bare"): the header
@@ -30,42 +37,65 @@ const COLUMNS = ["Year", "Opening", "Repayment", "Interest", "Principal", "Closi
 const ROW = "grid grid-cols-[52px_1fr_1fr_1fr_1fr_1fr] px-5 py-2.5";
 const BORDER = `1px solid ${t.border.default}`;
 
-export default memo(function AmortisationTable({ rows, frequency, height }: AmortisationTableProps) {
+export default memo(function AmortisationTable({
+  rows,
+  frequency,
+  height,
+}: AmortisationTableProps) {
   const ppy = PERIODS_PER_YEAR[frequency];
   return (
-    <Table variant="bare" className="block">
-      <TableHeader className="block">
-        <TableRow className={ROW} style={{ borderBottom: BORDER }}>
-          {COLUMNS.map((h, i) => (
-            <TableHead
-              key={h}
-              scope="col"
-              className={`text-[10px] font-semibold uppercase tracking-widest text-fg-muted ${
-                i === 0 ? "text-left" : "text-right"
-              }`}
-            >
-              {h}
-            </TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-
-      <TableBody className="custom-scrollbar block overflow-y-auto" style={{ maxHeight: height }}>
-        {rows.map((row, ri) => (
-          <TableRow
-            key={row.period}
-            className={`${ROW} text-[15px] tabular-nums transition-colors`}
-            style={{ borderBottom: ri < rows.length - 1 ? BORDER : "none" }}
-          >
-            <TableCell className="text-sm text-fg-tertiary">{ri === rows.length - 1 && ri > 0 ? "End" : Math.floor((row.period - 1) / ppy) + 1}</TableCell>
-            <TableCell className="text-right text-fg-tertiary">{formatCurrency(row.opening_balance)}</TableCell>
-            <TableCell className="text-right text-fg-secondary">{formatCurrency(row.scheduled_repayment)}</TableCell>
-            <TableCell className="text-right text-data-negative">{formatCurrency(row.interest)}</TableCell>
-            <TableCell className="text-right text-brand">{formatCurrency(row.principal_paid)}</TableCell>
-            <TableCell className="text-right text-fg-tertiary">{formatCurrency(row.closing_balance)}</TableCell>
+    <div className="overflow-x-auto">
+      <Table variant="bare" className="block min-w-[560px]">
+        <TableHeader className="block">
+          <TableRow className={ROW} style={{ borderBottom: BORDER }}>
+            {COLUMNS.map((h, i) => (
+              <TableHead
+                key={h}
+                scope="col"
+                className={`text-[10px] font-semibold uppercase tracking-widest text-fg-muted ${
+                  i === 0 ? "text-left" : "text-right"
+                }`}
+              >
+                {h}
+              </TableHead>
+            ))}
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+
+        <TableBody
+          className="custom-scrollbar block overflow-y-auto"
+          style={{ maxHeight: height }}
+        >
+          {rows.map((row, ri) => (
+            <TableRow
+              key={row.period}
+              className={`${ROW} text-[15px] tabular-nums transition-colors`}
+              style={{ borderBottom: ri < rows.length - 1 ? BORDER : "none" }}
+            >
+              <TableCell className="text-sm text-fg-tertiary">
+                {ri === rows.length - 1 && ri > 0
+                  ? "End"
+                  : Math.floor((row.period - 1) / ppy) + 1}
+              </TableCell>
+              <TableCell className="text-right text-fg-tertiary">
+                {formatCurrency(row.opening_balance)}
+              </TableCell>
+              <TableCell className="text-right text-fg-secondary">
+                {formatCurrency(row.scheduled_repayment)}
+              </TableCell>
+              <TableCell className="text-right text-data-negative">
+                {formatCurrency(row.interest)}
+              </TableCell>
+              <TableCell className="text-right text-brand">
+                {formatCurrency(row.principal_paid)}
+              </TableCell>
+              <TableCell className="text-right text-fg-tertiary">
+                {formatCurrency(row.closing_balance)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
-})
+});

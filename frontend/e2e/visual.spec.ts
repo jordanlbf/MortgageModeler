@@ -98,6 +98,7 @@ test.describe("amortisation", () => {
 
   test("offset saving", async ({ page }) => {
     await go(page, "/amortisation");
+    await page.getByRole("switch", { name: "Offset account" }).click();
     await page.getByLabel("Balance", { exact: true }).fill("50000");
     await page.getByLabel("Balance", { exact: true }).blur();
     await snap(page, "amortisation-offset");
@@ -263,7 +264,7 @@ test.describe("cashflow", () => {
 
   test("details table, drawer and rows", async ({ page }) => {
     await completeWizard(page, false);
-    await page.getByRole("radio", { name: "details", exact: true }).click();
+    await page.getByRole("radio", { name: "Details", exact: true }).click();
     await snap(page, "cashflow-details");
     const rows = page.locator("table tbody tr");
     await rows.nth(3).hover();

@@ -166,8 +166,8 @@
   --color-chart-bar-default:         var(--color-surface-active);
   --color-chart-bar-selected:        var(--color-brand);
   --color-chart-bar-hover:           var(--color-surface-hover);
-  --color-chart-legend-inactive:     rgba(113, 113, 122, 0.30);
-  --color-chart-legend-dot-inactive: rgba(113, 113, 122, 0.20);
+  --color-chart-legend-inactive:     rgba(161, 161, 170, 0.80);
+  --color-chart-legend-dot-inactive: rgba(161, 161, 170, 0.45);
 
   /* ───────────────────────────────────────────────────────────────── */
   /* Tool card defaults                                                 */

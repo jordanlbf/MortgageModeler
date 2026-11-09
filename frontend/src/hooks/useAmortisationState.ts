@@ -71,7 +71,23 @@ export interface AmortisationState {
   error: string | null;
   retry: () => void;
   chartData: ChartDataPoint[];
+  /** The same loan without the offset, per year. Empty with no offset. */
+  baselineChartData: ChartDataPoint[];
   tableRows: ScheduleRow[];
+}
+
+function toChartData(d: ScheduleResponse | null): ChartDataPoint[] {
+  if (!d) return [];
+  const loan = d.summary.loan_amount;
+  return d.chart_data.map((p) => ({
+    y: p.year,
+    bal: p.balance,
+    int: p.total_interest,
+    eq: p.equity,
+    paid: p.total_interest + (loan - p.balance),
+    lvr: p.property_value > 0 ? (p.balance / p.property_value) * 100 : 0,
+    offset: p.offset_balance,
+  }));
 }
 
 /**
@@ -174,19 +190,8 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
     };
   }, [data, baseline, frequency]);
 
-  const chartData: ChartDataPoint[] = useMemo(() => {
-    if (!data) return [];
-    const loan = data.summary.loan_amount;
-    return data.chart_data.map((p) => ({
-      y: p.year,
-      bal: p.balance,
-      int: p.total_interest,
-      eq: p.equity,
-      paid: p.total_interest + (loan - p.balance),
-      lvr: p.property_value > 0 ? (p.balance / p.property_value) * 100 : 0,
-      offset: p.offset_balance,
-    }));
-  }, [data]);
+  const chartData = useMemo(() => toChartData(data), [data]);
+  const baselineChartData = useMemo(() => toChartData(baseline), [baseline]);
 
   const tableRows = useMemo(() => {
     if (!data) return [];
@@ -220,6 +225,7 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
     error: source || !api.error ? null : "Couldn't work out your repayments. Check your connection.",
     retry,
     chartData,
+    baselineChartData,
     tableRows,
   };
 }

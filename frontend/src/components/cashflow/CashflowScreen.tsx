@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Pencil, Plus } from "lucide-react";
 import PageBar from "@/components/patterns/cards/PageBar";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import SegmentToggle from "@/components/domain/SegmentToggle";
 import CashflowCalculator from "./CashflowView";
 import { useCashflowState, type CashflowSource } from "@/hooks/useCashflowState";
 import type { DashboardView, StepId } from "@/lib/cashflow-types";
@@ -39,21 +39,12 @@ function CashflowScreenContent({ source, onReset }: { source?: CashflowSource; o
         actions={
           <>
             {s.allComplete && (
-              // Always one selected: ignore deselect.
-              <ToggleGroup
-                type="single"
-                variant="solid"
-                value={dashboardView}
-                onValueChange={(v) => { if (v) setDashboardView(v as DashboardView); }}
+              <SegmentToggle
                 aria-label="Layout"
-                className="flex gap-1.5"
-              >
-                {(["overview", "details"] as const).map((v) => (
-                  <ToggleGroupItem key={v} value={v} className="px-3 py-1.5 text-xs capitalize">
-                    {v}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
+                value={dashboardView}
+                onChange={setDashboardView}
+                options={[{ value: "overview", label: "Overview" }, { value: "details", label: "Details" }]}
+              />
             )}
             {s.allComplete && (
               <Button

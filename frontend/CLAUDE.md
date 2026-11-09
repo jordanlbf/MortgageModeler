@@ -16,6 +16,7 @@ frontend/src/
     layout/                   — AppShell, Sidebar, PageHeader
     ui/                       — shadcn/ui primitives, themed via tokens (button, card, tabs, …)
     domain/                   — app-specific components built from ui/ (SliderField, EditableValue,
+                                SegmentToggle for every "show as" / "per period" switch,
                                 ErrorBoundary, ColumnDrawer, wizard/)
     patterns/                 — shared building blocks, in layers; each imports only from earlier ones
       blocks/                 — inside a card: SectionTitle, InfoTip, Stat, KeyValueList, InlineAlert

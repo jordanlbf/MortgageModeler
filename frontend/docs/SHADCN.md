@@ -72,9 +72,9 @@ empty `onValueChange` unless clearing is intended. Multiple groups stay
 | `pill` | Rounded chip, accent when on; `data-tone="negative"` for red | Filter chips, Yes/No (Grants) |
 | `tile` | One-row option card: icon, title, status pill, dot | Cashflow wizard "What are you modelling?" |
 | `choice` | Large choice button | Short two-way choices (no page uses it yet) |
-| `segment` | Icon segmented control | Chart / Table switch |
-| `segment-pill` | Pill segmented control | Repayment frequency |
-| `solid` | Solid fill when on | Overview / Details |
+| `segment` | Icon segmented control | (kitchen sink only; use `solid` via SegmentToggle) |
+| `segment-pill` | Pill segmented control | (kitchen sink only; use `solid` via SegmentToggle) |
+| `solid` | Solid fill when on | Every "show as" / "per period" switch, through `domain/SegmentToggle`: Overview / Details, Chart / Table, repayment frequency, Tax period |
 | `segment-fill` | Pill segment filled with its own colour when on, `--segment-accent`; caller draws the track | Cashflow wizard New / Existing |
 | `legend` | Legend chip with dot (`ToggleLegendDot`), `--legend-accent` | Chart series toggles |
 
