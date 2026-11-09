@@ -2,7 +2,7 @@ import { memo } from "react";
 import type { ScheduleRow } from "@/lib/api";
 import type { Frequency } from "@/lib/types";
 import { PERIODS_PER_YEAR } from "@/lib/constants";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrencyShort } from "@/lib/formatters";
 import { t } from "@/lib/theme";
 import {
   Table,
@@ -78,19 +78,19 @@ export default memo(function AmortisationTable({
                   : Math.floor((row.period - 1) / ppy) + 1}
               </TableCell>
               <TableCell className="text-right text-fg-tertiary">
-                {formatCurrency(row.opening_balance)}
+                {formatCurrencyShort(row.opening_balance)}
               </TableCell>
               <TableCell className="text-right text-fg-secondary">
-                {formatCurrency(row.scheduled_repayment)}
+                {formatCurrencyShort(row.scheduled_repayment)}
               </TableCell>
               <TableCell className="text-right text-data-negative">
-                {formatCurrency(row.interest)}
+                {formatCurrencyShort(row.interest)}
               </TableCell>
               <TableCell className="text-right text-brand">
-                {formatCurrency(row.principal_paid)}
+                {formatCurrencyShort(row.principal_paid)}
               </TableCell>
               <TableCell className="text-right text-fg-tertiary">
-                {formatCurrency(row.closing_balance)}
+                {formatCurrencyShort(row.closing_balance)}
               </TableCell>
             </TableRow>
           ))}

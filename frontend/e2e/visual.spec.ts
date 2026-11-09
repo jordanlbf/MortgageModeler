@@ -221,7 +221,10 @@ test.describe("purchase costs", () => {
   test("error", async ({ page }) => {
     await failCompute(page);
     await go(page, "/purchase-costs");
-    await snap(page, "purchase-costs-error");
+    // Nothing is calculated until there's a price, so enter one to hit the failing API.
+    await page.getByRole("textbox", { name: "Purchase price" }).fill("600000");
+    await page.getByRole("textbox", { name: "Purchase price" }).blur();
+    await snap(page, "purchase-costs-error", 1200);
   });
 });
 

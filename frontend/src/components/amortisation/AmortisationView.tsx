@@ -37,7 +37,7 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
   const last = lastYear(am.chartData, am.baselineChartData);
   const cleared = am.baselineChartData.length > 0 && visible.has("bal");
 
-  // The series chips sit beside the title when the card is wide enough, else below it.
+  // Series chips, beside the Balance heading (they wrap under it when narrow).
   const legend = (
     <ToggleGroup
       type="multiple"
@@ -48,7 +48,7 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
         // Keep at least one series on the chart.
         if (next.length > 0) setVisible(new Set(next as BalanceSeriesKey[]));
       }}
-      className="flex flex-wrap justify-start gap-1 @[34rem]:justify-end"
+      className="flex flex-wrap gap-1"
     >
       {BALANCE_SERIES.map(({ key, label, color }) => (
         <ToggleGroupItem key={key} value={key} className="shrink-0 px-2 text-[12px]" style={{ "--legend-accent": color } as React.CSSProperties}>
@@ -64,7 +64,7 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
     <SegmentToggle aria-label="Repayments" value={inputs.frequency} onChange={am.setters.setFrequency} options={FREQ_OPTIONS} />
   );
 
-  // Bottom right of the chart card: show the charts or the year-by-year table.
+  // Top right of the chart card (under its title when narrow): the charts or the year-by-year table.
   const viewToggle = (
     <SegmentToggle
       aria-label="Show as"
@@ -77,8 +77,11 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
     />
   );
 
+  const viewAction = <div className="hidden @[26rem]:block">{viewToggle}</div>;
+  const viewBelow = <div className="-mt-2 px-6 pb-4 @[26rem]:hidden">{viewToggle}</div>;
+
   return (
-    <div className={`transition-opacity duration-200 ${am.loading && am.data ? "opacity-60" : ""}`}>
+    <div>
       {am.error && (
         <InlineAlert className="mb-6">
           {am.error}
@@ -87,7 +90,14 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
           </Button>
         </InlineAlert>
       )}
-      <CalculatorLayout inputs={<AmortisationInputPanel am={am} />} aria-labelledby={titleId} aria-busy={am.loading}>
+      <CalculatorLayout
+        inputs={<AmortisationInputPanel am={am} />}
+        aria-labelledby={titleId}
+        aria-busy={am.loading}
+        // Recalculating: dim the results only, so the inputs stay crisp while typing.
+        data-refreshing={am.loading && !!am.data}
+        className="[&>section]:transition-opacity [&>section]:duration-200 [&>section[data-refreshing=true]]:opacity-60"
+      >
         <SectionCard
           title="Amortisation"
           titleAs="h1"
@@ -120,22 +130,25 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
         </SectionCard>
 
         {view === "chart" ? (
-          <SectionCard
-            flush
-            title="Balance"
-            description={cleared ? <ClearedKey /> : undefined}
-            className="@container"
-            action={<div className="hidden @[37rem]:block">{legend}</div>}
-          >
-            <div className="-mt-2 px-6 @[37rem]:hidden">{legend}</div>
+          <SectionCard flush title="Over the life of the loan" className="@container" action={viewAction}>
+            {viewBelow}
             <div className="flex flex-col gap-5 px-6 pb-6">
-              {am.data ? (
-                <ErrorBoundary>
-                  <BalanceRaceChart data={am.chartData} baseline={am.baselineChartData} last={last} height={240} visible={visible} />
-                </ErrorBoundary>
-              ) : (
-                <Skeleton className="h-[240px]" aria-hidden="true" />
-              )}
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                  <div className="flex items-center gap-3">
+                    <Label variant="caps" asChild><h3>Balance</h3></Label>
+                    {cleared && <ClearedKey />}
+                  </div>
+                  {legend}
+                </div>
+                {am.data ? (
+                  <ErrorBoundary>
+                    <BalanceRaceChart data={am.chartData} baseline={am.baselineChartData} last={last} height={240} visible={visible} />
+                  </ErrorBoundary>
+                ) : (
+                  <Skeleton className="h-[240px]" aria-hidden="true" />
+                )}
+              </div>
               <div className="flex flex-col gap-3 border-t border-border-subtle pt-5">
                 <div className="flex items-center justify-between gap-4">
                   <Label variant="caps" asChild><h3>Each year</h3></Label>
@@ -146,17 +159,17 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
                 </div>
                 {am.data ? (
                   <ErrorBoundary>
-                    <YearlyBarsChart data={am.chartData} last={last} height={140} />
+                    <YearlyBarsChart data={am.chartData} last={last} height={180} />
                   </ErrorBoundary>
                 ) : (
-                  <Skeleton className="h-[140px]" aria-hidden="true" />
+                  <Skeleton className="h-[180px]" aria-hidden="true" />
                 )}
               </div>
-              <div className="flex justify-end">{viewToggle}</div>
             </div>
           </SectionCard>
         ) : (
-          <SectionCard flush title="Each year">
+          <SectionCard flush title="Over the life of the loan" className="@container" action={viewAction}>
+            {viewBelow}
             {am.data ? (
               <div className="border-t border-border-subtle">
                 <AmortisationTable rows={am.tableRows} frequency={inputs.frequency} height={400} />
@@ -164,7 +177,6 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
             ) : (
               <Skeleton className="mx-6 mb-6 h-[400px]" aria-hidden="true" />
             )}
-            <div className="flex justify-end border-t border-border-subtle px-6 py-4">{viewToggle}</div>
           </SectionCard>
         )}
       </CalculatorLayout>

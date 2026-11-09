@@ -24,9 +24,10 @@ export function parseAmount(text: string, percentOf?: number): number | null {
 }
 
 /**
- * Big money input with a "$" prefix. Keeps what you type while focused (so
- * "1.2m" or "20%" can be typed), updates the estimate on every keystroke, and
- * tidies to "600,000" on blur. Arrow keys step by `step`.
+ * Money input in the Cashflow setup box (Input `filled`): shows "$650,000".
+ * Keeps what you type while focused (so "1.2m" or "20%" can be typed),
+ * updates the estimate on every keystroke, and tidies on blur. Arrow keys
+ * step by `step`. `aside` (the deposit's % chip) sits inside the box, right.
  */
 function MoneyField({
   id,
@@ -49,7 +50,7 @@ function MoneyField({
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   const ref = useRef<HTMLInputElement>(null);
-  const shown = draft ?? (value > 0 ? formatDollars(value).replace(/^\$/, "") : "");
+  const shown = draft ?? (value > 0 ? formatDollars(value) : "");
 
   useEffect(() => {
     if (autoFocus) ref.current?.focus();
@@ -58,22 +59,10 @@ function MoneyField({
   }, []);
 
   return (
-    // Hover tint and a brand underline while editing, so the big number reads as editable.
-    <span
-      className={
-        "relative -mx-2 flex min-w-0 cursor-text items-center gap-1.5 rounded-lg px-2 transition-colors duration-150 " +
-        "hover:bg-surface-hover/50 has-[>input:focus]:bg-surface-hover/50 " +
-        "after:pointer-events-none after:absolute after:inset-x-2 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-transparent after:transition-colors after:duration-150 after:content-[''] has-[>input:focus]:after:bg-brand"
-      }
-      onClick={(e) => {
-        // The % chip beside the number is its own field.
-        if (!(e.target as HTMLElement).closest("[data-slot=badge]")) ref.current?.focus();
-      }}
-    >
-      <span className={`text-[22px] font-semibold transition-colors ${value > 0 || draft ? "text-fg-secondary" : "text-fg-muted"}`} aria-hidden="true">$</span>
+    <div className="relative">
       <Input
         ref={ref}
-        variant="form"
+        variant="filled"
         id={id}
         type="text"
         inputMode="decimal"
@@ -99,10 +88,10 @@ function MoneyField({
             onCommit(next);
           }
         }}
-        className="h-9 min-w-0 flex-1 border-0 bg-transparent px-0 text-[28px] font-semibold tracking-[-0.02em] tabular-nums shadow-none placeholder:font-semibold placeholder:text-fg-muted hover:bg-transparent focus:bg-transparent focus:shadow-none"
+        className={aside ? "w-full pr-20" : "w-full"}
       />
-      {aside}
-    </span>
+      {aside && <span className="absolute top-1/2 right-2.5 -translate-y-1/2">{aside}</span>}
+    </div>
   );
 }
 
@@ -119,7 +108,7 @@ interface Scale {
 }
 
 /**
- * One amount section: caption, big dollar input, and optionally a slider on
+ * One amount section: caption, dollar input box, and optionally a slider on
  * `scale` with its range underneath. `markers` label points on the scale
  * (deposits worth aiming for); a drag settles onto them. `accent` tints the slider (the deposit follows the LVR colour).
  */
@@ -158,7 +147,7 @@ export function AmountSection({
           id={id}
           value={value}
           onCommit={onChange}
-          placeholder="0"
+          placeholder="$0"
           step={inputStep}
           percentOf={percentOf}
           autoFocus={autoFocus}

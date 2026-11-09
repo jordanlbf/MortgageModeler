@@ -16,8 +16,9 @@ import { Switch } from "@/components/ui/switch";
 const FIELD = "w-[130px] shrink-0";
 
 const HELP = {
-  offset: "Savings in an offset account. Interest is only charged on the loan minus this balance.",
-  growth: "How fast the property's value grows. Used for the equity and LVR lines.",
+  offset: "A savings account linked to your loan. Interest is only charged on the loan minus what's in it.",
+  balance: "What's in the offset account now.",
+  growth: "How fast the property's value grows a year. Used for the equity and LVR lines.",
 };
 
 /** A label (with optional help) on the left, its field on the right. */
@@ -100,19 +101,12 @@ export default function AmortisationInputPanel({ am }: { am: AmortisationState }
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border-subtle px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <Label variant="bare" htmlFor={`${id}-offset-on`} className="text-[14px] font-semibold text-fg-primary">Offset account</Label>
-          <Switch
-            id={`${id}-offset-on`}
-            variant="accent"
-            checked={offsetOn}
-            onCheckedChange={setOffset}
-            style={{ "--switch-accent": "var(--color-data-positive)" } as React.CSSProperties}
-          />
-        </div>
+        <Row id={`${id}-offset-on`} label="Offset account" help={HELP.offset}>
+          <Switch id={`${id}-offset-on`} variant="accent" checked={offsetOn} onCheckedChange={setOffset} aria-describedby={`${id}-offset-on-help`} />
+        </Row>
         {offsetOn && (
           <>
-            <Row id={`${id}-offset`} label="Balance" help={HELP.offset}>
+            <Row id={`${id}-offset`} label="Balance" help={HELP.balance}>
               <MoneyInput id={`${id}-offset`} value={inputs.offsetBalance} onValueChange={setters.setOffsetBalance} className={FIELD} aria-describedby={`${id}-offset-help`} />
             </Row>
             <Row id={`${id}-contrib`} label={`Added a ${per}`} help={`What you put into the offset account each ${per}, on top of your repayment.`}>
@@ -123,7 +117,7 @@ export default function AmortisationInputPanel({ am }: { am: AmortisationState }
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border-subtle px-6 py-4">
-        <Row id={`${id}-growth`} label="Property growth a year" help={HELP.growth}>
+        <Row id={`${id}-growth`} label="Annual growth" help={HELP.growth}>
           <UnitInput id={`${id}-growth`} unit="%" value={inputs.appreciation} onValueChange={setters.setAppreciation} min={0} max={15} step={0.5} decimals={1} className={FIELD} aria-describedby={`${id}-growth-help`} />
         </Row>
       </div>
