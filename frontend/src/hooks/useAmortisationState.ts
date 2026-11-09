@@ -33,6 +33,8 @@ export interface AmortisationInputSetters {
 export interface AmortisationSource {
   inputs?: Partial<AmortisationInputs>;
   data: ScheduleResponse;
+  /** The same loan without the offset, when the sample has one. */
+  baseline?: ScheduleResponse;
 }
 
 /** The headline figures, worked out from the schedule. */
@@ -47,6 +49,17 @@ export interface AmortisationSummary {
   /** How long until the loan is paid off (shorter than the term with an offset). */
   payoffYears: number;
   payoffMonths: number;
+  /** What the offset account saves, against the same loan without it. Null with no offset. */
+  offset: OffsetSaving | null;
+}
+
+export interface OffsetSaving {
+  interestSaved: number;
+  /** How much sooner the loan is paid off, in whole months. */
+  monthsSooner: number;
+  /** Total interest and payoff time without the offset, for comparison. */
+  interestWithout: number;
+  monthsWithout: number;
 }
 
 export interface AmortisationState {
@@ -107,11 +120,31 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
   );
   const data = source ? source.data : api.data;
 
+  // With an offset, the same loan again without it, to show what the offset saves.
+  const hasOffset = offsetBalance > 0 || offsetContribution > 0;
+  const baselineApi = useApiCall<ScheduleResponse>(
+    (signal) => fetchSchedule({
+      purchase_price: purchasePrice,
+      deposit,
+      annual_rate: rate / 100,
+      loan_term_years: years,
+      frequency,
+      annual_appreciation: appreciation / 100,
+      offset_balance: 0,
+      offset_contribution: 0,
+      extra_repayment: 0,
+    }, signal),
+    [purchasePrice, deposit, rate, years, frequency, appreciation, attempt],
+    { enabled: !source && hasOffset },
+  );
+  const baseline = source ? source.baseline ?? null : hasOffset ? baselineApi.data : null;
+
   // ── Derived data ───────────────────────────────
   const summary: AmortisationSummary | null = useMemo(() => {
     if (!data) return null;
     const loan = data.summary.loan_amount;
-    const months = Math.round((data.total_periods / PERIODS_PER_YEAR[frequency]) * 12);
+    const toMonths = (periods: number) => Math.round((periods / PERIODS_PER_YEAR[frequency]) * 12);
+    const months = toMonths(data.total_periods);
     return {
       payment: data.payment,
       loanAmount: loan,
@@ -120,8 +153,16 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
       totalRepaid: loan + data.total_interest,
       payoffYears: Math.floor(months / 12),
       payoffMonths: months % 12,
+      offset: baseline
+        ? {
+            interestSaved: Math.max(0, baseline.total_interest - data.total_interest),
+            monthsSooner: Math.max(0, toMonths(baseline.total_periods) - months),
+            interestWithout: baseline.total_interest,
+            monthsWithout: toMonths(baseline.total_periods),
+          }
+        : null,
     };
-  }, [data, frequency]);
+  }, [data, baseline, frequency]);
 
   const chartData: ChartDataPoint[] = useMemo(() => {
     if (!data) return [];
@@ -162,7 +203,7 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
     },
     data,
     summary,
-    loading: source ? false : api.loading,
+    loading: source ? false : api.loading || (hasOffset && baselineApi.loading),
     // The raw message ("API error: 500") means nothing to a user.
     error: source || !api.error ? null : "Couldn't work out your repayments. Check your connection.",
     retry,

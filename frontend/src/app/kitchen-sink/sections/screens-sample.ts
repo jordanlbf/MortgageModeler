@@ -179,34 +179,36 @@ export const TAX: TaxSource = {
  * monthly, with 3% growth. A plain repayment schedule so the screen renders
  * without the API; tune the look in the components, not here.
  */
-function sampleSchedule(): AmortisationSource["data"] {
+function sampleSchedule(offsetStart = 0, offsetAdd = 0): AmortisationSource["data"] {
   const price = 500_000, deposit = 100_000, loan = price - deposit;
   const r = 0.06 / 12, n = 30 * 12;
   const payment = (loan * r) / (1 - (1 + r) ** -n);
   const round = (x: number) => Math.round(x * 100) / 100;
-  let balance = loan, interestToDate = 0;
+  let balance = loan, interestToDate = 0, offset = offsetStart, periods = n;
   const rows = [];
   const chart = [{ year: 0, balance: loan, total_interest: 0, property_value: price, equity: deposit, offset_balance: 0 }];
   for (let p = 1; p <= n; p++) {
-    const interest = balance * r;
+    if (balance <= 0) { periods = p - 1; break; }
+    const interest = Math.max(0, balance - offset) * r;
     const principal = Math.min(balance, payment - interest);
     const opening = balance;
     balance = Math.max(0, balance - principal);
     interestToDate += interest;
     rows.push({
       period: p, opening_balance: round(opening), interest: round(interest), principal_paid: round(principal), extra_paid: 0,
-      closing_balance: round(balance), annual_rate: 0.06, scheduled_repayment: round(payment), offset_balance: 0,
+      closing_balance: round(balance), annual_rate: 0.06, scheduled_repayment: round(payment), offset_balance: round(offset),
     });
+    offset += offsetAdd;
     if (p % 12 === 0) {
       const value = Math.round(price * 1.03 ** (p / 12));
-      chart.push({ year: p / 12, balance: round(balance), total_interest: round(interestToDate), property_value: value, equity: Math.round(value - balance), offset_balance: 0 });
+      chart.push({ year: p / 12, balance: round(balance), total_interest: round(interestToDate), property_value: value, equity: Math.round(value - balance), offset_balance: round(offset) });
     }
   }
   return {
     summary: { purchase_price: price, deposit, loan_amount: loan, lvr: loan / price, annual_appreciation: 0.03 },
     payment: round(payment),
     total_interest: round(interestToDate),
-    total_periods: n,
+    total_periods: periods,
     rows,
     chart_data: chart,
   };
@@ -215,4 +217,11 @@ function sampleSchedule(): AmortisationSource["data"] {
 export const AMORTISATION: AmortisationSource = {
   inputs: { purchasePrice: 500_000, deposit: 100_000, rate: 6, years: 30, appreciation: 3, frequency: "monthly" },
   data: sampleSchedule(),
+};
+
+/** The same loan with $50k in an offset account and $500 added a month, plus the loan without it. */
+export const AMORTISATION_OFFSET: AmortisationSource = {
+  inputs: { ...AMORTISATION.inputs, offsetBalance: 50_000, offsetContribution: 500 },
+  data: sampleSchedule(50_000, 500),
+  baseline: sampleSchedule(),
 };

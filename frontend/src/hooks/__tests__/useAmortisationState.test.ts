@@ -191,4 +191,41 @@ describe("useAmortisationState", () => {
     expect(result.current.summary!.payoffYears).toBe(24);
     expect(result.current.summary!.payoffMonths).toBe(3);
   });
+
+  it("with an offset, fetches the loan without it and reports what the offset saves", async () => {
+    mockFetchSchedule.mockClear();
+    mockFetchSchedule.mockImplementation((params: { offset_balance: number }) =>
+      Promise.resolve(
+        params.offset_balance > 0
+          ? { ...MOCK_RESPONSE, total_interest: 800_000, total_periods: 1300 }
+          : MOCK_RESPONSE,
+      ),
+    );
+    const { result } = renderHook(() => useAmortisationState());
+
+    act(() => result.current.setters.setOffsetBalance(50_000));
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+    });
+
+    // One call with the offset, one without it
+    const balances = mockFetchSchedule.mock.calls.map((c) => c[0].offset_balance);
+    expect(balances).toContain(50_000);
+    expect(balances).toContain(0);
+
+    const offset = result.current.summary!.offset!;
+    expect(offset.interestSaved).toBe(241_000);
+    // 1560 vs 1300 weekly periods = 360 vs 300 months
+    expect(offset.monthsSooner).toBe(60);
+  });
+
+  it("without an offset, there's no saving and no second call", async () => {
+    mockFetchSchedule.mockClear();
+    const { result } = renderHook(() => useAmortisationState());
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(mockFetchSchedule).toHaveBeenCalledTimes(1);
+    expect(result.current.summary!.offset).toBeNull();
+  });
 });

@@ -72,8 +72,9 @@ export function useApiCall<T>(
       if (timerRef.current) clearTimeout(timerRef.current);
       if (abortRef.current) abortRef.current.abort();
     };
+    // Also re-run when `enabled` flips, even if the deps haven't changed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [...deps, enabled]);
 
   return { data, error, loading };
 }
