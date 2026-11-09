@@ -13,6 +13,11 @@ from app.config.grants.registry import get_all_schemes, get_schemes_for_states
 from app.models.grants import EligibilityResult, GrantsInputs, SchemeEligibility
 
 
+def _today() -> date:
+    """Today's date. A function so tests can pin it."""
+    return date.today()
+
+
 def _is_expired(scheme: GrantScheme) -> bool:
     """Check if a scheme has passed its valid_to date.
 
@@ -24,7 +29,7 @@ def _is_expired(scheme: GrantScheme) -> bool:
     """
     if scheme.valid_to is None:
         return False
-    return date.today() > scheme.valid_to
+    return _today() > scheme.valid_to
 
 
 def _check_eligibility(scheme: GrantScheme, inputs: GrantsInputs) -> EligibilityResult:

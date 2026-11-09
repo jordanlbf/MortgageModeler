@@ -2,12 +2,24 @@
 Tests for API Grants endpoints.
 """
 
+from datetime import date
+
 import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
 
 client = TestClient(app)
+
+
+# The scheme data was last verified in March 2026. Pin "today" there so
+# schemes with an end date don't drop out of these tests as time passes.
+DATA_VERIFIED = date(2026, 3, 15)
+
+
+@pytest.fixture(autouse=True)
+def _pin_today(monkeypatch):
+    monkeypatch.setattr("app.services.grants._today", lambda: DATA_VERIFIED)
 
 
 class TestListSchemes:
