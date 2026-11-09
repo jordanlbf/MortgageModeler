@@ -39,6 +39,16 @@ const MOCK_RESPONSE: ScheduleResponse = {
   ],
 };
 
+/** The hook with a price and deposit entered (it starts empty and fetches nothing until then). */
+function renderLoan() {
+  const hook = renderHook(() => useAmortisationState());
+  act(() => {
+    hook.result.current.setters.setPurchasePrice(600_000);
+    hook.result.current.setters.setDeposit(100_000);
+  });
+  return hook;
+}
+
 describe("useAmortisationState", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -50,15 +60,15 @@ describe("useAmortisationState", () => {
     vi.restoreAllMocks();
   });
 
-  it("initial inputs match defaults", () => {
+  it("starts with no price or deposit, so the user fills them in", () => {
     const { result } = renderHook(() => useAmortisationState());
     const { inputs } = result.current;
 
-    expect(inputs.purchasePrice).toBe(600_000);
-    expect(inputs.deposit).toBe(100_000);
+    expect(inputs.purchasePrice).toBe(0);
+    expect(inputs.deposit).toBe(0);
     expect(inputs.rate).toBe(6.2);
     expect(inputs.years).toBe(30);
-    expect(inputs.appreciation).toBe(0);
+    expect(inputs.appreciation).toBe(5.4);
     expect(inputs.offsetBalance).toBe(0);
     expect(inputs.offsetContribution).toBe(0);
     expect(inputs.frequency).toBe("weekly");
@@ -92,7 +102,8 @@ describe("useAmortisationState", () => {
   });
 
   it("API is called via useApiCall after render", async () => {
-    renderHook(() => useAmortisationState());
+    mockFetchSchedule.mockClear();
+    renderLoan();
 
     await act(async () => {
       vi.advanceTimersByTime(80);
@@ -107,7 +118,7 @@ describe("useAmortisationState", () => {
     expect(params.annual_rate).toBeCloseTo(0.062);
     expect(params.loan_term_years).toBe(30);
     expect(params.frequency).toBe("weekly");
-    expect(params.annual_appreciation).toBe(0);
+    expect(params.annual_appreciation).toBeCloseTo(0.054);
     expect(params.offset_balance).toBe(0);
     expect(params.offset_contribution).toBe(0);
     // Signal is the second argument
@@ -115,7 +126,7 @@ describe("useAmortisationState", () => {
   });
 
   it("chartData derives correctly from mock response", async () => {
-    const { result } = renderHook(() => useAmortisationState());
+    const { result } = renderLoan();
 
     await act(async () => {
       vi.advanceTimersByTime(80);
@@ -137,7 +148,7 @@ describe("useAmortisationState", () => {
   });
 
   it("tableRows filters to yearly rows from mock response", async () => {
-    const { result } = renderHook(() => useAmortisationState());
+    const { result } = renderLoan();
 
     await act(async () => {
       vi.advanceTimersByTime(80);
@@ -156,7 +167,7 @@ describe("useAmortisationState", () => {
   });
 
   it("summary gives the headline figures, with the payoff time in years and months", async () => {
-    const { result } = renderHook(() => useAmortisationState());
+    const { result } = renderLoan();
 
     await act(async () => {
       vi.advanceTimersByTime(80);
@@ -165,6 +176,8 @@ describe("useAmortisationState", () => {
     const { summary } = result.current;
     expect(summary).not.toBeNull();
     expect(summary!.payment).toBe(592.5);
+    // 52 weekly repayments
+    expect(summary!.yearlyRepayment).toBeCloseTo(30_810);
     expect(summary!.loanAmount).toBe(500_000);
     expect(summary!.totalInterest).toBe(1_041_000);
     expect(summary!.totalRepaid).toBe(1_541_000);
@@ -201,7 +214,7 @@ describe("useAmortisationState", () => {
           : MOCK_RESPONSE,
       ),
     );
-    const { result } = renderHook(() => useAmortisationState());
+    const { result } = renderLoan();
 
     act(() => result.current.setters.setOffsetBalance(50_000));
     await act(async () => {
@@ -221,7 +234,7 @@ describe("useAmortisationState", () => {
 
   it("without an offset, there's no saving and no second call", async () => {
     mockFetchSchedule.mockClear();
-    const { result } = renderHook(() => useAmortisationState());
+    const { result } = renderLoan();
     await act(async () => {
       vi.advanceTimersByTime(200);
     });
@@ -234,11 +247,38 @@ describe("useAmortisationState", () => {
     // An offset clears the loan after 1248 weekly repayments (24 years); the schedule still runs to 1560.
     const rows = MOCK_RESPONSE.rows.map((r, i) => ({ ...r, closing_balance: i >= 1247 ? 0 : 1000 }));
     mockFetchSchedule.mockResolvedValue({ ...MOCK_RESPONSE, rows });
-    const { result } = renderHook(() => useAmortisationState());
+    const { result } = renderLoan();
     await act(async () => {
       vi.advanceTimersByTime(80);
     });
     expect(result.current.summary!.payoffYears).toBe(24);
     expect(result.current.summary!.payoffMonths).toBe(0);
+  });
+
+  it("with no price, it waits: no request, no figures, no error", async () => {
+    mockFetchSchedule.mockClear();
+    const { result } = renderHook(() => useAmortisationState());
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(mockFetchSchedule).not.toHaveBeenCalled();
+    expect(result.current.waiting).toBe(true);
+    expect(result.current.summary).toBeNull();
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("a deposit that covers the price leaves no loan, so it still waits", async () => {
+    mockFetchSchedule.mockClear();
+    const { result } = renderHook(() => useAmortisationState());
+    act(() => {
+      result.current.setters.setPurchasePrice(500_000);
+      result.current.setters.setDeposit(500_000);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(200);
+    });
+    expect(mockFetchSchedule).not.toHaveBeenCalled();
+    expect(result.current.waiting).toBe(true);
   });
 });

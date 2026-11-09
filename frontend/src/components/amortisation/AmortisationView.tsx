@@ -2,7 +2,9 @@
 
 import { useId, useState } from "react";
 import { useAmortisationState, type AmortisationSource } from "@/hooks/useAmortisationState";
-import { FREQ_LABELS, FREQ_OPTIONS } from "@/lib/constants";
+import type { Frequency } from "@/lib/types";
+import { FREQ_OPTIONS } from "@/lib/constants";
+import { lvrColor } from "@/lib/lvr";
 import CalculatorLayout from "@/components/patterns/layouts/CalculatorLayout";
 import SectionCard from "@/components/patterns/cards/SectionCard";
 import InlineAlert from "@/components/patterns/blocks/InlineAlert";
@@ -19,6 +21,16 @@ import AmortisationTable from "./AmortisationTable";
 import { BALANCE_SERIES, BalanceRaceChart, C, ClearedKey, DEFAULT_BALANCE_SERIES, LegendDot, YearlyBarsChart, lastYear, type BalanceSeriesKey } from "./charts";
 import { money, spanTiny } from "./format";
 
+/** Headline figures: two columns on phones; one row (each figure as wide as it needs) once the card fits them. */
+const FIGURES = "grid grid-cols-2 gap-x-4 gap-y-5 @[30rem]:flex @[30rem]:justify-between";
+
+/** The headline switch: the three real repayment frequencies, plus Yearly (a view of the same loan). */
+type Per = Frequency | "yearly";
+const PER_OPTIONS: { value: Per; label: string }[] = [...FREQ_OPTIONS, { value: "yearly", label: "Yearly" }];
+
+/** Short period names for the repayment label. */
+const PER_SHORT: Record<Per, string> = { weekly: "wk", fortnightly: "fn", monthly: "mth", yearly: "yr" };
+
 /**
  * Amortisation: the loan card on the left; on the right the headline figures
  * then either one card with the balance and principal vs interest each year,
@@ -34,6 +46,9 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
   const o = s?.offset;
   const [visible, setVisible] = useState<ReadonlySet<BalanceSeriesKey>>(DEFAULT_BALANCE_SERIES);
   const [view, setView] = useState<"chart" | "table">("chart");
+  // Yearly isn't a way to repay a loan: the loan keeps its last real frequency and the figure shows a year of it.
+  const [yearly, setYearly] = useState(false);
+  const per: Per = yearly ? "yearly" : inputs.frequency;
   const last = lastYear(am.chartData, am.baselineChartData);
   const cleared = am.baselineChartData.length > 0 && visible.has("bal");
 
@@ -61,7 +76,15 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
 
   // Top right of the headline: how often you repay, which every figure there follows.
   const frequency = (
-    <SegmentToggle aria-label="Repayments" value={inputs.frequency} onChange={am.setters.setFrequency} options={FREQ_OPTIONS} />
+    <SegmentToggle
+      aria-label="Repayments"
+      value={per}
+      onChange={(v) => {
+        setYearly(v === "yearly");
+        if (v !== "yearly") am.setters.setFrequency(v);
+      }}
+      options={PER_OPTIONS}
+    />
   );
 
   // Top right of the chart card (under its title when narrow): the charts or the year-by-year table.
@@ -76,6 +99,19 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
       ]}
     />
   );
+
+  // Short, so the headline fits on one row: "Repay/wk", "Repay/fn", "Repay/mth", "Repay/yr".
+  const repaymentLabel = `Repay/${PER_SHORT[per]}`;
+
+  // Not filled in yet, or the calculation failed with nothing to show.
+  const empty = am.waiting || (!!am.error && !am.data);
+
+  // Before there's a loan to work out, say what's needed.
+  const prompt = !am.waiting
+    ? undefined
+    : inputs.purchasePrice > 0
+      ? "Your deposit covers the price, so there's no loan to repay."
+      : "Enter a purchase price to see your repayments.";
 
   const viewAction = <div className="hidden @[26rem]:block">{viewToggle}</div>;
   const viewBelow = <div className="-mt-2 px-6 pb-4 @[26rem]:hidden">{viewToggle}</div>;
@@ -102,34 +138,43 @@ export default function AmortisationView({ source }: { source?: AmortisationSour
           title="Amortisation"
           titleAs="h1"
           titleId={titleId}
+          description={prompt}
           className="@container"
-          action={<div className="hidden @[23rem]:block">{frequency}</div>}
+          action={<div className="hidden @[27rem]:block">{frequency}</div>}
         >
           {/* Too narrow to sit beside the title: under it instead. */}
-          <div className="-mt-2 @[23rem]:hidden">{frequency}</div>
+          <div className="-mt-2 @[27rem]:hidden">{frequency}</div>
           {s ? (
-            // Four figures without an offset, five with: one row when the card is wide enough.
-            <div className={`grid grid-cols-2 gap-x-4 gap-y-5 ${o ? "@[30rem]:grid-cols-3 @[36rem]:grid-cols-5" : "@[30rem]:grid-cols-4"}`}>
-              <Stat label="Repayment" value={money(s.payment)} size="md">
-                <span className="text-[12px] text-fg-tertiary">a {FREQ_LABELS[inputs.frequency]}</span>
-              </Stat>
+            <div className={FIGURES}>
+              <Stat label={repaymentLabel} value={money(yearly ? s.yearlyRepayment : s.payment)} size="md" />
               {/* Without an offset the payoff is just the term, so show the loan instead. */}
-              {!o && (
-                <Stat label="Loan amount" value={money(s.loanAmount)} size="md">
-                  <span className="text-[12px] text-fg-tertiary tabular-nums">{Math.round(s.lvr * 100)}% LVR</span>
-                </Stat>
-              )}
-              <Stat label="Total paid" value={money(s.totalRepaid)} size="md" />
+              {!o && <Stat label="Loan amount" value={money(s.loanAmount)} size="md" />}
+              {/* Coloured like the deposit slider: green with no LMI, amber, then red. */}
+              <Stat label="LVR" value={<span style={{ color: lvrColor(s.lvr) }}>{Math.round(s.lvr * 100)}%</span>} size="md" />
               <Stat label="Interest" value={money(s.totalInterest)} size="md" tone="negative" />
               {o && <Stat label="Paid off" value={spanTiny(months)} size="md" />}
               {o && <Stat label="Offset saves" value={money(o.interestSaved)} size="md" tone="positive" />}
+            </div>
+          ) : empty ? (
+            // Nothing to show (not filled in yet, or it failed): the same figures, empty, so the layout doesn't jump.
+            <div className={FIGURES}>
+              {[repaymentLabel, "Loan amount", "LVR", "Interest"].map((label) => (
+                <Stat key={label} label={label} value="—" size="md" tone="muted" />
+              ))}
             </div>
           ) : (
             <Skeleton className="h-16" aria-hidden="true" />
           )}
         </SectionCard>
 
-        {view === "chart" ? (
+        {empty ? (
+          <SectionCard flush title="Over the life of the loan" className="@container" action={viewAction}>
+            {viewBelow}
+            <div className="mx-6 mb-6 flex h-[240px] items-center justify-center rounded-xl border border-dashed border-border-subtle px-6 text-center text-[13px] text-fg-tertiary">
+              {am.waiting ? "Your balance and repayments over the life of the loan appear here." : "Nothing to show until your repayments can be worked out."}
+            </div>
+          </SectionCard>
+        ) : view === "chart" ? (
           <SectionCard flush title="Over the life of the loan" className="@container" action={viewAction}>
             {viewBelow}
             <div className="flex flex-col gap-5 px-6 pb-6">

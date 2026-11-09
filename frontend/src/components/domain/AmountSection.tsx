@@ -125,6 +125,7 @@ export function AmountSection({
   accent = "var(--color-brand)",
   markers,
   aside,
+  divider = true,
 }: {
   id: string;
   label: string;
@@ -138,9 +139,11 @@ export function AmountSection({
   accent?: string;
   markers?: Marker[];
   aside?: React.ReactNode;
+  /** A line above the section. Off to run straight on from the one above (price, then deposit). */
+  divider?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-t border-border-subtle px-6 py-5" style={{ "--slider-accent": accent } as React.CSSProperties}>
+    <div className={`flex flex-col gap-4 px-6 pb-5 ${divider ? "border-t border-border-subtle pt-5" : "pt-0"}`} style={{ "--slider-accent": accent } as React.CSSProperties}>
       <div className="flex flex-col gap-2">
         <Label variant="caps" htmlFor={id}>{label}</Label>
         <MoneyField

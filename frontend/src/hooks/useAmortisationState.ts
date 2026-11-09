@@ -40,6 +40,8 @@ export interface AmortisationSource {
 /** The headline figures, worked out from the schedule. */
 export interface AmortisationSummary {
   payment: number;
+  /** The repayment over a year (payment × repayments a year), for budgeting. */
+  yearlyRepayment: number;
   loanAmount: number;
   /** As a decimal (0.83). */
   lvr: number;
@@ -67,6 +69,8 @@ export interface AmortisationState {
   setters: AmortisationInputSetters;
   data: ScheduleResponse | null;
   summary: AmortisationSummary | null;
+  /** No price yet, or a deposit that covers it: nothing to work out until the user fills it in. */
+  waiting: boolean;
   loading: boolean;
   error: string | null;
   retry: () => void;
@@ -101,11 +105,13 @@ function periodsToPayoff(d: ScheduleResponse): number {
 }
 
 const DEFAULTS: AmortisationInputs = {
-  purchasePrice: 600_000,
-  deposit: 100_000,
+  // Empty: the user enters their own price and deposit first.
+  purchasePrice: 0,
+  deposit: 0,
   rate: 6.2,
   years: 30,
-  appreciation: 0,
+  // CoreLogic: national dwelling values grew 5.4% a year on average over the 30 years to 2022.
+  appreciation: 5.4,
   offsetBalance: 0,
   offsetContribution: 0,
   frequency: "weekly",
@@ -129,6 +135,8 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
 
   // ── API fetch ──────────────────────────────────
+  // Only once there's a loan to work out.
+  const ready = purchasePrice > 0 && deposit < purchasePrice;
   const api = useApiCall<ScheduleResponse>(
     (signal) => fetchSchedule({
       purchase_price: purchasePrice,
@@ -142,9 +150,9 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
       extra_repayment: 0,
     }, signal),
     [purchasePrice, deposit, rate, years, frequency, appreciation, offsetBalance, offsetContribution, attempt],
-    { enabled: !source },
+    { enabled: !source && ready },
   );
-  const data = source ? source.data : api.data;
+  const data = source ? source.data : ready ? api.data : null;
 
   // With an offset, the same loan again without it, to show what the offset saves.
   const hasOffset = offsetBalance > 0 || offsetContribution > 0;
@@ -161,9 +169,9 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
       extra_repayment: 0,
     }, signal),
     [purchasePrice, deposit, rate, years, frequency, appreciation, attempt],
-    { enabled: !source && hasOffset },
+    { enabled: !source && ready && hasOffset },
   );
-  const baseline = source ? source.baseline ?? null : hasOffset ? baselineApi.data : null;
+  const baseline = source ? source.baseline ?? null : ready && hasOffset ? baselineApi.data : null;
 
   // ── Derived data ───────────────────────────────
   const summary: AmortisationSummary | null = useMemo(() => {
@@ -173,6 +181,7 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
     const months = toMonths(periodsToPayoff(data));
     return {
       payment: data.payment,
+      yearlyRepayment: data.payment * PERIODS_PER_YEAR[frequency],
       loanAmount: loan,
       lvr: data.summary.lvr,
       totalInterest: data.total_interest,
@@ -220,9 +229,10 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
     },
     data,
     summary,
-    loading: source ? false : api.loading || (hasOffset && baselineApi.loading),
+    waiting: !source && !ready,
+    loading: source || !ready ? false : api.loading || (hasOffset && baselineApi.loading),
     // The raw message ("API error: 500") means nothing to a user.
-    error: source || !api.error ? null : "Couldn't work out your repayments. Check your connection.",
+    error: source || !ready || !api.error ? null : "Couldn't work out your repayments. Check your connection.",
     retry,
     chartData,
     baselineChartData,

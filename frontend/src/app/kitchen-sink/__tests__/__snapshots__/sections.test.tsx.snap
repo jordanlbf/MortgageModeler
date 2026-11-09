@@ -5326,7 +5326,7 @@ exports[`kitchen-sink sections > inputs matches its snapshot 1`] = `
         class="w-[360px] rounded-2xl bg-surface-raised pb-1"
       >
         <div
-          class="flex flex-col gap-4 border-t border-border-subtle px-6 py-5"
+          class="flex flex-col gap-4 px-6 pb-5 border-t border-border-subtle pt-5"
           style="--slider-accent: var(--color-brand);"
         >
           <div
@@ -5358,7 +5358,7 @@ exports[`kitchen-sink sections > inputs matches its snapshot 1`] = `
           </div>
         </div>
         <div
-          class="flex flex-col gap-4 border-t border-border-subtle px-6 py-5"
+          class="flex flex-col gap-4 px-6 pb-5 border-t border-border-subtle pt-5"
           style="--slider-accent: var(--color-data-positive);"
         >
           <div
@@ -7505,7 +7505,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
             </div>
           </div>
           <div
-            class="flex flex-col gap-4 border-t border-border-subtle px-6 py-5"
+            class="flex flex-col gap-4 px-6 pb-5 border-t border-border-subtle pt-5"
             style="--slider-accent: var(--color-brand);"
           >
             <div
@@ -7537,7 +7537,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
             </div>
           </div>
           <div
-            class="flex flex-col gap-4 border-t border-border-subtle px-6 py-5"
+            class="flex flex-col gap-4 px-6 pb-5 pt-0"
             style="--slider-accent: var(--color-data-positive);"
           >
             <div
@@ -7684,42 +7684,6 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                 <label
                   class="text-[13.5px] text-fg-secondary"
                   data-slot="label"
-                  for="_r_2g_-rate"
-                >
-                  Interest rate
-                </label>
-              </div>
-              <span
-                class="relative inline-flex items-center w-[130px] shrink-0"
-              >
-                <input
-                  autocomplete="off"
-                  class="rounded-lg border-0 bg-input-bg px-4 text-fg-primary transition-all duration-150 placeholder:text-fg-muted focus:bg-input-bg-focus focus:ring-1 focus:ring-brand/25 focus:outline-none h-9 w-full py-0 pr-11 pl-3 text-right text-[14px] font-semibold tabular-nums"
-                  data-slot="input"
-                  data-variant="filled"
-                  id="_r_2g_-rate"
-                  inputmode="decimal"
-                  spellcheck="false"
-                  type="text"
-                  value="6"
-                />
-                <span
-                  aria-hidden="true"
-                  class="pointer-events-none absolute right-3 text-[12px] font-medium text-fg-tertiary"
-                >
-                  %
-                </span>
-              </span>
-            </div>
-            <div
-              class="flex items-center justify-between gap-4"
-            >
-              <div
-                class="flex min-w-0 items-center gap-1"
-              >
-                <label
-                  class="text-[13.5px] text-fg-secondary"
-                  data-slot="label"
                   for="_r_2g_-term"
                 >
                   Loan term
@@ -7746,6 +7710,108 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                   yrs
                 </span>
               </span>
+            </div>
+            <div
+              class="pt-2"
+            >
+              <div
+                class="flex flex-col gap-3"
+              >
+                <div
+                  class="flex items-center justify-between gap-3"
+                >
+                  <div
+                    class="flex items-baseline gap-3"
+                  >
+                    <label
+                      class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                      data-slot="label"
+                      for="_r_2h_"
+                    >
+                      Interest rate
+                    </label>
+                  </div>
+                  <div
+                    class="relative"
+                  >
+                    <input
+                      class="rounded-lg border-0 bg-input-bg px-4 py-3 text-fg-primary transition-all duration-150 placeholder:text-fg-muted focus:bg-input-bg-focus focus:ring-1 focus:ring-brand/25 focus:outline-none h-9 w-24 pr-9 text-right text-[15px] font-semibold tabular-nums"
+                      data-slot="input"
+                      data-variant="filled"
+                      id="_r_2h_"
+                      inputmode="decimal"
+                      placeholder="6.2"
+                      value="6"
+                    />
+                    <span
+                      class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] font-medium text-fg-tertiary"
+                    >
+                      %
+                    </span>
+                  </div>
+                </div>
+                <span
+                  aria-disabled="false"
+                  class="relative flex h-5 w-full cursor-pointer touch-none items-center select-none data-disabled:cursor-default data-disabled:opacity-50"
+                  data-orientation="horizontal"
+                  data-slot="slider"
+                  data-variant="hero"
+                  dir="ltr"
+                  style="--radix-slider-thumb-transform: translateX(-50%);"
+                >
+                  <span
+                    class="relative h-[3px] w-full grow rounded-full bg-border-default"
+                    data-orientation="horizontal"
+                    data-slot="slider-track"
+                  >
+                    <span
+                      class="absolute h-full rounded-full bg-[color:var(--slider-accent,var(--color-brand))] transition-[background-color] duration-200"
+                      data-orientation="horizontal"
+                      data-slot="slider-range"
+                      style="left: 0%; right: 50%;"
+                    />
+                  </span>
+                  <span
+                    style="transform: var(--radix-slider-thumb-transform); position: absolute; left: calc(50% + 0px);"
+                  >
+                    <span
+                      aria-label="Interest rate"
+                      aria-orientation="horizontal"
+                      aria-valuemax="10"
+                      aria-valuemin="2"
+                      aria-valuenow="6"
+                      aria-valuetext="6%"
+                      class="relative block size-0 outline-none before:pointer-events-none before:absolute before:top-0 before:left-0 before:size-[14px] before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:border-2 before:border-[color:var(--slider-accent,var(--color-brand))] before:bg-fg-primary before:shadow-[0_1px_4px_rgba(0,0,0,0.4)] before:transition-[border-color] before:duration-200 before:content-[''] focus-visible:before:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+                      data-orientation="horizontal"
+                      data-radix-collection-item=""
+                      data-slot="slider-thumb"
+                      role="slider"
+                      style=""
+                      tabindex="0"
+                    />
+                  </span>
+                </span>
+                <div
+                  aria-hidden="true"
+                  class="flex justify-between text-[11px] text-fg-muted tabular-nums"
+                >
+                  <span>
+                    2%
+                  </span>
+                  <span>
+                    4%
+                  </span>
+                  <span>
+                    6%
+                  </span>
+                  <span>
+                    8%
+                  </span>
+                  <span>
+                    10%
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
           <div
@@ -8020,7 +8086,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                   class="sr-only"
                   id="_r_2g_-growth-help"
                 >
-                  How fast the property's value grows a year. Used for the equity and LVR lines.
+                  How fast the property's value grows a year. Starts at 5.4%, the national average over 30 years (CoreLogic). Used for the equity and LVR lines.
                 </span>
               </div>
               <span
@@ -8080,7 +8146,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
               class="flex min-h-6 shrink-0 items-center"
             >
               <div
-                class="hidden @[23rem]:block"
+                class="hidden @[27rem]:block"
               >
                 <div
                   aria-label="Repayments"
@@ -8136,12 +8202,26 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                   >
                     Monthly
                   </button>
+                  <button
+                    aria-checked="false"
+                    class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-md bg-transparent font-medium text-fg-secondary transition-colors data-[state=on]:bg-brand data-[state=on]:text-brand-contrast px-3 py-1.5 text-xs"
+                    data-radix-collection-item=""
+                    data-slot="toggle-group-item"
+                    data-spacing="2"
+                    data-state="off"
+                    data-variant="solid"
+                    role="radio"
+                    tabindex="-1"
+                    type="button"
+                  >
+                    Yearly
+                  </button>
                 </div>
               </div>
             </div>
           </div>
           <div
-            class="-mt-2 @[23rem]:hidden"
+            class="-mt-2 @[27rem]:hidden"
           >
             <div
               aria-label="Repayments"
@@ -8197,10 +8277,24 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
               >
                 Monthly
               </button>
+              <button
+                aria-checked="false"
+                class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-md bg-transparent font-medium text-fg-secondary transition-colors data-[state=on]:bg-brand data-[state=on]:text-brand-contrast px-3 py-1.5 text-xs"
+                data-radix-collection-item=""
+                data-slot="toggle-group-item"
+                data-spacing="2"
+                data-state="off"
+                data-variant="solid"
+                role="radio"
+                tabindex="-1"
+                type="button"
+              >
+                Yearly
+              </button>
             </div>
           </div>
           <div
-            class="grid grid-cols-2 gap-x-4 gap-y-5 @[30rem]:grid-cols-3 @[36rem]:grid-cols-5"
+            class="grid grid-cols-2 gap-x-4 gap-y-5 @[30rem]:flex @[30rem]:justify-between"
           >
             <div
               class="flex min-w-0 flex-col gap-2"
@@ -8213,7 +8307,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                   class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
                   data-slot="label"
                 >
-                  Repayment
+                  Repay/mth
                 </span>
               </div>
               <div
@@ -8225,12 +8319,6 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                   $2,398
                 </span>
               </div>
-              <span
-                class="text-[12px] text-fg-tertiary"
-              >
-                a 
-                month
-              </span>
             </div>
             <div
               class="flex min-w-0 flex-col gap-2"
@@ -8243,7 +8331,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                   class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
                   data-slot="label"
                 >
-                  Total paid
+                  LVR
                 </span>
               </div>
               <div
@@ -8252,7 +8340,12 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                 <span
                   class="font-semibold tabular-nums text-[22px] tracking-[-0.01em] text-fg-primary"
                 >
-                  $588,027
+                  <span
+                    style="color: var(--color-data-positive);"
+                  >
+                    80
+                    %
+                  </span>
                 </span>
               </div>
             </div>
@@ -9852,7 +9945,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           </div>
         </div>
         <div
-          class="flex flex-col gap-4 border-t border-border-subtle px-6 py-5"
+          class="flex flex-col gap-4 px-6 pb-5 border-t border-border-subtle pt-5"
           style="--slider-accent: var(--color-brand);"
         >
           <div
@@ -9884,7 +9977,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           </div>
         </div>
         <div
-          class="flex flex-col gap-4 border-t border-border-subtle px-6 py-5"
+          class="flex flex-col gap-4 px-6 pb-5 border-t border-border-subtle pt-5"
           style="--slider-accent: var(--color-data-positive);"
         >
           <div
