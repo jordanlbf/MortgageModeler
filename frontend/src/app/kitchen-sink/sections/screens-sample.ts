@@ -1,5 +1,6 @@
 import type { CashflowSource } from "@/hooks/useCashflowState";
 import type { PurchaseCostsSource } from "@/hooks/usePurchaseCostsState";
+import type { TaxSource } from "@/hooks/useTaxState";
 import type { YearData } from "@/lib/cashflow-types";
 
 /*
@@ -139,5 +140,35 @@ export const PURCHASE_COSTS: PurchaseCostsSource = {
     min_deposit_percent: 5,
     total_upfront_cost: 118_500,
     lvr: 0.8,
+  },
+};
+
+/** Tax: a $110k salary, a negatively geared rental and a HELP debt. Figures are the compute service's answers for these inputs. */
+export const TAX: TaxSource = {
+  inputs: { salary: 110_000, rental: 28_600, rentalDeductions: 34_500, hecsBal: 35_000, phi: true },
+  results: {
+    breakdown: {
+      assessable_income: 138_600,
+      total_deductions: 34_500,
+      taxable_income: 104_100,
+      repayment_income: 110_000,
+      mls_income: 110_000,
+      net_investment_loss: 5_900,
+      income_tax: 22_018,
+      medicare_levy: 2_082,
+      medicare_levy_surcharge: 0,
+      hecs_repayment: 6_450,
+      lito: 0,
+      sapto_offset: 0,
+      franking_offset: 0,
+      total_offsets: 0,
+      total_tax: 30_550,
+      net_income: 73_550,
+      marginal_rate: 0.3,
+      effective_rate: 0.2204,
+    },
+    keepPer1000: 530,
+    claimSaves: 470,
+    property: { net: -5_900, taxChange: -1_888 },
   },
 };

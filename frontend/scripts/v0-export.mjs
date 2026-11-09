@@ -125,7 +125,7 @@ Six layers, each built only from the ones before it (one page each):
 | /kitchen-sink/blocks | Titles, numbers, lists, alerts | \`src/components/patterns/blocks/*\` |
 | /kitchen-sink/cards | Cards, KPI cards, page bar | \`src/components/patterns/cards/*\` |
 | /kitchen-sink/layouts | Page arrangements | \`src/components/patterns/layouts/*\` |
-| /kitchen-sink/screens | The real Cashflow and Purchase Costs screens, on sample data | \`src/components/cashflow/*\`, \`src/components/purchase-costs/*\`, \`src/components/domain/*\` |
+| /kitchen-sink/screens | The real Cashflow, Purchase Costs and Tax screens, on sample data | \`src/components/cashflow/*\`, \`src/components/purchase-costs/*\`, \`src/components/tax/*\`, \`src/components/domain/*\` |
 
 Change a piece in the lowest layer that owns it (a colour in \`globals.css\`, a
 button in \`components/ui\`, a card in \`patterns/cards\`) so every screen follows.
@@ -137,7 +137,7 @@ Only changes to these files are copied back into the app:
 
 - \`src/app/globals.css\`
 - \`src/components/ui/**\`, \`src/components/patterns/**\`, \`src/components/domain/**\`
-- \`src/components/cashflow/**\`, \`src/components/purchase-costs/**\`
+- \`src/components/cashflow/**\`, \`src/components/purchase-costs/**\`, \`src/components/tax/**\`
 
 Everything else is ignored, so don't spend effort there:
 

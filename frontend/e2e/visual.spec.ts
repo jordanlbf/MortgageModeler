@@ -116,32 +116,58 @@ test.describe("amortisation", () => {
 });
 
 test.describe("tax", () => {
-  test("tabs and toggles", async ({ page }) => {
+  test("empty, then an investor answering the questions", async ({ page }) => {
     await go(page, "/tax");
     await snap(page, "tax");
-    await page.getByRole("tab", { name: /^Deductions/ }).click();
-    await snap(page, "tax-deductions");
-    await page.getByRole("tab", { name: /^Adjustments/ }).click();
-    await snap(page, "tax-adjustments");
-    await page.getByRole("switch").first().click();
-    await snap(page, "tax-adjustments-toggled");
+    await page.keyboard.type("110000");
+    await page.keyboard.press("Enter");
+    await page.getByRole("radio", { name: "Yes" }).click();
+    await page.getByLabel("Annual rent", { exact: true }).fill("28600");
+    await page.getByLabel("Property expenses", { exact: true }).fill("34500");
+    await page.getByLabel("Property expenses", { exact: true }).blur();
+    for (let i = 0; i < 3; i++) await page.keyboard.press("n");
+    await snap(page, "tax-question");
+    await page.keyboard.press("y");
+    await page.getByLabel("Balance owing", { exact: true }).fill("35000");
+    await page.getByLabel("Balance owing", { exact: true }).blur();
+    await page.keyboard.press("n");
+    await page.keyboard.press("y");
+    await page.keyboard.press("n");
+    await snap(page, "tax-investor");
+  });
+
+  test("salary only, then change a folded answer", async ({ page }) => {
+    await go(page, "/tax");
+    await page.keyboard.type("110000");
+    await page.keyboard.press("Tab");
+    for (let i = 0; i < 8; i++) await page.keyboard.press("n");
+    await snap(page, "tax-salary-only");
+    await page.getByRole("button", { name: /Capital gains/ }).click();
+    await page.getByRole("radiogroup", { name: "Capital gains" }).getByRole("radio", { name: "Yes" }).click();
+    await page.getByLabel("Held over a year", { exact: true }).fill("30000");
+    await page.getByLabel("Held over a year", { exact: true }).blur();
+    await snap(page, "tax-capital-gains");
   });
 
   test("focused input", async ({ page }) => {
     await go(page, "/tax");
-    await page.locator("main input").first().click();
+    await page.keyboard.type("110000");
+    await page.keyboard.press("Enter");
+    await page.getByRole("radio", { name: "Yes" }).click();
     await snap(page, "tax-input-focused", 400);
   });
 
   test("loading", async ({ page }) => {
     await holdCompute(page);
-    await page.goto("/tax");
+    await go(page, "/tax");
+    await page.keyboard.type("90000");
     await snap(page, "tax-loading", 1200);
   });
 
   test("error", async ({ page }) => {
     await failCompute(page);
     await go(page, "/tax");
+    await page.keyboard.type("90000");
     await snap(page, "tax-error");
   });
 });

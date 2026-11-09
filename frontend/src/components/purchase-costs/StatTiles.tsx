@@ -4,7 +4,7 @@ import { formatDollars } from "@/lib/formatters";
 import { Badge } from "@/components/ui/badge";
 import KeyValueList, { KeyValueRow } from "@/components/patterns/blocks/KeyValueList";
 import { LMI_THRESHOLD, lvrColor } from "@/lib/lvr";
-import { Money } from "./shared";
+import Money from "@/components/domain/Money";
 
 /** One row; three side by side drop their vertical padding. */
 function Row({ label, value }: { label: string; value: React.ReactNode }) {

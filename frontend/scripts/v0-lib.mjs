@@ -17,7 +17,7 @@ export const MANIFEST = ".v0-manifest.json";
 /** Files v0 may change; these are copied back by v0:import. Everything else is reported, not applied. */
 export const VISUAL_PATHS = [
   /^src\/app\/globals\.css$/,
-  /^src\/components\/(ui|patterns|domain|cashflow|purchase-costs)\//,
+  /^src\/components\/(ui|patterns|domain|cashflow|purchase-costs|tax)\//,
 ];
 export const isVisual = (rel) => VISUAL_PATHS.some((re) => re.test(rel));
 
