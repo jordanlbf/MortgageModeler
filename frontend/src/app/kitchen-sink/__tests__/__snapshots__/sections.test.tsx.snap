@@ -5217,6 +5217,47 @@ exports[`kitchen-sink sections > inputs matches its snapshot 1`] = `
     <div
       class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
     >
+      MoneyInput (domain) · empty / filled · accepts 28.6k · Tax
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="flex gap-3"
+      >
+        <input
+          aria-label="Empty amount"
+          autocomplete="off"
+          class="rounded-lg border-0 bg-input-bg text-fg-primary tabular-nums transition-all duration-150 placeholder:text-fg-muted focus:bg-input-bg-focus focus:ring-1 focus:ring-brand/25 focus:outline-none h-9 px-3 py-0 text-right text-[14px] font-semibold w-[120px]"
+          data-slot="input"
+          data-variant="filled"
+          inputmode="decimal"
+          placeholder="$0"
+          spellcheck="false"
+          type="text"
+          value=""
+        />
+        <input
+          aria-label="Filled amount"
+          autocomplete="off"
+          class="rounded-lg border-0 bg-input-bg text-fg-primary tabular-nums transition-all duration-150 placeholder:text-fg-muted focus:bg-input-bg-focus focus:ring-1 focus:ring-brand/25 focus:outline-none h-9 px-3 py-0 text-right text-[14px] font-semibold w-[120px]"
+          data-slot="input"
+          data-variant="filled"
+          inputmode="decimal"
+          placeholder="$0"
+          spellcheck="false"
+          type="text"
+          value="$28,600"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
       AmountSection (domain) · plain / with % slider, marker and PercentChip · Purchase Costs
     </div>
     <div
@@ -5985,7 +6026,7 @@ exports[`kitchen-sink sections > kpi-cards matches its snapshot 1`] = `
                     d="M5,11.11C10.151515151515152,11.077499999999999,15.303030303030301,11.045,20.454545454545453,10.915000000000001C25.606060606060606,10.785000000000002,30.757575757575754,10.400416666666667,35.90909090909091,10.2C41.06060606060606,9.999583333333332,46.21212121212121,9.7125,51.36363636363637,9.7125C56.515151515151516,9.7125,61.666666666666664,9.907499999999999,66.81818181818181,9.907499999999999C71.96969696969697,9.907499999999999,77.12121212121212,9.414583333333333,82.27272727272728,9.192499999999999C87.42424242424244,8.970416666666665,92.57575757575758,8.742916666666666,97.72727272727273,8.575C102.87878787878789,8.407083333333333,108.03030303030303,8.320416666666667,113.18181818181819,8.185C118.33333333333333,8.049583333333334,123.48484848484848,7.919583333333331,128.63636363636363,7.762499999999998C133.78787878787878,7.605416666666665,138.93939393939394,7.4212500000000015,144.0909090909091,7.2425000000000015C149.24242424242425,7.0637500000000015,154.3939393939394,6.847083333333333,159.54545454545456,6.6899999999999995C164.69696969696972,6.532916666666666,169.84848484848484,6.416458333333334,175,6.300000000000002"
                     fill="none"
                     height="26"
-                    id="recharts-line-_r_1f_"
+                    id="recharts-line-_r_1g_"
                     stroke="var(--color-brand)"
                     stroke-width="1.5"
                     width="170"
@@ -7539,14 +7580,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
             tabindex="0"
           >
             <button
-              aria-controls="radix-_r_1t_-content-summary"
+              aria-controls="radix-_r_1u_-content-summary"
               aria-selected="true"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="active"
-              id="radix-_r_1t_-trigger-summary"
+              id="radix-_r_1u_-trigger-summary"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7554,14 +7595,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               summary
             </button>
             <button
-              aria-controls="radix-_r_1t_-content-property"
+              aria-controls="radix-_r_1u_-content-property"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1t_-trigger-property"
+              id="radix-_r_1u_-trigger-property"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7569,14 +7610,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               property
             </button>
             <button
-              aria-controls="radix-_r_1t_-content-tax"
+              aria-controls="radix-_r_1u_-content-tax"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1t_-trigger-tax"
+              id="radix-_r_1u_-trigger-tax"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7584,14 +7625,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               tax
             </button>
             <button
-              aria-controls="radix-_r_1t_-content-equity"
+              aria-controls="radix-_r_1u_-content-equity"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1t_-trigger-equity"
+              id="radix-_r_1u_-trigger-equity"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7599,14 +7640,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               equity
             </button>
             <button
-              aria-controls="radix-_r_1t_-content-deductions"
+              aria-controls="radix-_r_1u_-content-deductions"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1t_-trigger-deductions"
+              id="radix-_r_1u_-trigger-deductions"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7614,14 +7655,14 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
               deductions
             </button>
             <button
-              aria-controls="radix-_r_1t_-content-costs"
+              aria-controls="radix-_r_1u_-content-costs"
               aria-selected="false"
               class="-mb-3 border-b-2 border-transparent pb-3 text-sm font-medium text-fg-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[state=active]:border-brand data-[state=active]:text-fg-primary capitalize"
               data-orientation="horizontal"
               data-radix-collection-item=""
               data-slot="tabs-trigger"
               data-state="inactive"
-              id="radix-_r_1t_-trigger-costs"
+              id="radix-_r_1u_-trigger-costs"
               role="tab"
               tabindex="-1"
               type="button"
@@ -7702,12 +7743,12 @@ exports[`kitchen-sink sections > screen-cashflow-output matches its snapshot 1`]
           </div>
         </div>
         <div
-          aria-labelledby="radix-_r_1t_-trigger-summary"
+          aria-labelledby="radix-_r_1u_-trigger-summary"
           class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           data-orientation="horizontal"
           data-slot="tabs-content"
           data-state="active"
-          id="radix-_r_1t_-content-summary"
+          id="radix-_r_1u_-content-summary"
           role="tabpanel"
           style="animation-duration: 0s;"
           tabindex="0"
@@ -8124,7 +8165,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
             >
               <button
                 aria-current="step"
-                aria-labelledby="_r_1g_-setup"
+                aria-labelledby="_r_1h_-setup"
                 class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring absolute inset-0 cursor-pointer rounded-lg disabled:cursor-default"
                 data-size="none"
                 data-slot="button"
@@ -8151,7 +8192,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                     >
                       <span
                         class="text-[13px] leading-snug transition-colors duration-150 font-semibold text-fg-primary"
-                        id="_r_1g_-setup"
+                        id="_r_1h_-setup"
                       >
                         Property Setup
                       </span>
@@ -8164,7 +8205,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
               class="group relative"
             >
               <button
-                aria-labelledby="_r_1g_-loan"
+                aria-labelledby="_r_1h_-loan"
                 class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring absolute inset-0 cursor-pointer rounded-lg disabled:cursor-default"
                 data-size="none"
                 data-slot="button"
@@ -8191,7 +8232,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                     >
                       <span
                         class="text-[13px] leading-snug transition-colors duration-150 font-medium text-fg-tertiary group-hover:text-fg-secondary"
-                        id="_r_1g_-loan"
+                        id="_r_1h_-loan"
                       >
                         Loan Terms
                       </span>
@@ -8204,7 +8245,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
               class="group relative"
             >
               <button
-                aria-labelledby="_r_1g_-costs"
+                aria-labelledby="_r_1h_-costs"
                 class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring absolute inset-0 cursor-pointer rounded-lg disabled:cursor-default"
                 data-size="none"
                 data-slot="button"
@@ -8231,7 +8272,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                     >
                       <span
                         class="text-[13px] leading-snug transition-colors duration-150 font-medium text-fg-tertiary group-hover:text-fg-secondary"
-                        id="_r_1g_-costs"
+                        id="_r_1h_-costs"
                       >
                         Running Costs
                       </span>
@@ -8244,7 +8285,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
               class="group relative"
             >
               <button
-                aria-labelledby="_r_1g_-income"
+                aria-labelledby="_r_1h_-income"
                 class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring absolute inset-0 cursor-pointer rounded-lg disabled:cursor-default"
                 data-size="none"
                 data-slot="button"
@@ -8271,7 +8312,7 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                     >
                       <span
                         class="text-[13px] leading-snug transition-colors duration-150 font-medium text-fg-tertiary group-hover:text-fg-secondary"
-                        id="_r_1g_-income"
+                        id="_r_1h_-income"
                       >
                         Income Details
                       </span>
@@ -8351,12 +8392,12 @@ exports[`kitchen-sink sections > screen-cashflow-wizard matches its snapshot 1`]
                       <label
                         class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
                         data-slot="label"
-                        id="_r_1l_-use"
+                        id="_r_1m_-use"
                       >
                         What are you modelling?
                       </label>
                       <div
-                        aria-labelledby="_r_1l_-use"
+                        aria-labelledby="_r_1m_-use"
                         class="grid grid-cols-1 gap-2.5 @min-[26rem]:grid-cols-2"
                         data-orientation="horizontal"
                         data-slot="toggle-group"
@@ -8538,7 +8579,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
       class="min-w-0"
     >
       <div
-        aria-labelledby="_r_27_-title"
+        aria-labelledby="_r_28_-title"
         class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-0 h-full"
         data-pattern="section-card"
         data-size="default"
@@ -8555,7 +8596,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <h2
               class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
               data-slot="section-title"
-              id="_r_27_-title"
+              id="_r_28_-title"
             >
               Your Purchase
             </h2>
@@ -8571,7 +8612,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
               data-slot="label"
-              for="_r_27_-price"
+              for="_r_28_-price"
             >
               Purchase price
             </label>
@@ -8589,7 +8630,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 class="w-full rounded-lg border-border-default text-fg-primary outline-none [transition:border-color_0.2s_ease,background_0.2s_ease,box-shadow_0.2s_ease] hover:border-border-strong focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] h-9 min-w-0 flex-1 border-0 bg-transparent px-0 text-[28px] font-semibold tracking-[-0.02em] tabular-nums shadow-none placeholder:font-semibold placeholder:text-fg-muted hover:bg-transparent focus:bg-transparent focus:shadow-none"
                 data-slot="input"
                 data-variant="form"
-                id="_r_27_-price"
+                id="_r_28_-price"
                 inputmode="decimal"
                 placeholder="0"
                 spellcheck="false"
@@ -8609,7 +8650,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
               data-slot="label"
-              for="_r_27_-deposit"
+              for="_r_28_-deposit"
             >
               Deposit
             </label>
@@ -8627,7 +8668,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 class="w-full rounded-lg border-border-default text-fg-primary outline-none [transition:border-color_0.2s_ease,background_0.2s_ease,box-shadow_0.2s_ease] hover:border-border-strong focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] h-9 min-w-0 flex-1 border-0 bg-transparent px-0 text-[28px] font-semibold tracking-[-0.02em] tabular-nums shadow-none placeholder:font-semibold placeholder:text-fg-muted hover:bg-transparent focus:bg-transparent focus:shadow-none"
                 data-slot="input"
                 data-variant="form"
-                id="_r_27_-deposit"
+                id="_r_28_-deposit"
                 inputmode="decimal"
                 placeholder="0"
                 spellcheck="false"
@@ -8646,7 +8687,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                   class="bg-transparent outline-none data-[editing=true]:bg-[color:rgba(255,255,255,0.06)] data-[editing=true]:shadow-[0_0_0_1px_var(--input-accent)] h-auto p-0 text-right font-[inherit] text-[color:inherit] tabular-nums"
                   data-slot="input"
                   data-variant="ghost"
-                  id="_r_27_-deposit-pct"
+                  id="_r_28_-deposit-pct"
                   inputmode="decimal"
                   style="width: 2.2ch;"
                   type="text"
@@ -8763,7 +8804,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="text-[13.5px] text-fg-secondary"
               data-slot="label"
-              for="_r_27_-state"
+              for="_r_28_-state"
             >
               State
             </label>
@@ -8771,7 +8812,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               class="cursor-pointer appearance-none border border-border-default bg-surface-raised py-0 text-fg-primary outline-none bg-[url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%2712%27%20height=%2712%27%20viewBox=%270%200%2012%2012%27%3E%3Cpath%20d=%27M3%205l3%203%203-3%27%20stroke=%27rgba%28113,113,122,0.55%29%27%20stroke-width=%271.5%27%20fill=%27none%27%20stroke-linecap=%27round%27/%3E%3C/svg%3E)] bg-no-repeat bg-[position:right_12px_center] [transition:border-color_0.2s_ease,background-color_0.2s_ease] hover:border-border-strong hover:bg-surface-hover focus:border-[color:color-mix(in_srgb,var(--color-brand)_50%,transparent)] focus:shadow-[0_0_0_3px_var(--color-focus-ring)] h-8 w-[88px] shrink-0 rounded-lg pr-7 pl-3 text-[13px] font-medium"
               data-slot="native-select"
               data-variant="form"
-              id="_r_27_-state"
+              id="_r_28_-state"
             >
               <option
                 class="bg-surface-app text-fg-primary"
@@ -8839,7 +8880,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
               data-slot="label"
-              for="_r_27_-type-existing"
+              for="_r_28_-type-existing"
             >
               <span
                 class="text-[13.5px] text-fg-secondary"
@@ -8853,7 +8894,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 data-slot="switch"
                 data-state="checked"
                 data-variant="accent"
-                id="_r_27_-type-existing"
+                id="_r_28_-type-existing"
                 role="switch"
                 type="button"
                 value="on"
@@ -8868,7 +8909,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
               data-slot="label"
-              for="_r_27_-type-new"
+              for="_r_28_-type-new"
             >
               <span
                 class="text-[13.5px] text-fg-secondary"
@@ -8882,7 +8923,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 data-slot="switch"
                 data-state="unchecked"
                 data-variant="accent"
-                id="_r_27_-type-new"
+                id="_r_28_-type-new"
                 role="switch"
                 type="button"
                 value="on"
@@ -8897,7 +8938,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
             <label
               class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
               data-slot="label"
-              for="_r_27_-type-land"
+              for="_r_28_-type-land"
             >
               <span
                 class="text-[13.5px] text-fg-secondary"
@@ -8911,7 +8952,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
                 data-slot="switch"
                 data-state="unchecked"
                 data-variant="accent"
-                id="_r_27_-type-land"
+                id="_r_28_-type-land"
                 role="switch"
                 type="button"
                 value="on"
@@ -8931,7 +8972,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           <label
             class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
             data-slot="label"
-            for="_r_27_-occ"
+            for="_r_28_-occ"
           >
             <span
               class="text-[13.5px] text-fg-secondary"
@@ -8945,7 +8986,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               data-slot="switch"
               data-state="checked"
               data-variant="accent"
-              id="_r_27_-occ"
+              id="_r_28_-occ"
               role="switch"
               type="button"
               value="on"
@@ -8960,7 +9001,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           <label
             class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
             data-slot="label"
-            for="_r_27_-first"
+            for="_r_28_-first"
           >
             <span
               class="text-[13.5px] text-fg-secondary"
@@ -8974,7 +9015,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               data-slot="switch"
               data-state="checked"
               data-variant="accent"
-              id="_r_27_-first"
+              id="_r_28_-first"
               role="switch"
               type="button"
               value="on"
@@ -8989,7 +9030,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           <label
             class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-pointer"
             data-slot="label"
-            for="_r_27_-couple"
+            for="_r_28_-couple"
           >
             <span
               class="text-[13.5px] text-fg-secondary"
@@ -9003,7 +9044,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               data-slot="switch"
               data-state="unchecked"
               data-variant="accent"
-              id="_r_27_-couple"
+              id="_r_28_-couple"
               role="switch"
               type="button"
               value="on"
@@ -9018,7 +9059,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
           <label
             class="flex items-center justify-between gap-4 transition-opacity duration-200 cursor-default opacity-45"
             data-slot="label"
-            for="_r_27_-lmi"
+            for="_r_28_-lmi"
           >
             <span
               class="text-[13.5px] text-fg-secondary"
@@ -9040,7 +9081,7 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               data-state="unchecked"
               data-variant="accent"
               disabled=""
-              id="_r_27_-lmi"
+              id="_r_28_-lmi"
               role="switch"
               type="button"
               value="on"
@@ -9687,6 +9728,987 @@ exports[`kitchen-sink sections > screen-purchase-costs matches its snapshot 1`] 
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+`;
+
+exports[`kitchen-sink sections > screen-tax matches its snapshot 1`] = `
+<div>
+  <div
+    class="grid grid-cols-1 gap-6 lg:min-h-[640px] lg:grid-cols-[320px_minmax(0,1fr)]"
+    data-layout="calculator"
+  >
+    <div
+      class="min-w-0"
+    >
+      <div
+        aria-labelledby="_r_2a_-title"
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-0"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+        role="group"
+      >
+        <div
+          class="flex items-start justify-between gap-4 px-6 pt-6 pb-5"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-1"
+          >
+            <h2
+              class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+              data-slot="section-title"
+              id="_r_2a_-title"
+            >
+              Your income
+            </h2>
+            <p
+              class="text-[13px] text-fg-tertiary"
+            >
+              2025–26 financial year
+            </p>
+          </div>
+          <div
+            class="flex min-h-6 shrink-0 items-center"
+          >
+            <span
+              class="text-[12px] text-fg-tertiary tabular-nums"
+            >
+              9
+               of 
+              9
+            </span>
+          </div>
+        </div>
+        <ol
+          class="border-t border-border-subtle pt-1 pb-2"
+        >
+          <li
+            class="relative px-6 pl-12 py-2"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[26px] -bottom-[18px] w-0.5 transition-colors duration-300 left-[25px] bg-brand/60"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute z-10 flex items-center justify-center rounded-full transition-colors duration-200 top-[18px] left-[18px] size-4 border-2 border-brand bg-brand text-brand-contrast"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-check"
+                fill="none"
+                height="9"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3.5"
+                viewBox="0 0 24 24"
+                width="9"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+            </span>
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg font-medium text-fg-tertiary transition-colors hover:bg-white/[0.04] hover:text-fg-primary -mx-2 -my-0.5 flex h-auto w-[calc(100%+16px)] items-center justify-between gap-3 px-2 py-1 text-left"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-muted"
+              type="button"
+            >
+              <span
+                class="min-w-0 text-[13px] font-medium text-fg-primary"
+              >
+                Salary
+              </span>
+              <span
+                class="shrink-0 text-[13px] tabular-nums font-semibold text-fg-primary"
+              >
+                $110,000
+                <span
+                  class="sr-only"
+                >
+                  , change
+                </span>
+              </span>
+            </button>
+          </li>
+          <li
+            class="relative px-6 pl-12 py-2"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[26px] -bottom-[18px] w-0.5 transition-colors duration-300 left-[25px] bg-brand/60"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute z-10 flex items-center justify-center rounded-full transition-colors duration-200 top-[18px] left-[18px] size-4 border-2 border-brand bg-brand text-brand-contrast"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-check"
+                fill="none"
+                height="9"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3.5"
+                viewBox="0 0 24 24"
+                width="9"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+            </span>
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg font-medium text-fg-tertiary transition-colors hover:bg-white/[0.04] hover:text-fg-primary -mx-2 -my-0.5 flex h-auto w-[calc(100%+16px)] items-center justify-between gap-3 px-2 py-1 text-left"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-muted"
+              type="button"
+            >
+              <span
+                class="min-w-0 text-[13px] font-medium text-fg-primary"
+              >
+                Investment property
+              </span>
+              <span
+                class="shrink-0 text-[13px] tabular-nums font-semibold text-fg-primary"
+              >
+                $5,900 loss
+                <span
+                  class="sr-only"
+                >
+                  , change
+                </span>
+              </span>
+            </button>
+          </li>
+          <li
+            class="relative px-6 pl-12 py-2"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[26px] -bottom-[18px] w-0.5 transition-colors duration-300 left-[25px] bg-brand/60"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute z-10 flex items-center justify-center rounded-full transition-colors duration-200 top-[22px] left-[22px] size-2 bg-brand/50"
+            />
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg font-medium text-fg-tertiary transition-colors hover:bg-white/[0.04] hover:text-fg-primary -mx-2 -my-0.5 flex h-auto w-[calc(100%+16px)] items-center justify-between gap-3 px-2 py-1 text-left"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-muted"
+              type="button"
+            >
+              <span
+                class="min-w-0 text-[13px] font-normal text-fg-tertiary"
+              >
+                Interest or dividends
+              </span>
+              <span
+                class="shrink-0 text-[13px] tabular-nums font-normal text-fg-tertiary"
+              >
+                No
+                <span
+                  class="sr-only"
+                >
+                  , change
+                </span>
+              </span>
+            </button>
+          </li>
+          <li
+            class="relative px-6 pl-12 py-2"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[26px] -bottom-[18px] w-0.5 transition-colors duration-300 left-[25px] bg-brand/60"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute z-10 flex items-center justify-center rounded-full transition-colors duration-200 top-[22px] left-[22px] size-2 bg-brand/50"
+            />
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg font-medium text-fg-tertiary transition-colors hover:bg-white/[0.04] hover:text-fg-primary -mx-2 -my-0.5 flex h-auto w-[calc(100%+16px)] items-center justify-between gap-3 px-2 py-1 text-left"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-muted"
+              type="button"
+            >
+              <span
+                class="min-w-0 text-[13px] font-normal text-fg-tertiary"
+              >
+                Capital gains
+              </span>
+              <span
+                class="shrink-0 text-[13px] tabular-nums font-normal text-fg-tertiary"
+              >
+                No
+                <span
+                  class="sr-only"
+                >
+                  , change
+                </span>
+              </span>
+            </button>
+          </li>
+          <li
+            class="relative px-6 pl-12 py-2"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[26px] -bottom-[18px] w-0.5 transition-colors duration-300 left-[25px] bg-brand/60"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute z-10 flex items-center justify-center rounded-full transition-colors duration-200 top-[22px] left-[22px] size-2 bg-brand/50"
+            />
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg font-medium text-fg-tertiary transition-colors hover:bg-white/[0.04] hover:text-fg-primary -mx-2 -my-0.5 flex h-auto w-[calc(100%+16px)] items-center justify-between gap-3 px-2 py-1 text-left"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-muted"
+              type="button"
+            >
+              <span
+                class="min-w-0 text-[13px] font-normal text-fg-tertiary"
+              >
+                Work expenses
+              </span>
+              <span
+                class="shrink-0 text-[13px] tabular-nums font-normal text-fg-tertiary"
+              >
+                No
+                <span
+                  class="sr-only"
+                >
+                  , change
+                </span>
+              </span>
+            </button>
+          </li>
+          <li
+            class="relative px-6 pl-12 py-2"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[26px] -bottom-[18px] w-0.5 transition-colors duration-300 left-[25px] bg-brand/60"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute z-10 flex items-center justify-center rounded-full transition-colors duration-200 top-[18px] left-[18px] size-4 border-2 border-brand bg-brand text-brand-contrast"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-check"
+                fill="none"
+                height="9"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3.5"
+                viewBox="0 0 24 24"
+                width="9"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+            </span>
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg font-medium text-fg-tertiary transition-colors hover:bg-white/[0.04] hover:text-fg-primary -mx-2 -my-0.5 flex h-auto w-[calc(100%+16px)] items-center justify-between gap-3 px-2 py-1 text-left"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-muted"
+              type="button"
+            >
+              <span
+                class="min-w-0 text-[13px] font-medium text-fg-primary"
+              >
+                HELP debt
+              </span>
+              <span
+                class="shrink-0 text-[13px] tabular-nums font-semibold text-fg-primary"
+              >
+                $35,000
+                <span
+                  class="sr-only"
+                >
+                  , change
+                </span>
+              </span>
+            </button>
+          </li>
+          <li
+            class="relative px-6 pl-12 py-2"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[26px] -bottom-[18px] w-0.5 transition-colors duration-300 left-[25px] bg-brand/60"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute z-10 flex items-center justify-center rounded-full transition-colors duration-200 top-[22px] left-[22px] size-2 bg-brand/50"
+            />
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg font-medium text-fg-tertiary transition-colors hover:bg-white/[0.04] hover:text-fg-primary -mx-2 -my-0.5 flex h-auto w-[calc(100%+16px)] items-center justify-between gap-3 px-2 py-1 text-left"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-muted"
+              type="button"
+            >
+              <span
+                class="min-w-0 text-[13px] font-normal text-fg-tertiary"
+              >
+                Super or fringe benefits
+              </span>
+              <span
+                class="shrink-0 text-[13px] tabular-nums font-normal text-fg-tertiary"
+              >
+                No
+                <span
+                  class="sr-only"
+                >
+                  , change
+                </span>
+              </span>
+            </button>
+          </li>
+          <li
+            class="relative px-6 pl-12 py-2"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[26px] -bottom-[18px] w-0.5 transition-colors duration-300 left-[25px] bg-brand/60"
+            />
+            <span
+              aria-hidden="true"
+              class="absolute z-10 flex items-center justify-center rounded-full transition-colors duration-200 top-[18px] left-[18px] size-4 border-2 border-brand bg-brand text-brand-contrast"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-check"
+                fill="none"
+                height="9"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3.5"
+                viewBox="0 0 24 24"
+                width="9"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 6 9 17l-5-5"
+                />
+              </svg>
+            </span>
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg font-medium text-fg-tertiary transition-colors hover:bg-white/[0.04] hover:text-fg-primary -mx-2 -my-0.5 flex h-auto w-[calc(100%+16px)] items-center justify-between gap-3 px-2 py-1 text-left"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-muted"
+              type="button"
+            >
+              <span
+                class="min-w-0 text-[13px] font-medium text-fg-primary"
+              >
+                Private hospital cover
+              </span>
+              <span
+                class="shrink-0 text-[13px] tabular-nums font-semibold text-fg-primary"
+              >
+                Yes
+                <span
+                  class="sr-only"
+                >
+                  , change
+                </span>
+              </span>
+            </button>
+          </li>
+          <li
+            class="relative px-6 pl-12 py-2"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute z-10 flex items-center justify-center rounded-full transition-colors duration-200 top-[22px] left-[22px] size-2 bg-brand/50"
+            />
+            <button
+              class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg font-medium text-fg-tertiary transition-colors hover:bg-white/[0.04] hover:text-fg-primary -mx-2 -my-0.5 flex h-auto w-[calc(100%+16px)] items-center justify-between gap-3 px-2 py-1 text-left"
+              data-size="none"
+              data-slot="button"
+              data-variant="ghost-muted"
+              type="button"
+            >
+              <span
+                class="min-w-0 text-[13px] font-normal text-fg-tertiary"
+              >
+                Seniors offset
+              </span>
+              <span
+                class="shrink-0 text-[13px] tabular-nums font-normal text-fg-tertiary"
+              >
+                No
+                <span
+                  class="sr-only"
+                >
+                  , change
+                </span>
+              </span>
+            </button>
+          </li>
+        </ol>
+      </div>
+    </div>
+    <section
+      aria-busy="false"
+      aria-labelledby="tax-title"
+      class="flex min-w-0 flex-col gap-6"
+    >
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 @container transition-opacity duration-200"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex items-start justify-between gap-4"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-1"
+          >
+            <h1
+              class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+              data-slot="section-title"
+              id="tax-title"
+            >
+              Tax Calculator
+            </h1>
+          </div>
+          <div
+            class="flex min-h-6 shrink-0 items-center"
+          >
+            <div
+              aria-label="Show amounts per"
+              class="flex gap-1"
+              data-orientation="horizontal"
+              data-slot="toggle-group"
+              data-spacing="2"
+              data-variant="segment"
+              dir="ltr"
+              role="radiogroup"
+              style="outline: none;"
+              tabindex="0"
+            >
+              <button
+                aria-checked="false"
+                class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg border border-[color:rgba(255,255,255,0.07)] bg-[color:rgba(255,255,255,0.04)] text-[11px] font-semibold tracking-wide text-[color:rgba(255,255,255,0.35)] transition-all duration-200 data-[state=on]:border-[color:color-mix(in_srgb,var(--color-brand)_40%,transparent)] data-[state=on]:bg-[color:color-mix(in_srgb,var(--color-brand)_12%,transparent)] data-[state=on]:text-brand data-[state=on]:shadow-[0_0_12px_color-mix(in_srgb,var(--color-brand)_15%,transparent)] px-2.5 py-1"
+                data-radix-collection-item=""
+                data-slot="toggle-group-item"
+                data-spacing="2"
+                data-state="off"
+                data-variant="segment"
+                role="radio"
+                tabindex="-1"
+                type="button"
+              >
+                Week
+              </button>
+              <button
+                aria-checked="false"
+                class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg border border-[color:rgba(255,255,255,0.07)] bg-[color:rgba(255,255,255,0.04)] text-[11px] font-semibold tracking-wide text-[color:rgba(255,255,255,0.35)] transition-all duration-200 data-[state=on]:border-[color:color-mix(in_srgb,var(--color-brand)_40%,transparent)] data-[state=on]:bg-[color:color-mix(in_srgb,var(--color-brand)_12%,transparent)] data-[state=on]:text-brand data-[state=on]:shadow-[0_0_12px_color-mix(in_srgb,var(--color-brand)_15%,transparent)] px-2.5 py-1"
+                data-radix-collection-item=""
+                data-slot="toggle-group-item"
+                data-spacing="2"
+                data-state="off"
+                data-variant="segment"
+                role="radio"
+                tabindex="-1"
+                type="button"
+              >
+                Fortnight
+              </button>
+              <button
+                aria-checked="false"
+                class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg border border-[color:rgba(255,255,255,0.07)] bg-[color:rgba(255,255,255,0.04)] text-[11px] font-semibold tracking-wide text-[color:rgba(255,255,255,0.35)] transition-all duration-200 data-[state=on]:border-[color:color-mix(in_srgb,var(--color-brand)_40%,transparent)] data-[state=on]:bg-[color:color-mix(in_srgb,var(--color-brand)_12%,transparent)] data-[state=on]:text-brand data-[state=on]:shadow-[0_0_12px_color-mix(in_srgb,var(--color-brand)_15%,transparent)] px-2.5 py-1"
+                data-radix-collection-item=""
+                data-slot="toggle-group-item"
+                data-spacing="2"
+                data-state="off"
+                data-variant="segment"
+                role="radio"
+                tabindex="-1"
+                type="button"
+              >
+                Month
+              </button>
+              <button
+                aria-checked="true"
+                class="group/toggle cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed rounded-lg border border-[color:rgba(255,255,255,0.07)] bg-[color:rgba(255,255,255,0.04)] text-[11px] font-semibold tracking-wide text-[color:rgba(255,255,255,0.35)] transition-all duration-200 data-[state=on]:border-[color:color-mix(in_srgb,var(--color-brand)_40%,transparent)] data-[state=on]:bg-[color:color-mix(in_srgb,var(--color-brand)_12%,transparent)] data-[state=on]:text-brand data-[state=on]:shadow-[0_0_12px_color-mix(in_srgb,var(--color-brand)_15%,transparent)] px-2.5 py-1"
+                data-radix-collection-item=""
+                data-slot="toggle-group-item"
+                data-spacing="2"
+                data-state="on"
+                data-variant="segment"
+                role="radio"
+                tabindex="-1"
+                type="button"
+              >
+                Year
+              </button>
+            </div>
+          </div>
+        </div>
+        <p
+          aria-live="polite"
+          class="sr-only"
+        >
+          Up to date
+        </p>
+        <div
+          class="flex flex-col gap-5"
+        >
+          <div
+            class="flex flex-wrap items-start justify-between gap-6"
+          >
+            <div
+              class="flex min-w-0 flex-col gap-2"
+              data-pattern="stat"
+            >
+              <div
+                class="flex min-h-5 items-center justify-between gap-3"
+              >
+                <span
+                  class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                  data-slot="label"
+                >
+                  You keep a year
+                </span>
+              </div>
+              <div
+                class="flex items-baseline justify-between gap-3"
+              >
+                <span
+                  class="font-semibold tabular-nums text-[44px] tracking-[-0.03em] text-data-positive"
+                >
+                  $73,550
+                </span>
+              </div>
+            </div>
+            <div
+              class="flex min-w-0 flex-col gap-2 items-end text-right"
+              data-pattern="stat"
+            >
+              <div
+                class="flex min-h-5 items-center justify-between gap-3"
+              >
+                <span
+                  class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                  data-slot="label"
+                >
+                  You pay in tax a year
+                </span>
+              </div>
+              <div
+                class="flex items-baseline justify-between gap-3"
+              >
+                <span
+                  class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-data-negative"
+                >
+                  $30,550
+                </span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex flex-col gap-1.5"
+          >
+            <div
+              aria-hidden="true"
+              class="flex gap-[3px]"
+            >
+              <span
+                class="flex min-w-0 flex-col gap-1.5"
+                style="flex-grow: 73550; flex-basis: 0px;"
+              >
+                <span
+                  class="text-[12px] font-semibold whitespace-nowrap tabular-nums"
+                  style="color: var(--color-brand);"
+                >
+                  70.7% kept
+                </span>
+                <span
+                  aria-hidden="true"
+                  class="h-2 w-full rounded-t-sm border-x-2 border-t-2"
+                  style="border-color: var(--color-brand);"
+                />
+              </span>
+              <span
+                class="flex min-w-0 flex-col gap-1.5 items-end text-right"
+                style="flex-grow: 30550; flex-basis: 0px;"
+              >
+                <span
+                  class="text-[12px] font-semibold whitespace-nowrap tabular-nums"
+                  style="color: var(--color-data-warning);"
+                >
+                  29.3% average rate
+                </span>
+                <span
+                  aria-hidden="true"
+                  class="h-2 w-full rounded-t-sm border-x-2 border-t-2"
+                  style="border-color: var(--color-data-warning);"
+                />
+              </span>
+            </div>
+            <span
+              aria-label="Take-home $73,550 a year, Income tax $22,018 a year, Medicare $2,082 a year, HELP $6,450 a year"
+              class="flex h-12 gap-[3px] overflow-hidden rounded-lg"
+              role="img"
+            >
+              <span
+                class="transition-[flex-grow] duration-300 first:rounded-l-lg last:rounded-r-lg"
+                style="flex-grow: 73550; flex-basis: 0px; background: var(--color-brand);"
+              />
+              <span
+                class="transition-[flex-grow] duration-300 first:rounded-l-lg last:rounded-r-lg"
+                style="flex-grow: 22018; flex-basis: 0px; background: rgb(248, 113, 113);"
+              />
+              <span
+                class="transition-[flex-grow] duration-300 first:rounded-l-lg last:rounded-r-lg"
+                style="flex-grow: 2082; flex-basis: 0px; background: rgb(96, 165, 250);"
+              />
+              <span
+                class="transition-[flex-grow] duration-300 first:rounded-l-lg last:rounded-r-lg"
+                style="flex-grow: 6450; flex-basis: 0px; background: rgb(167, 139, 250);"
+              />
+            </span>
+          </div>
+          <div
+            class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 text-[12.5px] text-fg-tertiary"
+          >
+            <p>
+              Taxable income 
+              <span
+                class="font-semibold text-fg-secondary tabular-nums"
+              >
+                $104,100
+              </span>
+               
+              a year
+            </p>
+            <p>
+              Your top rate is 
+              <span
+                class="font-semibold text-fg-secondary tabular-nums"
+              >
+                30%
+              </span>
+              , on your last dollars only.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        class="border border-border-subtle flex flex-col rounded-2xl bg-surface-raised gap-5 p-6 @container transition-opacity duration-200"
+        data-pattern="section-card"
+        data-size="default"
+        data-slot="card"
+        data-variant="panel"
+      >
+        <div
+          class="flex items-start justify-between gap-4"
+        >
+          <div
+            class="flex min-w-0 flex-col gap-1"
+          >
+            <h2
+              class="text-[20px] leading-tight font-semibold tracking-[-0.01em] text-fg-primary"
+              data-slot="section-title"
+            >
+              Your income, less each tax
+            </h2>
+            <p
+              class="text-[13px] text-fg-tertiary"
+            >
+              Each tax is cut from your taxable income in its own colour. Australian resident rates, 2025–26.
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex flex-col gap-6"
+        >
+          <ol
+            aria-label="Your taxable income a year, less each tax"
+            class="flex flex-col gap-1"
+          >
+            <li
+              class="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)_6rem] items-center gap-x-4 @min-[40rem]:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem] py-2"
+            >
+              <span
+                class="inline-flex items-center gap-2 text-[13.5px] font-semibold text-fg-primary"
+              >
+                <span
+                  aria-hidden="true"
+                  class="size-2 shrink-0 rounded-[3px]"
+                  style="background: var(--color-data-primary);"
+                />
+                Taxable income a 
+                year
+              </span>
+              <span
+                aria-hidden="true"
+                class="flex h-9 overflow-hidden rounded-lg bg-surface-subtle"
+              >
+                <span
+                  class="rounded-lg transition-[width] duration-300"
+                  style="width: 100%; background: var(--color-data-primary);"
+                />
+              </span>
+              <span
+                class="text-right text-[15px] font-semibold text-fg-primary tabular-nums"
+              >
+                $104,100
+              </span>
+            </li>
+            <li
+              class="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)_6rem] items-center gap-x-4 @min-[40rem]:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem] py-1.5"
+            >
+              <span
+                class="flex min-w-0 flex-col"
+              >
+                <span
+                  class="inline-flex items-center gap-2 text-[13px] text-fg-secondary"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="size-2 shrink-0 rounded-[3px]"
+                    style="background: rgb(248, 113, 113);"
+                  />
+                  <span
+                    class="truncate"
+                  >
+                    Income tax
+                  </span>
+                </span>
+                <span
+                  class="pl-4 text-[11px] text-fg-muted tabular-nums"
+                >
+                  21.2% of taxable income
+                </span>
+              </span>
+              <span
+                aria-hidden="true"
+                class="relative h-6 rounded-md"
+              >
+                <span
+                  class="absolute inset-y-0 left-0 rounded-l-md transition-[width] duration-300"
+                  style="width: 78.84918347742556%; background: color-mix(in oklab, var(--color-data-primary) 14%, transparent);"
+                />
+                <span
+                  class="absolute inset-y-0 rounded-md transition-[left,width] duration-300"
+                  style="left: 78.84918347742556%; width: 21.150816522574445%; background: rgb(248, 113, 113);"
+                />
+              </span>
+              <span
+                class="text-right text-[13.5px] font-semibold tabular-nums"
+                style="color: rgb(248, 113, 113);"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  −
+                </span>
+                <span
+                  class="sr-only"
+                >
+                  minus 
+                </span>
+                $22,018
+              </span>
+            </li>
+            <li
+              class="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)_6rem] items-center gap-x-4 @min-[40rem]:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem] py-1.5"
+            >
+              <span
+                class="flex min-w-0 flex-col"
+              >
+                <span
+                  class="inline-flex items-center gap-2 text-[13px] text-fg-secondary"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="size-2 shrink-0 rounded-[3px]"
+                    style="background: rgb(96, 165, 250);"
+                  />
+                  <span
+                    class="truncate"
+                  >
+                    Medicare levy
+                  </span>
+                </span>
+                <span
+                  class="pl-4 text-[11px] text-fg-muted tabular-nums"
+                >
+                  2.0% of taxable income
+                </span>
+              </span>
+              <span
+                aria-hidden="true"
+                class="relative h-6 rounded-md"
+              >
+                <span
+                  class="absolute inset-y-0 left-0 rounded-l-md transition-[width] duration-300"
+                  style="width: 76.84918347742556%; background: color-mix(in oklab, var(--color-data-primary) 14%, transparent);"
+                />
+                <span
+                  class="absolute inset-y-0 rounded-md transition-[left,width] duration-300"
+                  style="left: 76.84918347742556%; width: 2%; background: rgb(96, 165, 250);"
+                />
+              </span>
+              <span
+                class="text-right text-[13.5px] font-semibold tabular-nums"
+                style="color: rgb(96, 165, 250);"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  −
+                </span>
+                <span
+                  class="sr-only"
+                >
+                  minus 
+                </span>
+                $2,082
+              </span>
+            </li>
+            <li
+              class="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)_6rem] items-center gap-x-4 @min-[40rem]:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem] py-1.5"
+            >
+              <span
+                class="flex min-w-0 flex-col"
+              >
+                <span
+                  class="inline-flex items-center gap-2 text-[13px] text-fg-secondary"
+                >
+                  <span
+                    aria-hidden="true"
+                    class="size-2 shrink-0 rounded-[3px]"
+                    style="background: rgb(167, 139, 250);"
+                  />
+                  <span
+                    class="truncate"
+                  >
+                    HELP repayment
+                  </span>
+                </span>
+                <span
+                  class="pl-4 text-[11px] text-fg-muted tabular-nums"
+                >
+                  6.2% of taxable income
+                </span>
+              </span>
+              <span
+                aria-hidden="true"
+                class="relative h-6 rounded-md"
+              >
+                <span
+                  class="absolute inset-y-0 left-0 rounded-l-md transition-[width] duration-300"
+                  style="width: 70.65321805955811%; background: color-mix(in oklab, var(--color-data-primary) 14%, transparent);"
+                />
+                <span
+                  class="absolute inset-y-0 rounded-md transition-[left,width] duration-300"
+                  style="left: 70.65321805955811%; width: 6.195965417867441%; background: rgb(167, 139, 250);"
+                />
+              </span>
+              <span
+                class="text-right text-[13.5px] font-semibold tabular-nums"
+                style="color: rgb(167, 139, 250);"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  −
+                </span>
+                <span
+                  class="sr-only"
+                >
+                  minus 
+                </span>
+                $6,450
+              </span>
+            </li>
+            <li
+              class="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)_6rem] items-center gap-x-4 @min-[40rem]:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem] mt-1 border-t border-border-default pt-3"
+            >
+              <span
+                class="inline-flex items-center gap-2 text-[13.5px] font-semibold text-fg-primary"
+              >
+                <span
+                  aria-hidden="true"
+                  class="size-2 shrink-0 rounded-[3px]"
+                  style="background: var(--color-brand);"
+                />
+                Take-home a 
+                year
+              </span>
+              <span
+                aria-hidden="true"
+                class="flex h-9 overflow-hidden rounded-lg bg-surface-subtle"
+              >
+                <span
+                  class="rounded-lg transition-[width] duration-300"
+                  style="width: 70.65321805955811%; background: var(--color-brand);"
+                />
+              </span>
+              <span
+                class="text-right text-[17px] font-semibold tabular-nums"
+                style="color: var(--color-brand);"
+              >
+                $73,550
+              </span>
+            </li>
+          </ol>
+          <div
+            class="flex flex-wrap items-center gap-2 text-[12px]"
+          >
+            <span
+              class="text-fg-muted"
+            >
+              Not charged:
+            </span>
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full border border-dashed px-2.5 py-1 text-fg-tertiary"
+              style="border-color: color-mix(in oklab, rgb(251, 146, 60), transparent);"
+            >
+              <span
+                aria-hidden="true"
+                class="size-2 shrink-0 rounded-[3px]"
+                style="background: color-mix(in oklab, rgb(251, 146, 60) 55%, transparent);"
+              />
+              Surcharge
+              <span
+                class="text-fg-muted"
+              >
+                · 
+                None: you have hospital cover
+              </span>
+            </span>
+          </div>
         </div>
       </div>
     </section>
@@ -13102,6 +14124,63 @@ exports[`kitchen-sink sections > titles matches its snapshot 1`] = `
           data-slot="label"
         >
           Caption text
+        </span>
+      </div>
+    </div>
+  </div>
+  <div
+    class="grid grid-cols-1 gap-2 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6"
+  >
+    <div
+      class="pt-1 font-sans text-[12px] break-words text-fg-tertiary tabular-nums"
+    >
+      InfoTip (help on hover, focus or tap, in place of helper text)
+    </div>
+    <div
+      class="flex min-w-0 items-center gap-3 flex-wrap"
+    >
+      <div
+        class="rounded-lg bg-surface-raised p-5"
+      >
+        <span
+          class="flex items-center gap-1 text-[13.5px] text-fg-secondary"
+        >
+          Field label
+          <button
+            aria-label="About Field label"
+            class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed text-fg-muted transition-colors hover:text-fg-secondary inline-flex size-5 shrink-0 items-center justify-center rounded-full align-middle"
+            data-size="none"
+            data-slot="tooltip-trigger"
+            data-state="closed"
+            data-variant="link-quiet"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="lucide lucide-info size-3.5"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+              />
+              <path
+                d="M12 16v-4"
+              />
+              <path
+                d="M12 8h.01"
+              />
+            </svg>
+          </button>
         </span>
       </div>
     </div>

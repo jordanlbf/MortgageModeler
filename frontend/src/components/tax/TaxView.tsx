@@ -1,151 +1,42 @@
 "use client";
 
-import { useAdvancedTaxState } from "@/hooks/useAdvancedTaxState";
-import { formatCurrencyShort } from "@/lib/formatters";
-import { mix } from "@/lib/theme";
-import AdvancedColumn from "@/components/tax/AdvancedColumn";
-import TaxComposition from "@/components/tax/TaxBreakdown";
-import ErrorBoundary from "@/components/domain/ErrorBoundary";
+import { useState } from "react";
+import { useTaxState, type TaxSource } from "@/hooks/useTaxState";
+import CalculatorLayout from "@/components/patterns/layouts/CalculatorLayout";
 import InlineAlert from "@/components/patterns/blocks/InlineAlert";
+import { Button } from "@/components/ui/button";
+import TaxInputPanel from "./TaxInputPanel";
+import TaxTakeHomeCard from "./TaxTakeHomeCard";
+import TaxPayCard from "./TaxPayCard";
+import { itemSum, PERIODS, type Period } from "./items";
 
-// ── Tax Brackets Divider ────────────────────────
-
-function ProgressiveStepsDivider() {
-  return (
-    <div className="mb-8 flex justify-center">
-      <svg width="120" height="24" viewBox="0 0 120 24" fill="none">
-        <polyline
-          points="0,2 24,2 24,8 48,8 48,14 72,14 72,20 120,20"
-          stroke={mix("var(--color-brand)", 35)}
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-      </svg>
-    </div>
-  );
-}
-
-// ── KPI Hero Strip ──────────────────────────────
-
-interface KpiHeroStripProps {
-  gross: number;
-  totalTax: number;
-  netIncome: number;
-}
-
-function KpiHeroStrip({ gross, totalTax, netIncome }: KpiHeroStripProps) {
-  return (
-    <div className="flex items-start justify-center gap-16 py-7 pb-2">
-        {/* Gross Income */}
-        <div className="text-center">
-          <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-fg-primary)", 35) }}>
-              Gross Income
-            </span>
-          </div>
-          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: mix("var(--color-fg-primary)", 74) }}>
-            {formatCurrencyShort(gross)}
-          </div>
-        </div>
-
-        {/* Minus */}
-        <span className="text-[44px] font-normal" style={{ color: "rgba(148,163,184,0.50)", marginTop: 26 }}>&minus;</span>
-
-        {/* Tax Deducted */}
-        <div className="text-center">
-          <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-data-negative)", 58) }}>
-              Tax Deducted
-            </span>
-          </div>
-          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-data-negative)" }}>
-            {formatCurrencyShort(totalTax)}
-          </div>
-        </div>
-
-        {/* Equals */}
-        <span className="text-[44px] font-normal" style={{ color: "rgba(148,163,184,0.50)", marginTop: 26 }}>=</span>
-
-        {/* Net Income */}
-        <div className="text-center">
-          <div className="mb-[10px] flex h-5 items-start justify-center">
-            <span className="text-[12px] font-medium uppercase tracking-widest" style={{ color: mix("var(--color-brand)", 58) }}>
-              Net Income
-            </span>
-          </div>
-          <div className="text-[48px] font-semibold tabular-nums leading-none" style={{ color: "var(--color-brand)" }}>
-            {formatCurrencyShort(netIncome)}
-          </div>
-        </div>
-    </div>
-  );
-}
-
-// ── Page ─────────────────────────────────────────
-
-export default function TaxView() {
-  const advanced = useAdvancedTaxState();
-  const { data, error } = advanced;
-
-  const gross = data?.assessable_income ?? 0;
-  const totalTax = data?.total_tax ?? 0;
-  const netIncome = data?.net_income ?? 0;
-  const effRate = data ? data.effective_rate * 100 : 0;
-  const marginalRate = data ? data.marginal_rate * 100 : 0;
-  const taxableIncome = data?.taxable_income ?? 0;
+/**
+ * Tax calculator: the input card on the left; on the right what you keep
+ * against what you pay, then your pay less each tax. Both cards follow the
+ * same pay period, which starts at a year.
+ *
+ * `source` is for the kitchen sink (sample data instead of the API).
+ */
+export default function TaxView({ source }: { source?: TaxSource } = {}) {
+  const tax = useTaxState(source);
+  const [period, setPeriod] = useState<Period>("year");
+  const p = PERIODS.find((x) => x.value === period)!;
+  const unit = p.label.toLowerCase();
+  const s = tax.results ? itemSum(tax.inputs, tax.results) : null;
+  const fade = `transition-opacity duration-200 ${tax.loading && tax.results ? "opacity-60" : ""}`;
 
   return (
-    <>
-      {error && (
-        <InlineAlert className="mb-4">{error}</InlineAlert>
+    <CalculatorLayout inputs={<TaxInputPanel tax={tax} />} aria-labelledby="tax-title" aria-busy={tax.loading}>
+      {tax.error && (
+        <InlineAlert>
+          {tax.error}
+          <Button type="button" variant="link-muted" className="ml-2 font-semibold text-status-error underline underline-offset-2 hover:text-status-error" onClick={tax.retry}>
+            Try again
+          </Button>
+        </InlineAlert>
       )}
-
-      <div className="flex flex-col">
-        <ProgressiveStepsDivider />
-
-        <ErrorBoundary>
-          <KpiHeroStrip
-            gross={gross}
-            totalTax={totalTax}
-            netIncome={netIncome}
-          />
-
-          <div className="mb-4 flex items-center justify-center gap-2">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-1 w-1 rounded-full"
-                style={{ background: mix("var(--color-brand)", 30) }}
-              />
-            ))}
-          </div>
-
-          <div className="grid gap-3" style={{ gridTemplateColumns: "1fr 1fr" }}>
-            {/* ── LEFT COLUMN ── */}
-            <div className="flex flex-col min-h-0">
-              <AdvancedColumn inputs={advanced.inputs} setters={advanced.setters} />
-            </div>
-
-            {/* ── RIGHT COLUMN ── */}
-            <div className="flex flex-col min-h-0">
-              <TaxComposition
-                taxableIncome={taxableIncome}
-                totalTax={totalTax}
-                netIncome={netIncome}
-                effectiveRate={effRate}
-                marginalRate={marginalRate}
-                incomeTax={data?.income_tax ?? 0}
-                medicareLevy={data?.medicare_levy ?? 0}
-                medicareLevySurcharge={data?.medicare_levy_surcharge ?? 0}
-                hecsRepayment={data?.hecs_repayment ?? 0}
-              />
-            </div>
-          </div>
-
-        </ErrorBoundary>
-      </div>
-    </>
+      <TaxTakeHomeCard tax={tax} s={s} period={period} onPeriodChange={setPeriod} per={p.per} unit={unit} className={fade} />
+      {s && <TaxPayCard s={s} per={p.per} unit={unit} className={fade} />}
+    </CalculatorLayout>
   );
 }

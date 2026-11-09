@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AmountSection, PercentChip } from "@/components/domain/AmountSection";
 import EditableValue from "@/components/domain/EditableValue";
+import MoneyInput from "@/components/domain/MoneyInput";
 import SliderField from "@/components/domain/SliderField";
 import { formatCurrency, formatDollars, parseCurrencyInput } from "@/lib/formatters";
 import { lvrColor } from "@/lib/lvr";
@@ -109,6 +110,9 @@ export default function InputsSection() {
           />
         </div>
       </VariantRow>
+      <VariantRow label="MoneyInput (domain) · empty / filled · accepts 28.6k · Tax">
+        <MoneyDemo />
+      </VariantRow>
       <VariantRow label="AmountSection (domain) · plain / with % slider, marker and PercentChip · Purchase Costs">
         <div className="w-[360px] rounded-2xl bg-surface-raised pb-1">
           <AmountSection id="ks-amt-price" label="Purchase price" value={amtPrice} onChange={setAmtPrice} inputStep={10_000} />
@@ -135,5 +139,16 @@ export default function InputsSection() {
         </div>
       </VariantRow>
     </>
+  );
+}
+
+function MoneyDemo() {
+  const [a, setA] = useState(0);
+  const [b, setB] = useState(28_600);
+  return (
+    <div className="flex gap-3">
+      <MoneyInput aria-label="Empty amount" value={a} onValueChange={setA} className="w-[120px]" />
+      <MoneyInput aria-label="Filled amount" value={b} onValueChange={setB} className="w-[120px]" />
+    </div>
   );
 }

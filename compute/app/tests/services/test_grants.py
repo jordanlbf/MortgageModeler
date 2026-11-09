@@ -2,12 +2,23 @@
 Tests for grants eligibility service — _check_eligibility and evaluate_schemes.
 """
 
+from datetime import date
+
 import pytest
 
 from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta
 from app.config.grants.registry import get_all_schemes, get_scheme
 from app.models.grants import GrantsInputs
 from app.services.grants import _check_eligibility, evaluate_schemes
+
+# The scheme data was last verified in March 2026. Pin "today" there so
+# schemes with an end date don't drop out of these tests as time passes.
+DATA_VERIFIED = date(2026, 3, 15)
+
+
+@pytest.fixture(autouse=True)
+def _pin_today(monkeypatch):
+    monkeypatch.setattr("app.services.grants._today", lambda: DATA_VERIFIED)
 
 # ──────────────────────────────────────────────
 # Helpers
@@ -1089,3 +1100,12 @@ class TestRegistry:
             assert scheme.valid_from is not None or scheme.valid_to is not None, (
                 f"{scheme_id} should have at least one date set"
             )
+
+
+class TestExpiry:
+    def test_scheme_drops_out_after_its_end_date(self, monkeypatch):
+        scheme = get_scheme("fhog-qld")
+        assert scheme.valid_to is not None
+        assert any(r.scheme.id == "fhog-qld" for r in evaluate_schemes(_make_inputs(states=["QLD"])))
+        monkeypatch.setattr("app.services.grants._today", lambda: date.fromordinal(scheme.valid_to.toordinal() + 1))
+        assert not any(r.scheme.id == "fhog-qld" for r in evaluate_schemes(_make_inputs(states=["QLD"])))

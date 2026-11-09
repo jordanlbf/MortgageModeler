@@ -175,16 +175,7 @@ export const TAX_COLORS = {
   medicare:   "#60a5fa",
   mls:        "#fb923c",
   hecs:       "#a78bfa",
-  netIncome:  "#2dd4bf",
-} as const;
-
-// ── Tax input category tints ──────────────────────
-// One colour per Advanced tax input section (income / deductions / adjustments).
-// Used for tab backgrounds, status dots, and group accents.
-export const TAX_CATEGORY_COLORS = {
-  income:      "#6b9fcc",
-  deductions:  "#c97070",
-  adjustments: "#bfa75a",
+  netIncome:  "var(--color-brand)",
 } as const;
 
 // ── Tax bracket severity ladder ───────────────────

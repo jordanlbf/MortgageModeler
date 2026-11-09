@@ -216,7 +216,6 @@ Never use `color-mix(…, var(--color-brand) N%, transparent)` in components —
 | `CF_COLORS` | Cashflow chart palette variants |
 | `TAX_COLORS` | Tax breakdown donut segments |
 | `TAX_BRACKET_COLORS` | Five-tier severity ramp for marginal tax rate tiers |
-| `TAX_CATEGORY_COLORS` | Per-section tints for the Advanced tax inputs (income / deductions / adjustments) |
 | `LVR_COLORS` | Three-tier LVR safety thresholds |
 | `STATE_COLORS` | Australian state / federal recognition colours for the Grants feature |
 | `DEPRECIATION_COLOR` | Single source for depreciation purple |
