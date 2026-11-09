@@ -7910,7 +7910,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
               placeholder="$0"
               spellcheck="false"
               type="text"
-              value=""
+              value="$50,000"
             />
           </div>
           <div
@@ -7979,7 +7979,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
               placeholder="$0"
               spellcheck="false"
               type="text"
-              value=""
+              value="$500"
             />
           </div>
         </div>
@@ -8104,31 +8104,102 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
           class="flex flex-col gap-6"
         >
           <div
-            class="flex min-w-0 flex-col gap-2"
-            data-pattern="stat"
+            class="flex flex-wrap items-start justify-between gap-6"
           >
             <div
-              class="flex min-h-5 items-center justify-between gap-3"
+              class="flex min-w-0 flex-col gap-2"
+              data-pattern="stat"
             >
-              <span
-                class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
-                data-slot="label"
+              <div
+                class="flex min-h-5 items-center justify-between gap-3"
               >
-                Repayment a month
-              </span>
+                <span
+                  class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                  data-slot="label"
+                >
+                  Repayment a month
+                </span>
+              </div>
+              <div
+                class="flex items-baseline justify-between gap-3"
+              >
+                <span
+                  class="font-semibold tabular-nums text-[44px] tracking-[-0.03em] text-fg-primary"
+                >
+                  $2,398.20
+                </span>
+              </div>
             </div>
             <div
-              class="flex items-baseline justify-between gap-3"
+              class="flex min-w-0 flex-col gap-2 items-end text-right"
+              data-pattern="stat"
             >
-              <span
-                class="font-semibold tabular-nums text-[44px] tracking-[-0.03em] text-fg-primary"
+              <div
+                class="flex min-h-5 items-center justify-between gap-3"
               >
-                $2,398.20
+                <span
+                  class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
+                  data-slot="label"
+                >
+                  Your offset saves
+                </span>
+              </div>
+              <div
+                class="flex items-baseline justify-between gap-3"
+              >
+                <span
+                  class="font-semibold tabular-nums text-[28px] tracking-[-0.02em] text-data-positive"
+                >
+                  $275,325
+                </span>
+              </div>
+              <span
+                class="text-[12px] text-fg-tertiary"
+              >
+                in interest over the loan
               </span>
             </div>
           </div>
           <div
-            class="grid grid-cols-2 gap-x-6 gap-y-5 border-t border-border-subtle pt-5 sm:grid-cols-4"
+            class="flex flex-col gap-2"
+          >
+            <div
+              aria-label="Paid off after 20 years 6 months of a 30-year term"
+              class="relative h-2 rounded-full bg-surface-subtle"
+              role="img"
+            >
+              <span
+                class="absolute inset-y-0 left-0 rounded-full bg-brand transition-[width] duration-300"
+                style="width: 68.33333333333333%;"
+              />
+              <span
+                class="absolute inset-y-0 right-0 rounded-r-full bg-data-positive/25 transition-[left] duration-300"
+                style="left: 68.33333333333333%;"
+              />
+            </div>
+            <div
+              class="flex flex-wrap justify-between gap-x-4 text-[12px] text-fg-tertiary tabular-nums"
+            >
+              <span>
+                Paid off in 
+                <span
+                  class="font-semibold text-fg-secondary"
+                >
+                  20 years 6 months
+                </span>
+              </span>
+              <span>
+                <span
+                  class="font-semibold text-data-positive"
+                >
+                  9 years 6 months
+                </span>
+                 sooner with your offset
+              </span>
+            </div>
+          </div>
+          <div
+            class="grid grid-cols-2 gap-x-6 gap-y-5 border-t border-border-subtle pt-5 sm:grid-cols-3"
           >
             <div
               class="flex min-w-0 flex-col gap-2"
@@ -8180,7 +8251,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                 <span
                   class="font-semibold tabular-nums text-[18px] tracking-[-0.01em] text-data-negative"
                 >
-                  $463,353
+                  $188,027
                 </span>
               </div>
             </div>
@@ -8204,31 +8275,7 @@ exports[`kitchen-sink sections > screen-amortisation matches its snapshot 1`] = 
                 <span
                   class="font-semibold tabular-nums text-[18px] tracking-[-0.01em] text-fg-primary"
                 >
-                  $863,353
-                </span>
-              </div>
-            </div>
-            <div
-              class="flex min-w-0 flex-col gap-2"
-              data-pattern="stat"
-            >
-              <div
-                class="flex min-h-5 items-center justify-between gap-3"
-              >
-                <span
-                  class="text-[11px] font-semibold whitespace-nowrap text-fg-primary/50 uppercase tracking-widest"
-                  data-slot="label"
-                >
-                  Paid off in
-                </span>
-              </div>
-              <div
-                class="flex items-baseline justify-between gap-3"
-              >
-                <span
-                  class="font-semibold tabular-nums text-[18px] tracking-[-0.01em] text-fg-primary"
-                >
-                  30 years
+                  $588,027
                 </span>
               </div>
             </div>

@@ -96,6 +96,13 @@ test.describe("amortisation", () => {
     await snapHover(page, "amortisation-table-row-hover");
   });
 
+  test("offset saving", async ({ page }) => {
+    await go(page, "/amortisation");
+    await page.getByLabel("Balance", { exact: true }).fill("50000");
+    await page.getByLabel("Balance", { exact: true }).blur();
+    await snap(page, "amortisation-offset");
+  });
+
   test("editing a value", async ({ page }) => {
     await go(page, "/amortisation");
     await page.locator("main input").first().click();

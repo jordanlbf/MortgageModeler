@@ -4,7 +4,7 @@ import AmortisationView from "@/components/amortisation/AmortisationView";
 import CashflowScreen from "@/components/cashflow/CashflowScreen";
 import PurchaseCostsView from "@/components/purchase-costs/PurchaseCostsView";
 import TaxView from "@/components/tax/TaxView";
-import { AMORTISATION, CASHFLOW_OUTPUT, CASHFLOW_WIZARD, PURCHASE_COSTS, TAX } from "./screens-sample";
+import { AMORTISATION_OFFSET, CASHFLOW_OUTPUT, CASHFLOW_WIZARD, PURCHASE_COSTS, TAX } from "./screens-sample";
 
 /*
  * The polished screens, rendered by the app's own components on generic
@@ -30,5 +30,5 @@ export function TaxScreenSection() {
 }
 
 export function AmortisationScreenSection() {
-  return <AmortisationView source={AMORTISATION} />;
+  return <AmortisationView source={AMORTISATION_OFFSET} />;
 }

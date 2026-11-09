@@ -74,6 +74,16 @@ export interface AmortisationState {
   tableRows: ScheduleRow[];
 }
 
+/**
+ * Repayments until the balance reaches zero. The schedule runs to the end of
+ * the term even when an offset clears the loan early, so count to the first
+ * zero balance rather than using `total_periods`.
+ */
+function periodsToPayoff(d: ScheduleResponse): number {
+  const i = d.rows.findIndex((r) => r.closing_balance <= 0.005);
+  return i >= 0 ? i + 1 : d.total_periods;
+}
+
 const DEFAULTS: AmortisationInputs = {
   purchasePrice: 600_000,
   deposit: 100_000,
@@ -144,7 +154,7 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
     if (!data) return null;
     const loan = data.summary.loan_amount;
     const toMonths = (periods: number) => Math.round((periods / PERIODS_PER_YEAR[frequency]) * 12);
-    const months = toMonths(data.total_periods);
+    const months = toMonths(periodsToPayoff(data));
     return {
       payment: data.payment,
       loanAmount: loan,
@@ -156,9 +166,9 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
       offset: baseline
         ? {
             interestSaved: Math.max(0, baseline.total_interest - data.total_interest),
-            monthsSooner: Math.max(0, toMonths(baseline.total_periods) - months),
+            monthsSooner: Math.max(0, toMonths(periodsToPayoff(baseline)) - months),
             interestWithout: baseline.total_interest,
-            monthsWithout: toMonths(baseline.total_periods),
+            monthsWithout: toMonths(periodsToPayoff(baseline)),
           }
         : null,
     };
@@ -181,7 +191,9 @@ export function useAmortisationState(source?: AmortisationSource): AmortisationS
   const tableRows = useMemo(() => {
     if (!data) return [];
     const ppy = PERIODS_PER_YEAR[frequency];
-    return data.rows.filter((_, i) => i % ppy === 0 || i === data.rows.length - 1);
+    // Stop at the repayment that clears the loan; an offset can clear it early.
+    const rows = data.rows.slice(0, periodsToPayoff(data));
+    return rows.filter((_, i) => i % ppy === 0 || i === rows.length - 1);
   }, [data, frequency]);
 
   return {

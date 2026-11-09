@@ -228,4 +228,17 @@ describe("useAmortisationState", () => {
     expect(mockFetchSchedule).toHaveBeenCalledTimes(1);
     expect(result.current.summary!.offset).toBeNull();
   });
+
+  it("payoff time counts to the first zero balance, not the end of the schedule", async () => {
+    mockFetchSchedule.mockClear();
+    // An offset clears the loan after 1248 weekly repayments (24 years); the schedule still runs to 1560.
+    const rows = MOCK_RESPONSE.rows.map((r, i) => ({ ...r, closing_balance: i >= 1247 ? 0 : 1000 }));
+    mockFetchSchedule.mockResolvedValue({ ...MOCK_RESPONSE, rows });
+    const { result } = renderHook(() => useAmortisationState());
+    await act(async () => {
+      vi.advanceTimersByTime(80);
+    });
+    expect(result.current.summary!.payoffYears).toBe(24);
+    expect(result.current.summary!.payoffMonths).toBe(0);
+  });
 });
