@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { formatDollars } from "@/lib/formatters";
+import InfoTip from "@/components/patterns/blocks/InfoTip";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +39,7 @@ function MoneyField({
   percentOf,
   autoFocus,
   aside,
+  describedBy,
 }: {
   id: string;
   value: number;
@@ -47,6 +49,7 @@ function MoneyField({
   percentOf?: number;
   autoFocus?: boolean;
   aside?: React.ReactNode;
+  describedBy?: string;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
   const ref = useRef<HTMLInputElement>(null);
@@ -68,6 +71,7 @@ function MoneyField({
         inputMode="decimal"
         autoComplete="off"
         spellCheck={false}
+        aria-describedby={describedBy}
         placeholder={placeholder}
         value={shown}
         onChange={(e) => {
@@ -111,6 +115,7 @@ interface Scale {
  * One amount section: caption, dollar input box, and optionally a slider on
  * `scale` with its range underneath. `markers` label points on the scale
  * (deposits worth aiming for); a drag settles onto them. `accent` tints the slider (the deposit follows the LVR colour).
+ * `help` puts an "i" beside the caption instead of a line of text under the field.
  */
 export function AmountSection({
   id,
@@ -125,6 +130,7 @@ export function AmountSection({
   accent = "var(--color-brand)",
   markers,
   aside,
+  help,
   divider = true,
 }: {
   id: string;
@@ -139,13 +145,17 @@ export function AmountSection({
   accent?: string;
   markers?: Marker[];
   aside?: React.ReactNode;
+  help?: string;
   /** A line above the section. Off to run straight on from the one above (price, then deposit). */
   divider?: boolean;
 }) {
   return (
     <div className={`flex flex-col gap-4 px-6 pb-5 ${divider ? "border-t border-border-subtle pt-5" : "pt-0"}`} style={{ "--slider-accent": accent } as React.CSSProperties}>
       <div className="flex flex-col gap-2">
-        <Label variant="caps" htmlFor={id}>{label}</Label>
+        <div className="flex items-center gap-1">
+          <Label variant="caps" htmlFor={id}>{label}</Label>
+          {help && <InfoTip label={label} id={`${id}-help`}>{help}</InfoTip>}
+        </div>
         <MoneyField
           id={id}
           value={value}
@@ -155,6 +165,7 @@ export function AmountSection({
           percentOf={percentOf}
           autoFocus={autoFocus}
           aside={aside}
+          describedBy={help ? `${id}-help` : undefined}
         />
       </div>
       {scale && <ScaleSlider label={label} scale={scale} disabled={disabled} markers={markers} />}

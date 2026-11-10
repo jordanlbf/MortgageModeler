@@ -195,21 +195,23 @@ test.describe("tax", () => {
 });
 
 test.describe("grants", () => {
-  test("filters and details", async ({ page }) => {
+  test("inputs and details", async ({ page }) => {
     await go(page, "/grants");
     await snap(page, "grants");
-    await page.getByRole("button", { name: "NSW", exact: true }).click();
-    await page.getByRole("radio", { name: "Existing", exact: true }).click();
-    await page.getByRole("radio", { name: "Couple", exact: true }).click();
-    await snap(page, "grants-filtered");
-    await page.getByRole("button", { name: "View grant details" }).first().click();
+    await page.getByRole("textbox", { name: "Purchase price" }).fill("600000");
+    await page.getByRole("textbox", { name: "Income" }).fill("90000");
+    await page.getByRole("combobox", { name: "State" }).selectOption("NSW");
+    await page.getByRole("switch", { name: "New build" }).click();
+    await page.getByRole("switch", { name: "Buying as a couple" }).click();
+    await snap(page, "grants-filtered", 800);
+    await page.getByRole("list").getByRole("button").first().click();
     await snap(page, "grants-details-open", 800);
   });
 
   test("error", async ({ page }) => {
     await failCompute(page);
     await go(page, "/grants");
-    await snap(page, "grants-error");
+    await snap(page, "grants-error", 800);
   });
 });
 
@@ -218,7 +220,7 @@ test.describe("purchase costs", () => {
     await go(page, "/purchase-costs");
     await snap(page, "purchase-costs");
     await page.getByRole("textbox", { name: "Purchase price" }).fill("600000");
-    await page.getByRole("textbox", { name: "Deposit" }).fill("60000");
+    await page.getByRole("textbox", { name: "Deposit", exact: true }).fill("60000");
     await page.getByRole("switch", { name: /First home/ }).click();
     await page.getByRole("switch", { name: /couple/i }).click();
     await snap(page, "purchase-costs-toggled");

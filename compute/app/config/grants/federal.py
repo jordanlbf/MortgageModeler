@@ -235,6 +235,7 @@ FHSS = GrantScheme(
         citizen_required=True,
         first_home_buyer=True,
     ),
+    financial_effect=FinancialEffect(super_release_cap=50_000),
 )
 
 # ── All federal schemes ──────────────────────────────

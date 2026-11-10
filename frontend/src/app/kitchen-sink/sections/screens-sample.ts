@@ -1,5 +1,6 @@
 import type { AmortisationSource } from "@/hooks/useAmortisationState";
 import type { CashflowSource } from "@/hooks/useCashflowState";
+import type { GrantsSource } from "@/hooks/useGrantsState";
 import type { PurchaseCostsSource } from "@/hooks/usePurchaseCostsState";
 import type { TaxSource } from "@/hooks/useTaxState";
 import type { YearData } from "@/lib/cashflow-types";
@@ -224,4 +225,103 @@ export const AMORTISATION_OFFSET: AmortisationSource = {
   inputs: { ...AMORTISATION.inputs, offsetBalance: 50_000, offsetContribution: 500 },
   data: sampleSchedule(50_000, 500),
   baseline: sampleSchedule(),
+};
+
+// ── Grants ────────────────────────────────────────
+
+type SampleScheme = GrantsSource["schemes"][number];
+
+/** A generic scheme: fills the display fields from a few, so each sample stays short. */
+/** What each sample scheme is worth on a $600k new home (as the API would estimate it). */
+const SAMPLE_VALUES: Record<string, SampleScheme["value"]> = {
+  "sample-guarantee": { amount: 25_000, share: null },
+  "sample-help": { amount: 35_000, share: 0.4 },
+  "sample-super": { amount: 50_000, share: null },
+  "sample-grant": { amount: 15_000, share: null },
+  "sample-concession-new": { amount: 24_000, share: null },
+  "sample-equity": { amount: 0, share: 0.3 },
+  "sample-concession": { amount: 12_850, share: null },
+  "sample-family": { amount: 35_000, share: null },
+  "sample-land": { amount: 0, share: null },
+};
+
+function scheme(
+  s: Pick<SampleScheme["scheme"], "id" | "name" | "level" | "state" | "category" | "benefit_pill" | "theme"> & Partial<SampleScheme["scheme"]>,
+  fails: [string, SampleScheme["result"]["blockers"][number]][] = [],
+): SampleScheme {
+  return {
+    scheme: {
+      meta: { deposit: "Any", lmi: "N/A", buyer: "Individual / Joint" },
+      benefits: [s.benefit_pill],
+      eligibility: ["First home buyer", "Australian citizen or permanent resident", "Live in the home"],
+      summary: `You qualify: ${s.benefit_pill.toLowerCase()}.`,
+      details: null,
+      rules: null,
+      valid_from: null,
+      valid_to: null,
+      ...s,
+    },
+    result: { eligible: fails.length === 0, reasons: fails.map((f) => f[0]), blockers: fails.map((f) => f[1]) },
+    value: SAMPLE_VALUES[s.id] ?? { amount: 0, share: null },
+  };
+}
+
+/** A new first home in one state, to live in: six schemes fit, three don't (one only just). */
+export const GRANTS: GrantsSource = {
+  inputs: { state: "QLD", price: 600_000, income: 90_000, propertyType: "new", ownerOcc: true, firstHome: true },
+  schemes: [
+    scheme({
+      id: "sample-guarantee", name: "First Home Guarantee", level: "Federal", state: null, category: "guarantee",
+      benefit_pill: "No LMI with 5% deposit", theme: "Buy with a 5% deposit and no lenders mortgage insurance.",
+      meta: { deposit: "5%", lmi: "Waived", buyer: "Individual / Joint" },
+      rules: ["Price caps vary by state and region", "Loan must be with a participating lender"],
+    }),
+    scheme({
+      id: "sample-help", name: "Help to Buy", level: "Federal", state: null, category: "equity",
+      benefit_pill: "Up to 40% equity", theme: "The government co-owns up to 40% of a new home, so you borrow less.",
+      meta: { deposit: "2%", lmi: "N/A", buyer: "Individual / Joint" },
+    }),
+    scheme({
+      id: "sample-super", name: "First Home Super Saver", level: "Federal", state: null, category: "super",
+      benefit_pill: "Up to $50k from super", theme: "Save for a deposit inside super and withdraw it for your first home.",
+    }),
+    scheme({
+      id: "sample-grant", name: "First Home Owner Grant", level: "State", state: "QLD", category: "grant",
+      benefit_pill: "$15,000 grant", theme: "A cash grant for a first home that's newly built.", valid_to: "2027-06-30",
+      details: "A one-off payment towards a new home, paid at settlement or when building finishes.",
+      rules: ["Must be a new home", "Move in within a year and live there for 6 months"],
+    }),
+    scheme({
+      id: "sample-concession-new", name: "First Home Concession (New Homes)", level: "State", state: "QLD", category: "concession",
+      benefit_pill: "Full duty exemption", theme: "No stamp duty on a new first home.",
+    }),
+    scheme({
+      id: "sample-equity", name: "Shared Equity Scheme", level: "State", state: "QLD", category: "equity",
+      benefit_pill: "Up to 30% equity", theme: "The state buys a share of the home, so you borrow less.",
+    }),
+    scheme(
+      {
+        id: "sample-concession", name: "First Home Concession (Existing Homes)", level: "State", state: "QLD", category: "concession",
+        benefit_pill: "Up to $25,000 saved", theme: "Less or no stamp duty on an existing first home.",
+      },
+      [["Property type must be: existing", { kind: "property_type", options: ["existing"] }]],
+    ),
+    scheme(
+      {
+        id: "sample-family", name: "Family Home Guarantee", level: "Federal", state: null, category: "guarantee",
+        benefit_pill: "2% deposit, no LMI", theme: "Single parents can buy with a 2% deposit and no LMI.",
+      },
+      [["Must be a single parent or legal guardian", { kind: "single_parent" }]],
+    ),
+    scheme(
+      {
+        id: "sample-land", name: "First Home Vacant Land Concession", level: "State", state: "QLD", category: "concession",
+        benefit_pill: "Full duty waiver on land", theme: "No stamp duty on land to build a first home on.",
+      },
+      [
+        ["Property type must be: land", { kind: "property_type", options: ["land"] }],
+        ["Property value must be $350,000 or less", { kind: "price", amount: 350_000 }],
+      ],
+    ),
+  ],
 };

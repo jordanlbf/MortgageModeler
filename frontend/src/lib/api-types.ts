@@ -375,6 +375,27 @@ export interface components {
             sapto: boolean;
         };
         /**
+         * BlockerResponse
+         * @description One failing rule, for a short label.
+         */
+        BlockerResponse: {
+            /**
+             * Kind
+             * @description first_home, not_first_home, owner_occupier, single_parent, no_recent_property, price, income, property_type, individual or off_the_plan
+             */
+            kind: string;
+            /**
+             * Amount
+             * @description The cap, for price and income
+             */
+            amount?: number | null;
+            /**
+             * Options
+             * @description Allowed property types, for property_type
+             */
+            options?: string[] | null;
+        };
+        /**
          * BorrowingCostsDetail
          * @description Itemised loan-related costs.
          *
@@ -1032,6 +1053,8 @@ export interface components {
             eligible: boolean;
             /** Reasons */
             reasons: string[];
+            /** Blockers */
+            blockers: components["schemas"]["BlockerResponse"][];
         };
         /**
          * ExistingLoanRequest
@@ -1917,10 +1940,27 @@ export interface components {
             /** Valid To */
             valid_to: string | null;
         };
+        /**
+         * SchemeValueResponse
+         * @description Rough worth of a scheme for this purchase.
+         */
+        SchemeValueResponse: {
+            /**
+             * Amount
+             * @description Dollars: grant, duty saved, LMI avoided, super released. Null until a price is set; 0 if none
+             */
+            amount: number | null;
+            /**
+             * Share
+             * @description Government ownership share for co-ownership schemes (e.g. 0.4)
+             */
+            share: number | null;
+        };
         /** SchemeWithEligibility */
         SchemeWithEligibility: {
             scheme: components["schemas"]["SchemeResponse"];
             result: components["schemas"]["EligibilityResult"];
+            value: components["schemas"]["SchemeValueResponse"];
         };
         /**
          * TaxBreakdownRequest
@@ -2210,6 +2250,10 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
         /**
          * YearByYearCostResponse

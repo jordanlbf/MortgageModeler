@@ -225,6 +225,14 @@ export const STATE_COLORS = {
   NT:      "#D87A58",
 } as const;
 
+// Kinds of grant help, shown beside the jurisdictions above, so each sits in a
+// hue none of them use (gold–green, green–blue and violet–rose gaps).
+export const GRANT_KIND_COLORS = {
+  grant:   "#a3e635",   // lime-400 — cash grants
+  duty:    "#22d3ee",   // cyan-400 — stamp duty
+  deposit: "#e879f9",   // fuchsia-400 — deposit help
+} as const;
+
 // Convenience array for legend / toggle iteration
 export const SERIES_LIST = Object.entries(SERIES).map(([key, s]) => ({
   key,

@@ -10,15 +10,17 @@ from fastapi import APIRouter
 from app.config.grants._types import GrantScheme
 from app.models.grants import GrantsInputs, SchemeEligibility
 from app.schemas.grants import (
-    EligibilityResult as EligibilityResultSchema,
-)
-from app.schemas.grants import (
+    BlockerResponse,
     GrantsEligibilityRequest,
     GrantsEligibilityResponse,
     GrantsSchemesResponse,
     SchemeMetaResponse,
     SchemeResponse,
+    SchemeValueResponse,
     SchemeWithEligibility,
+)
+from app.schemas.grants import (
+    EligibilityResult as EligibilityResultSchema,
 )
 from app.services.grants import evaluate_schemes, get_scheme_catalogue
 
@@ -71,7 +73,12 @@ def _result_to_response(se: SchemeEligibility) -> SchemeWithEligibility:
         result=EligibilityResultSchema(
             eligible=se.result.eligible,
             reasons=se.result.reasons,
+            blockers=[
+                BlockerResponse(kind=b.kind, amount=b.amount, options=b.options)
+                for b in se.result.blockers
+            ],
         ),
+        value=SchemeValueResponse(amount=se.value.amount, share=se.value.share),
     )
 
 
