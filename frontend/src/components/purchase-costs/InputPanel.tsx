@@ -6,8 +6,8 @@ import { formatDollars } from "@/lib/formatters";
 import SectionCard from "@/components/patterns/cards/SectionCard";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Switch } from "@/components/ui/switch";
 import { AmountSection, PercentChip } from "@/components/domain/AmountSection";
+import SwitchRow from "@/components/domain/SwitchRow";
 import { LMI_THRESHOLD, lvrColor } from "@/lib/lvr";
 
 const PROPERTY_TYPES = [
@@ -15,44 +15,6 @@ const PROPERTY_TYPES = [
   { value: "new", label: "New build" },
   { value: "land", label: "Vacant land" },
 ] as const;
-
-/** A setting row. When `disabled`, the row dims; `note` says why, to screen readers only. */
-function SwitchRow({
-  id,
-  label,
-  checked,
-  onChange,
-  disabled,
-  note,
-}: {
-  id: string;
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  disabled?: boolean;
-  note?: string;
-}) {
-  return (
-    <Label
-      variant="bare"
-      htmlFor={id}
-      className={`flex items-center justify-between gap-4 transition-opacity duration-200 ${disabled ? "cursor-default opacity-45" : "cursor-pointer"}`}
-    >
-      <span className="text-[13.5px] text-fg-secondary">
-        {label}
-        {/* Inside the label, so it's read with the switch's name. */}
-        {disabled && note && <span className="sr-only">, {note}</span>}
-      </span>
-      <Switch
-        variant="accent"
-        id={id}
-        checked={checked}
-        onCheckedChange={onChange}
-        disabled={disabled}
-      />
-    </Label>
-  );
-}
 
 /** The input card: title, then price, deposit, property and buyer sections. */
 export default function InputPanel({ pc }: { pc: PurchaseCostsState }) {
