@@ -62,6 +62,8 @@ class FinancialEffect:
         min_deposit_percent: Minimum deposit as decimal (e.g. 0.05 for 5%).
         equity_share_new: Government equity share for new builds (e.g. 0.40).
         equity_share_existing: Government equity share for existing homes.
+        super_release_cap: Most you can release from super for a deposit
+            (e.g. FHSS $50,000). Your own money, released early.
     """
 
     cash_grant: float = 0.0
@@ -71,6 +73,7 @@ class FinancialEffect:
     min_deposit_percent: float | None = None
     equity_share_new: float | None = None
     equity_share_existing: float | None = None
+    super_release_cap: float = 0.0
 
 
 @dataclass(frozen=True)

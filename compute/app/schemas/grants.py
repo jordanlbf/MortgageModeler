@@ -59,14 +59,38 @@ class SchemeResponse(BaseModel):
     valid_to: str | None
 
 
+class BlockerResponse(BaseModel):
+    """One failing rule, for a short label."""
+
+    kind: str = Field(
+        description="first_home, not_first_home, owner_occupier, single_parent, no_recent_property, "
+        "price, income, property_type, individual or off_the_plan"
+    )
+    amount: float | None = Field(default=None, description="The cap, for price and income")
+    options: list[str] | None = Field(default=None, description="Allowed property types, for property_type")
+
+
 class EligibilityResult(BaseModel):
     eligible: bool
     reasons: list[str]
+    blockers: list[BlockerResponse]
+
+
+class SchemeValueResponse(BaseModel):
+    """Rough worth of a scheme for this purchase."""
+
+    amount: float | None = Field(
+        description="Dollars: grant, duty saved, LMI avoided, super released. Null until a price is set; 0 if none"
+    )
+    share: float | None = Field(
+        description="Government ownership share for co-ownership schemes (e.g. 0.4)"
+    )
 
 
 class SchemeWithEligibility(BaseModel):
     scheme: SchemeResponse
     result: EligibilityResult
+    value: SchemeValueResponse
 
 
 class GrantsEligibilityResponse(BaseModel):

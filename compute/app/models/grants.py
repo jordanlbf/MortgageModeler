@@ -44,6 +44,23 @@ class GrantsInputs:
 
 
 @dataclass
+class Blocker:
+    """One failing rule, in a form a UI can label briefly.
+
+    Attributes:
+        kind: The rule: first_home, not_first_home, owner_occupier,
+            single_parent, no_recent_property, price, income,
+            property_type, individual, off_the_plan.
+        amount: The cap, for price and income.
+        options: The allowed property types, for property_type.
+    """
+
+    kind: str
+    amount: float | None = None
+    options: list[str] | None = None
+
+
+@dataclass
 class EligibilityResult:
     """Result of checking a single scheme against user inputs.
 
@@ -54,16 +71,35 @@ class EligibilityResult:
 
     eligible: bool
     reasons: list[str] = field(default_factory=list)
+    blockers: list[Blocker] = field(default_factory=list)
+
+
+@dataclass
+class SchemeValue:
+    """Rough worth of a scheme for this purchase.
+
+    Attributes:
+        amount: Dollars it's worth (cash grant, stamp duty saved, LMI avoided,
+            super released), or None when it needs a price that isn't set.
+            0 when it has no dollar effect.
+        share: Government's ownership share for co-ownership schemes
+            (e.g. 0.4), or None.
+    """
+
+    amount: float | None = 0.0
+    share: float | None = None
 
 
 @dataclass
 class SchemeEligibility:
-    """A scheme paired with its eligibility result.
+    """A scheme paired with its eligibility result and rough worth.
 
     Attributes:
         scheme: The grant scheme that was evaluated.
         result: Eligibility outcome for that scheme.
+        value: What it's worth for this purchase.
     """
 
     scheme: GrantScheme
     result: EligibilityResult
+    value: SchemeValue = field(default_factory=SchemeValue)

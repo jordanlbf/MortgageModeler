@@ -6,10 +6,12 @@ from datetime import date
 
 import pytest
 
-from app.config.grants._types import EligibilityPredicates, GrantScheme, SchemeMeta
+from app.config.grants._types import EligibilityPredicates, FinancialEffect, GrantScheme, SchemeMeta, State
 from app.config.grants.registry import get_all_schemes, get_scheme
+from app.engine.property import estimate_lmi
+from app.engine.stamp_duty import calculate_stamp_duty
 from app.models.grants import GrantsInputs
-from app.services.grants import _check_eligibility, evaluate_schemes
+from app.services.grants import _check_eligibility, _estimate_value, evaluate_schemes
 
 # The scheme data was last verified in March 2026. Pin "today" there so
 # schemes with an end date don't drop out of these tests as time passes.
@@ -1109,3 +1111,56 @@ class TestExpiry:
         assert any(r.scheme.id == "fhog-qld" for r in evaluate_schemes(_make_inputs(states=["QLD"])))
         monkeypatch.setattr("app.services.grants._today", lambda: date.fromordinal(scheme.valid_to.toordinal() + 1))
         assert not any(r.scheme.id == "fhog-qld" for r in evaluate_schemes(_make_inputs(states=["QLD"])))
+
+
+class TestEstimateValue:
+    def test_cash_grant_and_super_cap_need_no_price(self):
+        fe = FinancialEffect(cash_grant=15_000, super_release_cap=50_000)
+        assert _estimate_value(_make_scheme(financial_effect=fe), _make_inputs(price=0)).amount == 65_000
+
+    def test_duty_exemption_is_the_state_home_duty(self):
+        fe = FinancialEffect(stamp_duty_exemption=True)
+        scheme = _make_scheme(level="State", state=State.QLD, financial_effect=fe)
+        duty = calculate_stamp_duty(600_000, "QLD", is_ppor=True)
+        assert _estimate_value(scheme, _make_inputs()).amount == round(duty)
+
+    def test_lmi_waiver_is_lmi_at_the_minimum_deposit(self):
+        scheme = _make_scheme(financial_effect=FinancialEffect(lmi_waiver=True, min_deposit_percent=0.05))
+        assert _estimate_value(scheme, _make_inputs()).amount == round(estimate_lmi(570_000, 0.95, False))
+
+    def test_price_based_effects_are_unknown_without_a_price(self):
+        scheme = _make_scheme(financial_effect=FinancialEffect(lmi_waiver=True, min_deposit_percent=0.05))
+        assert _estimate_value(scheme, _make_inputs(price=0)).amount is None
+
+    def test_equity_share_follows_the_property_type(self):
+        fe = FinancialEffect(equity_share_new=0.4, equity_share_existing=0.3)
+        assert _estimate_value(_make_scheme(financial_effect=fe), _make_inputs(property_type="new")).share == 0.4
+        assert _estimate_value(_make_scheme(financial_effect=fe), _make_inputs(property_type="existing")).share == 0.3
+
+    def test_no_effect_is_worth_nothing(self):
+        value = _estimate_value(_make_scheme(), _make_inputs())
+        assert value.amount == 0 and value.share is None
+
+    def test_fhss_is_worth_its_release_cap(self):
+        fhss = next(r for r in evaluate_schemes(_make_inputs()) if r.scheme.id == "fhss")
+        assert fhss.value.amount == 50_000
+
+
+class TestBlockers:
+    """Each failing rule comes with a short, structured blocker."""
+
+    def test_blockers_match_reasons(self):
+        scheme = _make_scheme(
+            predicates=EligibilityPredicates(single_parent_required=True, max_price=800_000, property_types=["new"])
+        )
+        inputs = _make_inputs(single_parent=False, price=900_000, property_type="existing")
+        result = _check_eligibility(scheme, inputs)
+        assert len(result.blockers) == len(result.reasons) == 3
+        kinds = {b.kind: b for b in result.blockers}
+        assert set(kinds) == {"single_parent", "price", "property_type"}
+        assert kinds["price"].amount == 800_000
+        assert kinds["property_type"].options == ["new"]
+
+    def test_no_blockers_when_eligible(self):
+        result = _check_eligibility(_make_scheme(), _make_inputs())
+        assert result.eligible and result.blockers == []
