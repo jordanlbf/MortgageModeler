@@ -721,7 +721,10 @@ export interface components {
          *         final_loan_balance: Remaining mortgage at end of projection
          *         final_equity: Property value minus loan balance at end of projection
          *         average_annual_net: Average net position per year
-         *         net_wealth: Final equity plus cumulative cash position
+         *         net_wealth: Final equity plus cumulative cash position plus offset balance
+         *             (before any CGT on sale)
+         *         total_tax_paid: Total tax paid across all years (income tax, Medicare and HECS
+         *             repayments), net of any tax saving from an investment property
          */
         CashFlowSummaryResponse: {
             /** Total Income */
@@ -745,6 +748,11 @@ export interface components {
              * @default 0
              */
             total_tax_saving: number;
+            /**
+             * Total Tax Paid
+             * @default 0
+             */
+            total_tax_paid: number;
             /** Final Property Value */
             final_property_value: number;
             /** Final Loan Balance */
@@ -773,7 +781,12 @@ export interface components {
          *         rental_income: Annual rental income received (rentvesting only, 0 for PPOR)
          *         tax_saving: Tax benefit from deductions (rentvesting only, 0 for PPOR)
          *         salary: Gross taxable income (grown by income_growth_rate) for this year
-         *         income_tax: Total tax payable for this year (income tax + Medicare levy)
+         *         income_tax: Total tax payable for this year before any investment property
+         *             (income tax, Medicare levy and surcharge, HECS repayment)
+         *         hecs_repayment: Compulsory HECS/HELP repayment made this year
+         *         hecs_balance: HECS/HELP debt remaining at end of year (after indexation and repayment)
+         *         net_wealth: Equity plus cumulative cash position plus offset balance, before any CGT on sale
+         *         cgt_if_sold: CGT payable if the property were sold at end of this year (investment only, 0 for PPOR)
          *         ongoing_costs_detail: Itemised ongoing property costs breakdown
          *         tax_deduction_detail: Tax deduction breakdown (investment only)
          *         total_outflows: Sum of all expenses for the year
@@ -843,6 +856,26 @@ export interface components {
              * @default 0
              */
             income_tax: number;
+            /**
+             * Hecs Repayment
+             * @default 0
+             */
+            hecs_repayment: number;
+            /**
+             * Hecs Balance
+             * @default 0
+             */
+            hecs_balance: number;
+            /**
+             * Net Wealth
+             * @default 0
+             */
+            net_wealth: number;
+            /**
+             * Cgt If Sold
+             * @default 0
+             */
+            cgt_if_sold: number;
             ongoing_costs_detail?: components["schemas"]["OngoingCostsDetailResponse"] | null;
             tax_deduction_detail?: components["schemas"]["TaxDeductionDetailResponse"] | null;
         };
@@ -914,6 +947,9 @@ export interface components {
          *         difference: Absolute net wealth gap at term end.
          *         break_even_year: First year one scenario overtakes the other (None if never).
          *         by_year: PPOR net wealth minus rentvest net wealth per year, for charting.
+         *         ppor_net_wealth: PPOR net wealth at the end of each year.
+         *         rentvest_net_wealth: Rentvesting net wealth at the end of each year, after the
+         *             CGT payable if the investment property were sold that year.
          */
         ComparisonResponse: {
             ppor: components["schemas"]["CashFlowPPORResponse"];
@@ -938,6 +974,16 @@ export interface components {
              * @description PPOR net wealth minus rentvest net wealth per year
              */
             by_year: number[];
+            /**
+             * Ppor Net Wealth
+             * @description PPOR net wealth at the end of each year
+             */
+            ppor_net_wealth: number[];
+            /**
+             * Rentvest Net Wealth
+             * @description Rentvesting net wealth at the end of each year, after CGT if sold that year
+             */
+            rentvest_net_wealth: number[];
         };
         /**
          * DeductionInputs
@@ -2084,11 +2130,13 @@ export interface components {
          *
          *     Attributes:
          *         taxable_income: Assessable income minus allowable deductions
-         *         repayment_income: Income used for HECS repayment calculation
-         *         mls_income: Income used for Medicare Levy Surcharge calculation
+         *         repayment_income: Income used for HECS repayment calculation (defaults to taxable income)
+         *         mls_income: Income used for Medicare Levy Surcharge calculation (defaults to taxable income)
          *         hecs_balance: Outstanding HECS/HELP debt
          *         has_private_health: Whether the taxpayer holds private health insurance
          *         income_growth_rate: Annual salary/wage growth rate as decimal
+         *         hecs_indexation_rate: Annual HECS/HELP indexation rate as decimal
+         *             (defaults to the configured long-run assumption)
          */
         TaxProfileRequest: {
             /**
@@ -2099,16 +2147,14 @@ export interface components {
             taxable_income: number;
             /**
              * Repayment Income
-             * @description Annual income used for HECS repayment calculations
-             * @default 0
+             * @description Annual income used for HECS repayment calculations (defaults to taxable income)
              */
-            repayment_income: number;
+            repayment_income?: number | null;
             /**
              * Mls Income
-             * @description Annual income used for MLS calculations
-             * @default 0
+             * @description Annual income used for MLS calculations (defaults to taxable income)
              */
-            mls_income: number;
+            mls_income?: number | null;
             /**
              * Hecs Balance
              * @description Current HECS debt balance
@@ -2127,6 +2173,11 @@ export interface components {
              * @default 0.03
              */
             income_growth_rate: number;
+            /**
+             * Hecs Indexation Rate
+             * @description Annual HECS/HELP indexation rate as decimal (defaults to 0.03)
+             */
+            hecs_indexation_rate?: number | null;
         };
         /**
          * UpfrontCostRequest

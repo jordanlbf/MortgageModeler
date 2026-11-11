@@ -29,6 +29,10 @@ function baseYearRow(): CashflowYearRow {
     offset_balance: 0,
     salary: 0,
     income_tax: 0,
+    hecs_repayment: 0,
+    hecs_balance: 0,
+    net_wealth: 0,
+    cgt_if_sold: 0,
   };
 }
 
