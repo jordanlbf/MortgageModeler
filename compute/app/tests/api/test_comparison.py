@@ -133,6 +133,27 @@ class TestComparisonEndpointStructure:
         assert "cgt" in data["rentvest"]
         assert "cgt_payable" in data["rentvest"]["cgt"]
 
+    def test_net_wealth_series_lengths_match_projection(self):
+        data = client.post("/api/comparison", json=_comparison_payload(projection_years=10)).json()
+        assert len(data["ppor_net_wealth"]) == 10
+        assert len(data["rentvest_net_wealth"]) == 10
+
+    def test_by_year_is_difference_of_net_wealth_series(self):
+        data = client.post("/api/comparison", json=_comparison_payload()).json()
+        for delta, ppor, rentvest in zip(data["by_year"], data["ppor_net_wealth"], data["rentvest_net_wealth"]):
+            assert delta == pytest.approx(ppor - rentvest)
+
+    def test_net_wealth_series_match_year_rows(self):
+        data = client.post("/api/comparison", json=_comparison_payload()).json()
+        for wealth, year in zip(data["ppor_net_wealth"], data["ppor"]["years"]):
+            assert wealth == pytest.approx(year["net_wealth"])
+        for wealth, year in zip(data["rentvest_net_wealth"], data["rentvest"]["years"]):
+            assert wealth == pytest.approx(year["net_wealth"] - year["cgt_if_sold"])
+
+    def test_final_year_cgt_matches_projection_cgt(self):
+        data = client.post("/api/comparison", json=_comparison_payload()).json()
+        assert data["rentvest"]["years"][-1]["cgt_if_sold"] == pytest.approx(data["rentvest"]["cgt"]["cgt_payable"])
+
 
 # ──────────────────────────────────────────────
 # POST /api/comparison — Scenarios

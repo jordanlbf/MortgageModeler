@@ -3,7 +3,7 @@
  * Mirrors `TAX_BRACKETS` in compute/app/config/tax.py: update both together.
  * Only used to draw the bracket chart; every tax figure comes from the API.
  */
-export const TAX_YEAR = "2025–26";
+export const TAX_YEAR = "2026–27";
 
 export interface TaxBracket {
   /** Income above this is in the bracket. */
@@ -15,7 +15,7 @@ export interface TaxBracket {
 
 export const TAX_BRACKETS: readonly TaxBracket[] = [
   { from: 0, to: 18_200, rate: 0 },
-  { from: 18_200, to: 45_000, rate: 0.16 },
+  { from: 18_200, to: 45_000, rate: 0.15 },
   { from: 45_000, to: 135_000, rate: 0.3 },
   { from: 135_000, to: 190_000, rate: 0.37 },
   { from: 190_000, to: Infinity, rate: 0.45 },

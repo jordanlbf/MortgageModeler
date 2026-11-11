@@ -8,10 +8,12 @@ CashFlowYear entries, then computes the projection summary.
 """
 
 from dataclasses import replace
-from datetime import timedelta
+from datetime import date, timedelta
 
 from app.engine.cgt import calculate_cgt
 from app.engine.property import calculate_property_value
+from app.engine.tax import calculate_hecs_repayment, calculate_total_tax, index_hecs_balance
+from app.models.amortisation import ScheduleRow
 from app.models.cashflow import (
     CashFlowPPORResult,
     CashFlowRentvestResult,
@@ -20,11 +22,12 @@ from app.models.cashflow import (
     CashFlowYear,
     CashFlowYearInvestment,
 )
+from app.models.cgt import CGTResult
 from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
 from app.models.person import Person
-from app.models.property import OngoingCostProjection, RentvestConfig, UpfrontCosts, YearCost
+from app.models.property import OngoingCostProjection, PurchaseCosts, RentvestConfig, UpfrontCosts, YearCost
 from app.models.tax import TaxProfile
 from app.services.ongoing_costs import build_ongoing_cost_projection
 from app.services.tax_deductions import build_tax_deduction_summary
@@ -52,9 +55,8 @@ def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
     final_property_value = last_year.property_value if last_year else 0.0
     final_loan_balance = last_year.loan_balance if last_year else 0.0
     final_equity = final_property_value - final_loan_balance
-    cumulative_position = last_year.cumulative_position if last_year else 0.0
     average_annual_net = sum(year.net_position for year in years) / len(years) if years else 0.0
-    net_wealth = final_equity + cumulative_position
+    net_wealth = last_year.net_wealth if last_year else 0.0
 
     return CashFlowSummary(
         total_income=total_income,
@@ -65,6 +67,7 @@ def _calculate_cashflow_summary(years: list[CashFlowYear]) -> CashFlowSummary:
         final_equity=final_equity,
         average_annual_net=average_annual_net,
         net_wealth=net_wealth,
+        total_tax_paid=sum(year.income_tax for year in years),
     )
 
 
@@ -80,6 +83,7 @@ def _calculate_investment_cashflow_summary(years: list[CashFlowYearInvestment]) 
         CashFlowSummaryInvestment with base totals plus investment fields
     """
     base = _calculate_cashflow_summary(years)
+    total_tax_saving = sum(year.tax_saving for year in years)
     return CashFlowSummaryInvestment(
         total_income=base.total_income,
         total_outflows=base.total_outflows,
@@ -89,9 +93,10 @@ def _calculate_investment_cashflow_summary(years: list[CashFlowYearInvestment]) 
         final_equity=base.final_equity,
         average_annual_net=base.average_annual_net,
         net_wealth=base.net_wealth,
+        total_tax_paid=base.total_tax_paid - total_tax_saving,
         total_rent_paid=sum(year.rent_paid for year in years),
         total_rental_income=sum(year.rental_income for year in years),
-        total_tax_saving=sum(year.tax_saving for year in years),
+        total_tax_saving=total_tax_saving,
     )
 
 
@@ -112,13 +117,15 @@ def _build_projection_inputs(
     return upfront_costs, cost_projection
 
 
-def _grow_tax_profile(tax_profile: TaxProfile, year: int) -> TaxProfile:
+def _grow_tax_profile(tax_profile: TaxProfile, year: int, hecs_balance: float | None = None) -> TaxProfile:
     """
     Grow a tax profile's income measures by the income growth rate for a given year.
 
     Args:
         tax_profile: Base year tax profile
         year: Number of years of growth to apply
+        hecs_balance: HECS/HELP debt outstanding in that year (defaults to the
+            base profile's balance)
 
     Returns:
         New TaxProfile with grown income measures
@@ -128,10 +135,114 @@ def _grow_tax_profile(tax_profile: TaxProfile, year: int) -> TaxProfile:
         taxable_income=tax_profile.taxable_income * growth_factor,
         repayment_income=tax_profile.repayment_income * growth_factor,
         mls_income=tax_profile.mls_income * growth_factor,
-        hecs_balance=tax_profile.hecs_balance,
+        hecs_balance=tax_profile.hecs_balance if hecs_balance is None else hecs_balance,
         has_private_health=tax_profile.has_private_health,
         income_growth_rate=tax_profile.income_growth_rate,
+        hecs_indexation_rate=tax_profile.hecs_indexation_rate,
     )
+
+
+def _tax_profile_for_year(tax_profile: TaxProfile, year: int, hecs_balance: float) -> TaxProfile:
+    """
+    Build the tax profile for a projection year: grown income, and the HECS/HELP
+    debt carried in from the previous year with that year's indexation applied.
+
+    Args:
+        tax_profile: Base year tax profile
+        year: Projection year (0 = purchase year)
+        hecs_balance: HECS/HELP debt remaining at the end of the previous year
+
+    Returns:
+        TaxProfile for the year, ready for the tax engine
+    """
+    indexed_balance = index_hecs_balance(hecs_balance, tax_profile.hecs_indexation_rate)
+    return _grow_tax_profile(tax_profile, year, hecs_balance=indexed_balance)
+
+
+def _offset_position(schedule_rows: list[ScheduleRow], opening_offset_balance: float) -> tuple[float, float]:
+    """
+    Work out the offset account's closing balance and the cash paid into it over a year.
+
+    Args:
+        schedule_rows: Amortisation schedule rows for the year (empty once the schedule ends)
+        opening_offset_balance: Offset balance at the start of the year
+
+    Returns:
+        Tuple of (closing offset balance, contributions made during the year)
+    """
+    if not schedule_rows:
+        return opening_offset_balance, 0.0
+    closing_offset_balance = schedule_rows[-1].offset_balance
+    return closing_offset_balance, closing_offset_balance - opening_offset_balance
+
+
+def _closing_property_value(mortgage: Mortgage, year: int) -> float:
+    """
+    Property value at the end of a projection year, to line up with the
+    end-of-year loan balance and cash position.
+
+    Args:
+        mortgage: Mortgage aggregate with property details
+        year: Projection year (0 = purchase year)
+
+    Returns:
+        Property value after year + 1 years of growth
+    """
+    value_base = mortgage.property.value_base or mortgage.property.purchase_price
+    return calculate_property_value(year + 1, value_base, mortgage.property.annual_appreciation)
+
+
+def _calculate_sale_cgt(
+    mortgage: Mortgage,
+    years_held: int,
+    hecs_balance: float,
+    purchase_costs: PurchaseCosts | None = None,
+    capital_works_deductions: float = 0.0,
+) -> CGTResult:
+    """
+    Calculate the CGT payable if the investment property were sold after a number of years.
+
+    Args:
+        mortgage: Mortgage aggregate with property and tax profile details
+        years_held: Whole projection years completed at the time of sale
+        hecs_balance: HECS/HELP debt outstanding at the time of sale
+        purchase_costs: Resolved purchase costs for the cost base, so auto-estimated
+            costs (e.g. stamp duty) are included. Defaults to the property's own.
+        capital_works_deductions: Building depreciation claimed up to the sale, which
+            comes off the cost base
+
+    Returns:
+        CGTResult for a sale at that point
+    """
+    sold_property = mortgage.property
+    if purchase_costs is not None:
+        sold_property = replace(sold_property, purchase_costs=purchase_costs)
+    sale_price = _closing_property_value(mortgage, years_held - 1)
+    sale_date = mortgage.property.purchase_date + timedelta(days=365 * years_held)
+    return calculate_cgt(
+        property=sold_property,
+        sale_price=sale_price,
+        sale_date=sale_date,
+        tax_profile=_grow_tax_profile(mortgage.person.tax_profile, years_held, hecs_balance=hecs_balance),
+        is_ppor=False,
+        capital_works_deductions=capital_works_deductions,
+    )
+
+
+def _financial_year(purchase_date: date, year: int) -> FinancialYear:
+    """
+    The financial year a projection year is taxed in. Year 0 is the one the
+    purchase falls in, so a purchase in March starts with that June's part-year.
+
+    Args:
+        purchase_date: Date the property was bought
+        year: Projection year (0 = purchase year)
+
+    Returns:
+        FinancialYear for the projection year
+    """
+    first = purchase_date.year + 1 if purchase_date.month >= 7 else purchase_date.year
+    return FinancialYear(first + year)
 
 
 def _calculate_cashflow_year(
@@ -140,6 +251,8 @@ def _calculate_cashflow_year(
     schedule_rows: list,
     ongoing_costs: YearCost,
     previous_cumulative: float,
+    opening_offset_balance: float = 0.0,
+    closing_property_value: float | None = None,
 ) -> CashFlowYear:
     """
     Calculate a single year's cash flow breakdown for a PPOR scenario.
@@ -149,40 +262,31 @@ def _calculate_cashflow_year(
 
     Args:
         year: Projection year (0 = purchase year)
-        tax_profile: Pre-grown tax profile for this year (income already adjusted)
+        tax_profile: Tax profile for this year (income grown, HECS balance as owed this year)
         schedule_rows: Pre-sliced amortisation schedule rows for this year
         ongoing_costs: YearCost breakdown for this year
         previous_cumulative: Cumulative position from the previous year
+        opening_offset_balance: Offset account balance at the start of this year
+        closing_property_value: Property value at the end of this year (defaults to
+            the value the year's costs were based on)
 
     Returns:
         CashFlowYear with summary and detail breakdowns for this year
     """
-    from app.engine.tax import calculate_total_tax
-
     salary = tax_profile.taxable_income
     income_tax = calculate_total_tax(tax_profile)
     net_income = salary - income_tax
+    hecs_repayment = calculate_hecs_repayment(tax_profile.repayment_income, tax_profile.hecs_balance)
 
     mortgage_interest = sum(r.interest for r in schedule_rows)
     mortgage_principal = sum(r.principal_paid + r.extra_paid for r in schedule_rows)
     mortgage_repayment = mortgage_interest + mortgage_principal
 
-    if schedule_rows:
-        loan_balance = schedule_rows[-1].closing_balance
-        offset_balance = schedule_rows[-1].offset_balance
-    else:
-        loan_balance = 0.0
-        offset_balance = 0.0
+    loan_balance = schedule_rows[-1].closing_balance if schedule_rows else 0.0
+    offset_balance, offset_contributions = _offset_position(schedule_rows, opening_offset_balance)
 
     property_costs = ongoing_costs.total_costs
-    property_value = ongoing_costs.property_value
-
-    if len(schedule_rows) >= 2:
-        offset_contributions = schedule_rows[-1].offset_balance - schedule_rows[0].offset_balance
-    elif len(schedule_rows) == 1:
-        offset_contributions = 0.0
-    else:
-        offset_contributions = 0.0
+    property_value = ongoing_costs.property_value if closing_property_value is None else closing_property_value
 
     total_inflows = net_income
     total_outflows = mortgage_repayment + property_costs + offset_contributions
@@ -208,6 +312,8 @@ def _calculate_cashflow_year(
         offset_balance=offset_balance,
         salary=salary,
         income_tax=income_tax,
+        hecs_repayment=hecs_repayment,
+        hecs_balance=tax_profile.hecs_balance - hecs_repayment,
         ongoing_costs_detail=ongoing_costs,
         schedule_rows_detail=schedule_rows,
     )
@@ -221,6 +327,8 @@ def _calculate_investment_cashflow_year(
     previous_cumulative: float,
     rentvest: RentvestConfig | None = None,
     tax_deduction_detail: PropertyTaxDeductionSummary | None = None,
+    opening_offset_balance: float = 0.0,
+    closing_property_value: float | None = None,
 ) -> CashFlowYearInvestment:
     """
     Calculate a single year's cash flow breakdown for an investment scenario.
@@ -230,45 +338,41 @@ def _calculate_investment_cashflow_year(
 
     Args:
         year: Projection year (0 = purchase year)
-        tax_profile: Pre-grown tax profile for this year (income already adjusted)
+        tax_profile: Tax profile for this year (income grown, HECS balance as owed this year)
         schedule_rows: Pre-sliced amortisation schedule rows for this year
         ongoing_costs: YearCost breakdown for this year (includes rental_income)
         previous_cumulative: Cumulative position from the previous year
         rentvest: Tenant rental config (None unless rentvesting)
         tax_deduction_detail: Tax deduction breakdown for this year
+        opening_offset_balance: Offset account balance at the start of this year
+        closing_property_value: Property value at the end of this year (defaults to
+            the value the year's costs were based on)
 
     Returns:
         CashFlowYearInvestment with investment-specific fields
     """
-    from app.engine.tax import calculate_total_tax
-
     salary = tax_profile.taxable_income
     income_tax = calculate_total_tax(tax_profile)
     net_income = salary - income_tax
+
+    # A rental profit adds to repayment income; a rental loss is added back, so it never lowers it.
+    net_rental_income = tax_deduction_detail.net_rental_income if tax_deduction_detail else 0.0
+    hecs_repayment = calculate_hecs_repayment(
+        tax_profile.repayment_income + max(net_rental_income, 0), tax_profile.hecs_balance
+    )
 
     mortgage_interest = sum(r.interest for r in schedule_rows)
     mortgage_principal = sum(r.principal_paid + r.extra_paid for r in schedule_rows)
     mortgage_repayment = mortgage_interest + mortgage_principal
 
-    if schedule_rows:
-        loan_balance = schedule_rows[-1].closing_balance
-        offset_balance = schedule_rows[-1].offset_balance
-    else:
-        loan_balance = 0.0
-        offset_balance = 0.0
+    loan_balance = schedule_rows[-1].closing_balance if schedule_rows else 0.0
+    offset_balance, offset_contributions = _offset_position(schedule_rows, opening_offset_balance)
 
     property_costs = ongoing_costs.total_costs
-    property_value = ongoing_costs.property_value
+    property_value = ongoing_costs.property_value if closing_property_value is None else closing_property_value
     rental_income = ongoing_costs.rental_income
     rent_paid = rentvest.weekly_rent_paid * 52 * (1 + rentvest.annual_rent_paid_growth) ** year if rentvest else 0.0
     tax_saving = tax_deduction_detail.tax_saving if tax_deduction_detail else 0.0
-
-    if len(schedule_rows) >= 2:
-        offset_contributions = schedule_rows[-1].offset_balance - schedule_rows[0].offset_balance
-    elif len(schedule_rows) == 1:
-        offset_contributions = 0.0
-    else:
-        offset_contributions = 0.0
 
     total_inflows = net_income + rental_income + tax_saving
     total_outflows = mortgage_repayment + property_costs + rent_paid + offset_contributions
@@ -294,6 +398,8 @@ def _calculate_investment_cashflow_year(
         offset_balance=offset_balance,
         salary=salary,
         income_tax=income_tax,
+        hecs_repayment=hecs_repayment,
+        hecs_balance=tax_profile.hecs_balance - hecs_repayment,
         ongoing_costs_detail=ongoing_costs,
         schedule_rows_detail=schedule_rows,
         rental_income=rental_income,
@@ -326,18 +432,24 @@ def build_ppor_cashflow(mortgage: Mortgage) -> CashFlowPPORResult:
 
     # Build list of CashFlowYear models for each year
     cumulative_cash_position = -upfront_costs.total_cash_at_settlement
+    hecs_balance = mortgage.person.tax_profile.hecs_balance
+    offset_balance = mortgage.loan.config.offset_balance
     cashflow_years = []
     for year in range(mortgage.projection_years):
-        grown_profile = _grow_tax_profile(mortgage.person.tax_profile, year)
+        year_profile = _tax_profile_for_year(mortgage.person.tax_profile, year, hecs_balance)
 
         cashflow_year = _calculate_cashflow_year(
             year=year,
-            tax_profile=grown_profile,
+            tax_profile=year_profile,
             schedule_rows=mortgage.loan.rows_for_year(year),
             ongoing_costs=cost_projection.annual_costs[year],
             previous_cumulative=cumulative_cash_position,
+            opening_offset_balance=offset_balance,
+            closing_property_value=_closing_property_value(mortgage, year),
         )
         cumulative_cash_position = cashflow_year.cumulative_position
+        hecs_balance = cashflow_year.hecs_balance
+        offset_balance = cashflow_year.offset_balance
         cashflow_years.append(cashflow_year)
 
     return CashFlowPPORResult(
@@ -374,20 +486,20 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
 
     # Build list of CashFlowYear models for each year
     cumulative_cash_position = -upfront_costs.total_cash_at_settlement
+    hecs_balance = mortgage.person.tax_profile.hecs_balance
+    offset_balance = mortgage.loan.config.offset_balance
+    capital_works_claimed = 0.0
     cashflow_years = []
     for year in range(mortgage.projection_years):
         year_rows = mortgage.loan.rows_for_year(year)
         year_costs = cost_projection.annual_costs[year]
+        financial_year = _financial_year(mortgage.property.purchase_date, year)
 
-        # Derive financial year from purchase date + year offset
-        fy_year = mortgage.property.purchase_date.year + year + 1
-        financial_year = FinancialYear(fy_year)
-
-        # Grow tax profile for this year
-        grown_profile = _grow_tax_profile(mortgage.person.tax_profile, year)
+        # Tax profile for this year: grown income, HECS debt carried in and indexed
+        year_profile = _tax_profile_for_year(mortgage.person.tax_profile, year, hecs_balance)
 
         # Calculate tax deductions for this year
-        year_mortgage = replace(mortgage, person=Person(tax_profile=grown_profile))
+        year_mortgage = replace(mortgage, person=Person(tax_profile=year_profile))
         tax_deduction = build_tax_deduction_summary(
             mortgage=year_mortgage,
             year=year,
@@ -397,28 +509,27 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
 
         cashflow_year = _calculate_investment_cashflow_year(
             year=year,
-            tax_profile=grown_profile,
+            tax_profile=year_profile,
             schedule_rows=year_rows,
             ongoing_costs=year_costs,
             previous_cumulative=cumulative_cash_position,
             rentvest=mortgage.rentvest,
             tax_deduction_detail=tax_deduction,
+            opening_offset_balance=offset_balance,
+            closing_property_value=_closing_property_value(mortgage, year),
         )
         cumulative_cash_position = cashflow_year.cumulative_position
+        hecs_balance = cashflow_year.hecs_balance
+        offset_balance = cashflow_year.offset_balance
+        capital_works_claimed += tax_deduction.depreciation_building
+        cashflow_year.cgt_if_sold = _calculate_sale_cgt(
+            mortgage, year + 1, hecs_balance, upfront_costs.purchase_costs, capital_works_claimed
+        ).cgt_payable
         cashflow_years.append(cashflow_year)
 
-    # Calculate CGT at end of projection
-    sale_price = calculate_property_value(
-        mortgage.projection_years, mortgage.property.purchase_price, mortgage.property.annual_appreciation
-    )
-    sale_date = mortgage.property.purchase_date + timedelta(days=365 * mortgage.projection_years)
-    grown_profile = _grow_tax_profile(mortgage.person.tax_profile, mortgage.projection_years)
-    cgt = calculate_cgt(
-        property=mortgage.property,
-        sale_price=sale_price,
-        sale_date=sale_date,
-        tax_profile=grown_profile,
-        is_ppor=False,
+    # CGT on a sale at the end of the projection
+    cgt = _calculate_sale_cgt(
+        mortgage, mortgage.projection_years, hecs_balance, upfront_costs.purchase_costs, capital_works_claimed
     )
 
     return CashFlowRentvestResult(

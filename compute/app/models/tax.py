@@ -4,6 +4,8 @@ Tax domain models — raw tax inputs, derived measures, and engine output.
 
 from dataclasses import dataclass
 
+from app.config.tax import HECS_INDEXATION_RATE
+
 
 @dataclass
 class TaxInputs:
@@ -72,6 +74,7 @@ class TaxProfile:
         franking: Franking credits to apply as refundable tax offset
         sapto: Whether the taxpayer is eligible for SAPTO
         income_growth_rate: Annual salary/wage growth rate as decimal
+        hecs_indexation_rate: Annual HECS/HELP indexation rate as decimal
     """
 
     taxable_income: float
@@ -85,6 +88,7 @@ class TaxProfile:
     franking: float = 0.0
     sapto: bool = False
     income_growth_rate: float = 0.03
+    hecs_indexation_rate: float = HECS_INDEXATION_RATE
 
 
 @dataclass

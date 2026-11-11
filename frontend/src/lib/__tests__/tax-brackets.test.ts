@@ -5,8 +5,8 @@ describe("bracketBands", () => {
   it("splits $100k across the brackets and matches the engine's raw tax", () => {
     const bands = bracketBands(100_000);
     expect(bands.map((b) => b.income)).toEqual([18_200, 26_800, 55_000, 0, 0]);
-    // compute: 4,288 + (100,000 − 45,000) × 0.30 = 20,788
-    expect(bands.reduce((a, b) => a + b.tax, 0)).toBeCloseTo(20_788);
+    // compute (2026-27): 4,020 + (100,000 − 45,000) × 0.30 = 20,520
+    expect(bands.reduce((a, b) => a + b.tax, 0)).toBeCloseTo(20_520);
     expect(bands.map((b) => b.current)).toEqual([false, false, true, false, false]);
   });
 
