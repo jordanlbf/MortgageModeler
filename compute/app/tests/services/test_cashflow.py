@@ -1355,7 +1355,7 @@ class TestCashflowEdgeCases:
 
 
 def _hecs_profile(hecs_balance=30_000, indexation=0.0, taxable_income=120_000) -> TaxProfile:
-    """Flat $120k income repays $7,950 of HECS a year under the 2025-26 thresholds."""
+    """Flat $120k income repays $7,570.80 of HECS a year under the 2026-27 thresholds."""
     return TaxProfile(
         taxable_income=taxable_income,
         repayment_income=taxable_income,
@@ -1391,27 +1391,27 @@ class TestHecsPaydown:
         assert sum(y.hecs_repayment for y in result.years) == pytest.approx(30_000)
 
     def test_repayments_stop_once_debt_is_cleared(self):
-        """Three full $7,950 repayments, a $6,150 remainder, then nothing."""
+        """Three full $7,570.80 repayments, a $7,287.60 remainder, then nothing."""
         repayments = [y.hecs_repayment for y in self._ppor().years]
-        assert repayments[:4] == pytest.approx([7_950, 7_950, 7_950, 6_150])
+        assert repayments[:4] == pytest.approx([7_570.80, 7_570.80, 7_570.80, 7_287.60])
         assert repayments[4:] == [0] * 6
 
     def test_balance_runs_down_to_zero(self):
         balances = [y.hecs_balance for y in self._ppor().years]
-        assert balances[:4] == pytest.approx([22_050, 14_100, 6_150, 0])
+        assert balances[:4] == pytest.approx([22_429.20, 14_858.40, 7_287.60, 0])
         assert balances[-1] == 0
 
     def test_tax_matches_a_debt_free_profile_after_payoff(self):
         with_debt = self._ppor()
         debt_free = self._ppor(hecs_balance=0)
-        assert with_debt.years[0].income_tax == pytest.approx(debt_free.years[0].income_tax + 7_950)
+        assert with_debt.years[0].income_tax == pytest.approx(debt_free.years[0].income_tax + 7_570.80)
         assert with_debt.years[5].income_tax == pytest.approx(debt_free.years[5].income_tax)
 
     def test_indexation_applies_before_repayment(self):
         years = self._ppor(indexation=0.03).years
-        end_year_0 = 30_000 * 1.03 - 7_950
+        end_year_0 = 30_000 * 1.03 - 7_570.80
         assert years[0].hecs_balance == pytest.approx(end_year_0)
-        assert years[1].hecs_balance == pytest.approx(end_year_0 * 1.03 - 7_950)
+        assert years[1].hecs_balance == pytest.approx(end_year_0 * 1.03 - 7_570.80)
 
     def test_indexation_increases_total_repaid(self):
         result = self._ppor(indexation=0.03)
@@ -1426,7 +1426,7 @@ class TestHecsPaydown:
         """A negatively geared property's loss is added back to repayment income."""
         year = self._rentvest().years[0]
         assert year.tax_deduction_detail.net_rental_income < 0
-        assert year.hecs_repayment == pytest.approx(7_950)
+        assert year.hecs_repayment == pytest.approx(7_570.80)
 
     def test_rental_profit_increases_repayment(self):
         """A positively geared property's profit counts towards repayment income."""

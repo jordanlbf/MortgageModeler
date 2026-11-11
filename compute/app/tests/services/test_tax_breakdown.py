@@ -147,9 +147,9 @@ class TestBuildTaxBreakdown:
         assert result.taxable_income == 100_000
 
     def test_income_tax_at_100k(self):
-        """$100k: 4,288 + (100,000 - 45,000) * 0.30 = $20,788"""
+        """$100k: 4,020 + (100,000 - 45,000) * 0.30 = $20,520"""
         result = build_tax_breakdown(_make_profile(100_000))
-        assert result.income_tax == pytest.approx(20_788, abs=1)
+        assert result.income_tax == pytest.approx(20_520, abs=1)
 
     def test_medicare_levy_at_100k(self):
         """$100k * 0.02 = $2,000"""
@@ -245,9 +245,9 @@ class TestHecs:
     """Tests for HECS repayment component."""
 
     def test_hecs_repayment_with_balance(self):
-        """$100k income, $25k HECS: (100,000 - 67,000) * 0.15 = $4,950"""
+        """$100k income, $25k HECS: (100,000 - 69,528) * 0.15 = $4,570.80"""
         result = build_tax_breakdown(_make_profile(100_000, hecs_balance=25_000))
-        assert result.hecs_repayment == pytest.approx(4_950, abs=1)
+        assert result.hecs_repayment == pytest.approx(4_570.80, abs=0.01)
 
     def test_hecs_balance_caps_repayment(self):
         """$100k income, $1k HECS: capped at $1,000."""
@@ -355,10 +355,10 @@ class TestDivergentIncomes:
             has_private_health=False,
         )
         result = build_tax_breakdown(profile)
-        assert result.income_tax == pytest.approx(14_788, abs=1)
+        assert result.income_tax == pytest.approx(14_520, abs=1)  # 4,020 + 35,000 * 0.30
         assert result.medicare_levy == pytest.approx(1_600, abs=1)
-        assert result.hecs_repayment == pytest.approx(4_950, abs=1)
-        assert result.medicare_levy_surcharge == 0  # $100k < $101k threshold
+        assert result.hecs_repayment == pytest.approx(4_570.80, abs=0.01)  # 30,472 * 0.15
+        assert result.medicare_levy_surcharge == 0  # $100k <= $105k threshold
 
 
 # ──────────────────────────────────────────────
@@ -378,14 +378,14 @@ class TestHighIncome:
         assert result.hecs_repayment > 0
 
     def test_high_income_values(self):
-        """$200k: IT $56,138 + ML $4,000 + MLS $3,000 + HECS $20,000 = $83,138"""
+        """$200k: IT $55,870 + ML $4,000 + MLS $3,000 + HECS $20,000 = $82,870"""
         result = build_tax_breakdown(_make_profile(200_000, hecs_balance=50_000))
-        assert result.income_tax == pytest.approx(56_138, abs=1)
+        assert result.income_tax == pytest.approx(55_870, abs=1)
         assert result.medicare_levy == pytest.approx(4_000, abs=1)
         assert result.medicare_levy_surcharge == pytest.approx(3_000, abs=1)
         assert result.hecs_repayment == pytest.approx(20_000, abs=1)
-        assert result.total_tax == pytest.approx(83_138, abs=1)
-        assert result.net_income == pytest.approx(116_862, abs=1)
+        assert result.total_tax == pytest.approx(82_870, abs=1)
+        assert result.net_income == pytest.approx(117_130, abs=1)
 
 
 # ──────────────────────────────────────────────
@@ -407,10 +407,10 @@ class TestLitoInBreakdown:
         assert result.lito == 700
 
     def test_lito_reduces_income_tax(self):
-        """$30k: raw IT $1,888 − LITO $700 = $1,188."""
+        """$30k: raw IT $1,770 − LITO $700 = $1,070."""
         result = build_tax_breakdown(_make_profile(30_000))
         raw_it = calculate_income_tax(30_000)
-        assert raw_it == pytest.approx(1_888, abs=1)
+        assert raw_it == pytest.approx(1_770, abs=1)
         assert result.income_tax == pytest.approx(raw_it - 700, abs=1)
 
     def test_lito_phase_out_1(self):
@@ -533,9 +533,9 @@ class TestCombinedOffsets:
     """Tests for multiple offsets applied together."""
 
     def test_lito_plus_franking(self):
-        """$30k + $1k franking: raw IT $1,888 − LITO $700 = $1,188 − franking $1,000 = $188."""
+        """$30k + $1k franking: raw IT $1,770 − LITO $700 = $1,070 − franking $1,000 = $70."""
         result = build_tax_breakdown(_make_profile(30_000, franking=1_000))
-        assert result.income_tax == pytest.approx(188, abs=1)
+        assert result.income_tax == pytest.approx(70, abs=1)
         assert result.lito == 700
         assert result.franking_offset == 1_000
 

@@ -13169,7 +13169,7 @@ exports[`kitchen-sink sections > screen-tax matches its snapshot 1`] = `
             <p
               class="text-[13px] text-fg-tertiary"
             >
-              2025–26 financial year
+              2026–27 financial year
             </p>
           </div>
           <div
@@ -13844,7 +13844,7 @@ exports[`kitchen-sink sections > screen-tax matches its snapshot 1`] = `
             <p
               class="text-[13px] text-fg-tertiary"
             >
-              Each tax is cut from your taxable income in its own colour. Australian resident rates, 2025–26.
+              Each tax is cut from your taxable income in its own colour. Australian resident rates, 2026–27.
             </p>
           </div>
         </div>

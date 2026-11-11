@@ -76,9 +76,9 @@ class TestTaxBreakdownEndpoint:
         assert data["taxable_income"] == 100_000
 
     def test_default_income_tax(self):
-        """$100k: 4,288 + (100,000 - 45,000) * 0.30 = $20,788"""
+        """$100k: 4,020 + (100,000 - 45,000) * 0.30 = $20,520"""
         data = self._post().json()
-        assert data["income_tax"] == pytest.approx(20_788, abs=1)
+        assert data["income_tax"] == pytest.approx(20_520, abs=1)
 
     def test_default_medicare_levy(self):
         """$100k * 0.02 = $2,000"""
@@ -95,18 +95,18 @@ class TestTaxBreakdownEndpoint:
         assert data["hecs_repayment"] == 0
 
     def test_default_total_tax(self):
-        """IT $20,788 + ML $2,000 + MLS $0 + HECS $0 = $22,788"""
+        """IT $20,520 + ML $2,000 + MLS $0 + HECS $0 = $22,520"""
         data = self._post().json()
-        assert data["total_tax"] == pytest.approx(22_788, abs=1)
+        assert data["total_tax"] == pytest.approx(22_520, abs=1)
 
     def test_default_net_income(self):
-        """$100,000 - $22,788 = $77,212"""
+        """$100,000 - $22,520 = $77,480"""
         data = self._post().json()
-        assert data["net_income"] == pytest.approx(77_212, abs=1)
+        assert data["net_income"] == pytest.approx(77_480, abs=1)
 
     def test_default_effective_rate(self):
         data = self._post().json()
-        assert data["effective_rate"] == pytest.approx(22_788 / 100_000, abs=0.001)
+        assert data["effective_rate"] == pytest.approx(22_520 / 100_000, abs=0.001)
 
     # ── Net income = taxable_income - total_tax ─
 
@@ -126,9 +126,9 @@ class TestTaxBreakdownEndpoint:
     # ── With HECS ─────────────────────────────
 
     def test_hecs_repayment_with_balance(self):
-        """$100k income, $25k HECS: (100,000 - 67,000) * 0.15 = $4,950"""
+        """$100k income, $25k HECS: (100,000 - 69,528) * 0.15 = $4,570.80"""
         data = self._post_salary(100_000, hecs_bal=25_000).json()
-        assert data["hecs_repayment"] == pytest.approx(4_950, abs=1)
+        assert data["hecs_repayment"] == pytest.approx(4_570.80, abs=0.01)
 
     def test_hecs_zero_balance_no_repayment(self):
         data = self._post_salary(100_000, hecs_bal=0).json()
@@ -191,14 +191,14 @@ class TestTaxBreakdownEndpoint:
         assert data["hecs_repayment"] > 0
 
     def test_high_income_values(self):
-        """$200k: IT $56,138 + ML $4,000 + MLS $3,000 + HECS $20,000 = $83,138"""
+        """$200k: IT $55,870 + ML $4,000 + MLS $3,000 + HECS $20,000 = $82,870"""
         data = self._post_salary(200_000, hecs_bal=50_000, phi=False).json()
-        assert data["income_tax"] == pytest.approx(56_138, abs=1)
+        assert data["income_tax"] == pytest.approx(55_870, abs=1)
         assert data["medicare_levy"] == pytest.approx(4_000, abs=1)
         assert data["medicare_levy_surcharge"] == pytest.approx(3_000, abs=1)
         assert data["hecs_repayment"] == pytest.approx(20_000, abs=1)
-        assert data["total_tax"] == pytest.approx(83_138, abs=1)
-        assert data["net_income"] == pytest.approx(116_862, abs=1)
+        assert data["total_tax"] == pytest.approx(82_870, abs=1)
+        assert data["net_income"] == pytest.approx(117_130, abs=1)
 
     # ── Negative gearing via inputs ───────────
 
@@ -214,8 +214,8 @@ class TestTaxBreakdownEndpoint:
         assert data["taxable_income"] == 60_000
         assert data["net_investment_loss"] == 20_000
         assert data["repayment_income"] == 80_000
-        # Raw IT $8,788 − LITO $100 (at $60k: $325 − $15k × 0.015) = $8,688
-        assert data["income_tax"] == pytest.approx(8_688, abs=1)
+        # Raw IT $8,520 (4,020 + 15,000 × 0.30) − LITO $100 (at $60k: $325 − $15k × 0.015) = $8,420
+        assert data["income_tax"] == pytest.approx(8_420, abs=1)
         assert data["lito"] == pytest.approx(100, abs=1)
         assert data["medicare_levy"] == pytest.approx(1_200, abs=1)
 
@@ -275,7 +275,7 @@ class TestTaxBreakdownEndpoint:
         """$30k salary: LITO $700 reduces income tax."""
         data = self._post_salary(30_000).json()
         assert data["lito"] == 700
-        assert data["income_tax"] == pytest.approx(1_888 - 700, abs=1)
+        assert data["income_tax"] == pytest.approx(1_770 - 700, abs=1)
 
     def test_lito_zero_at_high_income(self):
         data = self._post_salary(100_000).json()
@@ -290,12 +290,12 @@ class TestTaxBreakdownEndpoint:
         assert data["sapto_offset"] == 2_230
 
     def test_franking_offset_applied(self):
-        """$100k salary + $3k franking: assessable $103k, TI $103k, raw IT $21,688 − franking $3k = $18,688."""
+        """$100k salary + $3k franking: assessable $103k, TI $103k, raw IT $21,420 − franking $3k = $18,420."""
         data = self._post(income={"salary": 100_000, "franking": 3_000}).json()
         assert data["assessable_income"] == 103_000
         assert data["franking_offset"] == 3_000
-        # Raw IT at $103k: 4,288 + (103,000 - 45,000) * 0.30 = $21,688, no LITO (>$66,667)
-        assert data["income_tax"] == pytest.approx(21_688 - 3_000, abs=1)
+        # Raw IT at $103k: 4,020 + (103,000 - 45,000) * 0.30 = $21,420, no LITO (>$66,667)
+        assert data["income_tax"] == pytest.approx(21_420 - 3_000, abs=1)
 
     def test_franking_refund_via_api(self):
         """$20k salary + $5k franking: produces negative income tax (refund)."""

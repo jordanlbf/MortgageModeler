@@ -23,6 +23,9 @@ from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
 from app.models.property import YearCost
 
+# Capital works are claimed at 2.5% a year for 40 years.
+DIV43_CLAIM_YEARS = 40
+
 
 def _calculate_days_held_in_fy(
     purchase_date: date,
@@ -53,6 +56,23 @@ def _calculate_days_held_in_fy(
         days_held = min(days_held, (expiry_date - financial_year.start_date).days)
 
     return max(days_held, 0)
+
+
+def _add_years(start: date, years: int) -> date:
+    """
+    The same day `years` later, or 28 February when 29 February doesn't exist that year.
+
+    Args:
+        start: Starting date
+        years: Whole years to add
+
+    Returns:
+        The date `years` after `start`
+    """
+    try:
+        return start.replace(year=start.year + years)
+    except ValueError:
+        return start.replace(year=start.year + years, day=28)
 
 
 def _calculate_ongoing_expenses(ongoing_costs: YearCost) -> float:
@@ -86,7 +106,10 @@ def _calculate_building_depreciation(
     Calculate total Division 43 building depreciation for the financial year.
 
     Checks each building for eligibility (post-1987 construction) and
-    expiry (40 years from purchase), then calculates pro-rata deduction.
+    expiry, then calculates pro-rata deduction. The 40 years run from
+    construction, not from when this owner bought it, so an older building has
+    fewer years left. The ATO counts from completion; only the construction start
+    date is known here, so the claim ends up to a construction period early.
 
     Args:
         buildings: List of depreciable buildings on the property
@@ -99,7 +122,7 @@ def _calculate_building_depreciation(
     for building in buildings:
         if not is_building_depreciable(building.construction_start_date):
             continue
-        expiry = building.purchase_date.replace(year=building.purchase_date.year + 40)
+        expiry = _add_years(building.construction_start_date, DIV43_CLAIM_YEARS)
         days_held = _calculate_days_held_in_fy(building.purchase_date, expiry, financial_year)
         if days_held <= 0:
             continue

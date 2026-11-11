@@ -47,7 +47,12 @@ def calculate_cost_base(
 
 
 def calculate_cgt(
-    property: Property, sale_price: float, sale_date: date, tax_profile: TaxProfile, is_ppor: bool
+    property: Property,
+    sale_price: float,
+    sale_date: date,
+    tax_profile: TaxProfile,
+    is_ppor: bool,
+    capital_works_deductions: float = 0.0,
 ) -> CGTResult:
     """
     Calculate the CGT liability for a property sale.
@@ -58,11 +63,14 @@ def calculate_cgt(
         sale_date: Date of the property sale
         tax_profile: Tax profile of the seller (income, deductions, etc.)
         is_ppor: Whether the property is a PPOR (CGT-exempt)
+        capital_works_deductions: Division 43 deductions claimable while it was held. For
+            property acquired after 13 May 1997 these can't be in the cost base, so they
+            come off it (ato.gov.au: cost-base-adjustments-for-capital-works).
 
     Returns:
         CGTResult with cost base, capital gain, discounts, and tax payable
     """
-    cost_base = calculate_cost_base(property)
+    cost_base = max(0.0, calculate_cost_base(property) - capital_works_deductions)
 
     if is_ppor:
         return CGTResult(

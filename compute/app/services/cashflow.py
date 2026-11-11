@@ -8,7 +8,7 @@ CashFlowYear entries, then computes the projection summary.
 """
 
 from dataclasses import replace
-from datetime import timedelta
+from datetime import date, timedelta
 
 from app.engine.cgt import calculate_cgt
 from app.engine.property import calculate_property_value
@@ -197,6 +197,7 @@ def _calculate_sale_cgt(
     years_held: int,
     hecs_balance: float,
     purchase_costs: PurchaseCosts | None = None,
+    capital_works_deductions: float = 0.0,
 ) -> CGTResult:
     """
     Calculate the CGT payable if the investment property were sold after a number of years.
@@ -207,6 +208,8 @@ def _calculate_sale_cgt(
         hecs_balance: HECS/HELP debt outstanding at the time of sale
         purchase_costs: Resolved purchase costs for the cost base, so auto-estimated
             costs (e.g. stamp duty) are included. Defaults to the property's own.
+        capital_works_deductions: Building depreciation claimed up to the sale, which
+            comes off the cost base
 
     Returns:
         CGTResult for a sale at that point
@@ -222,7 +225,24 @@ def _calculate_sale_cgt(
         sale_date=sale_date,
         tax_profile=_grow_tax_profile(mortgage.person.tax_profile, years_held, hecs_balance=hecs_balance),
         is_ppor=False,
+        capital_works_deductions=capital_works_deductions,
     )
+
+
+def _financial_year(purchase_date: date, year: int) -> FinancialYear:
+    """
+    The financial year a projection year is taxed in. Year 0 is the one the
+    purchase falls in, so a purchase in March starts with that June's part-year.
+
+    Args:
+        purchase_date: Date the property was bought
+        year: Projection year (0 = purchase year)
+
+    Returns:
+        FinancialYear for the projection year
+    """
+    first = purchase_date.year + 1 if purchase_date.month >= 7 else purchase_date.year
+    return FinancialYear(first + year)
 
 
 def _calculate_cashflow_year(
@@ -468,14 +488,12 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
     cumulative_cash_position = -upfront_costs.total_cash_at_settlement
     hecs_balance = mortgage.person.tax_profile.hecs_balance
     offset_balance = mortgage.loan.config.offset_balance
+    capital_works_claimed = 0.0
     cashflow_years = []
     for year in range(mortgage.projection_years):
         year_rows = mortgage.loan.rows_for_year(year)
         year_costs = cost_projection.annual_costs[year]
-
-        # Derive financial year from purchase date + year offset
-        fy_year = mortgage.property.purchase_date.year + year + 1
-        financial_year = FinancialYear(fy_year)
+        financial_year = _financial_year(mortgage.property.purchase_date, year)
 
         # Tax profile for this year: grown income, HECS debt carried in and indexed
         year_profile = _tax_profile_for_year(mortgage.person.tax_profile, year, hecs_balance)
@@ -503,13 +521,16 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
         cumulative_cash_position = cashflow_year.cumulative_position
         hecs_balance = cashflow_year.hecs_balance
         offset_balance = cashflow_year.offset_balance
+        capital_works_claimed += tax_deduction.depreciation_building
         cashflow_year.cgt_if_sold = _calculate_sale_cgt(
-            mortgage, year + 1, hecs_balance, upfront_costs.purchase_costs
+            mortgage, year + 1, hecs_balance, upfront_costs.purchase_costs, capital_works_claimed
         ).cgt_payable
         cashflow_years.append(cashflow_year)
 
     # CGT on a sale at the end of the projection
-    cgt = _calculate_sale_cgt(mortgage, mortgage.projection_years, hecs_balance, upfront_costs.purchase_costs)
+    cgt = _calculate_sale_cgt(
+        mortgage, mortgage.projection_years, hecs_balance, upfront_costs.purchase_costs, capital_works_claimed
+    )
 
     return CashFlowRentvestResult(
         projection_years=mortgage.projection_years,

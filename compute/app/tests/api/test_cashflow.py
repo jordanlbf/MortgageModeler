@@ -941,7 +941,7 @@ class TestTaxProfileDefaults:
 
     def test_hecs_repaid_when_repayment_income_omitted(self):
         data = client.post("/api/cashflow/ppor", json=self._payload(hecs_balance=30_000)).json()
-        assert data["years"][0]["hecs_repayment"] == pytest.approx(7_950)
+        assert data["years"][0]["hecs_repayment"] == pytest.approx(7_570.80)
 
     def test_omitted_incomes_match_explicit_taxable_income(self):
         omitted = client.post("/api/cashflow/ppor", json=self._payload(hecs_balance=30_000)).json()
@@ -964,9 +964,9 @@ class TestTaxProfileDefaults:
         indexed = client.post(
             "/api/cashflow/ppor", json=self._payload(hecs_balance=30_000, hecs_indexation_rate=0.05)
         ).json()
-        assert flat["years"][0]["hecs_balance"] == pytest.approx(30_000 - 7_950)
-        assert indexed["years"][0]["hecs_balance"] == pytest.approx(30_000 * 1.05 - 7_950)
+        assert flat["years"][0]["hecs_balance"] == pytest.approx(30_000 - 7_570.80)
+        assert indexed["years"][0]["hecs_balance"] == pytest.approx(30_000 * 1.05 - 7_570.80)
 
     def test_hecs_indexation_defaults_to_configured_rate(self):
         data = client.post("/api/cashflow/ppor", json=self._payload(hecs_balance=30_000)).json()
-        assert data["years"][0]["hecs_balance"] == pytest.approx(30_000 * (1 + HECS_INDEXATION_RATE) - 7_950)
+        assert data["years"][0]["hecs_balance"] == pytest.approx(30_000 * (1 + HECS_INDEXATION_RATE) - 7_570.80)

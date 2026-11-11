@@ -12,7 +12,6 @@ across all four mode × property_use combinations:
 from dataclasses import replace
 
 from app.models.cashflow import CashFlowSingleResult
-from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
 from app.models.person import Person
 from app.services.cashflow import (
@@ -23,6 +22,7 @@ from app.services.cashflow import (
     _calculate_investment_cashflow_year,
     _calculate_sale_cgt,
     _closing_property_value,
+    _financial_year,
     _tax_profile_for_year,
 )
 from app.services.ongoing_costs import build_ongoing_cost_projection
@@ -68,6 +68,7 @@ def build_single_cashflow(
     # Year-by-year projection
     hecs_balance = mortgage.person.tax_profile.hecs_balance
     offset_balance = mortgage.loan.config.offset_balance
+    capital_works_claimed = 0.0
     cashflow_years = []
     for year in range(mortgage.projection_years):
         year_rows = mortgage.loan.rows_for_year(year)
@@ -75,9 +76,7 @@ def build_single_cashflow(
         year_profile = _tax_profile_for_year(mortgage.person.tax_profile, year, hecs_balance)
 
         if is_investment:
-            # Derive financial year from purchase date + year offset
-            fy_year = mortgage.property.purchase_date.year + year + 1
-            financial_year = FinancialYear(fy_year)
+            financial_year = _financial_year(mortgage.property.purchase_date, year)
 
             # Calculate tax deductions for this year
             year_mortgage = replace(mortgage, person=Person(tax_profile=year_profile))
@@ -98,8 +97,9 @@ def build_single_cashflow(
                 opening_offset_balance=offset_balance,
                 closing_property_value=_closing_property_value(mortgage, year),
             )
+            capital_works_claimed += tax_deduction.depreciation_building
             cashflow_year.cgt_if_sold = _calculate_sale_cgt(
-                mortgage, year + 1, cashflow_year.hecs_balance, purchase_costs
+                mortgage, year + 1, cashflow_year.hecs_balance, purchase_costs, capital_works_claimed
             ).cgt_payable
         else:
             cashflow_year = _calculate_cashflow_year(
@@ -120,7 +120,9 @@ def build_single_cashflow(
     # CGT only for investment properties
     cgt = None
     if is_investment:
-        cgt = _calculate_sale_cgt(mortgage, mortgage.projection_years, hecs_balance, purchase_costs)
+        cgt = _calculate_sale_cgt(
+            mortgage, mortgage.projection_years, hecs_balance, purchase_costs, capital_works_claimed
+        )
 
     # Build appropriate summary
     if is_investment:

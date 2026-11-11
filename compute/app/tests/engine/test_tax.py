@@ -45,38 +45,38 @@ class TestIncomeTax:
 
     def test_income_boundary_threshold(self):
         """Test taxable income at the boundary of tax brackets."""
-        # Using 2025-26 Australian tax brackets for reference
+        # 2026-27 resident rates (ato.gov.au)
         assert calculate_income_tax(18200) == 0
-        assert calculate_income_tax(18201) == 0.16  # 1 dollar over threshold
-        assert calculate_income_tax(45000) == 4288  # 45000 - 18200 = 26800 * 0.16
-        assert calculate_income_tax(45001) == 4288 + 0.3  # 1 dollar over threshold
-        assert calculate_income_tax(135000) == 31_288  # 135000 - 45000 = 90000 * 0.3 + 4288
-        assert calculate_income_tax(135001) == 31_288 + 0.37  # 1 dollar over threshold
-        assert calculate_income_tax(190000) == 51_638  # 190000 - 135000 = 55000 * 0.37 + 31288
-        assert calculate_income_tax(190001) == 51_638 + 0.45  # 1 dollar over threshold
+        assert calculate_income_tax(18201) == pytest.approx(0.15)  # 1 dollar over threshold
+        assert calculate_income_tax(45000) == pytest.approx(4_020)  # 26,800 * 0.15
+        assert calculate_income_tax(45001) == pytest.approx(4_020 + 0.3)  # 1 dollar over threshold
+        assert calculate_income_tax(135000) == pytest.approx(31_020)  # 4,020 + 90,000 * 0.30
+        assert calculate_income_tax(135001) == pytest.approx(31_020 + 0.37)  # 1 dollar over threshold
+        assert calculate_income_tax(190000) == pytest.approx(51_370)  # 31,020 + 55,000 * 0.37
+        assert calculate_income_tax(190001) == pytest.approx(51_370 + 0.45)  # 1 dollar over threshold
 
     def test_income_mid_boundaries(self):
         """Test taxable income within each bracket."""
         assert calculate_income_tax(12_345) == pytest.approx(0, abs=0.1)  # Below first threshold
-        assert calculate_income_tax(30_000) == pytest.approx(1_888, abs=0.1)  # 1st <> 2nd bracket
-        assert calculate_income_tax(66_666) == pytest.approx(10_787.8, abs=0.1)  # 2nd <> 3rd bracket
-        assert calculate_income_tax(145_145) == pytest.approx(35_041.65, abs=0.1)  # 3rd <> 4th bracket
-        assert calculate_income_tax(1_000_000) == pytest.approx(416_138, abs=0.1)  # Above last threshold
+        assert calculate_income_tax(30_000) == pytest.approx(1_770, abs=0.1)  # 11,800 * 0.15
+        assert calculate_income_tax(66_666) == pytest.approx(10_519.8, abs=0.1)  # 4,020 + 21,666 * 0.30
+        assert calculate_income_tax(145_145) == pytest.approx(34_773.65, abs=0.1)  # 31,020 + 10,145 * 0.37
+        assert calculate_income_tax(1_000_000) == pytest.approx(415_870, abs=0.1)  # 51,370 + 810,000 * 0.45
 
     def test_income_tax_fractional_income(self):
         """Test fractional taxable income."""
-        assert calculate_income_tax(45_000.50) == pytest.approx(4288 + 0.3 * 0.50, abs=0.1)
+        assert calculate_income_tax(45_000.50) == pytest.approx(4_020 + 0.3 * 0.50, abs=0.1)
 
     def test_income_tax_large_income(self):
         """Test very large taxable income."""
-        assert calculate_income_tax(10_000_000) == pytest.approx(4_466_138, abs=0.1)
+        assert calculate_income_tax(10_000_000) == pytest.approx(4_465_870, abs=0.1)  # 51,370 + 9,810,000 * 0.45
 
     def test_income_tax_edge_case(self):
         """Test edge case where taxable income is exactly at the threshold."""
         assert calculate_income_tax(18_200) == 0
-        assert calculate_income_tax(45_000) == 4288
-        assert calculate_income_tax(135_000) == 31_288
-        assert calculate_income_tax(190_000) == 51_638
+        assert calculate_income_tax(45_000) == pytest.approx(4_020)
+        assert calculate_income_tax(135_000) == pytest.approx(31_020)
+        assert calculate_income_tax(190_000) == pytest.approx(51_370)
 
 
 class TestMedicareLevyTax:
@@ -93,12 +93,12 @@ class TestMedicareLevyTax:
 
     def test_medicare_levy_phase_in(self):
         """Taxable income between lower and upper threshold should yield phased-in Medicare levy."""
-        assert calculate_medicare_levy(30_000) == pytest.approx((30_000 - 27_222) * 0.10, abs=0.1)
-        assert calculate_medicare_levy(33_000) == pytest.approx((33_000 - 27_222) * 0.10, abs=0.1)
+        assert calculate_medicare_levy(30_000) == pytest.approx((30_000 - 28_011) * 0.10, abs=0.1)
+        assert calculate_medicare_levy(35_000) == pytest.approx((35_000 - 28_011) * 0.10, abs=0.1)
 
     def test_medicare_levy_above_threshold(self):
         """Taxable income above upper threshold should yield full Medicare levy."""
-        assert calculate_medicare_levy(35_000) == pytest.approx(35_000 * 0.02, abs=0.1)
+        assert calculate_medicare_levy(36_000) == pytest.approx(36_000 * 0.02, abs=0.1)
         assert calculate_medicare_levy(100_000) == pytest.approx(100_000 * 0.02, abs=0.1)
 
     def test_medicare_levy_negative_income(self):
@@ -107,8 +107,8 @@ class TestMedicareLevyTax:
 
     def test_medicare_levy_exact_thresholds(self):
         """Test taxable income exactly at thresholds."""
-        assert calculate_medicare_levy(27_222) == 0
-        assert calculate_medicare_levy(34_027) == pytest.approx(34_027 * 0.02, abs=0.1)
+        assert calculate_medicare_levy(28_011) == 0
+        assert calculate_medicare_levy(35_013) == pytest.approx(35_013 * 0.02, abs=0.1)
 
 
 class TestMedicareLevySurchargeTax:
@@ -128,7 +128,7 @@ class TestMedicareLevySurchargeTax:
 
     def test_medicare_levy_surcharge_above_threshold(self):
         """MLS income above third threshold should yield 1.5% surcharge."""
-        assert calculate_medicare_levy_surcharge(160_000, False) == pytest.approx(160_000 * 0.015, abs=0.1)
+        assert calculate_medicare_levy_surcharge(170_000, False) == pytest.approx(170_000 * 0.015, abs=0.1)
         assert calculate_medicare_levy_surcharge(200_000, False) == pytest.approx(200_000 * 0.015, abs=0.1)
 
     def test_medicare_levy_surcharge_negative_income(self):
@@ -137,9 +137,9 @@ class TestMedicareLevySurchargeTax:
 
     def test_medicare_levy_surcharge_exact_thresholds(self):
         """Test MLS income exactly at thresholds."""
-        assert calculate_medicare_levy_surcharge(101_000, False) == 0
-        assert calculate_medicare_levy_surcharge(118_000, False) == pytest.approx(118_000 * 0.01, abs=0.1)
-        assert calculate_medicare_levy_surcharge(158_000, False) == pytest.approx(158_000 * 0.0125, abs=0.1)
+        assert calculate_medicare_levy_surcharge(105_000, False) == 0
+        assert calculate_medicare_levy_surcharge(123_000, False) == pytest.approx(123_000 * 0.01, abs=0.1)
+        assert calculate_medicare_levy_surcharge(164_000, False) == pytest.approx(164_000 * 0.0125, abs=0.1)
 
     def test_medicare_levy_surcharge_zero_income(self):
         """Zero MLS income should yield zero surcharge."""
@@ -147,15 +147,15 @@ class TestMedicareLevySurchargeTax:
 
     def test_medicare_levy_surcharge_just_below_threshold(self):
         """MLS income just below thresholds should yield correct surcharge."""
-        assert calculate_medicare_levy_surcharge(100_999, False) == 0
-        assert calculate_medicare_levy_surcharge(117_999, False) == pytest.approx(117_999 * 0.01, abs=0.1)
-        assert calculate_medicare_levy_surcharge(157_999, False) == pytest.approx(157_999 * 0.0125, abs=0.1)
+        assert calculate_medicare_levy_surcharge(104_999, False) == 0
+        assert calculate_medicare_levy_surcharge(122_999, False) == pytest.approx(122_999 * 0.01, abs=0.1)
+        assert calculate_medicare_levy_surcharge(163_999, False) == pytest.approx(163_999 * 0.0125, abs=0.1)
 
     def test_medicare_levy_surcharge_just_above_threshold(self):
         """MLS income just above thresholds should yield correct surcharge."""
-        assert calculate_medicare_levy_surcharge(101_001, False) == pytest.approx(101_001 * 0.01, abs=0.1)
-        assert calculate_medicare_levy_surcharge(118_001, False) == pytest.approx(118_001 * 0.0125, abs=0.1)
-        assert calculate_medicare_levy_surcharge(158_001, False) == pytest.approx(158_001 * 0.015, abs=0.1)
+        assert calculate_medicare_levy_surcharge(105_001, False) == pytest.approx(105_001 * 0.01, abs=0.1)
+        assert calculate_medicare_levy_surcharge(123_001, False) == pytest.approx(123_001 * 0.0125, abs=0.1)
+        assert calculate_medicare_levy_surcharge(164_001, False) == pytest.approx(164_001 * 0.015, abs=0.1)
 
     def test_medicare_levy_surcharge_large_income(self):
         """Test very large MLS income."""
@@ -190,21 +190,25 @@ class TestHecsTax:
 
     def test_hecs_at_exact_threshold(self):
         """Test HECS income at exact thresholds"""
-        assert calculate_hecs_repayment(67_000, float("inf")) == pytest.approx(0, abs=0.1)  # 1st Threshold
-        assert calculate_hecs_repayment(125_000, float("inf")) == pytest.approx(8_700, abs=0.1)  # 2nd Threshold
-        assert calculate_hecs_repayment(179_285, float("inf")) == pytest.approx(17_928.45, abs=0.1)  # 3nd Threshold
+        # 2026-27 table (ato.gov.au)
+        assert calculate_hecs_repayment(69_528, float("inf")) == pytest.approx(0, abs=0.01)  # 1st threshold
+        # The published table steps by 35c here: the first band reaches 60,189 * 0.15 = $9,028.35,
+        # and the second starts from its own published base of $9,028.
+        assert calculate_hecs_repayment(129_717, float("inf")) == pytest.approx(9_028.35, abs=0.01)
+        assert calculate_hecs_repayment(129_718, float("inf")) == pytest.approx(9_028.17, abs=0.01)
+        # 3rd: 9,028 + 56,333 * 0.17
+        assert calculate_hecs_repayment(186_050, float("inf")) == pytest.approx(18_604.61, abs=0.01)
 
     def test_hecs_mid_thresholds(self):
         """Test HECS income inbetween thresholds"""
-        assert calculate_hecs_repayment(80_000, float("inf")) == pytest.approx(1_950, abs=0.1)  # 1st <> 2nd Thresholds
-        assert calculate_hecs_repayment(150_000, float("inf")) == pytest.approx(
-            12_950, abs=0.1
-        )  # 2nd <> 3rd Thresholds
+        assert calculate_hecs_repayment(80_000, float("inf")) == pytest.approx(1_570.80, abs=0.01)  # 10,472 * 0.15
+        # 9,028 + 20,283 * 0.17
+        assert calculate_hecs_repayment(150_000, float("inf")) == pytest.approx(12_476.11, abs=0.01)
 
     def test_hecs_above_threshold(self):
         """Test HECS above max threshold"""
-        assert calculate_hecs_repayment(179_286, float("inf")) == pytest.approx(17_928.6, abs=0.1)
-        for i in range(180_000, 1_000_000, 25_000):
+        assert calculate_hecs_repayment(186_051, float("inf")) == pytest.approx(18_605.10, abs=0.01)
+        for i in range(190_000, 1_000_000, 25_000):
             assert calculate_hecs_repayment(i, float("inf")) == pytest.approx(
                 i / 10, abs=0.1
             )  # 10% above max threshold
@@ -251,13 +255,13 @@ class TestMarginalRate:
         assert calculate_marginal_rate(18_200) == 0.0
 
     def test_just_above_tax_free(self):
-        assert calculate_marginal_rate(18_201) == 0.16
+        assert calculate_marginal_rate(18_201) == 0.15
 
     def test_second_bracket(self):
-        assert calculate_marginal_rate(30_000) == 0.16
+        assert calculate_marginal_rate(30_000) == 0.15
 
     def test_at_second_threshold(self):
-        assert calculate_marginal_rate(45_000) == 0.16
+        assert calculate_marginal_rate(45_000) == 0.15
 
     def test_just_above_second_threshold(self):
         assert calculate_marginal_rate(45_001) == 0.30
@@ -300,10 +304,10 @@ class TestTotalTax:
     # ── Income tax only (below Medicare threshold) ──────
 
     def test_total_tax_low_income_no_medicare(self):
-        """Income between tax-free and Medicare thresholds: income tax only."""
-        # IT: (20,000 - 18,200) * 0.16 = $288
-        # ML: below $27,222 -> $0
-        assert calculate_total_tax(_tp(20_000, phi=True)) == pytest.approx(288, abs=0.1)
+        """Income between tax-free and Medicare thresholds: the low income offset clears the income tax."""
+        # IT: (20,000 - 18,200) * 0.15 = $270, less LITO $700 -> $0 (can't go below zero)
+        # ML: below $28,011 -> $0
+        assert calculate_total_tax(_tp(20_000, phi=True)) == pytest.approx(0, abs=0.1)
 
     def test_total_tax_below_tax_free_threshold(self):
         """Income below $18,200 should yield zero total tax."""
@@ -313,36 +317,36 @@ class TestTotalTax:
 
     def test_total_tax_medicare_phase_in(self):
         """Income in Medicare phase-in range."""
-        # IT: (30,000 - 18,200) * 0.16 = $1,888
-        # ML: (30,000 - 27,222) * 0.10 = $277.80
-        assert calculate_total_tax(_tp(30_000, phi=True)) == pytest.approx(2_165.80, abs=0.1)
+        # IT: (30,000 - 18,200) * 0.15 = $1,770, less LITO $700 = $1,070
+        # ML: (30,000 - 28,011) * 0.10 = $198.90
+        assert calculate_total_tax(_tp(30_000, phi=True)) == pytest.approx(1_268.90, abs=0.1)
 
     # ── Typical salary, no HECS, has private health ─────
 
     def test_total_tax_typical_salary_private_health(self):
         """$100k salary, private health, no HECS."""
-        # IT: 4,288 + (100,000 - 45,000) * 0.30 = $20,788
+        # IT: 4,020 + (100,000 - 45,000) * 0.30 = $20,520 (no LITO above $66,667)
         # ML: 100,000 * 0.02 = $2,000
         # MLS: skipped (has private health)
         # HECS: balance 0 -> $0
-        assert calculate_total_tax(_tp(100_000, phi=True)) == pytest.approx(22_788, abs=0.1)
+        assert calculate_total_tax(_tp(100_000, phi=True)) == pytest.approx(22_520, abs=0.1)
 
     # ── Typical salary, no HECS, no private health ──────
 
     def test_total_tax_no_private_health_below_mls(self):
         """$100k salary, no private health, below MLS threshold."""
-        # IT: $20,788
+        # IT: $20,520
         # ML: $2,000
-        # MLS: 100,000 <= 101,000 -> $0
-        assert calculate_total_tax(_tp(100_000)) == pytest.approx(22_788, abs=0.1)
+        # MLS: 100,000 <= 105,000 -> $0
+        assert calculate_total_tax(_tp(100_000)) == pytest.approx(22_520, abs=0.1)
 
     def test_total_tax_no_private_health_above_mls(self):
         """$120k salary, no private health, triggers MLS."""
-        # IT: 4,288 + (120,000 - 45,000) * 0.30 = $26,788
+        # IT: 4,020 + (120,000 - 45,000) * 0.30 = $26,520
         # ML: 120,000 * 0.02 = $2,400
-        # MLS: 120,000 > 118,000 -> 120,000 * 0.0125 = $1,500
+        # MLS: 105,000 < 120,000 <= 123,000 -> 120,000 * 0.01 = $1,200
         # HECS: balance 0 -> $0
-        assert calculate_total_tax(_tp(120_000)) == pytest.approx(30_688, abs=0.1)
+        assert calculate_total_tax(_tp(120_000)) == pytest.approx(30_120, abs=0.1)
 
     # ── Private health toggle ───────────────────────────
 
@@ -350,41 +354,41 @@ class TestTotalTax:
         """Private health should eliminate MLS component only."""
         no_phi = calculate_total_tax(_tp(120_000))
         with_phi = calculate_total_tax(_tp(120_000, phi=True))
-        # Difference should be exactly the MLS: 120,000 * 0.0125 = $1,500
-        assert no_phi - with_phi == pytest.approx(1_500, abs=0.1)
+        # Difference should be exactly the MLS: 120,000 * 0.01 = $1,200
+        assert no_phi - with_phi == pytest.approx(1_200, abs=0.1)
 
     # ── With HECS ───────────────────────────────────────
 
     def test_total_tax_with_hecs(self):
         """$100k salary with HECS balance."""
-        # IT: $20,788
+        # IT: $20,520
         # ML: $2,000
-        # MLS: 100,000 <= 101,000 -> $0
-        # HECS: (100,000 - 67,000) * 0.15 = $4,950
-        assert calculate_total_tax(_tp(100_000, hecs_bal=25_000, phi=True)) == pytest.approx(27_738, abs=0.1)
+        # MLS: skipped (has private health)
+        # HECS: (100,000 - 69,528) * 0.15 = $4,570.80
+        assert calculate_total_tax(_tp(100_000, hecs_bal=25_000, phi=True)) == pytest.approx(27_090.80, abs=0.1)
 
     def test_total_tax_hecs_above_top_threshold(self):
         """$200k salary with HECS, above top HECS threshold."""
-        # IT: 51,638 + (200,000 - 190,000) * 0.45 = $56,138
+        # IT: 51,370 + (200,000 - 190,000) * 0.45 = $55,870
         # ML: 200,000 * 0.02 = $4,000
         # MLS: 200,000 * 0.015 = $3,000 (no private health)
         # HECS: 200,000 * 0.10 = $20,000
-        assert calculate_total_tax(_tp(200_000, hecs_bal=50_000)) == pytest.approx(83_138, abs=0.1)
+        assert calculate_total_tax(_tp(200_000, hecs_bal=50_000)) == pytest.approx(82_870, abs=0.1)
 
     def test_total_tax_hecs_balance_caps_repayment(self):
         """HECS repayment should be capped at remaining balance."""
-        # IT at $150k: 4,288 + 27,000 + (150,000 - 135,000) * 0.37 = $36,838
+        # IT at $150k: 31,020 + (150,000 - 135,000) * 0.37 = $36,570
         # ML: 150,000 * 0.02 = $3,000
         # MLS: skipped (has private health)
-        # HECS: min(12,950, 5,000) = $5,000
-        assert calculate_total_tax(_tp(150_000, hecs_bal=5_000, phi=True)) == pytest.approx(44_838, abs=0.1)
+        # HECS: min(12,476.11, 5,000) = $5,000
+        assert calculate_total_tax(_tp(150_000, hecs_bal=5_000, phi=True)) == pytest.approx(44_570, abs=0.1)
 
     def test_total_tax_hecs_zero_balance(self):
         """Zero HECS balance should contribute nothing."""
         with_hecs = calculate_total_tax(_tp(100_000, hecs_bal=25_000, phi=True))
         without_hecs = calculate_total_tax(_tp(100_000, phi=True))
         assert with_hecs > without_hecs
-        assert without_hecs == pytest.approx(22_788, abs=0.1)
+        assert without_hecs == pytest.approx(22_520, abs=0.1)
 
     # ── Divergent incomes (negative gearing scenario) ───
 
@@ -392,12 +396,12 @@ class TestTotalTax:
         """TI differs from RI/MLSI (e.g., $20k rental loss added back for RI/MLSI)."""
         # TI: $80,000 (salary $100k minus $20k rental loss)
         # RI/MLSI: $100,000 (loss added back)
-        # IT: 4,288 + (80,000 - 45,000) * 0.30 = $14,788
+        # IT: 4,020 + (80,000 - 45,000) * 0.30 = $14,520
         # ML: 80,000 * 0.02 = $1,600
-        # MLS: 100,000 <= 101,000 -> $0
-        # HECS: (100,000 - 67,000) * 0.15 = $4,950
+        # MLS: 100,000 <= 105,000 -> $0
+        # HECS: (100,000 - 69,528) * 0.15 = $4,570.80
         assert calculate_total_tax(_tp(80_000, ri=100_000, mlsi=100_000, hecs_bal=25_000)) == pytest.approx(
-            21_338, abs=0.1
+            20_690.80, abs=0.1
         )
 
     def test_total_tax_negative_gearing_reduces_tax(self):
@@ -411,11 +415,11 @@ class TestTotalTax:
 
     def test_total_tax_all_components(self):
         """High income, no private health, has HECS — all components contribute."""
-        # IT at $160k: 4,288 + 27,000 + (160,000 - 135,000) * 0.37 = $40,538
+        # IT at $160k: 31,020 + (160,000 - 135,000) * 0.37 = $40,270
         # ML: 160,000 * 0.02 = $3,200
-        # MLS: 160,000 > 158,000 -> 160,000 * 0.015 = $2,400
-        # HECS: 8,700 + (160,000 - 125,000) * 0.17 = $14,650
-        assert calculate_total_tax(_tp(160_000, hecs_bal=50_000)) == pytest.approx(60_788, abs=0.1)
+        # MLS: 123,000 < 160,000 <= 164,000 -> 160,000 * 0.0125 = $2,000
+        # HECS: 9,028 + (160,000 - 129,717) * 0.17 = $14,176.11
+        assert calculate_total_tax(_tp(160_000, hecs_bal=50_000)) == pytest.approx(59_646.11, abs=0.1)
 
     # ── Sum of components verification ──────────────────
 
@@ -423,7 +427,7 @@ class TestTotalTax:
         """Total tax should equal the sum of individual component functions."""
         ti, ri, mlsi, hecs_bal, phi = 130_000, 140_000, 135_000, 30_000, False
         expected = (
-            calculate_income_tax(ti)
+            max(0, calculate_income_tax(ti) - calculate_lito(ti))
             + calculate_medicare_levy(ti)
             + calculate_medicare_levy_surcharge(mlsi, phi)
             + calculate_hecs_repayment(ri, hecs_bal)
@@ -436,7 +440,7 @@ class TestTotalTax:
         """Sum of components verification with private health."""
         ti, ri, mlsi, hecs_bal, phi = 180_000, 180_000, 180_000, 10_000, True
         expected = (
-            calculate_income_tax(ti)
+            max(0, calculate_income_tax(ti) - calculate_lito(ti))
             + calculate_medicare_levy(ti)
             + calculate_medicare_levy_surcharge(mlsi, phi)
             + calculate_hecs_repayment(ri, hecs_bal)
@@ -449,16 +453,16 @@ class TestTotalTax:
 
     def test_total_tax_very_large_income(self):
         """$1M income, all components."""
-        # IT: 51,638 + (1,000,000 - 190,000) * 0.45 = $416,138
+        # IT: 51,370 + (1,000,000 - 190,000) * 0.45 = $415,870
         # ML: 1,000,000 * 0.02 = $20,000
         # MLS: 1,000,000 * 0.015 = $15,000
         # HECS: 1,000,000 * 0.10 = $100,000
-        assert calculate_total_tax(_tp(1_000_000, hecs_bal=200_000)) == pytest.approx(551_138, abs=0.1)
+        assert calculate_total_tax(_tp(1_000_000, hecs_bal=200_000)) == pytest.approx(550_870, abs=0.1)
 
     def test_total_tax_very_large_income_hecs_capped(self):
         """$1M income but small HECS balance."""
         # Same as above but HECS capped at $5,000 instead of $100,000
-        assert calculate_total_tax(_tp(1_000_000, hecs_bal=5_000)) == pytest.approx(456_138, abs=0.1)
+        assert calculate_total_tax(_tp(1_000_000, hecs_bal=5_000)) == pytest.approx(455_870, abs=0.1)
 
 
 class TestInputValidation:
@@ -715,18 +719,17 @@ class TestCalculateSapto:
 
     def test_large_loss_pushes_into_lower_bracket(self):
         """A large rental loss can push TI into a lower tax bracket, yielding a bigger saving."""
-        # Base TI of $50k sits in the 30% bracket; a $10k loss pulls part into 16% bracket
+        # Base TI of $50k sits in the 30% bracket; a $10k loss pulls part into the 15% bracket
         tp = _tp(50_000, phi=True)
         small_loss_saving = calculate_tax_saving(tp, -5_000)
         large_loss_saving = calculate_tax_saving(tp, -10_000)
         assert large_loss_saving > small_loss_saving
 
-        # Verify the large loss crosses the bracket boundary (45k)
-        # $50k - $10k = $40k (fully in 16% bracket), so marginal rate on last $5k drops from 30% to 16%
-        # small: 5000 * 0.30 = $1500 saving (all in 30% bracket)
-        # large: 5000 * 0.30 + 5000 * 0.16 = $2300 saving (crosses into 16% bracket)
-        # Also account for Medicare levy reduction
-        assert large_loss_saving == pytest.approx(5_000 * 0.30 + 5_000 * 0.16 + 10_000 * 0.02, abs=1)
+        # $50k - $10k = $40k, so the marginal rate on the last $5k drops from 30% to 15%
+        # Income tax: 5,000 * 0.30 + 5,000 * 0.15 = $2,250
+        # LITO rises from $250 (at $50k) to $575 (at $40k): another $325 off
+        # Medicare levy: 10,000 * 0.02 = $200
+        assert large_loss_saving == pytest.approx(5_000 * 0.30 + 5_000 * 0.15 + 325 + 10_000 * 0.02, abs=1)
 
     def test_hecs_interaction_with_rental_income(self):
         """HECS repayment should not change when there is a rental loss (loss added back to RI)."""
@@ -752,9 +755,9 @@ class TestCalculateSapto:
         # Only IT + ML reduction: 10,000 * 0.30 + 10,000 * 0.02 = $3,200
         assert loss_saving == pytest.approx(3_200, abs=1)
 
-        # Profit: MLSI increases from $120k to $130k (both in 1.25% tier)
-        # MLS at $120k: 120,000 * 0.0125 = $1,500; MLS at $130k: 130,000 * 0.0125 = $1,625 => extra MLS = $125
+        # Profit: MLSI increases from $120k (1% tier) to $130k (1.25% tier)
+        # MLS at $120k: 120,000 * 0.01 = $1,200; MLS at $130k: 130,000 * 0.0125 = $1,625 => extra MLS = $425
         # IT increase: 10,000 * 0.30 = $3,000; ML increase: 10,000 * 0.02 = $200
-        # Total extra tax = $3,000 + $200 + $125 = $3,325 => saving = -$3,325
+        # Total extra tax = $3,000 + $200 + $425 = $3,625 => saving = -$3,625
         profit_saving = calculate_tax_saving(tp, 10_000)
-        assert profit_saving == pytest.approx(-3_325, abs=1)
+        assert profit_saving == pytest.approx(-3_625, abs=1)

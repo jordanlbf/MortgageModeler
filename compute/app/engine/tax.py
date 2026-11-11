@@ -5,7 +5,8 @@ All functions are pure — no side effects or external dependencies.
 """
 
 from app.config.tax import (
-    HECS_THRESHOLDS,
+    HECS_BANDS,
+    HECS_TOP_RATE,
     HECS_TOP_THRESHOLD,
     LITO_FULL_THRESHOLD,
     LITO_MAX_OFFSET,
@@ -108,8 +109,10 @@ def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> fl
     """
     Calculate annual HECS/HELP repayment based on repayment income.
 
-    Uses marginal thresholds up to HECS_TOP_THRESHOLD, then 10% of total
-    repayment income above that. The result is capped at the remaining balance.
+    Follows the ATO's published table: nil below the first band, then a base
+    amount plus a rate on the income over each band's start, and above
+    HECS_TOP_THRESHOLD a flat rate on all repayment income. The result is
+    capped at the remaining balance.
 
     Args:
         repayment_income: Taxable income plus reportable fringe benefits etc.
@@ -118,22 +121,15 @@ def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> fl
     Returns:
         Annual HECS repayment (capped at hecs_balance)
     """
-    repayment_owing = 0.0
-    prev_threshold = 0
-    for threshold, rate in HECS_THRESHOLDS:
-        if repayment_income < threshold:
-            repayment_owing += (repayment_income - prev_threshold) * rate
-            break
-        else:
-            repayment_owing += (threshold - prev_threshold) * rate
-        prev_threshold = threshold
-
-    # Above max threshold, it becomes 10% of total RI, not marginal
-    # Need to add 5 cents to bring marginal rates up to exactly 10%
     if repayment_income > HECS_TOP_THRESHOLD:
-        repayment_owing += 0.05
+        repayment_owing = repayment_income * HECS_TOP_RATE
+    else:
+        repayment_owing = 0.0
+        for over, base, rate in HECS_BANDS:
+            if repayment_income > over:
+                repayment_owing = base + rate * (repayment_income - over)
 
-    return min(repayment_owing, hecs_balance)
+    return max(0.0, min(repayment_owing, hecs_balance))
 
 
 def index_hecs_balance(hecs_balance: float, indexation_rate: float) -> float:
@@ -231,8 +227,9 @@ def calculate_total_tax(tax_profile: TaxProfile) -> float:
     """
     Calculate total tax owing.
 
-    Sums income tax, Medicare levy, Medicare Levy Surcharge, and HECS repayment,
-    using the correct income measure for each component.
+    Sums income tax (less the low income tax offset, which can't take it below
+    zero), Medicare levy, Medicare Levy Surcharge, and HECS repayment, using
+    the correct income measure for each component.
 
     Args:
         tax_profile: Taxpayer configuration with all income measures
@@ -240,8 +237,10 @@ def calculate_total_tax(tax_profile: TaxProfile) -> float:
     Returns:
         Total tax owing (sum of all components)
     """
+    income_tax = calculate_income_tax(tax_profile.taxable_income)
+    income_tax_after_lito = max(0.0, income_tax - calculate_lito(tax_profile.taxable_income))
     return (
-        calculate_income_tax(tax_profile.taxable_income)
+        income_tax_after_lito
         + calculate_medicare_levy(tax_profile.taxable_income)
         + calculate_medicare_levy_surcharge(tax_profile.mls_income, tax_profile.has_private_health)
         + calculate_hecs_repayment(tax_profile.repayment_income, tax_profile.hecs_balance)

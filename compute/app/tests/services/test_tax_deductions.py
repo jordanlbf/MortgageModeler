@@ -459,10 +459,12 @@ class TestDiv43InService:
         assert result.depreciation_building == pytest.approx(12_500, abs=1)
 
     def test_building_expired(self):
-        """Building purchased 41 years ago — expired, zero depreciation."""
-        building = _make_building(cost=400_000, purchase_date=date(1980, 1, 1))
-        prop = _make_property(purchase_date=date(1980, 1, 1), buildings=[building])
-        fy = FinancialYear(2025)
+        """Construction began 1 Jan 1988, so its 40 years ran out on 1 Jan 2028: nothing to claim in 2028-29."""
+        building = _make_building(
+            cost=400_000, purchase_date=date(1990, 1, 1), construction_start_date=date(1988, 1, 1)
+        )
+        prop = _make_property(purchase_date=date(1990, 1, 1), buildings=[building])
+        fy = FinancialYear(2029)
         result = build_tax_deduction_summary(
             mortgage=_make_mortgage(property=prop, loan=_make_loan_with_interest(0)),
             year=0,
@@ -946,10 +948,30 @@ class TestCalculateBuildingDepreciation:
         assert result == 0.0
 
     def test_expired_building(self):
-        building = _make_building(cost=400_000, purchase_date=date(1980, 1, 1))
-        fy = FinancialYear(2025)
+        """The 40 years run from construction (1988), so by 2028-29 they're used up."""
+        building = _make_building(
+            cost=400_000, purchase_date=date(1990, 1, 1), construction_start_date=date(1988, 1, 1)
+        )
+        fy = FinancialYear(2029)
         result = _calculate_building_depreciation([building], fy)
         assert result == 0.0
+
+    def test_bought_late_in_its_life_claims_only_what_is_left(self):
+        """Built 1 Jan 1988, bought 2020: the claim stops on 1 Jan 2028, half-way through 2027-28."""
+        building = _make_building(
+            cost=400_000, purchase_date=date(2020, 1, 1), construction_start_date=date(1988, 1, 1)
+        )
+        result = _calculate_building_depreciation([building], FinancialYear(2028))
+        # 1 July 2027 to 1 January 2028 is 184 days of a 366-day year
+        assert result == pytest.approx(400_000 * 0.025 * 184 / 366)
+
+    def test_built_after_purchase_runs_forty_years_from_construction(self):
+        """A building finished in 2019 is still claimed in full in 2024-25, whenever it was bought."""
+        building = _make_building(
+            cost=400_000, purchase_date=date(2019, 6, 1), construction_start_date=date(2019, 1, 1)
+        )
+        result = _calculate_building_depreciation([building], FinancialYear(2025))
+        assert result == pytest.approx(10_000)
 
     def test_empty_list(self):
         assert _calculate_building_depreciation([], FinancialYear(2025)) == 0.0
