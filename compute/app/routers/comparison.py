@@ -83,4 +83,6 @@ def get_comparison(req: ComparisonRequest) -> ComparisonResponse:
         difference=result.difference,
         break_even_year=result.break_even_year,
         by_year=result.by_year,
+        ppor_net_wealth=result.ppor_net_wealth,
+        rentvest_net_wealth=result.rentvest_net_wealth,
     )

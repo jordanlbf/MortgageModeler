@@ -6,6 +6,7 @@ from datetime import date
 
 import pytest
 
+from app.engine.tax import calculate_hecs_repayment
 from app.models.amortisation import AmortisationSchedule, ScheduleRow
 from app.models.cashflow import CashFlowYear, CashFlowYearInvestment
 from app.models.deductions import DepreciableBuilding, PropertyTaxDeductionSummary
@@ -319,6 +320,17 @@ class TestGrowTaxProfile:
         profile = _make_tax_profile(hecs_balance=25_000, income_growth_rate=0.05)
         grown = _grow_tax_profile(profile, 5)
         assert grown.hecs_balance == 25_000
+
+    def test_hecs_balance_can_be_overridden(self):
+        """A carried-forward HECS balance replaces the base profile's balance."""
+        profile = _make_tax_profile(hecs_balance=25_000)
+        grown = _grow_tax_profile(profile, 5, hecs_balance=4_000)
+        assert grown.hecs_balance == 4_000
+
+    def test_hecs_indexation_rate_preserved(self):
+        profile = _make_tax_profile(hecs_balance=25_000)
+        profile.hecs_indexation_rate = 0.045
+        assert _grow_tax_profile(profile, 3).hecs_indexation_rate == 0.045
 
     def test_private_health_preserved(self):
         profile = _make_tax_profile(has_private_health=True)
@@ -1335,3 +1347,244 @@ class TestCashflowEdgeCases:
         assert result.years[4].tax_deduction_detail.borrowing_costs_deduction > 0
         # Year 5 (6th year) should have zero
         assert result.years[5].tax_deduction_detail.borrowing_costs_deduction == 0
+
+
+# ──────────────────────────────────────────────
+# HECS/HELP paydown and indexation
+# ──────────────────────────────────────────────
+
+
+def _hecs_profile(hecs_balance=30_000, indexation=0.0, taxable_income=120_000) -> TaxProfile:
+    """Flat $120k income repays $7,950 of HECS a year under the 2025-26 thresholds."""
+    return TaxProfile(
+        taxable_income=taxable_income,
+        repayment_income=taxable_income,
+        mls_income=taxable_income,
+        hecs_balance=hecs_balance,
+        has_private_health=True,
+        income_growth_rate=0.0,
+        hecs_indexation_rate=indexation,
+    )
+
+
+class TestHecsPaydown:
+    """HECS/HELP debt should be indexed, repaid and cleared across the projection."""
+
+    def _ppor(self, projection_years=10, **profile):
+        return build_ppor_cashflow(
+            _make_mortgage(tax_profile=_hecs_profile(**profile), projection_years=projection_years)
+        )
+
+    def _rentvest(self, weekly_rent=450, annual_rate=0.06, projection_years=10, **profile):
+        return build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=False, weekly_rent=weekly_rent),
+                tax_profile=_hecs_profile(**profile),
+                loan=_make_loan(annual_rate=annual_rate),
+                rentvest=_make_rentvest(),
+                projection_years=projection_years,
+            )
+        )
+
+    def test_total_repaid_equals_debt_without_indexation(self):
+        result = self._ppor()
+        assert sum(y.hecs_repayment for y in result.years) == pytest.approx(30_000)
+
+    def test_repayments_stop_once_debt_is_cleared(self):
+        """Three full $7,950 repayments, a $6,150 remainder, then nothing."""
+        repayments = [y.hecs_repayment for y in self._ppor().years]
+        assert repayments[:4] == pytest.approx([7_950, 7_950, 7_950, 6_150])
+        assert repayments[4:] == [0] * 6
+
+    def test_balance_runs_down_to_zero(self):
+        balances = [y.hecs_balance for y in self._ppor().years]
+        assert balances[:4] == pytest.approx([22_050, 14_100, 6_150, 0])
+        assert balances[-1] == 0
+
+    def test_tax_matches_a_debt_free_profile_after_payoff(self):
+        with_debt = self._ppor()
+        debt_free = self._ppor(hecs_balance=0)
+        assert with_debt.years[0].income_tax == pytest.approx(debt_free.years[0].income_tax + 7_950)
+        assert with_debt.years[5].income_tax == pytest.approx(debt_free.years[5].income_tax)
+
+    def test_indexation_applies_before_repayment(self):
+        years = self._ppor(indexation=0.03).years
+        end_year_0 = 30_000 * 1.03 - 7_950
+        assert years[0].hecs_balance == pytest.approx(end_year_0)
+        assert years[1].hecs_balance == pytest.approx(end_year_0 * 1.03 - 7_950)
+
+    def test_indexation_increases_total_repaid(self):
+        result = self._ppor(indexation=0.03)
+        assert sum(y.hecs_repayment for y in result.years) > 30_000
+        assert result.years[-1].hecs_balance == 0
+
+    def test_no_debt_means_no_repayment(self):
+        result = self._ppor(hecs_balance=0, indexation=0.03)
+        assert all(y.hecs_repayment == 0 and y.hecs_balance == 0 for y in result.years)
+
+    def test_rental_loss_does_not_change_repayment(self):
+        """A negatively geared property's loss is added back to repayment income."""
+        year = self._rentvest().years[0]
+        assert year.tax_deduction_detail.net_rental_income < 0
+        assert year.hecs_repayment == pytest.approx(7_950)
+
+    def test_rental_profit_increases_repayment(self):
+        """A positively geared property's profit counts towards repayment income."""
+        year = self._rentvest(weekly_rent=1_500, annual_rate=0.02).years[0]
+        profit = year.tax_deduction_detail.net_rental_income
+        assert profit > 0
+        assert year.hecs_repayment == pytest.approx(calculate_hecs_repayment(120_000 + profit, 30_000))
+        assert year.hecs_balance == pytest.approx(30_000 - year.hecs_repayment)
+
+    def test_rentvest_debt_is_cleared(self):
+        result = self._rentvest()
+        assert sum(y.hecs_repayment for y in result.years) == pytest.approx(30_000)
+        assert result.years[-1].hecs_balance == 0
+
+    def test_sale_cgt_ignores_a_cleared_debt(self):
+        """Once the debt is repaid, the capital gain triggers no extra HECS repayment."""
+        with_debt = self._rentvest()
+        debt_free = self._rentvest(hecs_balance=0)
+        assert with_debt.cgt.cgt_payable == pytest.approx(debt_free.cgt.cgt_payable)
+
+
+# ──────────────────────────────────────────────
+# Offset account contributions
+# ──────────────────────────────────────────────
+
+
+class TestOffsetContributions:
+    """Offset contributions should reconcile with the offset balance every year."""
+
+    def _loan(self, loan_term_years=30) -> LoanConfig:
+        return LoanConfig(
+            deposit=100_000,
+            annual_rate=0.06,
+            loan_term_years=loan_term_years,
+            offset_balance=20_000,
+            offset_contribution=500,
+            borrowing_costs=BorrowingCosts(lmi=0.0, mortgage_registration_fee=0.0, loan_establishment_fee=0.0),
+        )
+
+    def test_every_contribution_is_counted(self):
+        """The schedule's first contribution lands in period 2, so year 0 has eleven."""
+        result = build_ppor_cashflow(_make_mortgage(loan=self._loan(), projection_years=5))
+        contributions = [y.offset_contributions for y in result.years]
+        assert contributions == pytest.approx([5_500, 6_000, 6_000, 6_000, 6_000])
+
+    def test_contributions_reconcile_with_offset_balance(self):
+        result = build_ppor_cashflow(_make_mortgage(loan=self._loan(), projection_years=5))
+        total = sum(y.offset_contributions for y in result.years)
+        assert result.years[-1].offset_balance == pytest.approx(20_000 + total)
+
+    def test_rentvest_counts_every_contribution(self):
+        result = build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=False, weekly_rent=450),
+                loan=self._loan(),
+                rentvest=_make_rentvest(),
+                projection_years=3,
+            )
+        )
+        assert [y.offset_contributions for y in result.years] == pytest.approx([5_500, 6_000, 6_000])
+
+    def test_offset_balance_kept_after_the_schedule_ends(self):
+        """Projecting past the loan term should not drop the offset balance from net wealth."""
+        result = build_ppor_cashflow(_make_mortgage(loan=self._loan(loan_term_years=2), projection_years=4))
+        end_of_loan = result.years[1].offset_balance
+        assert end_of_loan > 20_000
+        assert result.years[2].offset_balance == pytest.approx(end_of_loan)
+        assert result.years[3].offset_balance == pytest.approx(end_of_loan)
+        assert result.years[3].offset_contributions == 0
+
+    def test_year_uses_opening_offset_balance(self):
+        rows = [_make_schedule_row(period=i + 1, offset_balance=9_500 + 500 * i) for i in range(12)]
+        year = _calculate_cashflow_year(
+            year=1,
+            tax_profile=_make_tax_profile(),
+            schedule_rows=rows,
+            ongoing_costs=_make_year_cost(),
+            previous_cumulative=0,
+            opening_offset_balance=9_000,
+        )
+        assert year.offset_contributions == pytest.approx(6_000)
+        assert year.offset_balance == pytest.approx(15_000)
+
+
+# ──────────────────────────────────────────────
+# Net wealth and total tax
+# ──────────────────────────────────────────────
+
+
+class TestNetWealth:
+    """Net wealth has one definition: equity + cumulative cash + offset balance."""
+
+    def test_year_net_wealth_includes_offset_balance(self):
+        year = _make_cashflow_year(offset_balance=10_000)
+        assert year.net_wealth == pytest.approx(year.equity + year.cumulative_position + 10_000)
+
+    def test_summary_net_wealth_matches_final_year(self):
+        loan = LoanConfig(
+            deposit=100_000,
+            annual_rate=0.06,
+            loan_term_years=30,
+            offset_balance=20_000,
+            offset_contribution=500,
+            borrowing_costs=BorrowingCosts(lmi=0.0, mortgage_registration_fee=0.0, loan_establishment_fee=0.0),
+        )
+        result = build_ppor_cashflow(_make_mortgage(loan=loan, projection_years=5))
+        last = result.years[-1]
+        assert last.offset_balance > 0
+        assert result.summary.net_wealth == pytest.approx(last.net_wealth)
+        assert result.summary.net_wealth == pytest.approx(
+            result.summary.final_equity + last.cumulative_position + last.offset_balance
+        )
+
+    def test_investment_net_wealth_after_cgt(self):
+        year = _make_investment_cashflow_year()
+        year.cgt_if_sold = 12_000
+        assert year.net_wealth_after_cgt == pytest.approx(year.net_wealth - 12_000)
+
+    def test_ppor_total_tax_paid(self):
+        result = build_ppor_cashflow(_make_mortgage(projection_years=5))
+        assert result.summary.total_tax_paid == pytest.approx(sum(y.income_tax for y in result.years))
+
+    def test_rentvest_total_tax_paid_is_net_of_tax_saving(self):
+        result = build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=False, weekly_rent=450),
+                rentvest=_make_rentvest(),
+                projection_years=5,
+            )
+        )
+        assert result.summary.total_tax_saving != 0
+        assert result.summary.total_tax_paid == pytest.approx(
+            sum(y.income_tax - y.tax_saving for y in result.years)
+        )
+
+
+class TestCgtIfSold:
+    """Each investment year carries the CGT payable on a sale at the end of that year."""
+
+    def _build(self, projection_years=5):
+        return build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=False, weekly_rent=450),
+                rentvest=_make_rentvest(),
+                projection_years=projection_years,
+            )
+        )
+
+    def test_final_year_matches_projection_cgt(self):
+        result = self._build()
+        assert result.years[-1].cgt_if_sold == pytest.approx(result.cgt.cgt_payable)
+
+    def test_grows_as_the_property_appreciates(self):
+        cgt = [y.cgt_if_sold for y in self._build(projection_years=8).years]
+        assert all(later > earlier for earlier, later in zip(cgt[1:], cgt[2:]))
+
+    def test_shorter_projection_matches_same_year_of_longer_one(self):
+        """Selling after 3 years costs the same CGT whether or not the projection runs longer."""
+        assert self._build(projection_years=8).years[2].cgt_if_sold == pytest.approx(
+            self._build(projection_years=3).cgt.cgt_payable
+        )

@@ -5,6 +5,7 @@ Tests for API Cashflow endpoints — PPOR and rentvesting.
 import pytest
 from fastapi.testclient import TestClient
 
+from app.config.tax import HECS_INDEXATION_RATE
 from app.main import app
 
 client = TestClient(app)
@@ -123,6 +124,7 @@ class TestPporEndpointStructure:
             "final_equity",
             "average_annual_net",
             "net_wealth",
+            "total_tax_paid",
         }
         assert set(data["summary"].keys()) == expected_fields
 
@@ -150,6 +152,10 @@ class TestPporEndpointStructure:
             "offset_balance",
             "salary",
             "income_tax",
+            "hecs_repayment",
+            "hecs_balance",
+            "net_wealth",
+            "cgt_if_sold",
             "ongoing_costs_detail",
             "tax_deduction_detail",
         }
@@ -640,7 +646,7 @@ class TestSingleEndpointStructure:
             "total_income", "total_outflows", "total_interest_paid",
             "total_rent_paid", "total_rental_income", "total_tax_saving",
             "final_property_value", "final_loan_balance", "final_equity",
-            "average_annual_net", "net_wealth",
+            "average_annual_net", "net_wealth", "total_tax_paid",
         }
         assert set(data["summary"].keys()) == expected
 
@@ -652,7 +658,8 @@ class TestSingleEndpointStructure:
             "offset_contributions", "rent_paid", "rental_income", "tax_saving",
             "total_outflows", "net_position", "cumulative_position",
             "property_value", "loan_balance", "equity", "offset_balance",
-            "salary", "income_tax", "ongoing_costs_detail", "tax_deduction_detail",
+            "salary", "income_tax", "hecs_repayment", "hecs_balance", "net_wealth", "cgt_if_sold",
+            "ongoing_costs_detail", "tax_deduction_detail",
         }
         assert set(data["years"][0].keys()) == expected
 
@@ -914,3 +921,49 @@ class TestExistingEndpointsStable:
     def test_rentvest_scenario_unchanged(self):
         data = client.post("/api/cashflow/rentvest", json=_rentvest_payload()).json()
         assert data["scenario"] == "rentvesting"
+
+
+# ──────────────────────────────────────────────
+# Tax profile defaults and HECS fields
+# ──────────────────────────────────────────────
+
+
+class TestTaxProfileDefaults:
+    """Repayment income and MLS income fall back to taxable income when omitted."""
+
+    def _payload(self, **tax_profile):
+        payload = _ppor_payload()
+        payload["tax_profile"] = {"taxable_income": 120_000, "has_private_health": False, **tax_profile}
+        return payload
+
+    def test_hecs_repaid_when_repayment_income_omitted(self):
+        data = client.post("/api/cashflow/ppor", json=self._payload(hecs_balance=30_000)).json()
+        assert data["years"][0]["hecs_repayment"] == pytest.approx(7_950)
+
+    def test_omitted_incomes_match_explicit_taxable_income(self):
+        omitted = client.post("/api/cashflow/ppor", json=self._payload(hecs_balance=30_000)).json()
+        explicit = client.post(
+            "/api/cashflow/ppor",
+            json=self._payload(hecs_balance=30_000, repayment_income=120_000, mls_income=120_000),
+        ).json()
+        assert omitted["years"][0]["income_tax"] == pytest.approx(explicit["years"][0]["income_tax"])
+
+    def test_explicit_zero_repayment_income_is_respected(self):
+        data = client.post(
+            "/api/cashflow/ppor", json=self._payload(hecs_balance=30_000, repayment_income=0)
+        ).json()
+        assert data["years"][0]["hecs_repayment"] == 0
+
+    def test_hecs_indexation_rate_is_configurable(self):
+        flat = client.post(
+            "/api/cashflow/ppor", json=self._payload(hecs_balance=30_000, hecs_indexation_rate=0)
+        ).json()
+        indexed = client.post(
+            "/api/cashflow/ppor", json=self._payload(hecs_balance=30_000, hecs_indexation_rate=0.05)
+        ).json()
+        assert flat["years"][0]["hecs_balance"] == pytest.approx(30_000 - 7_950)
+        assert indexed["years"][0]["hecs_balance"] == pytest.approx(30_000 * 1.05 - 7_950)
+
+    def test_hecs_indexation_defaults_to_configured_rate(self):
+        data = client.post("/api/cashflow/ppor", json=self._payload(hecs_balance=30_000)).json()
+        assert data["years"][0]["hecs_balance"] == pytest.approx(30_000 * (1 + HECS_INDEXATION_RATE) - 7_950)

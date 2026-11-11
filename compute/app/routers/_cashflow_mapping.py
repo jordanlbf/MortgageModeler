@@ -5,6 +5,7 @@ Maps Pydantic request schemas to domain models and domain models back
 to Pydantic response schemas. Used by both cashflow and comparison routers.
 """
 
+from app.config.tax import HECS_INDEXATION_RATE
 from app.models.deductions import DepreciableAsset, DepreciableBuilding
 from app.models.loan import BorrowingCosts, LoanConfig, RateChange
 from app.models.property import OngoingCostsConfig, Property, PurchaseCosts, RentalConfig
@@ -31,14 +32,22 @@ from app.schemas.cashflow_single import (
 
 
 def build_tax_profile(req: CashFlowPPORRequest) -> TaxProfile:
-    """Map TaxProfileRequest to TaxProfile domain model."""
+    """Map TaxProfileRequest to TaxProfile domain model.
+
+    Repayment income and MLS income fall back to taxable income when omitted,
+    and HECS indexation falls back to the configured default rate.
+    """
+    tp = req.tax_profile
     return TaxProfile(
-        taxable_income=req.tax_profile.taxable_income,
-        repayment_income=req.tax_profile.repayment_income,
-        mls_income=req.tax_profile.mls_income,
-        hecs_balance=req.tax_profile.hecs_balance,
-        has_private_health=req.tax_profile.has_private_health,
-        income_growth_rate=req.tax_profile.income_growth_rate,
+        taxable_income=tp.taxable_income,
+        repayment_income=tp.taxable_income if tp.repayment_income is None else tp.repayment_income,
+        mls_income=tp.taxable_income if tp.mls_income is None else tp.mls_income,
+        hecs_balance=tp.hecs_balance,
+        has_private_health=tp.has_private_health,
+        income_growth_rate=tp.income_growth_rate,
+        hecs_indexation_rate=(
+            HECS_INDEXATION_RATE if tp.hecs_indexation_rate is None else tp.hecs_indexation_rate
+        ),
     )
 
 
@@ -154,6 +163,10 @@ def map_year_response(year) -> CashFlowYearResponse:
         offset_balance=year.offset_balance,
         salary=year.salary,
         income_tax=year.income_tax,
+        hecs_repayment=year.hecs_repayment,
+        hecs_balance=year.hecs_balance,
+        net_wealth=year.net_wealth,
+        cgt_if_sold=year.cgt_if_sold if isinstance(year, CashFlowYearInvestment) else 0.0,
         ongoing_costs_detail=OngoingCostsDetailResponse(
             council_rates=d.council_rates,
             water_rates=d.water_rates,
@@ -193,6 +206,7 @@ def map_summary_response(summary) -> CashFlowSummaryResponse:
         final_equity=summary.final_equity,
         average_annual_net=summary.average_annual_net,
         net_wealth=summary.net_wealth,
+        total_tax_paid=summary.total_tax_paid,
     )
 
 

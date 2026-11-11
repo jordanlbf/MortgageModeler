@@ -32,6 +32,10 @@ HECS_THRESHOLDS = [
 ]
 HECS_TOP_THRESHOLD = 179_285
 
+# HECS/HELP debts are indexed each 1 June by the lower of CPI and WPI.
+# Default long-run assumption used for projections; callers can override it.
+HECS_INDEXATION_RATE = 0.03
+
 # ──────────────────────────────────────────────
 # 2025-26 Medicare Levy (ML) Thresholds
 # Based on Taxable Income (TI)

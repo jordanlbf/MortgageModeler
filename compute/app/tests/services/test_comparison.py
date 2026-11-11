@@ -278,10 +278,9 @@ class TestWealthCalculation:
 
         for i in range(len(result.ppor.years)):
             ppor_nw = _net_wealth_for_year(result.ppor.years[i])
-            rentvest_nw = _net_wealth_for_year(result.rentvest.years[i])
-            # CGT subtracted from rentvest final year only
-            if i == len(result.ppor.years) - 1:
-                rentvest_nw -= result.rentvest.cgt.cgt_payable
+            # Rentvest wealth is after the CGT payable if sold that year
+            rentvest_year = result.rentvest.years[i]
+            rentvest_nw = _net_wealth_for_year(rentvest_year) - rentvest_year.cgt_if_sold
             assert result.by_year[i] == pytest.approx(ppor_nw - rentvest_nw)
 
     def test_difference_equals_abs_final_delta(self):
@@ -297,16 +296,34 @@ class TestWealthCalculation:
         else:
             assert result.winner == "rentvesting"
 
-    def test_cgt_only_affects_final_year(self):
-        """CGT should only be subtracted from the last year's rentvest wealth."""
+    def test_cgt_applies_in_every_year(self):
+        """Rentvest wealth should be after CGT in every year, not just the last."""
         ppor, rentvest = _build_pair(projection_years=5)
         result = build_ppor_vs_rentvest(ppor, rentvest)
 
-        # For non-final years, delta should match raw wealth difference
-        for i in range(len(result.ppor.years) - 1):
-            ppor_nw = _net_wealth_for_year(result.ppor.years[i])
-            rentvest_nw = _net_wealth_for_year(result.rentvest.years[i])
-            assert result.by_year[i] == pytest.approx(ppor_nw - rentvest_nw)
+        for i, year in enumerate(result.rentvest.years):
+            assert year.cgt_if_sold > 0
+            assert result.rentvest_net_wealth[i] == pytest.approx(_net_wealth_for_year(year) - year.cgt_if_sold)
+
+    def test_final_year_cgt_matches_projection_cgt(self):
+        """The last year's CGT should be the CGT reported for the whole projection."""
+        ppor, rentvest = _build_pair(projection_years=5)
+        result = build_ppor_vs_rentvest(ppor, rentvest)
+        assert result.rentvest.years[-1].cgt_if_sold == pytest.approx(result.rentvest.cgt.cgt_payable)
+
+    def test_final_year_has_no_cgt_cliff(self):
+        """The wealth gap should not jump in the final year from CGT landing all at once."""
+        ppor, rentvest = _build_pair(projection_years=10)
+        result = build_ppor_vs_rentvest(ppor, rentvest)
+        steps = [b - a for a, b in zip(result.by_year, result.by_year[1:])]
+        assert abs(steps[-1]) < 2 * abs(steps[-2])
+
+    def test_net_wealth_series_returned(self):
+        ppor, rentvest = _build_pair(projection_years=5)
+        result = build_ppor_vs_rentvest(ppor, rentvest)
+        assert len(result.ppor_net_wealth) == 5
+        assert len(result.rentvest_net_wealth) == 5
+        assert result.ppor_net_wealth == pytest.approx([_net_wealth_for_year(y) for y in result.ppor.years])
 
     def test_ppor_has_no_cgt_impact(self):
         """PPOR wealth should never have CGT subtracted."""

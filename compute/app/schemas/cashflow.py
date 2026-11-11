@@ -9,6 +9,7 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
+from app.config.tax import HECS_INDEXATION_RATE
 from app.models.deductions import DepreciationMethod
 from app.models.loan import RepaymentFrequency
 from app.schemas.amortisation import RateChangeRequest
@@ -22,19 +23,33 @@ class TaxProfileRequest(BaseModel):
 
     Attributes:
         taxable_income: Assessable income minus allowable deductions
-        repayment_income: Income used for HECS repayment calculation
-        mls_income: Income used for Medicare Levy Surcharge calculation
+        repayment_income: Income used for HECS repayment calculation (defaults to taxable income)
+        mls_income: Income used for Medicare Levy Surcharge calculation (defaults to taxable income)
         hecs_balance: Outstanding HECS/HELP debt
         has_private_health: Whether the taxpayer holds private health insurance
         income_growth_rate: Annual salary/wage growth rate as decimal
+        hecs_indexation_rate: Annual HECS/HELP indexation rate as decimal
+            (defaults to the configured long-run assumption)
     """
 
     taxable_income: float = Field(default=0.0, ge=0, description="Annual taxable income")
-    repayment_income: float = Field(default=0.0, ge=0, description="Annual income used for HECS repayment calculations")
-    mls_income: float = Field(default=0.0, ge=0, description="Annual income used for MLS calculations")
+    repayment_income: float | None = Field(
+        default=None,
+        ge=0,
+        description="Annual income used for HECS repayment calculations (defaults to taxable income)",
+    )
+    mls_income: float | None = Field(
+        default=None, ge=0, description="Annual income used for MLS calculations (defaults to taxable income)"
+    )
     hecs_balance: float = Field(default=0.0, ge=0, description="Current HECS debt balance")
     has_private_health: bool = Field(default=False, description="Whether the individual has private health insurance")
     income_growth_rate: float = Field(default=0.03, ge=0, le=1, description="Annual salary/wage growth rate as decimal")
+    hecs_indexation_rate: float | None = Field(
+        default=None,
+        ge=0,
+        le=1,
+        description=f"Annual HECS/HELP indexation rate as decimal (defaults to {HECS_INDEXATION_RATE})",
+    )
 
 
 class PurchaseCostsRequest(BaseModel):
@@ -335,7 +350,12 @@ class CashFlowYearResponse(BaseModel):
         rental_income: Annual rental income received (rentvesting only, 0 for PPOR)
         tax_saving: Tax benefit from deductions (rentvesting only, 0 for PPOR)
         salary: Gross taxable income (grown by income_growth_rate) for this year
-        income_tax: Total tax payable for this year (income tax + Medicare levy)
+        income_tax: Total tax payable for this year before any investment property
+            (income tax, Medicare levy and surcharge, HECS repayment)
+        hecs_repayment: Compulsory HECS/HELP repayment made this year
+        hecs_balance: HECS/HELP debt remaining at end of year (after indexation and repayment)
+        net_wealth: Equity plus cumulative cash position plus offset balance, before any CGT on sale
+        cgt_if_sold: CGT payable if the property were sold at end of this year (investment only, 0 for PPOR)
         ongoing_costs_detail: Itemised ongoing property costs breakdown
         tax_deduction_detail: Tax deduction breakdown (investment only)
         total_outflows: Sum of all expenses for the year
@@ -367,6 +387,10 @@ class CashFlowYearResponse(BaseModel):
     offset_balance: float
     salary: float = 0.0
     income_tax: float = 0.0
+    hecs_repayment: float = 0.0
+    hecs_balance: float = 0.0
+    net_wealth: float = 0.0
+    cgt_if_sold: float = 0.0
     ongoing_costs_detail: OngoingCostsDetailResponse | None = None
     tax_deduction_detail: TaxDeductionDetailResponse | None = None
 
@@ -386,7 +410,10 @@ class CashFlowSummaryResponse(BaseModel):
         final_loan_balance: Remaining mortgage at end of projection
         final_equity: Property value minus loan balance at end of projection
         average_annual_net: Average net position per year
-        net_wealth: Final equity plus cumulative cash position
+        net_wealth: Final equity plus cumulative cash position plus offset balance
+            (before any CGT on sale)
+        total_tax_paid: Total tax paid across all years (income tax, Medicare and HECS
+            repayments), net of any tax saving from an investment property
     """
 
     total_income: float
@@ -395,6 +422,7 @@ class CashFlowSummaryResponse(BaseModel):
     total_rent_paid: float = 0.0
     total_rental_income: float = 0.0
     total_tax_saving: float = 0.0
+    total_tax_paid: float = 0.0
     final_property_value: float
     final_loan_balance: float
     final_equity: float

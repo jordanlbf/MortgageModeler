@@ -2,7 +2,7 @@
 Comparison domain models — scenario comparison results.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.models.cashflow import CashFlowPPORResult, CashFlowRentvestResult
 
@@ -22,6 +22,9 @@ class PporVsRentvestResult:
         difference: Absolute net wealth gap at term end.
         break_even_year: First year one scenario overtakes the other (None if never).
         by_year: PPOR net wealth minus rentvest net wealth per year, for charting.
+        ppor_net_wealth: PPOR net wealth at the end of each year.
+        rentvest_net_wealth: Rentvesting net wealth at the end of each year, after the
+            CGT payable if the investment property were sold that year.
     """
 
     ppor: CashFlowPPORResult
@@ -30,3 +33,5 @@ class PporVsRentvestResult:
     difference: float
     break_even_year: int | None
     by_year: list[float]
+    ppor_net_wealth: list[float] = field(default_factory=list)
+    rentvest_net_wealth: list[float] = field(default_factory=list)

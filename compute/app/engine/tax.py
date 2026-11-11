@@ -136,6 +136,23 @@ def calculate_hecs_repayment(repayment_income: float, hecs_balance: float) -> fl
     return min(repayment_owing, hecs_balance)
 
 
+def index_hecs_balance(hecs_balance: float, indexation_rate: float) -> float:
+    """
+    Apply one year of indexation to a HECS/HELP debt.
+
+    Indexation is applied on 1 June to the balance still outstanding, before
+    that year's compulsory repayment is credited at tax time.
+
+    Args:
+        hecs_balance: Outstanding HECS/HELP debt before indexation
+        indexation_rate: Annual indexation rate as decimal (e.g. 0.03 for 3%)
+
+    Returns:
+        Indexed HECS/HELP debt
+    """
+    return hecs_balance * (1 + indexation_rate)
+
+
 def calculate_marginal_rate(taxable_income: float) -> float:
     """
     Determine the marginal income tax rate for a given taxable income.

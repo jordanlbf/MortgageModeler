@@ -15,6 +15,7 @@ from app.engine.tax import (
     calculate_sapto,
     calculate_tax_saving,
     calculate_total_tax,
+    index_hecs_balance,
 )
 from app.models.loan import RepaymentFrequency
 from app.models.tax import TaxProfile
@@ -219,6 +220,19 @@ class TestHecsTax:
         assert calculate_hecs_repayment(80_000, 1_000) == pytest.approx(1_000, abs=0.1)  # 1st <> 2nd Thresholds
         assert calculate_hecs_repayment(150_000, 6_000) == pytest.approx(6_000, abs=0.1)  # 2nd <> 3rd Thresholds
         assert calculate_hecs_repayment(800_000, 20_000) == pytest.approx(20_000, abs=0.1)  # Above max threshold
+
+
+class TestHecsIndexation:
+    """Tests for HECS/HELP debt indexation."""
+
+    def test_indexes_balance_by_rate(self):
+        assert index_hecs_balance(30_000, 0.03) == pytest.approx(30_900)
+
+    def test_zero_rate_leaves_balance_unchanged(self):
+        assert index_hecs_balance(30_000, 0.0) == 30_000
+
+    def test_zero_balance_stays_zero(self):
+        assert index_hecs_balance(0, 0.05) == 0
 
 
 class TestMarginalRate:

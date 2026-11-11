@@ -37,6 +37,9 @@ class ComparisonResponse(BaseModel):
         difference: Absolute net wealth gap at term end.
         break_even_year: First year one scenario overtakes the other (None if never).
         by_year: PPOR net wealth minus rentvest net wealth per year, for charting.
+        ppor_net_wealth: PPOR net wealth at the end of each year.
+        rentvest_net_wealth: Rentvesting net wealth at the end of each year, after the
+            CGT payable if the investment property were sold that year.
     """
 
     ppor: CashFlowPPORResponse
@@ -47,3 +50,7 @@ class ComparisonResponse(BaseModel):
         default=None, description="First year one scenario overtakes the other (null if never)"
     )
     by_year: list[float] = Field(description="PPOR net wealth minus rentvest net wealth per year")
+    ppor_net_wealth: list[float] = Field(description="PPOR net wealth at the end of each year")
+    rentvest_net_wealth: list[float] = Field(
+        description="Rentvesting net wealth at the end of each year, after CGT if sold that year"
+    )

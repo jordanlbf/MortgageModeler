@@ -20,7 +20,7 @@ def _net_wealth_for_year(year: CashFlowYear) -> float:
     Returns:
         Net wealth: equity + cumulative cash position + offset balance.
     """
-    return year.equity + year.cumulative_position + year.offset_balance
+    return year.net_wealth
 
 
 def _find_break_even_year(by_year: list[float]) -> int | None:
@@ -56,8 +56,9 @@ def build_ppor_vs_rentvest(
     Runs both cashflow projections, computes per-year net wealth for
     each scenario, and derives the winner, difference, and break-even year.
 
-    CGT is subtracted from the rentvest final year's net wealth since
-    it represents a real liability on sale.
+    Rentvest net wealth is measured after the CGT payable if the investment
+    property were sold at the end of that year, so every year compares the
+    two strategies on an after-tax basis. A PPOR sale is CGT-exempt.
 
     Args:
         mortgage_ppor: Mortgage configured for PPOR scenario (is_ppor=True).
@@ -71,11 +72,7 @@ def build_ppor_vs_rentvest(
     rentvest_result = build_rentvest_cashflow(mortgage_rentvest)
 
     ppor_wealth = [_net_wealth_for_year(y) for y in ppor_result.years]
-    rentvest_wealth = [_net_wealth_for_year(y) for y in rentvest_result.years]
-
-    # Subtract CGT from rentvest final year
-    if rentvest_wealth:
-        rentvest_wealth[-1] -= rentvest_result.cgt.cgt_payable
+    rentvest_wealth = [y.net_wealth_after_cgt for y in rentvest_result.years]
 
     by_year = [ppor_wealth[i] - rentvest_wealth[i] for i in range(len(ppor_wealth))]
 
@@ -90,4 +87,6 @@ def build_ppor_vs_rentvest(
         difference=difference,
         break_even_year=break_even_year,
         by_year=by_year,
+        ppor_net_wealth=ppor_wealth,
+        rentvest_net_wealth=rentvest_wealth,
     )

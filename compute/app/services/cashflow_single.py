@@ -10,10 +10,7 @@ across all four mode × property_use combinations:
 """
 
 from dataclasses import replace
-from datetime import timedelta
 
-from app.engine.cgt import calculate_cgt
-from app.engine.property import calculate_property_value
 from app.models.cashflow import CashFlowSingleResult
 from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
@@ -24,7 +21,8 @@ from app.services.cashflow import (
     _calculate_cashflow_year,
     _calculate_investment_cashflow_summary,
     _calculate_investment_cashflow_year,
-    _grow_tax_profile,
+    _calculate_sale_cgt,
+    _tax_profile_for_year,
 )
 from app.services.ongoing_costs import build_ongoing_cost_projection
 from app.services.tax_deductions import build_tax_deduction_summary
@@ -63,11 +61,13 @@ def build_single_cashflow(
         cumulative_cash_position = 0.0
 
     # Year-by-year projection
+    hecs_balance = mortgage.person.tax_profile.hecs_balance
+    offset_balance = mortgage.loan.config.offset_balance
     cashflow_years = []
     for year in range(mortgage.projection_years):
         year_rows = mortgage.loan.rows_for_year(year)
         year_costs = cost_projection.annual_costs[year]
-        grown_profile = _grow_tax_profile(mortgage.person.tax_profile, year)
+        year_profile = _tax_profile_for_year(mortgage.person.tax_profile, year, hecs_balance)
 
         if is_investment:
             # Derive financial year from purchase date + year offset
@@ -75,7 +75,7 @@ def build_single_cashflow(
             financial_year = FinancialYear(fy_year)
 
             # Calculate tax deductions for this year
-            year_mortgage = replace(mortgage, person=Person(tax_profile=grown_profile))
+            year_mortgage = replace(mortgage, person=Person(tax_profile=year_profile))
             tax_deduction = build_tax_deduction_summary(
                 mortgage=year_mortgage,
                 year=year,
@@ -85,40 +85,35 @@ def build_single_cashflow(
 
             cashflow_year = _calculate_investment_cashflow_year(
                 year=year,
-                tax_profile=grown_profile,
+                tax_profile=year_profile,
                 schedule_rows=year_rows,
                 ongoing_costs=year_costs,
                 previous_cumulative=cumulative_cash_position,
                 tax_deduction_detail=tax_deduction,
+                opening_offset_balance=offset_balance,
             )
+            cashflow_year.cgt_if_sold = _calculate_sale_cgt(
+                mortgage, year + 1, cashflow_year.hecs_balance
+            ).cgt_payable
         else:
             cashflow_year = _calculate_cashflow_year(
                 year=year,
-                tax_profile=grown_profile,
+                tax_profile=year_profile,
                 schedule_rows=year_rows,
                 ongoing_costs=year_costs,
                 previous_cumulative=cumulative_cash_position,
+                opening_offset_balance=offset_balance,
             )
 
         cumulative_cash_position = cashflow_year.cumulative_position
+        hecs_balance = cashflow_year.hecs_balance
+        offset_balance = cashflow_year.offset_balance
         cashflow_years.append(cashflow_year)
 
     # CGT only for investment properties
     cgt = None
     if is_investment:
-        value_base = mortgage.property.value_base or mortgage.property.purchase_price
-        sale_price = calculate_property_value(
-            mortgage.projection_years, value_base, mortgage.property.annual_appreciation
-        )
-        sale_date = mortgage.property.purchase_date + timedelta(days=365 * mortgage.projection_years)
-        grown_profile = _grow_tax_profile(mortgage.person.tax_profile, mortgage.projection_years)
-        cgt = calculate_cgt(
-            property=mortgage.property,
-            sale_price=sale_price,
-            sale_date=sale_date,
-            tax_profile=grown_profile,
-            is_ppor=False,
-        )
+        cgt = _calculate_sale_cgt(mortgage, mortgage.projection_years, hecs_balance)
 
     # Build appropriate summary
     if is_investment:

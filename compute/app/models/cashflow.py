@@ -34,6 +34,8 @@ class CashFlowYear:
         loan_balance: Remaining mortgage balance at end of year
         equity: Property value minus loan balance
         offset_balance: Offset account balance at end of year
+        hecs_repayment: Compulsory HECS/HELP repayment made this year
+        hecs_balance: HECS/HELP debt remaining at end of year (after indexation and repayment)
         ongoing_costs_detail: Full ongoing cost breakdown for this year
         schedule_rows_detail: Per-period mortgage rows for this year
     """
@@ -55,8 +57,20 @@ class CashFlowYear:
     offset_balance: float
     salary: float = 0.0
     income_tax: float = 0.0
+    hecs_repayment: float = 0.0
+    hecs_balance: float = 0.0
     ongoing_costs_detail: YearCost | None = None
     schedule_rows_detail: list[ScheduleRow] = field(default_factory=list)
+
+    @property
+    def net_wealth(self) -> float:
+        """
+        Net wealth at end of year, before any tax on selling the property.
+
+        Returns:
+            Equity plus cumulative cash position plus offset balance
+        """
+        return self.equity + self.cumulative_position + self.offset_balance
 
 
 @dataclass
@@ -68,13 +82,25 @@ class CashFlowYearInvestment(CashFlowYear):
         rental_income: Annual rental income received
         tax_saving: Tax benefit from deductions (negative if positively geared)
         rent_paid: Annual rent where the investor lives (rentvesting only)
+        cgt_if_sold: Capital gains tax payable if the property were sold at end of this year
         tax_deduction_detail: Tax deduction breakdown for this year
     """
 
     rental_income: float = 0.0
     tax_saving: float = 0.0
     rent_paid: float = 0.0
+    cgt_if_sold: float = 0.0
     tax_deduction_detail: PropertyTaxDeductionSummary | None = None
+
+    @property
+    def net_wealth_after_cgt(self) -> float:
+        """
+        Net wealth at end of year if the property were sold and CGT paid.
+
+        Returns:
+            Net wealth minus the CGT payable on a sale at end of this year
+        """
+        return self.net_wealth - self.cgt_if_sold
 
 
 @dataclass
@@ -90,7 +116,10 @@ class CashFlowSummary:
         final_loan_balance: Remaining mortgage at end of projection
         final_equity: Property value minus loan balance at end of projection
         average_annual_net: Average net position per year
-        net_wealth: Final equity plus cumulative cash position
+        net_wealth: Final equity plus cumulative cash position plus offset balance
+            (before any tax on selling the property)
+        total_tax_paid: Total tax paid across all years (income tax, Medicare and HECS
+            repayments), net of any tax saving from an investment property
     """
 
     total_income: float
@@ -101,6 +130,7 @@ class CashFlowSummary:
     final_equity: float
     average_annual_net: float
     net_wealth: float
+    total_tax_paid: float = 0.0
 
 
 @dataclass
