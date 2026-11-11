@@ -1588,3 +1588,96 @@ class TestCgtIfSold:
         assert self._build(projection_years=8).years[2].cgt_if_sold == pytest.approx(
             self._build(projection_years=3).cgt.cgt_payable
         )
+
+
+# ──────────────────────────────────────────────
+# End-of-year property value
+# ──────────────────────────────────────────────
+
+
+class TestClosingPropertyValue:
+    """Year rows hold the property value at the end of the year, like the loan balance."""
+
+    def test_year_rows_use_end_of_year_value(self):
+        result = build_ppor_cashflow(_make_mortgage(projection_years=3))
+        values = [y.property_value for y in result.years]
+        assert values == pytest.approx([500_000 * 1.05, 500_000 * 1.05**2, 500_000 * 1.05**3])
+
+    def test_equity_uses_end_of_year_value(self):
+        year = build_ppor_cashflow(_make_mortgage(projection_years=1)).years[0]
+        assert year.equity == pytest.approx(500_000 * 1.05 - year.loan_balance)
+
+    def test_costs_stay_based_on_start_of_year_value(self):
+        year = build_ppor_cashflow(_make_mortgage(projection_years=1)).years[0]
+        assert year.ongoing_costs_detail.property_value == pytest.approx(500_000)
+        assert year.ongoing_costs_detail.maintenance_cost == pytest.approx(5_000)
+
+    def test_final_property_value_is_the_sale_price(self):
+        result = build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=False, weekly_rent=450),
+                rentvest=_make_rentvest(),
+                projection_years=5,
+            )
+        )
+        sale_price = result.cgt.cost_base + result.cgt.capital_gain
+        assert result.summary.final_property_value == pytest.approx(sale_price)
+        assert result.years[-1].property_value == pytest.approx(500_000 * 1.05**5)
+
+    def test_year_calculator_falls_back_to_cost_basis_value(self):
+        year = _calculate_cashflow_year(
+            year=0,
+            tax_profile=_make_tax_profile(),
+            schedule_rows=[_make_schedule_row()],
+            ongoing_costs=_make_year_cost(property_value=500_000),
+            previous_cumulative=0,
+        )
+        assert year.property_value == pytest.approx(500_000)
+
+
+# ──────────────────────────────────────────────
+# CGT cost base
+# ──────────────────────────────────────────────
+
+
+class TestCgtCostBase:
+    """The CGT cost base includes purchase costs, whether entered or auto-estimated."""
+
+    def _build(self, purchase_costs=None):
+        return build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=False, weekly_rent=450, purchase_costs=purchase_costs),
+                rentvest=_make_rentvest(),
+                projection_years=5,
+            )
+        )
+
+    def test_includes_auto_estimated_purchase_costs(self):
+        result = self._build()
+        estimated = result.upfront_costs.purchase_costs.total
+        assert estimated > 0
+        assert result.cgt.cost_base == pytest.approx(500_000 + estimated)
+
+    def test_includes_entered_purchase_costs(self):
+        result = self._build(
+            PurchaseCosts(stamp_duty=10_000, legal_fees=1_000, building_pest_inspection=0, registration_fee=0)
+        )
+        assert result.cgt.cost_base == pytest.approx(511_000)
+
+    def test_purchase_costs_reduce_cgt(self):
+        no_costs = self._build(
+            PurchaseCosts(stamp_duty=0, legal_fees=0, building_pest_inspection=0, registration_fee=0)
+        )
+        assert self._build().cgt.cgt_payable < no_costs.cgt.cgt_payable
+
+    def test_every_year_uses_the_same_cost_base(self):
+        """Selling after 3 years costs the same CGT whether or not the projection runs longer."""
+        result = self._build()
+        shorter = build_rentvest_cashflow(
+            _make_mortgage(
+                property=_make_property(is_ppor=False, weekly_rent=450),
+                rentvest=_make_rentvest(),
+                projection_years=3,
+            )
+        )
+        assert result.years[2].cgt_if_sold == pytest.approx(shorter.cgt.cgt_payable)

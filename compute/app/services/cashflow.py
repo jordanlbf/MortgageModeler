@@ -27,7 +27,7 @@ from app.models.deductions import PropertyTaxDeductionSummary
 from app.models.financial import FinancialYear
 from app.models.mortgage import Mortgage
 from app.models.person import Person
-from app.models.property import OngoingCostProjection, RentvestConfig, UpfrontCosts, YearCost
+from app.models.property import OngoingCostProjection, PurchaseCosts, RentvestConfig, UpfrontCosts, YearCost
 from app.models.tax import TaxProfile
 from app.services.ongoing_costs import build_ongoing_cost_projection
 from app.services.tax_deductions import build_tax_deduction_summary
@@ -176,7 +176,28 @@ def _offset_position(schedule_rows: list[ScheduleRow], opening_offset_balance: f
     return closing_offset_balance, closing_offset_balance - opening_offset_balance
 
 
-def _calculate_sale_cgt(mortgage: Mortgage, years_held: int, hecs_balance: float) -> CGTResult:
+def _closing_property_value(mortgage: Mortgage, year: int) -> float:
+    """
+    Property value at the end of a projection year, to line up with the
+    end-of-year loan balance and cash position.
+
+    Args:
+        mortgage: Mortgage aggregate with property details
+        year: Projection year (0 = purchase year)
+
+    Returns:
+        Property value after year + 1 years of growth
+    """
+    value_base = mortgage.property.value_base or mortgage.property.purchase_price
+    return calculate_property_value(year + 1, value_base, mortgage.property.annual_appreciation)
+
+
+def _calculate_sale_cgt(
+    mortgage: Mortgage,
+    years_held: int,
+    hecs_balance: float,
+    purchase_costs: PurchaseCosts | None = None,
+) -> CGTResult:
     """
     Calculate the CGT payable if the investment property were sold after a number of years.
 
@@ -184,15 +205,19 @@ def _calculate_sale_cgt(mortgage: Mortgage, years_held: int, hecs_balance: float
         mortgage: Mortgage aggregate with property and tax profile details
         years_held: Whole projection years completed at the time of sale
         hecs_balance: HECS/HELP debt outstanding at the time of sale
+        purchase_costs: Resolved purchase costs for the cost base, so auto-estimated
+            costs (e.g. stamp duty) are included. Defaults to the property's own.
 
     Returns:
         CGTResult for a sale at that point
     """
-    value_base = mortgage.property.value_base or mortgage.property.purchase_price
-    sale_price = calculate_property_value(years_held, value_base, mortgage.property.annual_appreciation)
+    sold_property = mortgage.property
+    if purchase_costs is not None:
+        sold_property = replace(sold_property, purchase_costs=purchase_costs)
+    sale_price = _closing_property_value(mortgage, years_held - 1)
     sale_date = mortgage.property.purchase_date + timedelta(days=365 * years_held)
     return calculate_cgt(
-        property=mortgage.property,
+        property=sold_property,
         sale_price=sale_price,
         sale_date=sale_date,
         tax_profile=_grow_tax_profile(mortgage.person.tax_profile, years_held, hecs_balance=hecs_balance),
@@ -207,6 +232,7 @@ def _calculate_cashflow_year(
     ongoing_costs: YearCost,
     previous_cumulative: float,
     opening_offset_balance: float = 0.0,
+    closing_property_value: float | None = None,
 ) -> CashFlowYear:
     """
     Calculate a single year's cash flow breakdown for a PPOR scenario.
@@ -221,6 +247,8 @@ def _calculate_cashflow_year(
         ongoing_costs: YearCost breakdown for this year
         previous_cumulative: Cumulative position from the previous year
         opening_offset_balance: Offset account balance at the start of this year
+        closing_property_value: Property value at the end of this year (defaults to
+            the value the year's costs were based on)
 
     Returns:
         CashFlowYear with summary and detail breakdowns for this year
@@ -238,7 +266,7 @@ def _calculate_cashflow_year(
     offset_balance, offset_contributions = _offset_position(schedule_rows, opening_offset_balance)
 
     property_costs = ongoing_costs.total_costs
-    property_value = ongoing_costs.property_value
+    property_value = ongoing_costs.property_value if closing_property_value is None else closing_property_value
 
     total_inflows = net_income
     total_outflows = mortgage_repayment + property_costs + offset_contributions
@@ -280,6 +308,7 @@ def _calculate_investment_cashflow_year(
     rentvest: RentvestConfig | None = None,
     tax_deduction_detail: PropertyTaxDeductionSummary | None = None,
     opening_offset_balance: float = 0.0,
+    closing_property_value: float | None = None,
 ) -> CashFlowYearInvestment:
     """
     Calculate a single year's cash flow breakdown for an investment scenario.
@@ -296,6 +325,8 @@ def _calculate_investment_cashflow_year(
         rentvest: Tenant rental config (None unless rentvesting)
         tax_deduction_detail: Tax deduction breakdown for this year
         opening_offset_balance: Offset account balance at the start of this year
+        closing_property_value: Property value at the end of this year (defaults to
+            the value the year's costs were based on)
 
     Returns:
         CashFlowYearInvestment with investment-specific fields
@@ -318,7 +349,7 @@ def _calculate_investment_cashflow_year(
     offset_balance, offset_contributions = _offset_position(schedule_rows, opening_offset_balance)
 
     property_costs = ongoing_costs.total_costs
-    property_value = ongoing_costs.property_value
+    property_value = ongoing_costs.property_value if closing_property_value is None else closing_property_value
     rental_income = ongoing_costs.rental_income
     rent_paid = rentvest.weekly_rent_paid * 52 * (1 + rentvest.annual_rent_paid_growth) ** year if rentvest else 0.0
     tax_saving = tax_deduction_detail.tax_saving if tax_deduction_detail else 0.0
@@ -394,6 +425,7 @@ def build_ppor_cashflow(mortgage: Mortgage) -> CashFlowPPORResult:
             ongoing_costs=cost_projection.annual_costs[year],
             previous_cumulative=cumulative_cash_position,
             opening_offset_balance=offset_balance,
+            closing_property_value=_closing_property_value(mortgage, year),
         )
         cumulative_cash_position = cashflow_year.cumulative_position
         hecs_balance = cashflow_year.hecs_balance
@@ -466,15 +498,18 @@ def build_rentvest_cashflow(mortgage: Mortgage) -> CashFlowRentvestResult:
             rentvest=mortgage.rentvest,
             tax_deduction_detail=tax_deduction,
             opening_offset_balance=offset_balance,
+            closing_property_value=_closing_property_value(mortgage, year),
         )
         cumulative_cash_position = cashflow_year.cumulative_position
         hecs_balance = cashflow_year.hecs_balance
         offset_balance = cashflow_year.offset_balance
-        cashflow_year.cgt_if_sold = _calculate_sale_cgt(mortgage, year + 1, hecs_balance).cgt_payable
+        cashflow_year.cgt_if_sold = _calculate_sale_cgt(
+            mortgage, year + 1, hecs_balance, upfront_costs.purchase_costs
+        ).cgt_payable
         cashflow_years.append(cashflow_year)
 
     # CGT on a sale at the end of the projection
-    cgt = _calculate_sale_cgt(mortgage, mortgage.projection_years, hecs_balance)
+    cgt = _calculate_sale_cgt(mortgage, mortgage.projection_years, hecs_balance, upfront_costs.purchase_costs)
 
     return CashFlowRentvestResult(
         projection_years=mortgage.projection_years,

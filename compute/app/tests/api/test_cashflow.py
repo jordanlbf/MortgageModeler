@@ -782,9 +782,12 @@ class TestSingleExistingPporValues:
         assert data["cgt"] is None
 
     def test_property_value_from_current_value(self):
-        """Property value should start from current_value (600k), not purchase_price (500k)."""
-        data = client.post("/api/cashflow/single", json=_single_existing_ppor()).json()
-        assert data["years"][0]["property_value"] == pytest.approx(600_000, rel=0.01)
+        """Property value should grow from current_value (600k), not purchase_price (500k)."""
+        payload = _single_existing_ppor()
+        growth = 1 + payload["existing_property"]["annual_appreciation"]
+        data = client.post("/api/cashflow/single", json=payload).json()
+        # Year rows hold the end-of-year value: one year of growth on today's value
+        assert data["years"][0]["property_value"] == pytest.approx(600_000 * growth)
 
     def test_loan_balance_from_current_balance(self):
         data = client.post("/api/cashflow/single", json=_single_existing_ppor()).json()

@@ -22,6 +22,7 @@ from app.services.cashflow import (
     _calculate_investment_cashflow_summary,
     _calculate_investment_cashflow_year,
     _calculate_sale_cgt,
+    _closing_property_value,
     _tax_profile_for_year,
 )
 from app.services.ongoing_costs import build_ongoing_cost_projection
@@ -60,6 +61,10 @@ def build_single_cashflow(
         cost_projection = build_ongoing_cost_projection(mortgage)
         cumulative_cash_position = 0.0
 
+    # New purchases add their resolved purchase costs (including auto-estimates) to the
+    # CGT cost base; an existing property uses the original costs entered for it.
+    purchase_costs = upfront_costs.purchase_costs if upfront_costs else None
+
     # Year-by-year projection
     hecs_balance = mortgage.person.tax_profile.hecs_balance
     offset_balance = mortgage.loan.config.offset_balance
@@ -91,9 +96,10 @@ def build_single_cashflow(
                 previous_cumulative=cumulative_cash_position,
                 tax_deduction_detail=tax_deduction,
                 opening_offset_balance=offset_balance,
+                closing_property_value=_closing_property_value(mortgage, year),
             )
             cashflow_year.cgt_if_sold = _calculate_sale_cgt(
-                mortgage, year + 1, cashflow_year.hecs_balance
+                mortgage, year + 1, cashflow_year.hecs_balance, purchase_costs
             ).cgt_payable
         else:
             cashflow_year = _calculate_cashflow_year(
@@ -103,6 +109,7 @@ def build_single_cashflow(
                 ongoing_costs=year_costs,
                 previous_cumulative=cumulative_cash_position,
                 opening_offset_balance=offset_balance,
+                closing_property_value=_closing_property_value(mortgage, year),
             )
 
         cumulative_cash_position = cashflow_year.cumulative_position
@@ -113,7 +120,7 @@ def build_single_cashflow(
     # CGT only for investment properties
     cgt = None
     if is_investment:
-        cgt = _calculate_sale_cgt(mortgage, mortgage.projection_years, hecs_balance)
+        cgt = _calculate_sale_cgt(mortgage, mortgage.projection_years, hecs_balance, purchase_costs)
 
     # Build appropriate summary
     if is_investment:

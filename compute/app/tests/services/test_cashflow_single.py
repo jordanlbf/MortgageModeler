@@ -459,11 +459,10 @@ class TestExistingPpor:
     # ── Property appreciates from value_base ─
 
     def test_property_value_based_on_current_value(self):
-        """Property value should start near current_value (600k), not purchase_price (500k)."""
+        """Property value should grow from current_value (600k), not purchase_price (500k)."""
         result = self._build(current_value=600_000, purchase_price=500_000)
-        # Year 0 value should be 600k * (1 + 0.05)^0 = ~600k at appreciation start
-        # (engine calculates year 0 as purchase_price * (1+r)^0 = purchase_price)
-        assert result.years[0].property_value == pytest.approx(600_000, rel=0.01)
+        # Year rows hold the end-of-year value: one year of 5% growth on today's value
+        assert result.years[0].property_value == pytest.approx(600_000 * 1.05)
 
     def test_property_value_grows(self):
         result = self._build()
@@ -676,8 +675,8 @@ class TestValueBase:
             projection_years=2,
         )
         result = build_single_cashflow(mortgage, mode="new", property_use="ppor")
-        # Year 1 should be 500k * (1.05)^1 = 525k
-        assert result.years[1].property_value == pytest.approx(500_000 * 1.05, rel=0.01)
+        # End of year 1 is two years of growth: 500k * (1.05)^2
+        assert result.years[1].property_value == pytest.approx(500_000 * 1.05**2)
 
 
 # ──────────────────────────────────────────────
@@ -798,3 +797,25 @@ class TestSingleCashflowEdgeCases:
         result = build_single_cashflow(mortgage, mode="existing", property_use="investment")
         assert len(result.years) == 3
         assert result.cgt is not None
+
+
+# ──────────────────────────────────────────────
+# CGT cost base
+# ──────────────────────────────────────────────
+
+
+class TestSaleCgtCostBase:
+    """A new purchase's CGT cost base includes its resolved purchase costs."""
+
+    def test_new_investment_cost_base_includes_purchase_costs(self):
+        mortgage = _make_new_mortgage(is_ppor=False, projection_years=3)
+        result = build_single_cashflow(mortgage, mode="new", property_use="investment")
+        purchase_costs = result.upfront_costs.purchase_costs.total
+        assert purchase_costs > 0
+        assert result.cgt.cost_base == pytest.approx(mortgage.property.purchase_price + purchase_costs)
+
+    def test_final_property_value_is_the_sale_price(self):
+        mortgage = _make_new_mortgage(is_ppor=False, projection_years=3)
+        result = build_single_cashflow(mortgage, mode="new", property_use="investment")
+        sale_price = result.cgt.cost_base + result.cgt.capital_gain
+        assert result.summary.final_property_value == pytest.approx(sale_price)
